@@ -5,7 +5,12 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from content import TITLE, SUBTITLE, TAGLINE, INTRO, SECTIONS, CLOSING  # noqa: E402
+
+# เลือกไฟล์เนื้อหาตามภาษา: `python3 build.py out.html content_en`
+CONTENT_MODULE = sys.argv[2] if len(sys.argv) > 2 else "content"
+_c = __import__(CONTENT_MODULE)
+TITLE, SUBTITLE, TAGLINE = _c.TITLE, _c.SUBTITLE, _c.TAGLINE
+INTRO, SECTIONS, CLOSING, L = _c.INTRO, _c.SECTIONS, _c.CLOSING, _c.LABELS
 
 IMG_DIR = "images"
 FONT_DIR = "fonts"
@@ -19,10 +24,10 @@ CSS = """
 @page { size: A4; margin: 14mm 13mm 16mm 13mm; }
 @page :first { margin: 0; }
 
-@font-face { font-family: 'Noto'; src: url('FONTDIR/NotoSansThai-400.ttf'); font-weight: 400; }
-@font-face { font-family: 'Noto'; src: url('FONTDIR/NotoSansThai-500.ttf'); font-weight: 500; }
-@font-face { font-family: 'Noto'; src: url('FONTDIR/NotoSansThai-700.ttf'); font-weight: 700; }
-@font-face { font-family: 'Noto'; src: url('FONTDIR/NotoSansThai-800.ttf'); font-weight: 800; }
+@font-face { font-family: 'Noto'; src: url('FONTDIR/FONTFAM-400.ttf'); font-weight: 400; }
+@font-face { font-family: 'Noto'; src: url('FONTDIR/FONTFAM-500.ttf'); font-weight: 500; }
+@font-face { font-family: 'Noto'; src: url('FONTDIR/FONTFAM-700.ttf'); font-weight: 700; }
+@font-face { font-family: 'Noto'; src: url('FONTDIR/FONTFAM-800.ttf'); font-weight: 800; }
 
 :root {
   --primary: #FF6B2C;
@@ -122,8 +127,8 @@ def cover():
   <div class="spacer"></div>
   <div class="stats">{stats}</div>
   <div class="foot">
-    <span>เอกสารรวมฟีเจอร์และหน้าจอทั้งระบบ</span>
-    <span>ภาพหน้าจอทั้งหมดถ่ายจากแอปจริง</span>
+    <span>{esc(L['cover_foot_left'])}</span>
+    <span>{esc(L['cover_foot_right'])}</span>
   </div>
 </div>
 """
@@ -142,36 +147,34 @@ def overview():
         f'<tr><td style="width:14mm"><b style="color:var(--primary)">{esc(s["no"])}</b></td>'
         f'<td><b>{esc(s["title"])}</b><br><span style="color:var(--muted);font-size:8.6pt">'
         f'{esc(s["lead"])}</span></td>'
-        f'<td style="width:22mm;text-align:right">{len(s["screens"])} หน้าจอ</td></tr>'
+        f'<td style="width:22mm;text-align:right">{len(s["screens"])} {esc(L["screens_suffix"])}</td></tr>'
         for s in SECTIONS
     )
     return f"""
 <div class="section-head">
-  <div class="section-no">ภาพรวม</div>
-  <h2 class="section">ระบบนี้ทำอะไร และทำไมถึงทำ</h2>
+  <div class="section-no">{esc(L['overview_kicker'])}</div>
+  <h2 class="section">{esc(L['overview_title'])}</h2>
 </div>
 
 <div class="callout">
-  <h4>โจทย์</h4>
-  <p>ร้านอาหารหนึ่งร้านมีคนสี่กลุ่มทำงานพร้อมกันบนอุปกรณ์คนละแบบ และทุกคนต้องเห็นข้อมูลชุดเดียวกัน
-  ระบบนี้จึงต้องแก้ทั้งเรื่องการไหลของงานหน้าร้าน ความถูกต้องของเงิน และการมองเห็นข้อมูลแบบทันที</p>
+  <h4>{esc(L['problem_title'])}</h4>
+  <p>{esc(L['problem_body'])}</p>
 </div>
 
 <ul class="points" style="margin-bottom:5mm">{why}</ul>
 
-<h3 class="page-title">ใครใช้อะไรบ้าง</h3>
+<h3 class="page-title">{esc(L['roles_title'])}</h3>
 <table class="matrix" style="margin-bottom:5mm">
-  <tr><th style="width:42mm">บทบาท</th><th style="width:42mm">อุปกรณ์</th><th>งานหลัก</th></tr>
+  <tr><th style="width:42mm">{esc(L['roles_headers'][0])}</th>
+      <th style="width:42mm">{esc(L['roles_headers'][1])}</th>
+      <th>{esc(L['roles_headers'][2])}</th></tr>
   {roles}
 </table>
 
-<h3 class="page-title">เนื้อหาในเอกสารนี้</h3>
+<h3 class="page-title">{esc(L['toc_title'])}</h3>
 <table class="matrix">{toc}</table>
 
-<p class="note" style="margin-top:4mm">
-ภาพหน้าจอทุกภาพในเอกสารนี้เรนเดอร์จากโค้ดจริงของแอปด้วยเครื่องมือถ่ายภาพอัตโนมัติที่เขียนไว้ในโปรเจกต์
-(<b>app/tool/screenshots</b>) จึงตรงกับสิ่งที่ผู้ใช้เห็นจริง และสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน
-</p>
+<p class="note" style="margin-top:4mm">{L['shots_note']}</p>
 """
 
 
@@ -185,7 +188,7 @@ def screen_block(screen, device):
     <h3 class="page-title">{esc(screen['name'])}</h3>
     <p class="page-lead">{esc(screen['lead'])}</p>
     <ul class="points">{points}</ul>
-    <div class="tech"><b>เบื้องหลัง</b> — {esc(screen['tech'])}</div>
+    <div class="tech"><b>{esc(L['tech_label'])}</b> — {esc(screen['tech'])}</div>
   </div>
 </div>
 """
@@ -195,7 +198,7 @@ def section_html(section):
     parts = [f"""
 <div class="page-break"></div>
 <div class="section-head">
-  <div class="section-no">SECTION {esc(section['no'])}</div>
+  <div class="section-no">{esc(L['section_prefix'])} {esc(section['no'])}</div>
   <h2 class="section">{esc(section['title'])}</h2>
   <p class="section-lead" style="margin-bottom:0">{esc(section['lead'])}</p>
 </div>
@@ -211,39 +214,37 @@ def closing():
         f"<li><b>{esc(t)}</b><span>{esc(d)}</span></li>" for t, d in CLOSING["found_bugs"]
     )
     nxt = "".join(f"<li>{esc(x)}</li>" for x in CLOSING["next"])
+    rows = "".join(
+        f"<tr><td>{esc(a)}</td><td>{esc(b)}</td><td>{esc(c)}</td></tr>"
+        for a, b, c in L["tests_rows"]
+    )
     return f"""
 <div class="page-break"></div>
 <div class="section-head">
-  <div class="section-no">SECTION 06</div>
-  <h2 class="section">สิ่งที่ได้ระหว่างทาง</h2>
-  <p class="section-lead" style="margin-bottom:0">บั๊กที่เจอจริง วิธีที่เจอ และสิ่งที่ยังไม่ได้ทำ</p>
+  <div class="section-no">{esc(L['section_prefix'])} {esc(L['closing_no'])}</div>
+  <h2 class="section">{esc(L['closing_title'])}</h2>
+  <p class="section-lead" style="margin-bottom:0">{esc(L['closing_lead'])}</p>
 </div>
 
 <div class="callout">
-  <h4>การทำภาพประกอบชุดนี้ช่วยจับบั๊กได้จริง</h4>
-  <p>เครื่องมือถ่ายภาพหน้าจอเปิดทุกหน้าของแอปด้วยข้อมูลจริงและบันทึกผลลัพธ์ออกมา
-  ทำให้เจอปัญหาที่การกดใช้งานตามปกติมองข้ามไป และทั้งหมดถูกแก้ก่อนจัดทำเอกสารนี้</p>
+  <h4>{esc(L['closing_callout_title'])}</h4>
+  <p>{esc(L['closing_callout_body'])}</p>
 </div>
 
 <ul class="points bugs" style="margin-bottom:7mm">{bugs}</ul>
 
-<h3 class="page-title">การทดสอบอัตโนมัติ</h3>
+<h3 class="page-title">{esc(L['tests_title'])}</h3>
 <table class="matrix" style="margin-bottom:7mm">
-  <tr><th style="width:34mm">ส่วน</th><th style="width:20mm">จำนวน</th><th>ครอบคลุมอะไร</th></tr>
-  <tr><td>Backend</td><td>36 เคส</td>
-      <td>ยิงผ่าน HTTP จริงบนฐานข้อมูลแยก รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-          ตั้งแต่เปิดโต๊ะจนยอดเข้ารายงาน</td></tr>
-  <tr><td>Flutter</td><td>41 เคส</td>
-      <td>กฎคิดเงิน การรวมรายการในตะกร้า สิทธิ์ตามบทบาท ตรรกะ controller
-          (ใช้ repository ปลอม) และพฤติกรรมของ widget</td></tr>
+  <tr><th style="width:34mm">{esc(L['tests_headers'][0])}</th>
+      <th style="width:24mm">{esc(L['tests_headers'][1])}</th>
+      <th>{esc(L['tests_headers'][2])}</th></tr>
+  {rows}
 </table>
 
-<h3 class="page-title">สิ่งที่จะทำต่อ</h3>
+<h3 class="page-title">{esc(L['next_title'])}</h3>
 <ul class="points">{nxt}</ul>
 
-<p class="note" style="margin-top:8mm">
-เขียนสิ่งที่ยังไม่ได้ทำไว้ด้วย เพราะคิดว่าการรู้ว่าอะไรยังขาด สำคัญพอ ๆ กับการทำสิ่งที่มีอยู่ให้เสร็จ
-</p>
+<p class="note" style="margin-top:8mm">{esc(L['closing_note'])}</p>
 """
 
 
@@ -251,7 +252,7 @@ def build():
     body = [cover(), overview()]
     body += [section_html(s) for s in SECTIONS]
     body.append(closing())
-    css = CSS.replace("FONTDIR", FONT_DIR)
+    css = CSS.replace("FONTDIR", FONT_DIR).replace("FONTFAM", L["font"])
     return (
         "<!doctype html><html lang='th'><head><meta charset='utf-8'>"
         f"<title>{esc(TITLE)} — {esc(SUBTITLE)}</title>"

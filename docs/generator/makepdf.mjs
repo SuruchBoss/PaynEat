@@ -1,6 +1,7 @@
 import { chromium } from 'playwright';
 
-const [,, htmlPath, pdfPath] = process.argv;
+const [,, htmlPath, pdfPath, footerText] = process.argv;
+const footer = footerText || 'PaynEat POS';
 const browser = await chromium.launch({
   executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome',
   args: ['--no-sandbox'],
@@ -18,7 +19,7 @@ await page.pdf({
   headerTemplate: '<div></div>',
   footerTemplate: `<div style="width:100%;font-size:7pt;color:#9CA3AF;padding:0 13mm;
       font-family:sans-serif;display:flex;justify-content:space-between;">
-      <span>PaynEat POS — เอกสารรวมฟีเจอร์และหน้าจอ</span>
+      <span>${footer}</span>
       <span class="pageNumber"></span>
     </div>`,
   margin: { top: '0', bottom: '12mm', left: '0', right: '0' },

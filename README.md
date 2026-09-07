@@ -11,14 +11,14 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-77%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-82%20passing-2F9E44">
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 77 automated tests.
+control and 82 automated tests.
 
 ---
 
@@ -42,8 +42,9 @@ control and 77 automated tests.
 <p align="center"><b>เก็บเงินแบบแยกจ่าย</b> — จ่าย QR บางส่วน ที่เหลือเงินสด ระบบตัดยอดคงเหลือและคำนวณเงินทอนให้</p>
 <p align="center"><img src="docs/screenshots/tablet-16-checkout.png" width="780"></p>
 
-> 📄 **[ดูเอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 25 หน้าจอ (PDF)](docs/PaynEat-POS-Features.pdf)**
-> — อธิบายทีละหน้าจอว่าแก้ปัญหาอะไรและเบื้องหลังทำงานยังไง
+> 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 25 หน้าจอ (PDF 23 หน้า)**
+> · [ฉบับภาษาไทย](docs/PaynEat-POS-Features-TH.pdf) — อธิบายทีละหน้าจอว่าออกแบบยังไงและเบื้องหลังทำงานยังไง
+> · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
 > ภาพทั้งหมดเรนเดอร์จากโค้ดจริงด้วย golden test ที่เขียนไว้ใน [`app/tool/screenshots`](app/tool/screenshots)
 > จึงสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน ([วิธีสร้าง](docs/generator/README.md))
@@ -236,7 +237,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 36 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 41 เคส — domain / controller / widget
+cd app && flutter test      # 46 เคส — domain / controller / widget
 ```
 
 ---
@@ -581,7 +582,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 36 เคส
-cd app && flutter test      # 41 เคส
+cd app && flutter test      # 46 เคส
 ```
 
 **Backend (36 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -592,7 +593,7 @@ cd app && flutter test      # 41 เคส
 > เสิร์ฟครบแล้วออเดอร์เปลี่ยนสถานะเอง → ให้ส่วนลด → แยกจ่าย 2 ครั้ง → ตรวจเงินทอน →
 > จ่ายซ้ำต้องโดนปฏิเสธ → โต๊ะว่างคืนอัตโนมัติ → ใบเสร็จครบ → ยอดเข้ารายงาน
 
-**Flutter (41 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (46 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -601,7 +602,9 @@ cd app && flutter test      # 41 เคส
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม |
 | Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) |
+| Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget |
+| Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
 
 CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flutter test` → `flutter build web`
 และเทสต์ backend ทุกครั้งที่ push
@@ -623,7 +626,8 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 ## 📚 อ่านเพิ่มเติม
 
-- [`docs/PaynEat-POS-Features.pdf`](docs/PaynEat-POS-Features.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
+- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
+- [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 10 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม

@@ -34,6 +34,9 @@ class DemoStore {
   /// หน่วงเวลาเล็กน้อยให้เหมือนเรียก API จริง (จอ loading จึงทำงานสมจริง)
   static const Duration latency = Duration(milliseconds: 180);
 
+  /// เวลาเปิดร้านของข้อมูลตัวอย่าง ใช้กระจายยอดขายให้ดูสมจริง
+  static const int openingHour = 11;
+
   void reset() {
     users = DemoSeed.users();
     categories = DemoSeed.categories();
@@ -1028,17 +1031,25 @@ class DemoStore {
       final billCount = dayOffset == 0 ? 6 : 8 + random.nextInt(6);
 
       for (var i = 0; i < billCount; i++) {
-        // วันก่อน ๆ กระจายตามเวลาเปิดร้าน ส่วนบิลของวันนี้ไล่ย้อนจากเวลาปัจจุบัน
-        // เพื่อให้กราฟยอดขายรายชั่วโมงมีข้อมูลเสมอ ไม่ว่าจะเปิดแอปตอนไหนของวัน
-        final createdAt = dayOffset == 0
-            ? now.subtract(Duration(minutes: 20 + random.nextInt(400)))
-            : DateTime(
-                now.year,
-                now.month,
-                now.day,
-                11 + random.nextInt(10),
-                random.nextInt(60),
-              ).subtract(Duration(days: dayOffset));
+        // บิลของวันนี้กระจายตั้งแต่เวลาเปิดร้านจนถึงตอนนี้
+        // ถ้ายังไม่ถึงเวลาเปิดร้าน (เช่นเปิดแอปตอนเช้ามืด) ใช้ช่วงไม่กี่ชั่วโมงที่ผ่านมาแทน
+        // เพื่อให้กราฟยอดขายรายชั่วโมงมีข้อมูลเสมอ ไม่ว่าจะเปิดแอปตอนไหน
+        final DateTime createdAt;
+        if (dayOffset == 0) {
+          final opened = DateTime(now.year, now.month, now.day, openingHour);
+          final minutesSinceOpen = now.difference(opened).inMinutes;
+          createdAt = minutesSinceOpen > 60
+              ? opened.add(Duration(minutes: random.nextInt(minutesSinceOpen)))
+              : now.subtract(Duration(minutes: 20 + random.nextInt(300)));
+        } else {
+          createdAt = DateTime(
+            now.year,
+            now.month,
+            now.day,
+            openingHour + random.nextInt(10),
+            random.nextInt(60),
+          ).subtract(Duration(days: dayOffset));
+        }
         if (createdAt.isAfter(now)) continue;
 
         final items = <Map<String, dynamic>>[];

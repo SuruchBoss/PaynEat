@@ -12,14 +12,49 @@ class HourlyBarChart extends StatelessWidget {
   final List<HourlySales> data;
   final double height;
 
-  /// ช่วงเวลาเปิดร้านที่ต้องการแสดงเสมอ แม้ชั่วโมงนั้นยังไม่มียอด
-  static const int startHour = 9;
-  static const int endHour = 22;
+  /// ช่วงเวลาเริ่มต้นที่ใช้เมื่อยังไม่มียอดขายของวันนั้นเลย
+  static const int defaultStartHour = 9;
+  static const int defaultEndHour = 22;
+
+  /// จำนวนชั่วโมงอย่างน้อยที่ต้องแสดง เพื่อไม่ให้กราฟแท่งเดียวดูแปลก
+  static const int minimumSpan = 6;
+
+  /// หาช่วงเวลาที่จะแสดงจากข้อมูลจริง
+  ///
+  /// ถ้าตรึงช่วงไว้ตายตัว ร้านที่เปิดเช้ากว่าหรือปิดดึกกว่านั้นจะมองไม่เห็นยอดของตัวเองเลย
+  /// จึงคำนวณจากชั่วโมงที่มียอดจริง แล้วขยายให้กว้างพอที่กราฟยังอ่านง่าย
+  static ({int start, int end}) visibleRange(List<HourlySales> data) {
+    final withSales = data
+        .where((item) => item.total > 0)
+        .toList(growable: false);
+    if (withSales.isEmpty) {
+      return (start: defaultStartHour, end: defaultEndHour);
+    }
+
+    var start = withSales.first.hour;
+    var end = withSales.first.hour;
+    for (final item in withSales) {
+      if (item.hour < start) start = item.hour;
+      if (item.hour > end) end = item.hour;
+    }
+
+    // เผื่อขอบซ้ายขวาไว้หนึ่งชั่วโมง แล้วขยายจนกว้างพอตามที่กำหนด
+    start = (start - 1).clamp(0, 23);
+    end = (end + 1).clamp(0, 23);
+    while (end - start < minimumSpan) {
+      if (start > 0) start--;
+      if (end < 23 && end - start < minimumSpan) end++;
+      if (start == 0 && end == 23) break;
+    }
+
+    return (start: start, end: end);
+  }
 
   @override
   Widget build(BuildContext context) {
     final byHour = {for (final item in data) item.hour: item};
-    final hours = [for (int h = startHour; h <= endHour; h++) h];
+    final range = visibleRange(data);
+    final hours = [for (int h = range.start; h <= range.end; h++) h];
     final maxTotal = hours.fold<double>(
       0,
       (max, hour) =>

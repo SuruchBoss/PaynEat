@@ -119,6 +119,11 @@ class ScreenshotHarness {
       category['icon'] = null;
     }
 
+    // สร้างยอดขายของวันนี้กระจายตามเวลาเปิดร้าน เพื่อให้กราฟรายชั่วโมงในภาพประกอบ
+    // ดูเหมือนวันขายจริง ไม่ขึ้นกับเวลาที่รันเครื่องมือถ่ายภาพ
+    // ต้องทำก่อนสร้างออเดอร์ตัวอย่างด้านล่าง เพราะขั้นตอนนี้ล้างบิลนอกเวลาเปิดร้านทิ้ง
+    _seedTodaySalesCurve(store);
+
     // โต๊ะ A1 — ออเดอร์ที่เพิ่งส่งครัว (ใช้ถ่ายหน้ารายละเอียดและจอครัว)
     final kitchenOrder = store.createOrder(
       type: 'dine_in',
@@ -265,11 +270,130 @@ class ScreenshotHarness {
       'ready',
     );
 
+    // ให้บิลที่ปิดแล้วอยู่ในช่วงมื้อเย็น ใบเสร็จในเอกสารจะได้ไม่ขึ้นเวลาแปลก ๆ
+    final dinner = DateTime.now();
+    final paidStamp = DateTime(
+      dinner.year,
+      dinner.month,
+      dinner.day,
+      19,
+      42,
+    ).toUtc().toIso8601String();
+    final paidOrder = store.findOrder(paidId);
+    paidOrder['createdAt'] = paidStamp;
+    paidOrder['closedAt'] = paidStamp;
+    for (final item
+        in (paidOrder['items'] as List).cast<Map<String, dynamic>>()) {
+      item['createdAt'] = paidStamp;
+    }
+    for (final payment in store.payments.where(
+      (row) => row['orderId'] == paidId,
+    )) {
+      payment['createdAt'] = paidStamp;
+    }
+
     return (
       openOrderId: ready['id'] as int,
       kitchenOrderId: kitchenOrder['id'] as int,
       paidOrderId: paidId,
     );
+  }
+
+  /// จำนวนบิลต่อชั่วโมงของวันขายทั่วไป — ช่วงเที่ยงและช่วงเย็นจะหนาแน่นกว่า
+  static const Map<int, int> _billsPerHour = {
+    11: 2,
+    12: 5,
+    13: 4,
+    14: 2,
+    15: 1,
+    16: 2,
+    17: 4,
+    18: 6,
+    19: 5,
+    20: 3,
+  };
+
+  static void _seedTodaySalesCurve(DemoStore store) {
+    final now = DateTime.now();
+
+    // ตัดบิลของวันนี้ที่ตกนอกเวลาเปิดร้านออกก่อน (เกิดจากเวลาของเครื่องที่รันเครื่องมือ)
+    // เพื่อให้กราฟในเอกสารเป็นวันขายวันเดียวที่อ่านง่าย
+    final today = now.toIso8601String().substring(0, 10);
+    bool outsideServiceHours(Map<String, dynamic> order) {
+      final created = DateTime.tryParse(
+        order['createdAt'] as String? ?? '',
+      )?.toLocal();
+      if (created == null) return false;
+      if (created.toIso8601String().substring(0, 10) != today) return false;
+      return created.hour < 11 || created.hour > 21;
+    }
+
+    final dropped = store.orders
+        .where(outsideServiceHours)
+        .map((o) => o['id'])
+        .toSet();
+    store.orders.removeWhere((order) => dropped.contains(order['id']));
+    store.payments.removeWhere(
+      (payment) => dropped.contains(payment['orderId']),
+    );
+
+    var sequence = 0;
+
+    _billsPerHour.forEach((hour, count) {
+      for (var i = 0; i < count; i++) {
+        final at = DateTime(
+          now.year,
+          now.month,
+          now.day,
+          hour,
+          (i * 11 + 3) % 60,
+        );
+
+        final order = store.createOrder(
+          type: 'takeaway',
+          guestCount: 1 + (sequence % 3),
+          waiterId: 3,
+          items: [
+            {'menuItemId': 1 + (sequence % 24), 'quantity': 1 + (sequence % 2)},
+            {'menuItemId': 1 + ((sequence + 7) % 24), 'quantity': 1},
+          ],
+        );
+        final id = order['id'] as int;
+
+        for (final item
+            in (order['items'] as List).cast<Map<String, dynamic>>()) {
+          store.updateItemStatus(id, item['id'] as int, 'cooking');
+          store.updateItemStatus(id, item['id'] as int, 'ready');
+          store.updateItemStatus(id, item['id'] as int, 'served');
+        }
+
+        final total = (store.findOrder(id)['total'] as num).toDouble();
+        store.pay(
+          orderId: id,
+          method: const ['cash', 'qr', 'card', 'transfer'][sequence % 4],
+          amount: total,
+          received: total,
+          cashierId: 6,
+        );
+
+        // ย้อนเวลาให้ตรงกับชั่วโมงที่ต้องการ ทั้งตัวออเดอร์และรายการอาหาร
+        final stamp = at.toUtc().toIso8601String();
+        final saved = store.findOrder(id);
+        saved['createdAt'] = stamp;
+        saved['closedAt'] = stamp;
+        for (final item
+            in (saved['items'] as List).cast<Map<String, dynamic>>()) {
+          item['createdAt'] = stamp;
+        }
+        for (final payment in store.payments.where(
+          (row) => row['orderId'] == id,
+        )) {
+          payment['createdAt'] = stamp;
+        }
+
+        sequence++;
+      }
+    });
   }
 
   /// รอให้แอนิเมชันและ Future ต่าง ๆ ทำงานจบ
