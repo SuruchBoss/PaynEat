@@ -19,7 +19,7 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 | Technical Debt | ⚠️ มีรายการต้องติดตาม | เทสต์ยังไม่ครบทุก controller/module (ดูหัวข้อ 6) |
 | โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
-Flutter: 46 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 82 เทสต์อัตโนมัติ
+Flutter: 66 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 102 เทสต์อัตโนมัติ
 
 ดูสรุปแบบอ่านง่าย (PDF 8 หน้า) ได้ที่ [`docs/PaynEat-POS-Audit-Report-TH.pdf`](PaynEat-POS-Audit-Report-TH.pdf)
 
@@ -285,7 +285,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 | # | รายการ | ผลกระทบ | แผนแก้ | สถานะ |
 |---|---|---|---|---|
 | 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint.config.js` + `.prettierrc.json` แล้ว และเช็คใน CI ทุก PR (ดูหัวข้อ 2.3) | ✅ **แก้แล้ว** |
-| 2 | Controller ส่วนใหญ่ใน Flutter ไม่มี unit test เฉพาะตัว (มีแค่ `CartController`) | บั๊ก logic ใน controller (เช่น auth flow, order list filter) จับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ `AuthController`, `OrderListController`, `TableController` เป็นลำดับแรก (กระทบ user มากสุด) | ค้าง |
+| 2 | Controller ใน Flutter ยังไม่มี unit test ครบทุกตัว | บั๊ก logic ใน controller ที่เหลือจับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ 3 ตัวที่กระทบ user มากสุดแล้ว (`AuthController`, `OrderListController`, `TableController`) เหลือ `MenuController`, `MenuManagementController`, `KitchenController`, `CheckoutController`, `ReceiptController`, `HomeController`, `SettingsController`, `StaffController`, `OrderDetailController`, `DashboardController`, `ReportController` — ทำต่อเมื่อมีเวลา ไม่เร่งด่วนเท่า 3 ตัวแรก | ⚠️ **ทำแล้วบางส่วน** |
 | 3 | Backend module ส่วนใหญ่ไม่มี unit test เฉพาะ module (มีแค่ `auth`, `order-flow` integration, `calculator`) | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่ม unit test แยกให้ `menu.service.js`, `table.service.js`, `payment.service.js` | ค้าง |
 | 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็นไฟล์ย่อยตามโดเมนตอนแก้ไขครั้งถัดไป (ดูหัวข้อ 2.2) | ค้าง |
 | 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
