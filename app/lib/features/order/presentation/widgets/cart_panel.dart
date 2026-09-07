@@ -31,7 +31,7 @@ class CartPanel extends GetView<CartController> {
             return ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               itemCount: controller.lines.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (context, index) => _CartLineTile(index: index),
             );
           }),

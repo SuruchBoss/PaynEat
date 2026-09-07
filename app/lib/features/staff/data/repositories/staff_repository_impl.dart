@@ -36,9 +36,9 @@ class StaffRepositoryImpl implements StaffRepository {
     bool? isActive,
   }) => guard(
     () async => await _remote.update(id, {
-      if (name != null) 'name': name,
-      if (role != null) 'role': role,
-      if (isActive != null) 'isActive': isActive,
+      'name': ?name,
+      'role': ?role,
+      'isActive': ?isActive,
     }),
   );
 

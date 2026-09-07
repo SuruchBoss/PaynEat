@@ -16,7 +16,7 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 | Clean Code | ✅ ดี | `flutter analyze` ไม่มี warning, `dart format` ผ่าน, ไม่มี `print()`/`TODO`/`FIXME` ค้าง, backend มี ESLint + Prettier ครบแล้ว |
 | State Management (GetX) | ✅ ดี | แยก ephemeral state (setState) กับ app state (Rx) ชัดเจน, ไม่มี controller รั่ว |
 | Clean Architecture | ✅ แก้ครบแล้ว | domain เคย import จาก data (ดูหัวข้อ 4.4) — แก้แล้ว |
-| Technical Debt | ⚠️ เหลือ 1 รายการ (ไม่เร่งด่วน) | เทสต์ controller/module ครบทุกตัวแล้ว เหลือแค่ Flutter dependencies ล้าหลัง (ดูหัวข้อ 6) |
+| Technical Debt | ✅ แก้ครบทุกรายการที่แก้ได้จริง | เหลือเฉพาะ transitive dependency ที่ผูกกับ Flutter SDK เอง แก้จากในโปรเจกต์ไม่ได้ (ดูหัวข้อ 6) |
 | โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
 Flutter: 142 เทสต์ผ่าน · Backend: 87 เทสต์ผ่าน · รวม 229 เทสต์อัตโนมัติ
@@ -330,7 +330,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 | 3 | Backend module ไม่มี test เฉพาะ module | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่มเทสต์แยกครบทั้ง 9 module แล้ว: `menu`, `table`, `payment` (26 เคส) + `categories`, `settings`, `users`, `reports` (25 เคส) รวมกับ `auth`/`order-flow`/`calculator` เดิม | ✅ **แก้แล้ว** |
 | 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็น 7 ไฟล์ตามโดเมนด้วย part/part of แล้ว (ดูหัวข้อ 2.2) | ✅ **แก้แล้ว** |
 | 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
-| 6 | Flutter dependencies ล้าหลัง ~15 แพ็กเกจ (minor version) | ไม่กระทบการทำงาน แต่ควรตามให้ทันเป็นระยะ | รัน `flutter pub outdated` ทุกไตรมาส แล้วอัปเดตทีละน้อย | ค้าง |
+| 6 | Flutter dependencies ล้าหลัง ~15 แพ็กเกจ (minor version) | ไม่กระทบการทำงาน แต่ควรตามให้ทันเป็นระยะ | บัมป์ `flutter_lints` เป็น `^6.0.0` แล้ว (เดียวที่คุมเวอร์ชันเองได้ผ่าน `pubspec.yaml`) แก้ 24 lint ใหม่ที่โผล่มา (`unnecessary_underscores`, `use_null_aware_elements`) จนกลับมา `flutter analyze` = "No issues found!" — `flutter pub outdated` ตอนนี้ขึ้น "all dependencies are up-to-date" ทั้ง direct และ dev dependencies ส่วนแพ็กเกจที่เหลือ (`path_provider`, `vector_math`, `meta` ฯลฯ) เป็น transitive dependency ที่ผูกเวอร์ชันตายตัวกับ Flutter SDK (3.35.1) เอง ไม่ใช่จาก `pubspec.yaml` — ต้องอัปเดต Flutter SDK ทั้งก้อนถึงจะขยับได้ ไม่ใช่สิ่งที่แก้จากในโปรเจกต์นี้ได้ | ✅ **แก้แล้ว** (เท่าที่แก้ได้จากในโปรเจกต์) |
 | 7 | domain layer import จาก data layer (`MenuItemPayload`, `OrderItemPayload`) | ผิดกฎ Clean Architecture ข้อ 4.1 | ย้ายเข้า `domain/entities/` แล้ว | ✅ **แก้แล้ว** (การตรวจครั้งนี้) |
 
 **นโยบาย**: รายการที่ "ค้าง" ไม่ได้แปลว่าต้องหยุดพัฒนาฟีเจอร์ใหม่รอแก้ก่อน — แต่ถ้าจะแตะไฟล์/โมดูล

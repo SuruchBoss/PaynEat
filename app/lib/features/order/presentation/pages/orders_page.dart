@@ -30,7 +30,7 @@ class OrdersPage extends GetView<OrderListController> {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: OrderListController.filters.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = OrderListController.filters[index];
                   final selected = activeFilter == filter.value;
@@ -73,7 +73,7 @@ class OrdersPage extends GetView<OrderListController> {
               child: ListView.separated(
                 padding: const EdgeInsets.all(16),
                 itemCount: controller.orders.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (context, index) => _OrderTile(
                   order: controller.orders[index],
                   onTap: () => controller.openOrder(controller.orders[index]),

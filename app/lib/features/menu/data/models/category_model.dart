@@ -30,6 +30,6 @@ class CategoryModel extends Category {
     'name': name,
     if (nameEn != null && nameEn.isNotEmpty) 'nameEn': nameEn,
     if (icon != null && icon.isNotEmpty) 'icon': icon,
-    if (sortOrder != null) 'sortOrder': sortOrder,
+    'sortOrder': ?sortOrder,
   };
 }

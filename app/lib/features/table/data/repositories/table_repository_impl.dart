@@ -30,7 +30,7 @@ class TableRepositoryImpl implements TableRepository {
     final body = <String, dynamic>{
       'name': name,
       if (zone != null && zone.isNotEmpty) 'zone': zone,
-      if (seats != null) 'seats': seats,
+      'seats': ?seats,
     };
     return id == null
         ? await _remote.create(body)

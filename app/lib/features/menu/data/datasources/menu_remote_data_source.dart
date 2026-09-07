@@ -70,7 +70,7 @@ class MenuRemoteDataSourceImpl implements MenuRemoteDataSource {
       query: {
         'page': page,
         'limit': limit,
-        if (categoryId != null) 'categoryId': categoryId,
+        'categoryId': ?categoryId,
         if (search != null && search.isNotEmpty) 'search': search,
         if (availableOnly == true) 'availableOnly': 'true',
       },

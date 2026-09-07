@@ -55,10 +55,10 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       query: {
         'page': page,
         'limit': limit,
-        if (status != null) 'status': status,
+        'status': ?status,
         if (activeOnly == true) 'activeOnly': 'true',
-        if (dateFrom != null) 'dateFrom': dateFrom,
-        if (dateTo != null) 'dateTo': dateTo,
+        'dateFrom': ?dateFrom,
+        'dateTo': ?dateTo,
       },
     );
     return (
@@ -92,7 +92,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       ApiEndpoints.orders,
       body: {
         'type': type,
-        if (tableId != null) 'tableId': tableId,
+        'tableId': ?tableId,
         'guestCount': guestCount,
         if (note != null && note.isNotEmpty) 'note': note,
         'items': items.map((item) => item.toJson()).toList(growable: false),
@@ -121,10 +121,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }) async {
     final result = await _client.patch(
       ApiEndpoints.orderItem(orderId, itemId),
-      body: {
-        if (quantity != null) 'quantity': quantity,
-        if (note != null) 'note': note,
-      },
+      body: {'quantity': ?quantity, 'note': ?note},
     );
     return OrderModel.fromJson(result.asMap);
   }

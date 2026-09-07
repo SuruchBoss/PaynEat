@@ -35,7 +35,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         'orderId': orderId,
         'method': method,
         'amount': amount,
-        if (received != null) 'received': received,
+        'received': ?received,
         if (reference != null && reference.isNotEmpty) 'reference': reference,
       },
     );

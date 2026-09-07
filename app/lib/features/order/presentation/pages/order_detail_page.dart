@@ -279,7 +279,7 @@ class _ItemList extends GetView<OrderDetailController> {
       physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
       padding: const EdgeInsets.all(16),
       itemCount: order.items.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final item = order.items[index];
         return OrderItemTile(
