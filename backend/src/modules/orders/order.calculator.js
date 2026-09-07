@@ -61,4 +61,59 @@ export const calculateBill = ({
   };
 };
 
+/**
+ * คำนวณส่วนแบ่งบิลของ "บางรายการ" ในออเดอร์ — ใช้กับฟีเจอร์แยกบิลรายคน (itemized split)
+ *
+ * หลักการ: คิดสัดส่วนตาม subtotal ของรายการที่เลือกเทียบกับ subtotal รวมของรายการที่ยังไม่ถูกยกเลิก
+ * แล้วเฉลี่ยส่วนลด/Service Charge/VAT ตามสัดส่วนนั้น (ปัดเศษแยกกันในแต่ละองค์ประกอบ
+ * จึงอาจมีเศษสตางค์คลาดเคลื่อนได้เล็กน้อยเมื่อรวมหลายรอบ — ผู้เรียกควรบังคับยอดรอบสุดท้าย
+ * ให้เท่ากับยอดคงเหลือจริงเสมอ ดู `isLastBatch`)
+ */
+export const calculateItemsShare = ({
+  items = [],
+  selectedIds = [],
+  discountType = 'none',
+  discountValue = 0,
+  vatRate = 0.07,
+  serviceChargeRate = 0.1,
+  vatIncluded = false,
+}) => {
+  const active = items.filter((item) => item.status !== 'cancelled');
+  const unpaidActive = active.filter((item) => !item.is_paid);
+  const selected = active.filter((item) => selectedIds.includes(item.id));
+
+  const full = calculateBill({
+    items: active,
+    discountType,
+    discountValue,
+    vatRate,
+    serviceChargeRate,
+    vatIncluded,
+  });
+
+  const selectedSubtotal = selected.reduce(
+    (acc, item) => acc + Number(item.line_total ?? item.lineTotal ?? 0),
+    0,
+  );
+  const share = full.subtotal > 0 ? selectedSubtotal / full.subtotal : 0;
+
+  const discountAmount = Math.round(full.discountAmount * share);
+  const serviceCharge = Math.round(full.serviceCharge * share);
+  const vat = Math.round(full.vat * share);
+  const total = selectedSubtotal - discountAmount + serviceCharge + vat;
+
+  const isLastBatch =
+    unpaidActive.length > 0 && unpaidActive.every((item) => selectedIds.includes(item.id));
+
+  return {
+    subtotal: selectedSubtotal,
+    discountAmount,
+    serviceCharge,
+    vat,
+    total,
+    isLastBatch,
+    fullTotal: full.total,
+  };
+};
+
 export default calculateBill;

@@ -50,6 +50,14 @@ export const orderController = {
     ),
   ),
 
+  moveTable: asyncHandler(async (req, res) =>
+    ok(res, orderService.moveTable(req.validated.params.id, req.body.tableId)),
+  ),
+
+  merge: asyncHandler(async (req, res) =>
+    ok(res, orderService.mergeOrders(req.validated.params.id, req.body.sourceOrderId)),
+  ),
+
   sendToKitchen: asyncHandler(async (req, res) =>
     ok(res, orderService.sendToKitchen(req.validated.params.id)),
   ),

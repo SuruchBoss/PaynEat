@@ -50,6 +50,14 @@ export const cancelOrderSchema = z.object({
   reason: z.string().min(1, 'กรุณาระบุเหตุผลการยกเลิก').max(200),
 });
 
+export const moveTableSchema = z.object({
+  tableId: z.number().int().positive(),
+});
+
+export const mergeOrderSchema = z.object({
+  sourceOrderId: z.number().int().positive(),
+});
+
 export const listOrderQuerySchema = z.object({
   status: z.enum(ORDER_STATUSES).optional(),
   tableId: z.coerce.number().int().positive().optional(),

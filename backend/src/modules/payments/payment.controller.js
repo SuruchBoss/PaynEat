@@ -7,6 +7,9 @@ export const paymentController = {
   summary: asyncHandler(async (req, res) =>
     ok(res, paymentService.summary(req.validated.params.id)),
   ),
+  splitPreview: asyncHandler(async (req, res) =>
+    ok(res, paymentService.splitPreview(req.validated.params.id, req.body.itemIds)),
+  ),
   receipt: asyncHandler(async (req, res) =>
     ok(res, paymentService.receipt(req.validated.params.id)),
   ),

@@ -305,6 +305,62 @@ export const orderService = {
     return dto;
   },
 
+  /** ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น เช่น ลูกค้าขอย้ายที่นั่ง */
+  moveTable(orderId, tableId) {
+    const order = loadOrder(orderId);
+    assertOrderMutable(order);
+    if (!order.table_id) throw ApiError.badRequest('ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้');
+    if (tableId === order.table_id) throw ApiError.badRequest('เลือกโต๊ะเดิม ไม่ต้องย้าย');
+
+    const table = tableRepository.findById(tableId);
+    if (!table) throw ApiError.badRequest('ไม่พบโต๊ะที่ระบุ');
+    if (orderRepository.findOpenByTable(tableId)) {
+      throw ApiError.conflict('โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว');
+    }
+
+    const oldTableId = order.table_id;
+    const run = getDb().transaction(() => {
+      orderRepository.updateTable(order.id, tableId);
+      tableRepository.setStatus(tableId, 'occupied');
+      tableRepository.setStatus(oldTableId, 'available');
+    });
+    run();
+
+    const dto = buildDto(loadOrder(order.id));
+    emit(EVENTS.ORDER_UPDATED, dto);
+    emit(EVENTS.TABLE_UPDATED, { id: tableId, status: 'occupied' });
+    emit(EVENTS.TABLE_UPDATED, { id: oldTableId, status: 'available' });
+    return dto;
+  },
+
+  /** รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล */
+  mergeOrders(targetOrderId, sourceOrderId) {
+    if (targetOrderId === sourceOrderId) {
+      throw ApiError.badRequest('เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้');
+    }
+    const target = loadOrder(targetOrderId);
+    const source = loadOrder(sourceOrderId);
+    assertOrderMutable(target);
+    assertOrderMutable(source);
+
+    const sourceTableId = source.table_id;
+    const run = getDb().transaction(() => {
+      orderRepository.reassignItems(source.id, target.id);
+      orderRepository.updateStatus(source.id, 'cancelled', {
+        closedAt: new Date().toISOString(),
+        cancelledReason: `รวมเข้ากับบิล #${target.code}`,
+      });
+      if (sourceTableId) tableRepository.setStatus(sourceTableId, 'available');
+    });
+    run();
+
+    const dto = buildDto(recalculate(target.id));
+    emit(EVENTS.ORDER_UPDATED, dto);
+    emit(EVENTS.ORDER_UPDATED, buildDto(loadOrder(source.id)));
+    if (sourceTableId) emit(EVENTS.TABLE_UPDATED, { id: sourceTableId, status: 'available' });
+    return dto;
+  },
+
   cancel(orderId, reason) {
     const order = loadOrder(orderId);
     if (order.status === 'paid') throw ApiError.conflict('ออเดอร์ที่ชำระเงินแล้วยกเลิกไม่ได้');

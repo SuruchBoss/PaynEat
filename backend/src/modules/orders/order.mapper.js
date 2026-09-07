@@ -21,6 +21,7 @@ export const toOrderItemDto = (row) => {
     lineTotal: toBaht(row.line_total),
     note: row.note,
     status: row.status,
+    isPaid: Boolean(row.is_paid),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     // เผื่อกรณีดึงมาจากคิวครัวที่ join ข้อมูลออเดอร์มาด้วย

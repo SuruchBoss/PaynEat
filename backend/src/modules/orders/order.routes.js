@@ -10,6 +10,8 @@ import {
   updateOrderSchema,
   discountSchema,
   cancelOrderSchema,
+  moveTableSchema,
+  mergeOrderSchema,
   listOrderQuerySchema,
   idParamSchema,
   itemParamSchema,
@@ -82,6 +84,18 @@ router.post(
   manager,
   validate({ params: idParamSchema, body: cancelOrderSchema }),
   orderController.cancel,
+);
+router.patch(
+  '/:id/move-table',
+  service,
+  validate({ params: idParamSchema, body: moveTableSchema }),
+  orderController.moveTable,
+);
+router.post(
+  '/:id/merge',
+  service,
+  validate({ params: idParamSchema, body: mergeOrderSchema }),
+  orderController.merge,
 );
 
 export default router;

@@ -215,6 +215,32 @@ export const orderRepository = {
     return this.findById(orderId);
   },
 
+  updateTable(orderId, tableId) {
+    getDb()
+      .prepare("UPDATE orders SET table_id = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(tableId, orderId);
+    return this.findById(orderId);
+  },
+
+  /** ย้ายรายการอาหารทั้งหมดของออเดอร์หนึ่งไปอยู่ในอีกออเดอร์หนึ่ง (ใช้ตอนรวมบิล) */
+  reassignItems(fromOrderId, toOrderId) {
+    return getDb()
+      .prepare(
+        "UPDATE order_items SET order_id = ?, updated_at = datetime('now') WHERE order_id = ?",
+      )
+      .run(toOrderId, fromOrderId).changes;
+  },
+
+  markItemsPaid(itemIds) {
+    if (!itemIds.length) return 0;
+    const placeholders = itemIds.map(() => '?').join(',');
+    return getDb()
+      .prepare(
+        `UPDATE order_items SET is_paid = 1, updated_at = datetime('now') WHERE id IN (${placeholders})`,
+      )
+      .run(...itemIds).changes;
+  },
+
   updateMeta(orderId, { guestCount, note }) {
     getDb()
       .prepare(

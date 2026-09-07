@@ -6,10 +6,22 @@ import { env } from '../config/env.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
+/**
+ * เพิ่มคอลัมน์ให้ตารางที่มีอยู่แล้ว (schema.sql ใช้ CREATE TABLE IF NOT EXISTS
+ * จึงไม่แก้ตารางเดิมที่มีอยู่แล้วให้อัตโนมัติ) — เรียกซ้ำได้ปลอดภัยเพราะเช็คก่อนว่ามีคอลัมน์อยู่แล้วหรือยัง
+ */
+const addColumnIfMissing = (db, table, column, definition) => {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (columns.some((row) => row.name === column)) return;
+  db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+};
+
 export const migrate = () => {
   const db = getDb();
   const sql = fs.readFileSync(path.join(here, 'schema.sql'), 'utf8');
   db.exec(sql);
+
+  addColumnIfMissing(db, 'order_items', 'is_paid', 'INTEGER NOT NULL DEFAULT 0');
 
   const defaults = {
     store_name: env.store.name,
