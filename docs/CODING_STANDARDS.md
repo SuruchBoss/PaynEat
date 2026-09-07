@@ -21,6 +21,8 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 
 Flutter: 46 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 82 เทสต์อัตโนมัติ
 
+ดูสรุปแบบอ่านง่าย (PDF 8 หน้า) ได้ที่ [`docs/PaynEat-POS-Audit-Report-TH.pdf`](PaynEat-POS-Audit-Report-TH.pdf)
+
 ---
 
 ## 1. หลักการรวม

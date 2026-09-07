@@ -6,6 +6,7 @@
 |---|---|---|
 | `../PaynEat-POS-Features-TH.pdf` | ผู้ที่มาดูผลงาน / ทีมพัฒนา | เล่าเชิงเทคนิคว่าออกแบบยังไงและเบื้องหลังทำงานยังไง |
 | `../PaynEat-POS-Features-EN.pdf` | ลูกค้าธุรกิจ | เล่าเชิงธุรกิจว่าแต่ละหน้าจอแก้ปัญหาอะไรให้ร้าน |
+| `../PaynEat-POS-Audit-Report-TH.pdf` | ทีมพัฒนา / ผู้ตรวจโค้ด | สรุปผลตรวจ Clean Code / State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ |
 
 ## ขั้นตอน
 
@@ -22,6 +23,11 @@ python3 build.py document-en.html content_en    # ฉบับภาษาอั
 # 3) เรนเดอร์เป็น PDF ด้วย Chromium (ผ่าน Playwright)
 node makepdf.mjs "$(pwd)/document-th.html" ../PaynEat-POS-Features-TH.pdf "PaynEat POS — เอกสารรวมฟีเจอร์และหน้าจอ"
 node makepdf.mjs "$(pwd)/document-en.html" ../PaynEat-POS-Features-EN.pdf "PaynEat POS — Feature and screen guide"
+```
+
+# รายงานผลตรวจคุณภาพโค้ด (ไม่ต้องมีภาพหน้าจอ สร้างจาก build_audit_report.py แยกต่างหาก)
+python3 build_audit_report.py audit-report.html
+node makepdf.mjs "$(pwd)/audit-report.html" ../PaynEat-POS-Audit-Report-TH.pdf "PaynEat POS — รายงานผลตรวจคุณภาพโค้ด"
 ```
 
 ## โครงสร้าง

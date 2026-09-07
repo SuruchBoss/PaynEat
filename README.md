@@ -639,6 +639,8 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้
+- [`docs/PaynEat-POS-Audit-Report-TH.pdf`](docs/PaynEat-POS-Audit-Report-TH.pdf) — รายงานผลตรวจคุณภาพโค้ด
+  ฉบับอ่านง่าย 8 หน้า (PDF) สรุปผลตรวจทั้ง 5 มิติพร้อมตัวอย่างบั๊กจริงที่พบและแก้แล้ว
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม
 
 ---
