@@ -30,3 +30,6 @@ ios/Flutter/ephemeral/
 
 # macOS
 .DS_Store
+
+# ภาพหน้าจอที่สร้างจาก golden test (สร้างใหม่ได้)
+tool/screenshots/images/

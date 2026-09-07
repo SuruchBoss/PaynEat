@@ -18,6 +18,9 @@ class MenuManagementPage extends GetView<MenuManagementController> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
+        // ต้องระบุ heroTag เพราะหน้านี้ถูกสร้างพร้อมกับหน้าอื่นใน IndexedStack ของหน้าหลัก
+        // ถ้าใช้ค่า default ทั้งคู่ Flutter จะโยน assertion เรื่อง hero tag ซ้ำ
+        heroTag: 'fab-menu-management',
         onPressed: () => controller.openForm(),
         icon: const Icon(Icons.add_rounded),
         label: const Text('เพิ่มเมนู'),

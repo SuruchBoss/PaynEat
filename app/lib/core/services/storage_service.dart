@@ -17,6 +17,11 @@ class StorageService {
 
   bool get isPersistent => _box != null;
 
+  /// สร้างตัวเก็บข้อมูลแบบอยู่ในหน่วยความจำล้วน
+  ///
+  /// ใช้ในเทสต์และเครื่องมือถ่ายภาพหน้าจอ ที่ไม่มี local storage จริงให้เขียน
+  factory StorageService.memory() => StorageService._(null);
+
   /// เตรียม storage ให้พร้อมใช้งาน
   ///
   /// [timeout] กันกรณี GetStorage.init() ค้าง — ถ้าเกินเวลาจะใช้โหมดหน่วยความจำแทน

@@ -21,24 +21,31 @@ class AppTheme {
       error: AppColors.danger,
     );
 
-    return ThemeData(
+    // สร้างธีมฐานก่อน เพื่อให้ component theme ด้านล่างหยิบ TextStyle จาก textTheme ไปต่อยอดได้
+    //
+    // สำคัญ: ButtonStyle/ChipTheme จะ "แทนที่" TextStyle ทั้งก้อน ไม่ใช่การ merge
+    // ถ้ากำหนด TextStyle เปล่า ๆ ลงไป ฟอนต์ของปุ่มจะหลุดไปใช้ค่า default ของแต่ละแพลตฟอร์ม
+    // ทำให้หน้าตาไม่ตรงกันระหว่าง Android / iOS / Web จึงต้อง copyWith จากของเดิมเสมอ
+    final base = ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
       splashFactory: InkSparkle.splashFactory,
       visualDensity: VisualDensity.standard,
-      appBarTheme: const AppBarTheme(
+      textTheme: _textTheme,
+    );
+
+    final text = base.textTheme;
+
+    return base.copyWith(
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
         scrolledUnderElevation: 0.5,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        titleTextStyle: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
+        titleTextStyle: text.titleMedium?.copyWith(fontSize: 18),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surface,
@@ -61,27 +68,13 @@ class AppTheme {
           horizontal: 16,
           vertical: 14,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.border),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.6),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.danger),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(radiusMd),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.6),
-        ),
-        hintStyle: const TextStyle(color: AppColors.textDisabled),
+        border: _inputBorder(AppColors.border),
+        enabledBorder: _inputBorder(AppColors.border),
+        focusedBorder: _inputBorder(AppColors.primary, width: 1.6),
+        errorBorder: _inputBorder(AppColors.danger),
+        focusedErrorBorder: _inputBorder(AppColors.danger, width: 1.6),
+        hintStyle: text.bodyMedium?.copyWith(color: AppColors.textDisabled),
+        labelStyle: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -90,7 +83,10 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+          textStyle: text.labelLarge?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
@@ -101,13 +97,16 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
-          textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+          textStyle: text.labelLarge?.copyWith(
+            fontSize: 15,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
-          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+          textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -116,41 +115,56 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusSm),
         ),
-        labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        labelStyle: text.labelLarge?.copyWith(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusMd),
         ),
+        contentTextStyle: text.bodyMedium?.copyWith(color: Colors.white),
       ),
       dialogTheme: DialogThemeData(
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
         ),
         backgroundColor: AppColors.surface,
-      ),
-      textTheme: const TextTheme(
-        headlineMedium: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-          color: AppColors.textPrimary,
+        titleTextStyle: text.titleMedium,
+        contentTextStyle: text.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
         ),
-        titleLarge: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
-        ),
-        bodyLarge: TextStyle(fontSize: 15, color: AppColors.textPrimary),
-        bodyMedium: TextStyle(fontSize: 14, color: AppColors.textPrimary),
-        bodySmall: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
-        labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
     );
   }
+
+  static OutlineInputBorder _inputBorder(Color color, {double width = 1}) =>
+      OutlineInputBorder(
+        borderRadius: BorderRadius.circular(radiusMd),
+        borderSide: BorderSide(color: color, width: width),
+      );
+
+  static const TextTheme _textTheme = TextTheme(
+    headlineMedium: TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.w800,
+      color: AppColors.textPrimary,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 20,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textPrimary,
+    ),
+    titleMedium: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w700,
+      color: AppColors.textPrimary,
+    ),
+    bodyLarge: TextStyle(fontSize: 15, color: AppColors.textPrimary),
+    bodyMedium: TextStyle(fontSize: 14, color: AppColors.textPrimary),
+    bodySmall: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+    labelLarge: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+  );
 }

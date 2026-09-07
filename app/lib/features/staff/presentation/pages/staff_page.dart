@@ -26,6 +26,7 @@ class StaffPage extends GetView<StaffController> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-staff',
         onPressed: () => _showCreateDialog(context),
         icon: const Icon(Icons.person_add_rounded),
         label: const Text('เพิ่มพนักงาน'),

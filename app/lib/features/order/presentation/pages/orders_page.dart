@@ -21,16 +21,19 @@ class OrdersPage extends GetView<OrderListController> {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: SizedBox(
             height: 34,
-            child: Obx(
-              () => ListView.separated(
+            child: Obx(() {
+              // อ่านค่า observable ใน scope ของ Obx โดยตรง
+              // ถ้าไปอ่านใน itemBuilder ที่ถูกเรียกทีหลัง GetX จะไม่รู้ว่าต้อง rebuild เมื่อค่าเปลี่ยน
+              final activeFilter = controller.statusFilter.value;
+
+              return ListView.separated(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: OrderListController.filters.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = OrderListController.filters[index];
-                  final selected =
-                      controller.statusFilter.value == filter.value;
+                  final selected = activeFilter == filter.value;
                   return ChoiceChip(
                     label: Text(filter.label),
                     selected: selected,
@@ -45,8 +48,8 @@ class OrdersPage extends GetView<OrderListController> {
                     ),
                   );
                 },
-              ),
-            ),
+              );
+            }),
           ),
         ),
         Expanded(

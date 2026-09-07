@@ -1028,15 +1028,17 @@ class DemoStore {
       final billCount = dayOffset == 0 ? 6 : 8 + random.nextInt(6);
 
       for (var i = 0; i < billCount; i++) {
-        final hour = 11 + random.nextInt(10);
-        final createdAt = DateTime(
-          now.year,
-          now.month,
-          now.day,
-          hour,
-          random.nextInt(60),
-        ).subtract(Duration(days: dayOffset));
-        // ข้ามบิลที่ยังมาไม่ถึงเวลาจริงของวันนี้
+        // วันก่อน ๆ กระจายตามเวลาเปิดร้าน ส่วนบิลของวันนี้ไล่ย้อนจากเวลาปัจจุบัน
+        // เพื่อให้กราฟยอดขายรายชั่วโมงมีข้อมูลเสมอ ไม่ว่าจะเปิดแอปตอนไหนของวัน
+        final createdAt = dayOffset == 0
+            ? now.subtract(Duration(minutes: 20 + random.nextInt(400)))
+            : DateTime(
+                now.year,
+                now.month,
+                now.day,
+                11 + random.nextInt(10),
+                random.nextInt(60),
+              ).subtract(Duration(days: dayOffset));
         if (createdAt.isAfter(now)) continue;
 
         final items = <Map<String, dynamic>>[];

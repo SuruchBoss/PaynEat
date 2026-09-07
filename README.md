@@ -22,8 +22,37 @@ control and 77 automated tests.
 
 ---
 
+## 📸 หน้าตาแอป
+
+<table>
+<tr>
+<td width="50%" align="center"><b>ผังโต๊ะ — พนักงานเสิร์ฟ</b><br><sub>เห็นสถานะทุกโต๊ะพร้อมยอดค้างในจอเดียว</sub><br><br>
+<img src="docs/screenshots/phone-02-tables.png" width="230"></td>
+<td width="50%" align="center"><b>รับออเดอร์พร้อมตัวเลือกเสริม</b><br><sub>ระดับความเผ็ด ของเพิ่ม และโน้ตถึงครัว</sub><br><br>
+<img src="docs/screenshots/phone-04-option-sheet.png" width="230"></td>
+</tr>
+</table>
+
+<p align="center"><b>จอครัว (KDS)</b> — ตั๋วเด้งขึ้นเองแบบเรียลไทม์ แบ่ง 3 คอลัมน์ตามสถานะ และเตือนจานที่รอเกิน 15 นาทีด้วยกรอบแดง</p>
+<p align="center"><img src="docs/screenshots/tablet-14-kitchen.png" width="780"></p>
+
+<p align="center"><b>แดชบอร์ดผู้ดูแลระบบ (เว็บ)</b> — ยอดขายวันนี้ กราฟรายชั่วโมง เมนูขายดี และสถานะร้านแบบสด</p>
+<p align="center"><img src="docs/screenshots/web-18-dashboard.png" width="780"></p>
+
+<p align="center"><b>เก็บเงินแบบแยกจ่าย</b> — จ่าย QR บางส่วน ที่เหลือเงินสด ระบบตัดยอดคงเหลือและคำนวณเงินทอนให้</p>
+<p align="center"><img src="docs/screenshots/tablet-16-checkout.png" width="780"></p>
+
+> 📄 **[ดูเอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 25 หน้าจอ (PDF)](docs/PaynEat-POS-Features.pdf)**
+> — อธิบายทีละหน้าจอว่าแก้ปัญหาอะไรและเบื้องหลังทำงานยังไง
+>
+> ภาพทั้งหมดเรนเดอร์จากโค้ดจริงด้วย golden test ที่เขียนไว้ใน [`app/tool/screenshots`](app/tool/screenshots)
+> จึงสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน ([วิธีสร้าง](docs/generator/README.md))
+
+---
+
 ## 📋 สารบัญ
 
+- [หน้าตาแอป](#-หน้าตาแอป)
 - [ทำไมถึงทำโปรเจกต์นี้](#-ทำไมถึงทำโปรเจกต์นี้)
 - [วิธีรัน (สำหรับผู้ที่มาตรวจผลงาน)](#-วิธีรัน-สำหรับผู้ที่มาตรวจผลงาน)
 - [ฟีเจอร์](#-ฟีเจอร์)
@@ -594,6 +623,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 ## 📚 อ่านเพิ่มเติม
 
+- [`docs/PaynEat-POS-Features.pdf`](docs/PaynEat-POS-Features.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 10 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม
