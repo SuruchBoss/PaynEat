@@ -1,0 +1,657 @@
+openapi: 3.0.3
+info:
+  title: PaynEat POS API
+  version: 1.0.0
+  description: |
+    REST API + Realtime (Socket.IO) สำหรับระบบ POS ร้านอาหาร
+
+    **บัญชีเดโม**
+    | บทบาท | username | password |
+    |---|---|---|
+    | ผู้ดูแลระบบ | `admin` | `admin123` |
+    | ผู้จัดการ | `manager` | `manager123` |
+    | พนักงานเสิร์ฟ | `waiter1` | `waiter123` |
+    | ครัว | `kitchen` | `kitchen123` |
+    | แคชเชียร์ | `cashier` | `cashier123` |
+
+    ทุก endpoint (ยกเว้น `/auth/login` และ `/health`) ต้องส่ง `Authorization: Bearer <token>`
+servers:
+  - url: http://localhost:3000/api/v1
+tags:
+  - name: Auth
+  - name: Users
+  - name: Categories
+  - name: Menu
+  - name: Tables
+  - name: Orders
+  - name: Payments
+  - name: Reports
+  - name: Settings
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ApiError:
+      type: object
+      properties:
+        success: { type: boolean, example: false }
+        error:
+          type: object
+          properties:
+            code: { type: string, example: NOT_FOUND }
+            message: { type: string, example: ไม่พบข้อมูลที่ต้องการ }
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field: { type: string }
+                  message: { type: string }
+    User:
+      type: object
+      properties:
+        id: { type: integer, example: 3 }
+        name: { type: string, example: น้องฝน (พนักงานเสิร์ฟ) }
+        username: { type: string, example: waiter1 }
+        role: { type: string, enum: [admin, manager, waiter, cashier, kitchen] }
+        isActive: { type: boolean }
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: อาหารจานเดียว }
+        nameEn: { type: string, example: Rice & Noodles }
+        icon: { type: string, example: 🍛 }
+        sortOrder: { type: integer }
+        isActive: { type: boolean }
+        itemCount: { type: integer }
+    MenuOption:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: ไข่ดาว }
+        priceDelta: { type: number, example: 15 }
+        isDefault: { type: boolean }
+    MenuOptionGroup:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: ระดับความเผ็ด }
+        minSelect: { type: integer }
+        maxSelect: { type: integer }
+        isRequired: { type: boolean }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/MenuOption' }
+    MenuItem:
+      type: object
+      properties:
+        id: { type: integer }
+        categoryId: { type: integer }
+        categoryName: { type: string }
+        name: { type: string, example: ผัดกะเพราหมูสับ }
+        nameEn: { type: string }
+        description: { type: string }
+        price: { type: number, example: 75 }
+        imageUrl: { type: string, nullable: true }
+        isAvailable: { type: boolean }
+        isRecommended: { type: boolean }
+        prepMinutes: { type: integer }
+        optionGroups:
+          type: array
+          items: { $ref: '#/components/schemas/MenuOptionGroup' }
+    Table:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: A1 }
+        zone: { type: string, example: โซนในร้าน }
+        seats: { type: integer }
+        status: { type: string, enum: [available, occupied, reserved, billing] }
+        currentOrder:
+          nullable: true
+          type: object
+          properties:
+            id: { type: integer }
+            code: { type: string }
+            status: { type: string }
+            total: { type: number }
+    OrderItem:
+      type: object
+      properties:
+        id: { type: integer }
+        menuItemId: { type: integer }
+        name: { type: string }
+        unitPrice: { type: number }
+        quantity: { type: integer }
+        options:
+          type: array
+          items: { $ref: '#/components/schemas/MenuOption' }
+        optionsPrice: { type: number }
+        lineTotal: { type: number }
+        note: { type: string, nullable: true }
+        status: { type: string, enum: [pending, cooking, ready, served, cancelled] }
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        code: { type: string, example: ORD-20260907-0001 }
+        type: { type: string, enum: [dine_in, takeaway, delivery] }
+        tableId: { type: integer, nullable: true }
+        tableName: { type: string, nullable: true }
+        waiterName: { type: string, nullable: true }
+        guestCount: { type: integer }
+        status: { type: string, enum: [open, in_kitchen, served, paid, cancelled] }
+        subtotal: { type: number, example: 180 }
+        discountType: { type: string, enum: [none, amount, percent] }
+        discountAmount: { type: number }
+        serviceCharge: { type: number, example: 18 }
+        vat: { type: number, example: 13.86 }
+        total: { type: number, example: 211.86 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
+    Payment:
+      type: object
+      properties:
+        id: { type: integer }
+        orderId: { type: integer }
+        method: { type: string, enum: [cash, qr, card, transfer] }
+        amount: { type: number }
+        received: { type: number }
+        change: { type: number }
+        reference: { type: string, nullable: true }
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: เข้าสู่ระบบ
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username: { type: string, example: waiter1 }
+                password: { type: string, example: waiter123 }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      user: { $ref: '#/components/schemas/User' }
+        '401':
+          description: username หรือรหัสผ่านไม่ถูกต้อง
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: ข้อมูลผู้ใช้ปัจจุบัน
+      responses:
+        '200': { description: สำเร็จ }
+  /auth/change-password:
+    post:
+      tags: [Auth]
+      summary: เปลี่ยนรหัสผ่านของตัวเอง
+      responses:
+        '200': { description: สำเร็จ }
+
+  /users:
+    get:
+      tags: [Users]
+      summary: รายชื่อพนักงาน (admin/manager)
+      responses:
+        '200': { description: สำเร็จ }
+    post:
+      tags: [Users]
+      summary: เพิ่มพนักงาน (admin/manager)
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /users/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Users]
+      summary: ข้อมูลพนักงานรายคน
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Users]
+      summary: แก้ไขพนักงาน
+      responses:
+        '200': { description: สำเร็จ }
+    delete:
+      tags: [Users]
+      summary: ลบพนักงาน (admin)
+      responses:
+        '204': { description: ลบแล้ว }
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: รายการหมวดหมู่
+      responses:
+        '200': { description: สำเร็จ }
+    post:
+      tags: [Categories]
+      summary: เพิ่มหมวดหมู่ (admin/manager)
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /categories/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Categories]
+      summary: แก้ไขหมวดหมู่
+      responses:
+        '200': { description: สำเร็จ }
+    delete:
+      tags: [Categories]
+      summary: ลบหมวดหมู่ (ต้องไม่มีเมนูค้างอยู่)
+      responses:
+        '204': { description: ลบแล้ว }
+
+  /menu-items:
+    get:
+      tags: [Menu]
+      summary: รายการเมนู (ค้นหา/กรองตามหมวดหมู่ได้)
+      parameters:
+        - { in: query, name: categoryId, schema: { type: integer } }
+        - { in: query, name: search, schema: { type: string } }
+        - { in: query, name: availableOnly, schema: { type: string, enum: ['true', 'false'] } }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 100 } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/MenuItem' }
+                  meta:
+                    type: object
+                    properties:
+                      page: { type: integer }
+                      limit: { type: integer }
+                      total: { type: integer }
+                      totalPages: { type: integer }
+    post:
+      tags: [Menu]
+      summary: เพิ่มเมนู พร้อมกลุ่มตัวเลือก (admin/manager)
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /menu-items/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Menu]
+      summary: รายละเอียดเมนู
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Menu]
+      summary: แก้ไขเมนู
+      responses:
+        '200': { description: สำเร็จ }
+    delete:
+      tags: [Menu]
+      summary: ลบเมนู
+      responses:
+        '204': { description: ลบแล้ว }
+  /menu-items/{id}/availability:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Menu]
+      summary: เปิด/ปิดการขายเมนู (ของหมด)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isAvailable: { type: boolean }
+      responses:
+        '200': { description: สำเร็จ }
+
+  /tables:
+    get:
+      tags: [Tables]
+      summary: ผังโต๊ะพร้อมออเดอร์ที่เปิดอยู่
+      parameters:
+        - { in: query, name: zone, schema: { type: string } }
+        - { in: query, name: status, schema: { type: string, enum: [available, occupied, reserved, billing] } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Table' }
+    post:
+      tags: [Tables]
+      summary: เพิ่มโต๊ะ (admin/manager)
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /tables/zones:
+    get:
+      tags: [Tables]
+      summary: รายชื่อโซนทั้งหมด
+      responses:
+        '200': { description: สำเร็จ }
+  /tables/{id}/status:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Tables]
+      summary: เปลี่ยนสถานะโต๊ะ (จอง/ว่าง/เรียกเก็บเงิน)
+      responses:
+        '200': { description: สำเร็จ }
+
+  /orders:
+    get:
+      tags: [Orders]
+      summary: รายการออเดอร์
+      parameters:
+        - { in: query, name: status, schema: { type: string, enum: [open, in_kitchen, served, paid, cancelled] } }
+        - { in: query, name: activeOnly, schema: { type: string, enum: ['true', 'false'] } }
+        - { in: query, name: dateFrom, schema: { type: string, format: date } }
+        - { in: query, name: dateTo, schema: { type: string, format: date } }
+      responses:
+        '200': { description: สำเร็จ }
+    post:
+      tags: [Orders]
+      summary: เปิดออเดอร์ใหม่
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [dine_in, takeaway, delivery], default: dine_in }
+                tableId: { type: integer }
+                guestCount: { type: integer, default: 1 }
+                note: { type: string }
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      menuItemId: { type: integer }
+                      quantity: { type: integer }
+                      optionIds:
+                        type: array
+                        items: { type: integer }
+                      note: { type: string }
+      responses:
+        '201':
+          description: สร้างสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Order' }
+        '409':
+          description: โต๊ะนี้มีออเดอร์เปิดอยู่แล้ว
+  /orders/kitchen/queue:
+    get:
+      tags: [Orders]
+      summary: คิวครัว (KDS) — รายการที่ส่งครัวแล้วและยังไม่เสิร์ฟ
+      parameters:
+        - in: query
+          name: status
+          description: คั่นด้วย , เช่น `pending,cooking`
+          schema: { type: string }
+      responses:
+        '200': { description: สำเร็จ }
+  /orders/table/{id}/open:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Orders]
+      summary: ออเดอร์ที่เปิดอยู่ของโต๊ะนี้
+      responses:
+        '200': { description: สำเร็จ (คืน null ถ้าไม่มี) }
+  /orders/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Orders]
+      summary: รายละเอียดออเดอร์
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Orders]
+      summary: แก้ไขจำนวนลูกค้า / โน้ต
+      responses:
+        '200': { description: สำเร็จ }
+  /orders/{id}/items:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Orders]
+      summary: เพิ่มรายการอาหาร (สั่งเพิ่มรอบสอง)
+      responses:
+        '201': { description: เพิ่มสำเร็จ }
+  /orders/{id}/items/{itemId}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+      - { in: path, name: itemId, required: true, schema: { type: integer } }
+    patch:
+      tags: [Orders]
+      summary: แก้จำนวน/โน้ต (เฉพาะรายการที่ครัวยังไม่เริ่มทำ)
+      responses:
+        '200': { description: สำเร็จ }
+        '409': { description: ครัวเริ่มทำแล้ว }
+    delete:
+      tags: [Orders]
+      summary: ลบรายการ (เฉพาะที่ครัวยังไม่เริ่มทำ)
+      responses:
+        '200': { description: สำเร็จ }
+  /orders/{id}/items/{itemId}/status:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+      - { in: path, name: itemId, required: true, schema: { type: integer } }
+    patch:
+      tags: [Orders]
+      summary: อัปเดตสถานะรายการ (pending → cooking → ready → served)
+      responses:
+        '200': { description: สำเร็จ }
+        '409': { description: เปลี่ยนสถานะข้ามขั้นไม่ได้ }
+  /orders/{id}/send-to-kitchen:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Orders]
+      summary: ส่งออเดอร์เข้าครัว (ยิง event `kitchen:ticket`)
+      responses:
+        '200': { description: สำเร็จ }
+  /orders/{id}/discount:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Orders]
+      summary: ให้ส่วนลด (บาท หรือ %)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [none, amount, percent] }
+                value: { type: number, example: 10 }
+      responses:
+        '200': { description: สำเร็จ }
+  /orders/{id}/cancel:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Orders]
+      summary: ยกเลิกออเดอร์ (admin/manager)
+      responses:
+        '200': { description: สำเร็จ }
+
+  /payments:
+    post:
+      tags: [Payments]
+      summary: ชำระเงิน (รองรับแยกจ่ายหลายวิธี)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, method, amount]
+              properties:
+                orderId: { type: integer }
+                method: { type: string, enum: [cash, qr, card, transfer] }
+                amount: { type: number, example: 211.86 }
+                received: { type: number, example: 300, description: จำเป็นเมื่อจ่ายเงินสด }
+                reference: { type: string }
+      responses:
+        '201':
+          description: บันทึกการชำระเงินสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      payment: { $ref: '#/components/schemas/Payment' }
+                      order: { $ref: '#/components/schemas/Order' }
+                      isFullyPaid: { type: boolean }
+                      remaining: { type: number }
+  /payments/order/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Payments]
+      summary: สรุปยอดชำระ/ค้างชำระของออเดอร์
+      responses:
+        '200': { description: สำเร็จ }
+  /payments/order/{id}/receipt:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Payments]
+      summary: ข้อมูลใบเสร็จสำหรับพิมพ์
+      responses:
+        '200': { description: สำเร็จ }
+
+  /reports/dashboard:
+    get:
+      tags: [Reports]
+      summary: ข้อมูลสรุปหน้า Dashboard (ยอดวันนี้ + รายชั่วโมง + เมนูขายดี + ตัวนับสด)
+      responses:
+        '200': { description: สำเร็จ }
+  /reports/summary:
+    get:
+      tags: [Reports]
+      summary: สรุปยอดขายตามช่วงวันที่
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200': { description: สำเร็จ }
+  /reports/top-items:
+    get:
+      tags: [Reports]
+      summary: เมนูขายดี
+      responses:
+        '200': { description: สำเร็จ }
+  /reports/sales-by-day:
+    get:
+      tags: [Reports]
+      summary: ยอดขายรายวัน
+      responses:
+        '200': { description: สำเร็จ }
+
+  /settings:
+    get:
+      tags: [Settings]
+      summary: ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน)
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Settings]
+      summary: แก้ไขค่าตั้งค่าร้าน (admin/manager)
+      responses:
+        '200': { description: สำเร็จ }

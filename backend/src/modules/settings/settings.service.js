@@ -1,0 +1,39 @@
+import { env } from '../../config/env.js';
+import { settingsRepository } from './settings.repository.js';
+
+const NUMBER_KEYS = new Set(['vat_rate', 'service_charge_rate']);
+const BOOLEAN_KEYS = new Set(['vat_included']);
+
+export const settingsService = {
+  /** โครงสร้างที่ฝั่ง client ใช้ได้ทันที (ค่า default มาจาก .env ถ้ายังไม่เคยตั้ง) */
+  get() {
+    const raw = Object.fromEntries(settingsRepository.all().map((row) => [row.key, row.value]));
+    return {
+      storeName: raw.store_name ?? env.store.name,
+      currency: raw.currency ?? env.store.currency,
+      vatRate: Number(raw.vat_rate ?? env.store.vatRate),
+      serviceChargeRate: Number(raw.service_charge_rate ?? env.store.serviceChargeRate),
+      vatIncluded: (raw.vat_included ?? String(env.store.vatIncluded)) === 'true',
+    };
+  },
+
+  update(payload) {
+    const map = {
+      storeName: 'store_name',
+      currency: 'currency',
+      vatRate: 'vat_rate',
+      serviceChargeRate: 'service_charge_rate',
+      vatIncluded: 'vat_included',
+    };
+    for (const [field, key] of Object.entries(map)) {
+      if (payload[field] === undefined) continue;
+      const value = NUMBER_KEYS.has(key) || BOOLEAN_KEYS.has(key)
+        ? String(payload[field])
+        : payload[field];
+      settingsRepository.set(key, value);
+    }
+    return this.get();
+  },
+};
+
+export default settingsService;
