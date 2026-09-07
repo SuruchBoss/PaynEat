@@ -1,0 +1,12 @@
+{
+  "name": "payneat-video",
+  "private": true,
+  "description": "อัดวิดีโอ demo presentation ด้วย Playwright",
+  "type": "module",
+  "scripts": {
+    "postinstall": "playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "^1.55.0"
+  }
+}

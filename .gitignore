@@ -21,3 +21,6 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+
+# Video build workspace
+docs/video/.build/

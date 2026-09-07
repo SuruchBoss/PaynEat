@@ -42,6 +42,13 @@ control and 82 automated tests.
 <p align="center"><b>เก็บเงินแบบแยกจ่าย</b> — จ่าย QR บางส่วน ที่เหลือเงินสด ระบบตัดยอดคงเหลือและคำนวณเงินทอนให้</p>
 <p align="center"><img src="docs/screenshots/tablet-16-checkout.png" width="780"></p>
 
+> 🎬 **วิดีโอ demo presentation (1:41 · 1080p)**
+> · [ฉบับภาษาไทย](docs/video/PaynEat-POS-Demo-TH.mp4)
+> · [English edition](docs/video/PaynEat-POS-Demo-EN.mp4)
+>
+> เดินตามเส้นทางการใช้งานจริงตั้งแต่เปิดผังโต๊ะจนปิดบิล ประกอบภาพหน้าจอจริงทั้ง 11 จอ
+> ([วิธีสร้างใหม่](docs/video/README.md))
+
 > 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 25 หน้าจอ (PDF 23 หน้า)**
 > · [ฉบับภาษาไทย](docs/PaynEat-POS-Features-TH.pdf) — อธิบายทีละหน้าจอว่าออกแบบยังไงและเบื้องหลังทำงานยังไง
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
