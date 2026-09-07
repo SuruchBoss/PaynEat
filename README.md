@@ -11,14 +11,14 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-139%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-164%20passing-2F9E44">
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 139 automated tests.
+control and 164 automated tests.
 
 ---
 
@@ -243,7 +243,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 62 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 87 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 77 เคส — domain / controller / widget
 ```
 
@@ -588,11 +588,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 62 เคส
+cd backend && npm test      # 87 เคส
 cd app && flutter test      # 77 เคส
 ```
 
-**Backend (62 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (87 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -600,11 +600,13 @@ cd app && flutter test      # 77 เคส
 > เสิร์ฟครบแล้วออเดอร์เปลี่ยนสถานะเอง → ให้ส่วนลด → แยกจ่าย 2 ครั้ง → ตรวจเงินทอน →
 > จ่ายซ้ำต้องโดนปฏิเสธ → โต๊ะว่างคืนอัตโนมัติ → ใบเสร็จครบ → ยอดเข้ารายงาน
 
-นอกจากนั้นมีเทสต์แยกต่อโมดูล: `menu.test.js` (validation, RBAC, ลบเมนูที่ถูกสั่งแล้วไม่ได้),
-`table.test.js` (ชื่อซ้ำ, เปลี่ยนสถานะ, ลบโต๊ะที่มีออเดอร์ค้าง), `payment.test.js` (แยกจ่าย,
-จ่ายเกิน/จ่ายซ้ำ, RBAC) — ระหว่างเขียนเทสต์ค้นหาเมนูเจอบั๊กจริงใน `menu.repository.js`
-(ใช้ `IFNULL(m.name_en, "")` ซึ่ง SQLite ตีความเครื่องหมายคำพูดคู่เป็นชื่อคอลัมน์ ไม่ใช่
-string literal ทำให้ search พังทันทีที่มีเมนูที่ไม่มี `nameEn` — แก้เป็นเครื่องหมายคำพูดเดี่ยวแล้ว)
+นอกจากนั้นมีเทสต์แยกต่อโมดูลครบทั้ง 9 module: `menu.test.js` (validation, RBAC, ลบเมนูที่ถูกสั่ง
+แล้วไม่ได้), `table.test.js` (ชื่อซ้ำ, เปลี่ยนสถานะ, ลบโต๊ะที่มีออเดอร์ค้าง), `payment.test.js`
+(แยกจ่าย, จ่ายเกิน/จ่ายซ้ำ, RBAC), `categories.test.js`, `settings.test.js`, `users.test.js`
+(สิทธิ์ลบพนักงานสงวนไว้เฉพาะ admin), `reports.test.js` — ระหว่างเขียนเทสต์ค้นหาเมนูเจอบั๊กจริงใน
+`menu.repository.js` (ใช้ `IFNULL(m.name_en, "")` ซึ่ง SQLite ตีความเครื่องหมายคำพูดคู่เป็นชื่อ
+คอลัมน์ ไม่ใช่ string literal ทำให้ search พังทันทีที่มีเมนูที่ไม่มี `nameEn` — แก้เป็นเครื่องหมาย
+คำพูดเดี่ยวแล้ว)
 
 **Flutter (77 เคส)** — แบ่งเป็น 3 ระดับ:
 
