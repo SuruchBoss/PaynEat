@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """สร้าง HTML รายงานผลตรวจคุณภาพโค้ด สำหรับเรนเดอร์เป็น PDF ด้วย makepdf.mjs"""
 import html
+import json
 import sys
 
 OUT = sys.argv[1] if len(sys.argv) > 1 else "audit-report.html"
@@ -14,15 +15,16 @@ CSS = """
 @page { size: A4; margin: 14mm 13mm 16mm 13mm; }
 @page :first { margin: 0; }
 
-/* ใช้ฟอนต์ Waree (TLWG) แทน Noto Sans Thai เฉพาะเอกสารนี้ — Noto Sans Thai ชนกับบั๊กของ
-   Chromium print-to-PDF ที่ทำให้ข้อความไทยที่มีวรรณยุกต์/สระซ้อนถูกคัดลอกออกมาผิดเพี้ยน
-   (ตัวอักษรซ้ำ/สลับที่) แม้จะแสดงผลถูกต้องบนหน้าจอก็ตาม ทดสอบแล้วว่า Waree ให้ผลลัพธ์การ
-   คัดลอกข้อความถูกต้อง 100% ในขณะที่ Noto Sans Thai ผิดเพี้ยนในทุก engine ที่ทดสอบ
-   (Chromium ปกติ, Chromium tagged-pdf, WeasyPrint, LibreOffice) */
-@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Regular.ttf'); font-weight: 400; }
-@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Regular.ttf'); font-weight: 500; }
-@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Bold.ttf'); font-weight: 700; }
-@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Bold.ttf'); font-weight: 800; }
+/* กลับมาใช้ Noto Sans Thai เหมือนเอกสารอื่นในโปรเจกต์ — ปัญหาข้อความไทยผิดเพี้ยนตอนคัดลอก
+   ไม่ได้แก้ด้วยการเปลี่ยนฟอนต์ (ลองมาแล้ว 8 ฟอนต์ ทุกฟอนต์พังแบบสุ่มไปตามคำ ไม่คงที่) จึงแก้ที่
+   ต้นตอจริงแทน: หลัง render ภาพแล้ว โปรแกรม overlay_text_layer.py จะฝัง "เลเยอร์ข้อความที่ถูกต้อง
+   แบบมองไม่เห็น" ทับลงไปจากข้อความต้นฉบับใน PLAIN_TEXT_PAGES ด้านล่าง (ไม่ได้ shape/OCR ใหม่)
+   ทำให้คัดลอกได้ถูกต้อง 100% โดยไม่ต้องพึ่งว่า Chromium จะ render ฟอนต์ไหนแล้วสร้าง PDF ถูกหรือไม่
+   ดู docs/generator/README.md หัวข้อ "ทำไมต้อง overlay ข้อความ" สำหรับรายละเอียดการไล่บั๊ก */
+@font-face { font-family: 'Noto'; src: url('../../app/tool/fonts/NotoSansThai-400.ttf'); font-weight: 400; }
+@font-face { font-family: 'Noto'; src: url('../../app/tool/fonts/NotoSansThai-500.ttf'); font-weight: 500; }
+@font-face { font-family: 'Noto'; src: url('../../app/tool/fonts/NotoSansThai-700.ttf'); font-weight: 700; }
+@font-face { font-family: 'Noto'; src: url('../../app/tool/fonts/NotoSansThai-800.ttf'); font-weight: 800; }
 
 :root {
   --primary: #FF6B2C;
@@ -593,3 +595,40 @@ HTML = f"""<!doctype html>
 with open(OUT, "w", encoding="utf-8") as f:
     f.write(HTML)
 print(f"wrote {OUT} ({len(HTML)} bytes)")
+
+# --------------------------------------------------------------------------
+# ส่งออกข้อความล้วนของแต่ละหน้า (ไม่มี HTML tag) ให้ overlay_text_layer.py ใช้ฝัง
+# เป็นเลเยอร์คัดลอกที่ถูกต้อง — 1 หน้า PDF ต่อ 1 ตัวแปร section ด้านบนพอดี เพราะทุก section
+# ขึ้นต้นด้วย page-break-before:always ใน CSS
+import re as _re
+
+
+def _plain_text(section_html: str) -> str:
+    text = _re.sub(r"<br\s*/?>", "\n", section_html)
+    text = _re.sub(r"</(t[dh])>", "  |  ", text)
+    text = _re.sub(r"</(p|div|tr|section|li|h[1-6])>", "\n", text)
+    text = _re.sub(r"<[^>]+>", "", text)
+    text = html.unescape(text)
+    # แทนลูกศร/สัญลักษณ์ด้วยข้อความธรรมดา แล้วตัดอิโมจิทิ้ง — ฟอนต์ Noto Sans Thai
+    # ที่ใช้วาดเลเยอร์คัดลอกไม่มีกลิฟตัวเหล่านี้ (ไม่ใช่บั๊กเดียวกับปัญหาสระ/วรรณยุกต์ไทย)
+    text = (text.replace("→", " -> ").replace("←", " <- ").replace("↔", " <-> "))
+    text = _re.sub(r"[\U0001F000-\U0001FFFF☀-➿]", "", text)
+    lines = [line.strip(" |") for line in text.splitlines()]
+    return "\n".join(line for line in lines if line)
+
+
+PLAIN_TEXT_PAGES = [
+    _plain_text(COVER),
+    _plain_text(SUMMARY),
+    _plain_text(SEC1),
+    _plain_text(SEC2),
+    _plain_text(SEC3),
+    _plain_text(SEC4),
+    _plain_text(SEC5),
+    _plain_text(CLOSING),
+]
+
+sidecar = OUT.rsplit(".", 1)[0] + ".pages.json"
+with open(sidecar, "w", encoding="utf-8") as f:
+    json.dump(PLAIN_TEXT_PAGES, f, ensure_ascii=False, indent=2)
+print(f"wrote {sidecar} ({len(PLAIN_TEXT_PAGES)} pages)")

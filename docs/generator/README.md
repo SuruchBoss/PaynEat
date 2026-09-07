@@ -25,12 +25,35 @@ node makepdf.mjs "$(pwd)/document-th.html" ../PaynEat-POS-Features-TH.pdf "PaynE
 node makepdf.mjs "$(pwd)/document-en.html" ../PaynEat-POS-Features-EN.pdf "PaynEat POS — Feature and screen guide"
 ```
 
-# รายงานผลตรวจคุณภาพโค้ด (ไม่ต้องมีภาพหน้าจอ สร้างจาก build_audit_report.py แยกต่างหาก)
+รายงานผลตรวจคุณภาพโค้ด (ไม่ต้องมีภาพหน้าจอ) สร้างจาก 3 สคริปต์แยกต่างหาก:
+
+```bash
+cd docs/generator
+
+# 1) เขียน HTML + ส่งออกข้อความล้วนของแต่ละหน้าเป็น .pages.json คู่กัน
 python3 build_audit_report.py audit-report.html
-node makepdf.mjs "$(pwd)/audit-report.html" ../PaynEat-POS-Audit-Report-TH.pdf "PaynEat POS — รายงานผลตรวจคุณภาพโค้ด"
+
+# 2) เรนเดอร์เป็น PDF ด้วย Chromium — หน้าตาถูกต้อง 100% แต่ "คัดลอกข้อความไม่ได้ทุกครั้ง" (ดูหมายเหตุด้านล่าง)
+node makepdf.mjs "$(pwd)/audit-report.html" audit-report-visual.pdf "PaynEat POS — รายงานผลตรวจคุณภาพโค้ด"
+
+# 3) แปลงแต่ละหน้าเป็นภาพ แล้วฝังเลเยอร์ข้อความที่ถูกต้อง (มองไม่เห็น) ทับลงไป — ได้ผลลัพธ์สุดท้าย
+python3 overlay_text_layer.py audit-report-visual.pdf audit-report.pages.json ../PaynEat-POS-Audit-Report-TH.pdf
+
+rm -f audit-report.html audit-report.pages.json audit-report-visual.pdf  # ไฟล์ระหว่างทาง ไม่ต้อง commit
 ```
 
-> **หมายเหตุฟอนต์**: รายงานนี้ใช้ฟอนต์ Waree (ดู `fonts-audit/README.md`) แทน Noto Sans Thai เพราะ Noto Sans Thai ชนกับบั๊กของ Chromium print-to-PDF ที่ทำให้ข้อความไทยที่มีวรรณยุกต์/สระซ้อน ถูกคัดลอกออกมาผิดเพี้ยน (ตัวอักษรซ้ำ/สลับที่) แม้แสดงผลถูกต้อง — ทดสอบแล้วว่า Waree คัดลอกถูกต้อง 100%
+> **หมายเหตุสำคัญ**: ทำไมต้อง overlay ข้อความ — Chromium print-to-PDF มีบั๊กที่ทำให้ข้อความไทย
+> ที่มีวรรณยุกต์/สระซ้อนกัน (เช่น "ผ่าน", "ด้วย", "คุณภาพ") ถูกฝังใน PDF ด้วย ToUnicode CMap ที่ผิด —
+> แสดงผล/พิมพ์ออกมาถูกต้อง 100% แต่คัดลอก (copy-paste) ออกมาแล้วตัวอักษรซ้ำหรือสลับที่
+> (เช่น "ผ่าน" กลายเป็น "ผ่าผ่ น") ไล่ทดสอบแล้วว่าเกิดแบบสุ่มไปตามคำที่ใช้ ไม่ขึ้นกับฟอนต์หรือ
+> เอนจินตัวใดตัวหนึ่ง — ลองมาแล้ว Noto Sans Thai, Waree, Kinnari, Umpush, Garuda, Purisa, Norasi,
+> Loma ผ่าน Chromium ปกติ, Chromium tagged-pdf, WeasyPrint, LibreOffice ทุกชุดพังแบบไม่คงที่ต่างกันไป
+> จึงแก้ที่ปลายทางแทน: `overlay_text_layer.py` แปลงหน้า PDF ที่ Chromium เรนเดอร์ (ภาพถูกต้อง)
+> เป็นรูปภาพ แล้วฝังข้อความล้วนที่รู้อยู่แล้วว่าถูกต้อง (จากขั้นตอนที่ 1) ลงไปแบบมองไม่เห็นด้วย
+> reportlab ซึ่งไม่ทำ shaping ที่ซับซ้อน จึงวาดสตริง Unicode ตรงตามที่ป้อนเข้าไปเป๊ะ — สคริปต์
+> ตรวจสอบเองท้ายกระบวนการว่า extract ข้อความกลับมาตรงกับต้นฉบับ 100% ทุกหน้า
+>
+> ต้องติดตั้งเพิ่ม: `pip install reportlab pypdfium2 pillow`
 
 ## โครงสร้าง
 
@@ -38,8 +61,10 @@ node makepdf.mjs "$(pwd)/audit-report.html" ../PaynEat-POS-Audit-Report-TH.pdf "
 |---|---|
 | `content.py` | เนื้อหาฉบับภาษาไทย |
 | `content_en.py` | เนื้อหาฉบับภาษาอังกฤษ (เขียนใหม่สำหรับลูกค้าธุรกิจ ไม่ใช่คำแปล) |
-| `build.py` | จัดหน้าและสร้าง HTML — ใช้ร่วมกันทั้งสองภาษา |
-| `makepdf.mjs` | เรนเดอร์ HTML เป็น PDF |
+| `build.py` | จัดหน้าและสร้าง HTML ของเอกสารฟีเจอร์ — ใช้ร่วมกันทั้งสองภาษา |
+| `makepdf.mjs` | เรนเดอร์ HTML เป็น PDF (ใช้ร่วมกันทั้งเอกสารฟีเจอร์และรายงานตรวจโค้ด) |
+| `build_audit_report.py` | เนื้อหา + จัดหน้า HTML ของรายงานตรวจคุณภาพโค้ด พร้อมส่งออกข้อความล้วนแต่ละหน้า |
+| `overlay_text_layer.py` | ฝังเลเยอร์ข้อความที่ถูกต้องแบบมองไม่เห็นทับ PDF ที่เรนเดอร์แล้ว (แก้บั๊กคัดลอกข้อความไทย) |
 
 เนื้อหาแยกจากการจัดหน้า จึงเพิ่มภาษาใหม่ได้โดยเขียนแค่ไฟล์ `content_*.py` เพิ่ม
 
