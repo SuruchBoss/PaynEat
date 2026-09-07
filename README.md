@@ -11,14 +11,14 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-229%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-245%20passing-2F9E44">
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 229 automated tests.
+control and 245 automated tests.
 
 ---
 
@@ -243,8 +243,8 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 87 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 142 เคส — domain / controller / widget
+cd backend && npm test      # 94 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 151 เคส — domain / controller / widget
 ```
 
 ---
@@ -278,6 +278,8 @@ cd app && flutter test      # 142 เคส — domain / controller / widget
 - **ตะกร้าอัจฉริยะ** รายการที่เหมือนกันทุกอย่างจะรวมเป็นบรรทัดเดียวอัตโนมัติ
 - **พรีวิวยอดบิล** เห็น Service Charge และ VAT ทันทีขณะกดสั่ง ไม่ต้องรอเซิร์ฟเวอร์
 - **สั่งเพิ่มรอบสอง** เข้าออเดอร์เดิมได้ และกดเสิร์ฟรายการที่ครัวทำเสร็จแล้ว
+- **ย้ายโต๊ะ** ลูกค้าขอย้ายที่นั่ง ก็ย้ายออเดอร์ทั้งใบไปโต๊ะใหม่ได้โดยไม่ต้องยกเลิกแล้วสั่งใหม่
+- **รวมบิล** สองโต๊ะที่มานั่งด้วยกัน รวมเป็นบิลเดียวได้ทันที (รายการอาหารและสถานะครัวยังคงเดิม)
 
 ### 🔥 ครัว (จอ KDS)
 
@@ -291,6 +293,8 @@ cd app && flutter test      # 142 เคส — domain / controller / widget
 
 - รับชำระ 4 ช่องทาง: เงินสด, พร้อมเพย์/QR, บัตรเครดิต, โอนเงิน
 - **แยกจ่ายได้** เช่น QR 100 บาท ที่เหลือจ่ายเงินสด — ระบบตัดยอดคงเหลือให้เอง
+- **แยกบิลรายคน** เลือกเมนูที่แต่ละคนจะจ่าย ระบบคำนวณส่วนแบ่งค่าอาหาร/ส่วนลด/Service
+  Charge/VAT ตามสัดส่วนให้อัตโนมัติ จ่ายทีละรอบจนครบทุกรายการ (กันเลือกเมนูซ้ำที่จ่ายไปแล้ว)
 - คำนวณเงินทอน พร้อมปุ่มลัด (พอดี / ปัดขึ้นหลักร้อย / 100 / 500 / 1000)
 - ส่วนลดทั้งแบบบาทและเปอร์เซ็นต์ พร้อมปุ่มลัด 5/10/15/20%
 - ออกใบเสร็จพร้อมพิมพ์
@@ -556,8 +560,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 | POST | `/orders/:id/send-to-kitchen` | เสิร์ฟขึ้นไป | ส่งเข้าครัว |
 | POST | `/orders/:id/discount` | แคชเชียร์ขึ้นไป | ให้ส่วนลด |
 | POST | `/orders/:id/cancel` | admin, manager | ยกเลิกออเดอร์ |
+| PATCH | `/orders/:id/move-table` | เสิร์ฟขึ้นไป | ย้ายออเดอร์ไปโต๊ะอื่น |
+| POST | `/orders/:id/merge` | เสิร์ฟขึ้นไป | รวมออเดอร์ต้นทางเข้ากับปลายทาง |
 | GET | `/orders/kitchen/queue` | ครัว | คิวครัว |
-| POST | `/payments` | แคชเชียร์ขึ้นไป | รับชำระเงิน |
+| POST | `/payments` | แคชเชียร์ขึ้นไป | รับชำระเงิน (ทั้งบิล/บางส่วน/แยกบิลรายการอาหาร) |
+| POST | `/payments/order/:id/split-preview` | แคชเชียร์ขึ้นไป | ดูยอดล่วงหน้าก่อนแยกบิล |
 | GET | `/payments/order/:id/receipt` | ทุกคน | ข้อมูลใบเสร็จ |
 | GET | `/reports/dashboard` | ผู้บริหาร | ข้อมูลแดชบอร์ด |
 | GET | `/reports/summary` | ผู้บริหาร | สรุปยอดตามช่วงวันที่ |
@@ -588,11 +595,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 87 เคส
-cd app && flutter test      # 142 เคส
+cd backend && npm test      # 94 เคส
+cd app && flutter test      # 151 เคส
 ```
 
-**Backend (87 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (94 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -608,7 +615,12 @@ cd app && flutter test      # 142 เคส
 คอลัมน์ ไม่ใช่ string literal ทำให้ search พังทันทีที่มีเมนูที่ไม่มี `nameEn` — แก้เป็นเครื่องหมาย
 คำพูดเดี่ยวแล้ว)
 
-**Flutter (142 เคส)** — แบ่งเป็น 3 ระดับ:
+`order-move-merge-split.test.js` (7 เคสใหม่) ครอบคลุมฟีเจอร์ย้ายโต๊ะ/รวมบิล/แยกบิลรายการอาหาร:
+ย้ายโต๊ะสำเร็จ + ปฏิเสธถ้าโต๊ะปลายทางไม่ว่าง, รวมบิลสำเร็จ (ยอดรวมถูกต้อง ต้นทางถูกยกเลิกและ
+คืนโต๊ะ) + ปฏิเสธการรวมกับตัวเอง, พรีวิวยอดแยกบิลตามสัดส่วน, จ่ายทีละรายการจนครบปิดบิล,
+ปฏิเสธการเลือกรายการที่จ่ายไปแล้วซ้ำ
+
+**Flutter (151 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -631,6 +643,7 @@ cd app && flutter test      # 142 เคส
 | Controller | `order_detail_controller_test.dart` | สิทธิ์จัดการออเดอร์, เดินสถานะรายการอาหาร |
 | Controller | `dashboard_controller_test.dart` | โหลดสรุปยอดขายวันนี้ + ตัวนับสด |
 | Controller | `report_controller_test.dart` | เลือกช่วงเวลารายงาน, กลืน error ของ topItems/dailySales เงียบๆ |
+| Controller | `split_bill_controller_test.dart` | เลือก/ยกเลิกเลือกรายการ, ดึงพรีวิว, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) |
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget |
@@ -652,12 +665,24 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 สิ่งที่ยังไม่ได้ทำและเหตุผล — เพื่อให้เห็นว่ารู้ตัวว่าอะไรยังขาด ไม่ใช่ลืม
 
-- [ ] **พิมพ์ใบเสร็จผ่านเครื่องพิมพ์ความร้อน** (ESC/POS ผ่าน Bluetooth) — ตอนนี้แสดงบนจอให้ดูก่อน
+- [x] **ย้ายโต๊ะ / รวมบิล / แยกบิลรายคน** — ทำแล้ว: `PATCH /orders/:id/move-table`,
+  `POST /orders/:id/merge`, และแยกบิลรายการอาหาร (`POST /payments` แบบ `itemIds` +
+  `POST /payments/order/:id/split-preview`) พร้อม UI ครบทั้ง 3 ฟีเจอร์ (ดูหัวข้อ ✨ ฟีเจอร์)
 - [ ] **โหมดออฟไลน์** เก็บออเดอร์ไว้ในเครื่องแล้ว sync เมื่อเน็ตกลับมา (ร้านจริงเน็ตหลุดบ่อย)
-- [ ] **ย้ายโต๊ะ / รวมบิล / แยกบิลรายคน** — เจอบ่อยในร้านจริงแต่ยังไม่ได้ทำ
 - [ ] **สต๊อกวัตถุดิบ** ตัดสต๊อกอัตโนมัติเมื่อขาย
-- [ ] **PostgreSQL** — SQLite เหมาะกับ 1 สาขา ถ้าหลายสาขาต้องเปลี่ยน (ชั้น repository ถูกแยกไว้แล้วจึงเปลี่ยนไม่ยาก)
 - [ ] **เทสต์ integration ฝั่ง Flutter** ด้วย `integration_test` ยิงกับ backend จริง
+- [ ] **เปิด-ปิดกะ / นับเงินสด** (cash drawer reconciliation) — เปิดกะใส่เงินทอนตั้งต้น
+  ปิดกะนับเงินจริงเทียบกับยอดระบบ
+- [ ] **ใบกำกับภาษี / e-Tax invoice** — ตามกฎหมายไทย ถ้าจะขายเป็นสินค้าจริงจัง
+- [ ] **โปรโมชัน/ส่วนลดแบบมีเงื่อนไข** (happy hour, โค้ดส่วนลด, ซื้อ 1 แถม 1) — ตอนนี้มีแค่
+  ส่วนลดกดเองหน้างาน ไม่มีระบบตั้งเงื่อนไขล่วงหน้า
+
+**ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
+
+- **พิมพ์ใบเสร็จผ่านเครื่องพิมพ์ความร้อนจริง** (ESC/POS ผ่าน Bluetooth) — โปรเจกต์นี้เป็นเดโม
+  สำหรับพอร์ตโฟลิโอ ไม่ใช่ระบบที่จะใช้ขายจริงในร้าน จึงแสดงใบเสร็จบนจอแทนการต่อฮาร์ดแวร์จริง
+- **PostgreSQL สำหรับหลายสาขา** — ตั้งใจทำแค่สาขาเดียวก่อนตามสโคปปัจจุบัน (ชั้น repository
+  ถูกแยกไว้แล้วจึงเปลี่ยนได้ไม่ยากถ้าต้องขยายในอนาคต)
 
 ---
 

@@ -135,6 +135,7 @@ components:
         lineTotal: { type: number }
         note: { type: string, nullable: true }
         status: { type: string, enum: [pending, cooking, ready, served, cancelled] }
+        isPaid: { type: boolean, description: จ่ายไปแล้วในรอบแยกบิลรายการอาหารหรือยัง }
     Order:
       type: object
       properties:
@@ -559,6 +560,49 @@ paths:
       summary: ยกเลิกออเดอร์ (admin/manager)
       responses:
         '200': { description: สำเร็จ }
+  /orders/{id}/move-table:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Orders]
+      summary: ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tableId]
+              properties:
+                tableId: { type: integer }
+      responses:
+        '200': { description: สำเร็จ — ปลดโต๊ะเก่าเป็นว่าง จองโต๊ะใหม่ }
+        '409': { description: โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว }
+  /orders/{id}/merge:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer, description: id ของออเดอร์ปลายทาง }
+    post:
+      tags: [Orders]
+      summary: รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง (ใช้ตอนรวมโต๊ะ/รวมบิล)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceOrderId]
+              properties:
+                sourceOrderId: { type: integer }
+      responses:
+        '200':
+          description: สำเร็จ — รายการอาหารทั้งหมดย้ายไปออเดอร์ปลายทาง ต้นทางถูกยกเลิกและปลดโต๊ะ
+        '400': { description: เลือกออเดอร์ปลายทางเดียวกับต้นทาง }
 
   /payments:
     post:
@@ -570,11 +614,18 @@ paths:
           application/json:
             schema:
               type: object
-              required: [orderId, method, amount]
+              required: [orderId, method]
+              description: >-
+                ระบุอย่างใดอย่างหนึ่ง — amount (จ่ายเป็นจำนวนเงิน) หรือ itemIds
+                (แยกบิลรายการอาหาร ระบบคำนวณยอดเองจากรายการที่เลือก)
               properties:
                 orderId: { type: integer }
                 method: { type: string, enum: [cash, qr, card, transfer] }
                 amount: { type: number, example: 211.86 }
+                itemIds:
+                  type: array
+                  items: { type: integer }
+                  description: id ของ order item ที่จะจ่ายรอบนี้ (แยกบิลรายการอาหาร)
                 received: { type: number, example: 300, description: จำเป็นเมื่อจ่ายเงินสด }
                 reference: { type: string }
       responses:
@@ -593,6 +644,28 @@ paths:
                       order: { $ref: '#/components/schemas/Order' }
                       isFullyPaid: { type: boolean }
                       remaining: { type: number }
+  /payments/order/{id}/split-preview:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Payments]
+      summary: ดูยอดที่ต้องจ่ายล่วงหน้าก่อนแยกบิลรายการอาหารจริง (ไม่ตัดจ่าย)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [itemIds]
+              properties:
+                itemIds:
+                  type: array
+                  items: { type: integer }
+      responses:
+        '200': { description: สำเร็จ }
   /payments/order/{id}:
     parameters:
       - in: path
