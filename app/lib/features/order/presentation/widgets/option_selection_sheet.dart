@@ -1,0 +1,304 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/quantity_stepper.dart';
+import '../../../menu/domain/entities/menu_item.dart';
+import '../../../menu/domain/entities/menu_option.dart';
+
+/// ผลลัพธ์ที่ได้จากแผ่นเลือกตัวเลือก
+class OptionSelectionResult {
+  const OptionSelectionResult({
+    required this.quantity,
+    required this.options,
+    this.note,
+  });
+
+  final int quantity;
+  final List<MenuOption> options;
+  final String? note;
+}
+
+/// แผ่นเลือกตัวเลือกเสริมของเมนู (ระดับความเผ็ด / เพิ่มไข่ดาว / โน้ตถึงครัว)
+///
+/// บังคับกฎเดียวกับ backend: กลุ่มที่ required ต้องเลือก และเลือกได้ไม่เกิน maxSelect
+class OptionSelectionSheet extends StatefulWidget {
+  const OptionSelectionSheet({super.key, required this.item});
+
+  final MenuItem item;
+
+  /// เปิดแผ่นแล้วคืนค่าที่ผู้ใช้เลือก (null = ยกเลิก)
+  static Future<OptionSelectionResult?> show(MenuItem item) {
+    return Get.bottomSheet<OptionSelectionResult>(
+      OptionSelectionSheet(item: item),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
+  }
+
+  @override
+  State<OptionSelectionSheet> createState() => _OptionSelectionSheetState();
+}
+
+class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
+  final Map<int, List<MenuOption>> _selected = {};
+  final TextEditingController _noteController = TextEditingController();
+  int _quantity = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    // เลือกค่าเริ่มต้นที่ร้านตั้งไว้ให้อัตโนมัติ
+    for (final group in widget.item.optionGroups) {
+      _selected[group.id] = List<MenuOption>.from(group.defaults);
+    }
+  }
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  List<MenuOption> get _allSelected =>
+      _selected.values.expand((options) => options).toList(growable: false);
+
+  double get _unitPrice =>
+      widget.item.price + _allSelected.fold<double>(0, (sum, o) => sum + o.priceDelta);
+
+  /// กลุ่มที่บังคับเลือกแต่ยังไม่ได้เลือก
+  List<String> get _missingGroups => widget.item.optionGroups
+      .where((group) => group.isRequired && (_selected[group.id]?.isEmpty ?? true))
+      .map((group) => group.name)
+      .toList(growable: false);
+
+  void _toggle(MenuOptionGroup group, MenuOption option) {
+    setState(() {
+      final current = _selected[group.id] ?? [];
+      if (group.isSingleChoice) {
+        _selected[group.id] = [option];
+        return;
+      }
+      if (current.contains(option)) {
+        current.remove(option);
+      } else if (current.length < group.maxSelect) {
+        current.add(option);
+      }
+      _selected[group.id] = current;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.85;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 10),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: AppColors.border,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.item.name,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                      ),
+                      if (widget.item.description != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: Text(
+                            widget.item.description!,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Get.back<void>(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Flexible(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              shrinkWrap: true,
+              children: [
+                for (final group in widget.item.optionGroups) ...[
+                  Row(
+                    children: [
+                      Text(
+                        group.name,
+                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                      ),
+                      const SizedBox(width: 8),
+                      if (group.isRequired)
+                        const Text(
+                          'ต้องเลือก',
+                          style: TextStyle(fontSize: 11.5, color: AppColors.danger),
+                        )
+                      else
+                        Text(
+                          'เลือกได้ ${group.maxSelect} อย่าง',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textDisabled,
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: group.options.map((option) {
+                      final selected = _selected[group.id]?.contains(option) ?? false;
+                      return _OptionChip(
+                        label: option.name,
+                        priceDelta: option.priceDelta,
+                        selected: selected,
+                        onTap: () => _toggle(group, option),
+                      );
+                    }).toList(growable: false),
+                  ),
+                  const SizedBox(height: 18),
+                ],
+                TextField(
+                  controller: _noteController,
+                  maxLines: 2,
+                  decoration: const InputDecoration(
+                    labelText: 'บอกครัวเพิ่มเติม (ถ้ามี)',
+                    hintText: 'เช่น ไม่ใส่ผักชี, แยกน้ำจิ้ม',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: EdgeInsets.fromLTRB(
+              20,
+              12,
+              20,
+              12 + MediaQuery.viewInsetsOf(context).bottom,
+            ),
+            child: Row(
+              children: [
+                QuantityStepper(
+                  value: _quantity,
+                  size: 38,
+                  onChanged: (value) => setState(() => _quantity = value),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: FilledButton(
+                    onPressed: _missingGroups.isEmpty
+                        ? () => Get.back(
+                              result: OptionSelectionResult(
+                                quantity: _quantity,
+                                options: _allSelected,
+                                note: _noteController.text,
+                              ),
+                            )
+                        : null,
+                    child: Text(
+                      _missingGroups.isEmpty
+                          ? 'เพิ่มลงออเดอร์ · ${Formatters.baht(_unitPrice * _quantity)}'
+                          : 'กรุณาเลือก ${_missingGroups.first}',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OptionChip extends StatelessWidget {
+  const _OptionChip({
+    required this.label,
+    required this.priceDelta,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final double priceDelta;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? AppColors.primarySoft : AppColors.surface,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? AppColors.primary : AppColors.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selected) ...[
+                const Icon(Icons.check_circle_rounded, size: 15, color: AppColors.primary),
+                const SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                ),
+              ),
+              if (priceDelta > 0) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '+${Formatters.money(priceDelta)}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

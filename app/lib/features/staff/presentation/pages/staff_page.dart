@@ -1,0 +1,298 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/status_chip.dart';
+import '../../../auth/domain/entities/user.dart';
+import '../controllers/staff_controller.dart';
+
+/// จัดการพนักงาน — เพิ่มบัญชี เปลี่ยนบทบาท ปิด/เปิดการใช้งาน
+class StaffPage extends GetView<StaffController> {
+  const StaffPage({super.key});
+
+  static Color roleColor(String role) => switch (role) {
+        UserRole.admin => AppColors.purple,
+        UserRole.manager => AppColors.info,
+        UserRole.waiter => AppColors.primary,
+        UserRole.cashier => AppColors.success,
+        UserRole.kitchen => AppColors.warning,
+        _ => AppColors.textSecondary,
+      };
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showCreateDialog(context),
+        icon: const Icon(Icons.person_add_rounded),
+        label: const Text('เพิ่มพนักงาน'),
+      ),
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+            child: Obx(
+              () => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _RoleChip(
+                    label: 'ทั้งหมด (${controller.staff.length})',
+                    selected: controller.roleFilter.value == null,
+                    color: AppColors.textSecondary,
+                    onTap: () => controller.filterByRole(null),
+                  ),
+                  ...UserRole.all.map(
+                    (role) => _RoleChip(
+                      label: '${UserRole.label(role)} (${controller.countByRole[role] ?? 0})',
+                      selected: controller.roleFilter.value == role,
+                      color: roleColor(role),
+                      onTap: () => controller.filterByRole(role),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) return const LoadingView();
+
+              final error = controller.errorMessage.value;
+              if (error != null && controller.staff.isEmpty) {
+                return ErrorView(message: error, onRetry: controller.load);
+              }
+
+              final staff = controller.filteredStaff;
+              if (staff.isEmpty) {
+                return const EmptyView(
+                  message: 'ไม่พบพนักงานในบทบาทนี้',
+                  icon: Icons.people_outline_rounded,
+                );
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
+                itemCount: staff.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 8),
+                itemBuilder: (context, index) => _StaffRow(user: staff[index]),
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showCreateDialog(BuildContext context) async {
+    final nameController = TextEditingController();
+    final usernameController = TextEditingController();
+    final passwordController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+    String role = UserRole.waiter;
+
+    await Get.dialog<void>(
+      StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('เพิ่มพนักงาน'),
+          content: SizedBox(
+            width: 360,
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration: const InputDecoration(labelText: 'ชื่อ-นามสกุล'),
+                    validator: (value) =>
+                        (value == null || value.trim().length < 2) ? 'กรุณากรอกชื่อ' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(labelText: 'ชื่อผู้ใช้'),
+                    validator: (value) => (value == null || value.trim().length < 3)
+                        ? 'อย่างน้อย 3 ตัวอักษร'
+                        : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: passwordController,
+                    decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
+                    validator: (value) =>
+                        (value == null || value.length < 6) ? 'อย่างน้อย 6 ตัวอักษร' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: role,
+                    decoration: const InputDecoration(labelText: 'บทบาท'),
+                    items: UserRole.all
+                        .map(
+                          (value) => DropdownMenuItem(
+                            value: value,
+                            child: Text(UserRole.label(value)),
+                          ),
+                        )
+                        .toList(growable: false),
+                    onChanged: (value) => setState(() => role = value ?? UserRole.waiter),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(onPressed: () => Get.back<void>(), child: const Text('ยกเลิก')),
+            FilledButton(
+              onPressed: () async {
+                if (!(formKey.currentState?.validate() ?? false)) return;
+                final created = await controller.create(
+                  name: nameController.text.trim(),
+                  username: usernameController.text.trim(),
+                  password: passwordController.text,
+                  role: role,
+                );
+                if (created) Get.back<void>();
+              },
+              child: const Text('เพิ่มพนักงาน'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleChip extends StatelessWidget {
+  const _RoleChip({
+    required this.label,
+    required this.selected,
+    required this.color,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: selected,
+      showCheckmark: false,
+      onSelected: (_) => onTap(),
+      selectedColor: color,
+      backgroundColor: AppColors.surfaceAlt,
+      labelStyle: TextStyle(
+        color: selected ? Colors.white : AppColors.textSecondary,
+        fontWeight: FontWeight.w600,
+        fontSize: 13,
+      ),
+    );
+  }
+}
+
+class _StaffRow extends GetView<StaffController> {
+  const _StaffRow({required this.user});
+
+  final User user;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = StaffPage.roleColor(user.role);
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 21,
+            backgroundColor: color.withValues(alpha: 0.14),
+            child: Text(
+              user.initials,
+              style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        user.name,
+                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    StatusChip(label: user.roleLabel, color: color, dense: true),
+                    if (!user.isActive) ...[
+                      const SizedBox(width: 6),
+                      const StatusChip(
+                        label: 'ปิดใช้งาน',
+                        color: AppColors.danger,
+                        dense: true,
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '@${user.username}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, size: 20),
+            onSelected: (value) {
+              switch (value) {
+                case 'toggle':
+                  controller.toggleActive(user);
+                case 'delete':
+                  controller.delete(user);
+                default:
+                  controller.updateRole(user, value);
+              }
+            },
+            itemBuilder: (context) => [
+              ...UserRole.all
+                  .where((role) => role != user.role)
+                  .map(
+                    (role) => PopupMenuItem(
+                      value: role,
+                      child: Text('เปลี่ยนเป็น ${UserRole.label(role)}'),
+                    ),
+                  ),
+              const PopupMenuDivider(),
+              PopupMenuItem(
+                value: 'toggle',
+                child: Text(user.isActive ? 'ปิดการใช้งาน' : 'เปิดการใช้งาน'),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Text('ลบบัญชี', style: TextStyle(color: AppColors.danger)),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}

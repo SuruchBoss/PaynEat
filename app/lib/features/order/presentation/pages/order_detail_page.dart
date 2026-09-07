@@ -1,0 +1,341 @@
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/state_views.dart';
+import '../../../../core/widgets/status_chip.dart';
+import '../../domain/entities/order.dart';
+import '../controllers/order_detail_controller.dart';
+import '../widgets/bill_summary.dart';
+import '../widgets/discount_dialog.dart';
+import '../widgets/order_item_tile.dart';
+
+/// หน้ารายละเอียดออเดอร์ — ดูรายการ เดินสถานะ ให้ส่วนลด และไปหน้าชำระเงิน
+class OrderDetailPage extends GetView<OrderDetailController> {
+  const OrderDetailPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Obx(() => Text(controller.order.value?.code ?? 'รายละเอียดออเดอร์')),
+        actions: [
+          Obx(() {
+            final order = controller.order.value;
+            if (order == null) return const SizedBox.shrink();
+            return PopupMenuButton<String>(
+              icon: const Icon(Icons.more_vert_rounded),
+              onSelected: (value) => _handleMenu(value, order),
+              itemBuilder: (context) => [
+                if (order.isActive)
+                  const PopupMenuItem(
+                    value: 'discount',
+                    child: ListTile(
+                      leading: Icon(Icons.percent_rounded),
+                      title: Text('ให้ส่วนลด'),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isPaid)
+                  const PopupMenuItem(
+                    value: 'receipt',
+                    child: ListTile(
+                      leading: Icon(Icons.receipt_rounded),
+                      title: Text('ดูใบเสร็จ'),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isActive && controller.canManage)
+                  const PopupMenuItem(
+                    value: 'cancel',
+                    child: ListTile(
+                      leading: Icon(Icons.cancel_outlined, color: AppColors.danger),
+                      title: Text('ยกเลิกออเดอร์', style: TextStyle(color: AppColors.danger)),
+                      dense: true,
+                    ),
+                  ),
+              ],
+            );
+          }),
+        ],
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const LoadingView(message: 'กำลังโหลดออเดอร์...');
+        }
+        final error = controller.errorMessage.value;
+        if (error != null) {
+          return ErrorView(message: error, onRetry: controller.load);
+        }
+        final order = controller.order.value;
+        if (order == null) {
+          return const EmptyView(message: 'ไม่พบออเดอร์นี้');
+        }
+
+        final isWide = Responsive.isWide(context);
+        final itemList = _ItemList(order: order);
+        final billCard = _BillCard(order: order);
+
+        return isWide
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: itemList),
+                  SizedBox(
+                    width: 360,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.fromLTRB(0, 16, 16, 16),
+                      child: billCard,
+                    ),
+                  ),
+                ],
+              )
+            : ListView(
+                padding: const EdgeInsets.only(bottom: 24),
+                children: [
+                  _OrderHeader(order: order),
+                  _ItemList(order: order, shrinkWrap: true),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: billCard,
+                  ),
+                ],
+              );
+      }),
+    );
+  }
+
+  Future<void> _handleMenu(String value, Order order) async {
+    switch (value) {
+      case 'discount':
+        final result = await DiscountDialog.show(currentType: order.discountType);
+        if (result != null) {
+          await controller.applyDiscount(type: result.type, value: result.value);
+        }
+      case 'receipt':
+        await controller.openReceipt();
+      case 'cancel':
+        await _confirmCancel();
+    }
+  }
+
+  Future<void> _confirmCancel() async {
+    final reasonController = TextEditingController();
+    final reason = await Get.dialog<String>(
+      AlertDialog(
+        title: const Text('ยกเลิกออเดอร์'),
+        content: TextField(
+          controller: reasonController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'เหตุผลการยกเลิก',
+            hintText: 'เช่น ลูกค้าเปลี่ยนใจ',
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back<void>(), child: const Text('ปิด')),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+            onPressed: () => Get.back(result: reasonController.text.trim()),
+            child: const Text('ยืนยันยกเลิก'),
+          ),
+        ],
+      ),
+    );
+
+    if (reason != null && reason.isNotEmpty) {
+      await controller.cancelOrder(reason);
+    }
+  }
+}
+
+class _OrderHeader extends StatelessWidget {
+  const _OrderHeader({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                order.displayTarget,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(width: 10),
+              StatusChip(
+                label: order.statusLabel,
+                color: AppColors.orderStatus(order.status),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 14,
+            runSpacing: 4,
+            children: [
+              _MetaText(icon: Icons.tag_rounded, text: order.code),
+              _MetaText(icon: Icons.people_outline_rounded, text: '${order.guestCount} ท่าน'),
+              if (order.waiterName != null)
+                _MetaText(icon: Icons.person_outline_rounded, text: order.waiterName!),
+              _MetaText(
+                icon: Icons.schedule_rounded,
+                text: '${Formatters.time(order.createdAt)} (${Formatters.elapsed(order.createdAt)})',
+              ),
+            ],
+          ),
+          if (order.isCancelled && order.cancelledReason != null) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'เหตุผลที่ยกเลิก: ${order.cancelledReason}',
+                style: const TextStyle(color: AppColors.danger, fontSize: 13),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _MetaText extends StatelessWidget {
+  const _MetaText({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: AppColors.textDisabled),
+        const SizedBox(width: 4),
+        Text(text, style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+      ],
+    );
+  }
+}
+
+class _ItemList extends GetView<OrderDetailController> {
+  const _ItemList({required this.order, this.shrinkWrap = false});
+
+  final Order order;
+  final bool shrinkWrap;
+
+  @override
+  Widget build(BuildContext context) {
+    final content = ListView.separated(
+      shrinkWrap: shrinkWrap,
+      physics: shrinkWrap ? const NeverScrollableScrollPhysics() : null,
+      padding: const EdgeInsets.all(16),
+      itemCount: order.items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      itemBuilder: (context, index) {
+        final item = order.items[index];
+        return OrderItemTile(
+          item: item,
+          showActions: order.isActive,
+          onAdvance: () => controller.advanceItemStatus(item),
+          onRemove: () => controller.removeItem(item),
+          onCancel: controller.canManage ? () => controller.cancelItem(item) : null,
+        );
+      },
+    );
+
+    if (shrinkWrap) return content;
+
+    return Column(
+      children: [
+        _OrderHeader(order: order),
+        Expanded(child: content),
+      ],
+    );
+  }
+}
+
+class _BillCard extends GetView<OrderDetailController> {
+  const _BillCard({required this.order});
+
+  final Order order;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          BillSummary(order: order),
+          if (order.isActive) ...[
+            const SizedBox(height: 16),
+            if (order.canSendToKitchen)
+              FilledButton.icon(
+                onPressed: controller.isBusy.value ? null : controller.sendToKitchen,
+                icon: const Icon(Icons.soup_kitchen_rounded, size: 18),
+                label: const Text('ส่งเข้าครัว'),
+              ),
+            if (order.canSendToKitchen) const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: controller.addMoreItems,
+              icon: const Icon(Icons.add_rounded, size: 18),
+              label: const Text('สั่งอาหารเพิ่ม'),
+            ),
+            const SizedBox(height: 8),
+            if (controller.canCollectPayment)
+              FilledButton.icon(
+                style: FilledButton.styleFrom(backgroundColor: AppColors.success),
+                onPressed: controller.goToCheckout,
+                icon: const Icon(Icons.point_of_sale_rounded, size: 18),
+                label: const Text('เก็บเงิน / ปิดบิล'),
+              ),
+          ],
+          if (order.isPaid) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.success.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'ชำระเงินแล้วเมื่อ ${Formatters.dateTime(order.closedAt)}',
+                      style: const TextStyle(fontSize: 12.5, color: AppColors.success),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: controller.openReceipt,
+              icon: const Icon(Icons.receipt_long_rounded, size: 18),
+              label: const Text('ดูใบเสร็จ'),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}

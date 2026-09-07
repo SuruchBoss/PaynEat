@@ -1,0 +1,136 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:payneat_pos/core/constants/app_constants.dart';
+import 'package:payneat_pos/features/auth/domain/entities/user.dart';
+import 'package:payneat_pos/features/order/domain/entities/order.dart';
+import 'package:payneat_pos/features/order/domain/entities/order_item.dart';
+import 'package:payneat_pos/features/table/domain/entities/dining_table.dart';
+
+void main() {
+  group('User (สิทธิ์ตามบทบาท)', () {
+    User userWith(String role) =>
+        User(id: 1, name: 'ทดสอบ', username: 'test', role: role, isActive: true);
+
+    test('แอดมินและผู้จัดการมีสิทธิ์ระดับบริหาร', () {
+      expect(userWith(UserRole.admin).isManagement, isTrue);
+      expect(userWith(UserRole.manager).isManagement, isTrue);
+      expect(userWith(UserRole.waiter).isManagement, isFalse);
+    });
+
+    test('ครัวไม่มีสิทธิ์รับออเดอร์หรือเก็บเงิน', () {
+      final kitchen = userWith(UserRole.kitchen);
+
+      expect(kitchen.isKitchen, isTrue);
+      expect(kitchen.canTakeOrder, isFalse);
+      expect(kitchen.canCollectPayment, isFalse);
+      expect(kitchen.canSeeReports, isFalse);
+    });
+
+    test('ตัวย่อใน avatar มาจากอักษรตัวแรกของชื่อ', () {
+      expect(userWith(UserRole.waiter).initials, 'ท');
+    });
+  });
+
+  group('OrderItem (การเดินสถานะ)', () {
+    OrderItem itemWith(String status) => OrderItem(
+          id: 1,
+          orderId: 1,
+          name: 'ผัดกะเพรา',
+          unitPrice: 75,
+          quantity: 1,
+          lineTotal: 75,
+          status: status,
+        );
+
+    test('สถานะเดินตามลำดับ รอทำ → กำลังทำ → พร้อมเสิร์ฟ → เสิร์ฟแล้ว', () {
+      expect(itemWith(OrderItemStatus.pending).nextStatus, OrderItemStatus.cooking);
+      expect(itemWith(OrderItemStatus.cooking).nextStatus, OrderItemStatus.ready);
+      expect(itemWith(OrderItemStatus.ready).nextStatus, OrderItemStatus.served);
+      expect(itemWith(OrderItemStatus.served).nextStatus, isNull);
+    });
+
+    test('แก้ไขได้เฉพาะรายการที่ครัวยังไม่เริ่มทำ', () {
+      expect(itemWith(OrderItemStatus.pending).isEditable, isTrue);
+      expect(itemWith(OrderItemStatus.cooking).isEditable, isFalse);
+    });
+  });
+
+  group('Order', () {
+    Order orderWith({required String status, List<OrderItem> items = const []}) => Order(
+          id: 1,
+          code: 'ORD-20260101-0001',
+          type: OrderType.dineIn,
+          status: status,
+          subtotal: 100,
+          total: 117.7,
+          tableName: 'A1',
+          items: items,
+        );
+
+    final activeItem = OrderItem(
+      id: 1,
+      orderId: 1,
+      name: 'ผัดกะเพรา',
+      unitPrice: 75,
+      quantity: 2,
+      lineTotal: 150,
+      status: OrderItemStatus.pending,
+    );
+    final cancelledItem = OrderItem(
+      id: 2,
+      orderId: 1,
+      name: 'ต้มยำ',
+      unitPrice: 220,
+      quantity: 1,
+      lineTotal: 220,
+      status: OrderItemStatus.cancelled,
+    );
+
+    test('ไม่นับรายการที่ยกเลิกเป็นจำนวนรายการในบิล', () {
+      final order = orderWith(
+        status: OrderStatus.open,
+        items: [activeItem, cancelledItem],
+      );
+
+      expect(order.activeItems.length, 1);
+      expect(order.totalQuantity, 2);
+    });
+
+    test('ส่งครัวได้เฉพาะออเดอร์ที่ยังไม่ส่งและมีรายการอาหาร', () {
+      expect(
+        orderWith(status: OrderStatus.open, items: [activeItem]).canSendToKitchen,
+        isTrue,
+      );
+      expect(orderWith(status: OrderStatus.open).canSendToKitchen, isFalse);
+      expect(
+        orderWith(status: OrderStatus.inKitchen, items: [activeItem]).canSendToKitchen,
+        isFalse,
+      );
+    });
+
+    test('หัวออเดอร์แสดงชื่อโต๊ะเมื่อทานที่ร้าน', () {
+      expect(orderWith(status: OrderStatus.open).displayTarget, 'โต๊ะ A1');
+    });
+  });
+
+  group('DiningTable', () {
+    test('โต๊ะที่มีออเดอร์เปิดอยู่ต้องรายงานว่ามีบิลค้าง', () {
+      const table = DiningTable(
+        id: 1,
+        name: 'A1',
+        zone: 'โซนในร้าน',
+        seats: 4,
+        status: TableStatus.occupied,
+        currentOrder: TableOrderSummary(
+          id: 9,
+          code: 'ORD-1',
+          status: OrderStatus.inKitchen,
+          total: 500,
+        ),
+      );
+
+      expect(table.hasOpenOrder, isTrue);
+      expect(table.isAvailable, isFalse);
+      expect(table.statusLabel, 'มีลูกค้า');
+    });
+  });
+}
