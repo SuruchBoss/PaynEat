@@ -11,14 +11,14 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-164%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-229%20passing-2F9E44">
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 164 automated tests.
+control and 229 automated tests.
 
 ---
 
@@ -244,7 +244,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 87 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 77 เคส — domain / controller / widget
+cd app && flutter test      # 142 เคส — domain / controller / widget
 ```
 
 ---
@@ -589,7 +589,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 87 เคส
-cd app && flutter test      # 77 เคส
+cd app && flutter test      # 142 เคส
 ```
 
 **Backend (87 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -608,17 +608,29 @@ cd app && flutter test      # 77 เคส
 คอลัมน์ ไม่ใช่ string literal ทำให้ search พังทันทีที่มีเมนูที่ไม่มี `nameEn` — แก้เป็นเครื่องหมาย
 คำพูดเดี่ยวแล้ว)
 
-**Flutter (77 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (142 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
 | Domain | `bill_calculator_test.dart` | กฎคิดเงินทุกกรณี รวมส่วนลดและโหมดรวม VAT |
 | Domain | `cart_line_test.dart` | การรวมรายการซ้ำในตะกร้า |
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
+| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 7 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม |
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
 | Controller | `table_controller_test.dart` | กรองโซน/สถานะพร้อมกัน, นับโต๊ะว่าง/มีลูกค้า |
+| Controller | `home_controller_test.dart` | เมนูที่แต่ละบทบาทเห็น, การสลับแท็บ |
+| Controller | `menu_browse_controller_test.dart` | กรอง/ค้นหาเมนู (มี debounce), นับตามหมวดหมู่ |
+| Controller | `menu_management_controller_test.dart` | กรองเมนูฝั่งจัดการ, นับเมนูที่ปิดขาย |
+| Controller | `kitchen_controller_test.dart` | จัดกลุ่มคิวครัวตามสถานะ, นับรายการที่ช้า, เดินสถานะสำเร็จ |
+| Controller | `checkout_controller_test.dart` | คำนวณเงินทอน/ยอดคงเหลือ, เงื่อนไข `canPay`, ปัดยอดขึ้นหลักร้อย |
+| Controller | `receipt_controller_test.dart` | โหลดใบเสร็จจาก orderId |
+| Controller | `settings_controller_test.dart` | โหลดค่าตั้งค่าร้านเข้าช่องกรอกให้ตรงกัน |
+| Controller | `staff_controller_test.dart` | กรองพนักงานตามบทบาท, นับจำนวนแยกตามบทบาท |
+| Controller | `order_detail_controller_test.dart` | สิทธิ์จัดการออเดอร์, เดินสถานะรายการอาหาร |
+| Controller | `dashboard_controller_test.dart` | โหลดสรุปยอดขายวันนี้ + ตัวนับสด |
+| Controller | `report_controller_test.dart` | เลือกช่วงเวลารายงาน, กลืน error ของ topItems/dailySales เงียบๆ |
 | Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) |
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget |
@@ -626,7 +638,10 @@ cd app && flutter test      # 77 เคส
 
 > เมธอดที่แตะการนำทาง (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) ไม่ได้ครอบคลุมในเทสต์ระดับ
 > unit นี้ — ต้องมี `GetMaterialApp` ที่ pump จริง จึงทดสอบเฉพาะตรรกะ/state ที่ไม่พึ่งการนำทาง
-> (ดู `docs/CODING_STANDARDS.md` หัวข้อ state management)
+> (ดู `docs/CODING_STANDARDS.md` หัวข้อ 6.2) — ระหว่างเขียนเทสต์เจอบั๊กจริงใน
+> `OrderDetailController`: GetX ข้าม assignment ของ `Rxn<Order>` เงียบๆ เมื่อออเดอร์ใหม่ที่ได้
+> กลับมามี id เดิม (เพราะ `Order.==` เทียบแค่ id) ทำให้จอค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ — แก้แล้ว
+> (ดู `docs/CODING_STANDARDS.md` หัวข้อ 3.5)
 
 CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flutter test` → `flutter build web`
 ฝั่ง Flutter และ `prettier --check` → `eslint` → `npm test` ฝั่ง backend ทุกครั้งที่ push

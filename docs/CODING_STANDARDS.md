@@ -16,10 +16,10 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 | Clean Code | ✅ ดี | `flutter analyze` ไม่มี warning, `dart format` ผ่าน, ไม่มี `print()`/`TODO`/`FIXME` ค้าง, backend มี ESLint + Prettier ครบแล้ว |
 | State Management (GetX) | ✅ ดี | แยก ephemeral state (setState) กับ app state (Rx) ชัดเจน, ไม่มี controller รั่ว |
 | Clean Architecture | ✅ แก้ครบแล้ว | domain เคย import จาก data (ดูหัวข้อ 4.4) — แก้แล้ว |
-| Technical Debt | ⚠️ มีรายการต้องติดตาม | เทสต์ยังไม่ครบทุก controller/module (ดูหัวข้อ 6) |
+| Technical Debt | ⚠️ เหลือ 1 รายการ (ไม่เร่งด่วน) | เทสต์ controller/module ครบทุกตัวแล้ว เหลือแค่ Flutter dependencies ล้าหลัง (ดูหัวข้อ 6) |
 | โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
-Flutter: 77 เทสต์ผ่าน · Backend: 87 เทสต์ผ่าน · รวม 164 เทสต์อัตโนมัติ
+Flutter: 142 เทสต์ผ่าน · Backend: 87 เทสต์ผ่าน · รวม 229 เทสต์อัตโนมัติ
 
 ดูสรุปแบบอ่านง่าย (PDF 8 หน้า) ได้ที่ [`docs/PaynEat-POS-Audit-Report-TH.pdf`](PaynEat-POS-Audit-Report-TH.pdf)
 
@@ -161,6 +161,38 @@ Obx(() {
   `onClose()` และ cleanup ทุกตัวเสมอ (ตรวจแล้วว่า `AuthController`, `CheckoutController`,
   `SettingsController`, `MenuController` ทำถูกครบ — ใช้เป็นตัวอย่างอ้างอิงได้)
 
+### 3.5 `Rx<T>`/`Rxn<T>` กับ entity ที่ override `==` ด้วย id เท่านั้น — บั๊กจริงที่เคยเกิด
+
+**ห้ามวางใจว่า `someRx.value = newObject` จะอัปเดตค่าเสมอ ถ้า `T` override `==` แบบเทียบแค่ id**
+(เช่น `Order`, `OrderItem`, `MenuItem`, `Category`, `User`, `DiningTable` ในโปรเจกต์นี้ทุกตัวทำแบบนี้)
+
+GetX's `RxImpl.value` setter มี short-circuit ว่า `if (_value == val) return;` — ถ้าอ็อบเจกต์เก่ากับใหม่
+`==` กันแล้วได้ `true` (เพราะเทียบแค่ `id` เหมือนกัน) มันจะ **ไม่แทนที่ `_value` เลย** แม้เนื้อหาข้างในต่างกัน
+จริง (เช่น `items` เปลี่ยนจำนวน, `status` เปลี่ยน) และไม่แจ้ง listener ด้วย
+
+บั๊กนี้เคยเกิดจริงใน `OrderDetailController._run()` — หลัง `changeItemQuantity`/`advanceItemStatus`/
+`sendToKitchen`/ฯลฯ สำเร็จ เซิร์ฟเวอร์ส่ง `Order` ก้อนใหม่กลับมา (id เดิม เนื้อหาต่างกัน) แต่
+`order.value = data;` ไม่มีผลอะไรเลยเพราะ id ตรงกับของเดิม ทำให้จอค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ
+ทุกครั้ง (ตรวจพบตอนเขียน unit test ที่ปลอมข้อมูลคืนค่าจาก use case ให้ต่างจากเดิมโดยตั้งใจ)
+
+```dart
+// ❌ ผิด — ถ้า data.id == order.value?.id (ปกติเป็นแบบนี้เสมอ เพราะเป็นออเดอร์ใบเดิม)
+// GetX จะมองว่า "ค่าเดิม" แล้วข้าม assignment ไปเฉยๆ ตาม == ของ Order
+order.value = data;
+
+// ✅ ถูก — เคลียร์เป็น null ก่อนเพื่อบังคับให้ `_value == val` เป็น false เสมอ
+order.value = null;
+order.value = data;
+```
+
+ดูโค้ดจริงที่แก้แล้วที่ `app/lib/features/order/presentation/controllers/order_detail_controller.dart`
+(`_run()`) และเทสต์ที่ล็อกพฤติกรรมไว้ที่ `app/test/presentation/order_detail_controller_test.dart`
+
+**กฎจากเคสนี้**: ทุกครั้งที่ reassign `Rx<T>`/`Rxn<T>` ด้วยอ็อบเจกต์ใหม่ที่ id อาจจะซ้ำกับของเดิม
+(เช่น refetch entity เดิมหลัง mutate) ให้เคลียร์เป็น `null` ก่อนเสมอ หรือถ้าเป็น `Rx<T>` ที่ไม่รับ
+`null` ให้ใช้ `.refresh()` ควบคู่กับการเช็คว่าอ็อบเจกต์ใหม่ถูก assign เข้า `_value` จริง —
+**ห้ามพึ่ง `==` ของ entity ที่ id-based ในการตัดสินว่า Rx ต้อง notify หรือไม่**
+
 ---
 
 ## 4. Clean Architecture
@@ -294,7 +326,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 | # | รายการ | ผลกระทบ | แผนแก้ | สถานะ |
 |---|---|---|---|---|
 | 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint.config.js` + `.prettierrc.json` แล้ว และเช็คใน CI ทุก PR (ดูหัวข้อ 2.3) | ✅ **แก้แล้ว** |
-| 2 | Controller ใน Flutter ยังไม่มี unit test ครบทุกตัว | บั๊ก logic ใน controller ที่เหลือจับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ 3 ตัวที่กระทบ user มากสุดแล้ว (`AuthController`, `OrderListController`, `TableController`) เหลือ `MenuController`, `MenuManagementController`, `KitchenController`, `CheckoutController`, `ReceiptController`, `HomeController`, `SettingsController`, `StaffController`, `OrderDetailController`, `DashboardController`, `ReportController` — ทำต่อเมื่อมีเวลา ไม่เร่งด่วนเท่า 3 ตัวแรก | ⚠️ **ทำแล้วบางส่วน** |
+| 2 | Controller ใน Flutter ยังไม่มี unit test ครบทุกตัว | บั๊ก logic ใน controller ที่เหลือจับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ครบทั้ง 14 controller แล้ว: `AuthController`, `OrderListController`, `TableController` (ชุดแรก) + `MenuBrowseController`, `MenuManagementController`, `KitchenController`, `CheckoutController`, `ReceiptController`, `HomeController`, `SettingsController`, `StaffController`, `OrderDetailController`, `DashboardController`, `ReportController` (ชุดที่สอง) — เฉพาะ path ที่ไม่แตะ `Get.*`/`AppDialogs` โดยตรง (ดูหัวข้อ 6.2) ระหว่างทางเจอบั๊กจริงใน `OrderDetailController` แล้วแก้ (ดูหัวข้อ 3.5) | ✅ **แก้แล้ว** |
 | 3 | Backend module ไม่มี test เฉพาะ module | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่มเทสต์แยกครบทั้ง 9 module แล้ว: `menu`, `table`, `payment` (26 เคส) + `categories`, `settings`, `users`, `reports` (25 เคส) รวมกับ `auth`/`order-flow`/`calculator` เดิม | ✅ **แก้แล้ว** |
 | 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็น 7 ไฟล์ตามโดเมนด้วย part/part of แล้ว (ดูหัวข้อ 2.2) | ✅ **แก้แล้ว** |
 | 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
@@ -314,6 +346,28 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
   — เพราะ mirror กับ string enum ฝั่ง backend ตรงๆ ไม่ต้องมี mapping layer, ป้องกัน typo ด้วย
   named constants อยู่แล้ว (ตรวจแล้วว่าไม่มีจุดไหน compare ด้วย string literal ตรงๆ)
 - `Result<T>` เขียนเอง แทน `dartz` — ดู DECISIONS.md ข้อ 3
+
+### 6.2 แนวทางเทสต์ controller ที่แตะ `Get.*`/`AppDialogs`
+
+Controller หลายตัวมีเมธอดที่เรียก `Get.toNamed`/`Get.offNamed`/`Get.back`/`Get.dialog`/
+`AppDialogs.success`/`AppDialogs.error`/`AppDialogs.confirm` ตรงๆ — ฟังก์ชันพวกนี้ต้องมี
+`GetMaterialApp` ที่ถูก pump จริงในต้นไม้วิดเจ็ต ไม่งั้นจะ throw หรือ fail แบบเงียบๆ
+
+โปรเจกต์นี้ **ไม่สร้าง widget harness เต็มรูปแบบสำหรับเทสต์ controller ระดับ unit** (ต่างจาก
+widget test/golden test ที่ pump จริงอยู่แล้วในโฟลเดอร์อื่น) เพื่อให้เทสต์เร็วและไม่ผูกกับ UI —
+แนวทางที่ใช้แทนคือ:
+
+1. เทสต์เฉพาะ path ที่ไม่แตะ `Get.*`/`AppDialogs` โดยตรง (getter, guard clause ต้น method,
+   success path ที่ไม่ส่ง `successMessage`, ฯลฯ)
+2. path ที่แตะทั้งหมด (เช่น `save()`/`delete()`/`toggleActive()` ที่เรียก `AppDialogs` ทุกเส้นทาง
+   รวมถึง validation guard) ให้ข้ามและ**คอมเมนต์ไว้ในไฟล์เทสต์ว่าทำไมถึงข้าม** อ้างอิงหัวข้อนี้
+3. ถ้า method มี `late final` field ที่ตั้งค่าใน `onInit()` (เช่น `orderId` จาก `Get.arguments`)
+   ต้องเรียก `controller.onInit()` ก่อนเสมอ (ไม่ใช่เรียก `load()` ตรงๆ) แล้ว
+   `await Future<void>.delayed(Duration.zero);` เพื่อให้ fire-and-forget `load()` ข้างใน
+   `onInit()` มีเวลารันจบก่อนไปสเต็ปถัดไป — ดูตัวอย่างที่ `checkout_controller_test.dart`,
+   `order_detail_controller_test.dart`
+
+ดูตัวอย่างครบทั้ง 14 controller ที่ `app/test/presentation/*_controller_test.dart`
 
 ---
 

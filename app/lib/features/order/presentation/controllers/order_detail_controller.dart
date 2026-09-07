@@ -202,6 +202,10 @@ class OrderDetailController extends GetxController {
 
     result.fold(
       onSuccess: (data) {
+        // Order.== เทียบแค่ id ทำให้ GetX มองว่าค่าเดิม (id เดียวกัน) "ไม่เปลี่ยน"
+        // แล้วข้าม assignment ไปเฉย ๆ (ดู RxImpl.value setter) ต้องเคลียร์เป็น null
+        // ก่อนเพื่อบังคับให้อัปเดตจริง ไม่งั้นจอจะค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ
+        order.value = null;
         order.value = data;
         if (successMessage != null) AppDialogs.success(successMessage);
       },
