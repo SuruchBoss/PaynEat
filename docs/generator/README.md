@@ -30,6 +30,8 @@ python3 build_audit_report.py audit-report.html
 node makepdf.mjs "$(pwd)/audit-report.html" ../PaynEat-POS-Audit-Report-TH.pdf "PaynEat POS — รายงานผลตรวจคุณภาพโค้ด"
 ```
 
+> **หมายเหตุฟอนต์**: รายงานนี้ใช้ฟอนต์ Waree (ดู `fonts-audit/README.md`) แทน Noto Sans Thai เพราะ Noto Sans Thai ชนกับบั๊กของ Chromium print-to-PDF ที่ทำให้ข้อความไทยที่มีวรรณยุกต์/สระซ้อน ถูกคัดลอกออกมาผิดเพี้ยน (ตัวอักษรซ้ำ/สลับที่) แม้แสดงผลถูกต้อง — ทดสอบแล้วว่า Waree คัดลอกถูกต้อง 100%
+
 ## โครงสร้าง
 
 | ไฟล์ | หน้าที่ |

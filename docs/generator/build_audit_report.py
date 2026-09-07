@@ -14,10 +14,15 @@ CSS = """
 @page { size: A4; margin: 14mm 13mm 16mm 13mm; }
 @page :first { margin: 0; }
 
-@font-face { font-family: 'Noto'; src: url('NotoSansThai-400.ttf'); font-weight: 400; }
-@font-face { font-family: 'Noto'; src: url('NotoSansThai-500.ttf'); font-weight: 500; }
-@font-face { font-family: 'Noto'; src: url('NotoSansThai-700.ttf'); font-weight: 700; }
-@font-face { font-family: 'Noto'; src: url('NotoSansThai-800.ttf'); font-weight: 800; }
+/* ใช้ฟอนต์ Waree (TLWG) แทน Noto Sans Thai เฉพาะเอกสารนี้ — Noto Sans Thai ชนกับบั๊กของ
+   Chromium print-to-PDF ที่ทำให้ข้อความไทยที่มีวรรณยุกต์/สระซ้อนถูกคัดลอกออกมาผิดเพี้ยน
+   (ตัวอักษรซ้ำ/สลับที่) แม้จะแสดงผลถูกต้องบนหน้าจอก็ตาม ทดสอบแล้วว่า Waree ให้ผลลัพธ์การ
+   คัดลอกข้อความถูกต้อง 100% ในขณะที่ Noto Sans Thai ผิดเพี้ยนในทุก engine ที่ทดสอบ
+   (Chromium ปกติ, Chromium tagged-pdf, WeasyPrint, LibreOffice) */
+@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Regular.ttf'); font-weight: 400; }
+@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Regular.ttf'); font-weight: 500; }
+@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Bold.ttf'); font-weight: 700; }
+@font-face { font-family: 'Noto'; src: url('fonts-audit/Waree-Bold.ttf'); font-weight: 800; }
 
 :root {
   --primary: #FF6B2C;
