@@ -2,9 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { authenticate, authorize } from '../../middlewares/auth.js';
 import { validate } from '../../middlewares/validate.js';
-import { asyncHandler } from '../../core/asyncHandler.js';
-import { ok } from '../../core/response.js';
-import { settingsService } from './settings.service.js';
+import { settingsController } from './settings.controller.js';
 
 const updateSettingsSchema = z.object({
   storeName: z.string().min(1).max(80).optional(),
@@ -16,13 +14,13 @@ const updateSettingsSchema = z.object({
 
 const router = Router();
 
-router.get('/', authenticate, asyncHandler(async (_req, res) => ok(res, settingsService.get())));
+router.get('/', authenticate, settingsController.get);
 router.patch(
   '/',
   authenticate,
   authorize('admin', 'manager'),
   validate({ body: updateSettingsSchema }),
-  asyncHandler(async (req, res) => ok(res, settingsService.update(req.body))),
+  settingsController.update,
 );
 
 export default router;

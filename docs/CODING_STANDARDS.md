@@ -15,9 +15,9 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 |---|---|---|
 | Clean Code | ✅ ดี | `flutter analyze` ไม่มี warning, `dart format` ผ่าน, ไม่มี `print()`/`TODO`/`FIXME` ค้าง |
 | State Management (GetX) | ✅ ดี | แยก ephemeral state (setState) กับ app state (Rx) ชัดเจน, ไม่มี controller รั่ว |
-| Clean Architecture | ⚠️ พบ 2 จุดที่ผิดกฎ — **แก้แล้ว** | domain เคย import จาก data (ดูหัวข้อ 4.4) |
+| Clean Architecture | ✅ แก้ครบแล้ว | domain เคย import จาก data (ดูหัวข้อ 4.4) — แก้แล้ว |
 | Technical Debt | ⚠️ มีรายการต้องติดตาม | เทสต์ยังไม่ครบทุก controller/module (ดูหัวข้อ 6) |
-| โครงสร้างโฟลเดอร์ | ⚠️ ไม่สม่ำเสมอเล็กน้อย | backend 3 module ข้าม controller layer (ดูหัวข้อ 5.3) |
+| โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
 Flutter: 46 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 82 เทสต์อัตโนมัติ
 
@@ -238,19 +238,22 @@ modules/<module>/
   <name>.schema.js         # zod validation schema
 ```
 
-### 5.3 ข้อไม่สม่ำเสมอที่พบ: 3 module ข้าม controller layer
+### 5.3 ข้อไม่สม่ำเสมอที่พบและแก้แล้ว: 3 module เคยข้าม controller layer
 
-`payments/`, `reports/`, `settings/` ไม่มีไฟล์ `.controller.js` — route handler เรียก
+`payments/`, `reports/`, `settings/` เคยไม่มีไฟล์ `.controller.js` — route handler เรียก
 `xxxService.method()` ตรงจาก `routes.js` เลย ในขณะที่อีก 6 module (auth, categories, menu, orders,
 tables, users) มี controller คั่นกลางตามที่ README อธิบายสถาปัตยกรรมไว้
 
-**นี่ไม่ใช่บั๊ก** (ไม่มี layer ไหนถูกข้ามในทางที่อันตราย เพราะ service ก็ยังไม่รู้จัก req/res อยู่ดี)
-แต่เป็นความไม่สม่ำเสมอที่ควรเลือกทางใดทางหนึ่งแล้วทำให้เหมือนกันทั้งหมด:
+**แก้แล้ว**: เพิ่ม `payment.controller.js`, `report.controller.js`, `settings.controller.js`
+ตามรูปแบบเดียวกับ `table.controller.js` (object literal ที่แต่ละ method ห่อด้วย `asyncHandler`
+แล้วเรียก service + ส่ง response) และแก้ `routes.js` ทั้ง 3 ไฟล์ให้เรียก controller แทนการเรียก
+service ตรงๆ — path, middleware, ลำดับ validation, response shape เดิมทุกอย่าง ยืนยันด้วย
+`npm test` (36 ผ่านเหมือนเดิม) และยิง API จริงตรวจ 3 endpoint (`GET /settings`,
+`GET /reports/dashboard`, `GET /payments/order/:id`) ผ่านทั้งหมด
 
 **กฎจากนี้ไป**: module ใหม่ทุกตัว **ต้องมี controller layer เสมอ** แม้จะเป็น CRUD ธรรมดา
-เพื่อให้ route handler บางเสมอ (`asyncHandler(controller.method)`) และเทสต์ controller แยกจาก
-service ได้ในอนาคต ส่วน 3 module เดิม (`payments`, `reports`, `settings`) ให้ทยอยเพิ่ม controller
-เมื่อมีการแก้ไขไฟล์นั้นครั้งถัดไป (ไม่ต้อง refactor เดี่ยวๆ เพราะความเสี่ยงไม่คุ้มกับประโยชน์ตอนนี้)
+เพื่อให้ route handler บางเสมอ (`controller.method` ที่ห่อด้วย `asyncHandler` ไว้แล้วในไฟล์ controller)
+และเทสต์ controller แยกจาก service ได้ในอนาคต
 
 ---
 
@@ -264,7 +267,7 @@ service ได้ในอนาคต ส่วน 3 module เดิม (`paym
 | 2 | Controller ส่วนใหญ่ใน Flutter ไม่มี unit test เฉพาะตัว (มีแค่ `CartController`) | บั๊ก logic ใน controller (เช่น auth flow, order list filter) จับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ `AuthController`, `OrderListController`, `TableController` เป็นลำดับแรก (กระทบ user มากสุด) | ค้าง |
 | 3 | Backend module ส่วนใหญ่ไม่มี unit test เฉพาะ module (มีแค่ `auth`, `order-flow` integration, `calculator`) | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่ม unit test แยกให้ `menu.service.js`, `table.service.js`, `payment.service.js` | ค้าง |
 | 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็นไฟล์ย่อยตามโดเมนตอนแก้ไขครั้งถัดไป (ดูหัวข้อ 2.2) | ค้าง |
-| 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แบบทยอยทำ (ดูหัวข้อ 5.3) | ค้าง |
+| 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
 | 6 | Flutter dependencies ล้าหลัง ~15 แพ็กเกจ (minor version) | ไม่กระทบการทำงาน แต่ควรตามให้ทันเป็นระยะ | รัน `flutter pub outdated` ทุกไตรมาส แล้วอัปเดตทีละน้อย | ค้าง |
 | 7 | domain layer import จาก data layer (`MenuItemPayload`, `OrderItemPayload`) | ผิดกฎ Clean Architecture ข้อ 4.1 | ย้ายเข้า `domain/entities/` แล้ว | ✅ **แก้แล้ว** (การตรวจครั้งนี้) |
 
