@@ -10,7 +10,7 @@ export const menuRepository = {
       params.push(categoryId);
     }
     if (search) {
-      clauses.push('(m.name LIKE ? OR IFNULL(m.name_en, "") LIKE ?)');
+      clauses.push("(m.name LIKE ? OR IFNULL(m.name_en, '') LIKE ?)");
       params.push(`%${search}%`, `%${search}%`);
     }
     if (availableOnly) clauses.push('m.is_available = 1');
