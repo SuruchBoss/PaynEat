@@ -36,6 +36,9 @@ class ReceiptController extends GetxController {
     result.fold(
       onSuccess: (data) {
         receipt.value = data.receipt;
+        // Order.== เทียบแค่ id ต้องเคลียร์เป็น null ก่อนเพื่อบังคับให้ Rxn อัปเดตจริง
+        // (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5)
+        order.value = null;
         order.value = data.order;
       },
       onFailure: (failure) => errorMessage.value = failure.message,

@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/routes/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
+import '../../../table/domain/usecases/table_usecases.dart';
 import '../../domain/entities/order.dart';
+import '../../domain/usecases/order_usecases.dart';
 import '../controllers/order_detail_controller.dart';
 import '../widgets/bill_summary.dart';
 import '../widgets/discount_dialog.dart';
 import '../widgets/order_item_tile.dart';
+import '../widgets/order_picker_dialog.dart';
+import '../widgets/table_picker_dialog.dart';
 
 /// หน้ารายละเอียดออเดอร์ — ดูรายการ เดินสถานะ ให้ส่วนลด และไปหน้าชำระเงิน
 class OrderDetailPage extends GetView<OrderDetailController> {
@@ -47,6 +53,33 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                     child: ListTile(
                       leading: Icon(Icons.receipt_rounded),
                       title: Text('ดูใบเสร็จ'),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isActive && order.tableId != null)
+                  const PopupMenuItem(
+                    value: 'moveTable',
+                    child: ListTile(
+                      leading: Icon(Icons.swap_horiz_rounded),
+                      title: Text('ย้ายโต๊ะ'),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isActive)
+                  const PopupMenuItem(
+                    value: 'merge',
+                    child: ListTile(
+                      leading: Icon(Icons.call_merge_rounded),
+                      title: Text('รวมบิลจากออเดอร์อื่น'),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isActive && controller.canCollectPayment)
+                  const PopupMenuItem(
+                    value: 'splitBill',
+                    child: ListTile(
+                      leading: Icon(Icons.call_split_rounded),
+                      title: Text('แยกบิลรายคน'),
                       dense: true,
                     ),
                   ),
@@ -130,8 +163,41 @@ class OrderDetailPage extends GetView<OrderDetailController> {
         }
       case 'receipt':
         await controller.openReceipt();
+      case 'moveTable':
+        await _moveTable(order);
+      case 'merge':
+        await _mergeBill(order);
+      case 'splitBill':
+        await Get.toNamed<void>(
+          AppRoutes.splitBill,
+          arguments: {'orderId': order.id},
+        );
       case 'cancel':
         await _confirmCancel();
+    }
+  }
+
+  Future<void> _moveTable(Order order) async {
+    final result = await Get.find<GetTablesUseCase>()(
+      const TableFilter(status: TableStatus.available),
+    );
+    final tables = result.dataOrNull ?? const [];
+    final tableId = await TablePickerDialog.show(tables);
+    if (tableId != null) {
+      await controller.moveTable(tableId);
+    }
+  }
+
+  Future<void> _mergeBill(Order order) async {
+    final result = await Get.find<GetOrdersUseCase>()(
+      const OrderListFilter(activeOnly: true, limit: 100),
+    );
+    final orders = (result.dataOrNull?.orders ?? const [])
+        .where((row) => row.id != order.id)
+        .toList(growable: false);
+    final sourceOrderId = await OrderPickerDialog.show(orders);
+    if (sourceOrderId != null) {
+      await controller.mergeInto(sourceOrderId);
     }
   }
 

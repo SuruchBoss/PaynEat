@@ -21,6 +21,8 @@ class OrderDetailController extends GetxController {
     required UpdateOrderItemStatusUseCase updateItemStatus,
     required ApplyDiscountUseCase applyDiscount,
     required CancelOrderUseCase cancelOrder,
+    required MoveOrderTableUseCase moveOrderTable,
+    required MergeOrdersUseCase mergeOrders,
     required SessionService session,
   }) : _getOrder = getOrder,
        _sendToKitchen = sendToKitchen,
@@ -29,6 +31,8 @@ class OrderDetailController extends GetxController {
        _updateItemStatus = updateItemStatus,
        _applyDiscount = applyDiscount,
        _cancelOrder = cancelOrder,
+       _moveOrderTable = moveOrderTable,
+       _mergeOrders = mergeOrders,
        _session = session;
 
   final GetOrderUseCase _getOrder;
@@ -38,6 +42,8 @@ class OrderDetailController extends GetxController {
   final UpdateOrderItemStatusUseCase _updateItemStatus;
   final ApplyDiscountUseCase _applyDiscount;
   final CancelOrderUseCase _cancelOrder;
+  final MoveOrderTableUseCase _moveOrderTable;
+  final MergeOrdersUseCase _mergeOrders;
   final SessionService _session;
 
   final Rxn<Order> order = Rxn<Order>();
@@ -77,7 +83,14 @@ class OrderDetailController extends GetxController {
 
     isLoading.value = false;
     result.fold(
-      onSuccess: (data) => order.value = data,
+      onSuccess: (data) {
+        // Order.== เทียบแค่ id ต้องเคลียร์เป็น null ก่อนเพื่อบังคับให้ Rxn อัปเดตจริง
+        // (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5) — สำคัญมากตรงนี้เพราะ load()
+        // ถูกเรียกซ้ำจาก realtime update (_listenToRealtimeUpdates) ตลอดเวลาที่
+        // เปิดหน้านี้ค้างไว้ ถ้าไม่รีเซ็ตจะไม่มีทางเห็นรายการอัปเดตสดเลยหลังโหลดครั้งแรก
+        order.value = null;
+        order.value = data;
+      },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
   }
@@ -168,6 +181,24 @@ class OrderDetailController extends GetxController {
     await _run(
       () => _cancelOrder(CancelOrderParams(orderId: orderId, reason: reason)),
       successMessage: 'ยกเลิกออเดอร์แล้ว',
+    );
+  }
+
+  Future<void> moveTable(int tableId) async {
+    await _run(
+      () => _moveOrderTable(
+        MoveOrderTableParams(orderId: orderId, tableId: tableId),
+      ),
+      successMessage: 'ย้ายโต๊ะแล้ว',
+    );
+  }
+
+  Future<void> mergeInto(int sourceOrderId) async {
+    await _run(
+      () => _mergeOrders(
+        MergeOrdersParams(targetOrderId: orderId, sourceOrderId: sourceOrderId),
+      ),
+      successMessage: 'รวมบิลแล้ว',
     );
   }
 

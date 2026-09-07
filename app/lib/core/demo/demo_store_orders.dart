@@ -146,6 +146,7 @@ extension DemoStoreOrders on DemoStore {
         'lineTotal': (unitPrice + optionsPrice) * quantity,
         'note': input['note'],
         'status': OrderItemStatus.pending,
+        'isPaid': false,
         'createdAt': _now(),
         'updatedAt': _now(),
         'orderCode': order['code'],
@@ -276,6 +277,77 @@ extension DemoStoreOrders on DemoStore {
     order['discountType'] = type;
     order['discountValue'] = type == DiscountType.none ? 0.0 : value;
     return _recalculate(order);
+  }
+
+  /// ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น เช่น ลูกค้าขอย้ายที่นั่ง
+  Map<String, dynamic> moveOrderTable(int orderId, int tableId) {
+    final order = findOrder(orderId);
+    _assertMutable(order);
+    final oldTableId = order['tableId'];
+    if (oldTableId == null) {
+      throw const ApiException(
+        message: 'ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้',
+        statusCode: 400,
+      );
+    }
+    if (oldTableId == tableId) {
+      throw const ApiException(
+        message: 'เลือกโต๊ะเดิม ไม่ต้องย้าย',
+        statusCode: 400,
+      );
+    }
+    if (openOrderByTable(tableId) != null) {
+      throw const ApiException(
+        message: 'โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว',
+        statusCode: 409,
+      );
+    }
+
+    final table = _findTable(tableId);
+    order['tableId'] = tableId;
+    order['tableName'] = table['name'];
+    order['tableZone'] = table['zone'];
+    table['status'] = TableStatus.occupied;
+    _findTable(oldTableId as int)['status'] = TableStatus.available;
+    order['updatedAt'] = _now();
+
+    for (final item in (order['items'] as List).cast<Map<String, dynamic>>()) {
+      item['tableName'] = table['name'];
+    }
+
+    return order;
+  }
+
+  /// รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล
+  Map<String, dynamic> mergeOrders(int targetOrderId, int sourceOrderId) {
+    if (targetOrderId == sourceOrderId) {
+      throw const ApiException(
+        message: 'เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้',
+        statusCode: 400,
+      );
+    }
+    final target = findOrder(targetOrderId);
+    final source = findOrder(sourceOrderId);
+    _assertMutable(target);
+    _assertMutable(source);
+
+    final sourceItems = (source['items'] as List).cast<Map<String, dynamic>>();
+    final targetItems = target['items'] as List;
+    for (final item in sourceItems) {
+      item['orderId'] = target['id'];
+      item['orderCode'] = target['code'];
+      item['tableName'] = target['tableName'];
+      item['orderType'] = target['type'];
+      targetItems.add(item);
+    }
+    sourceItems.clear();
+
+    source['status'] = OrderStatus.cancelled;
+    source['cancelledReason'] = 'รวมเข้ากับบิล #${target['code']}';
+    source['closedAt'] = _now();
+    _freeTable(source);
+
+    return _recalculate(target);
   }
 
   Map<String, dynamic> cancelOrder(int orderId, String reason) {

@@ -47,3 +47,32 @@ class PaymentSummaryModel extends PaymentSummary {
             .toList(growable: false),
       );
 }
+
+class SplitPreviewModel extends SplitPreview {
+  const SplitPreviewModel({
+    required super.orderId,
+    required super.itemIds,
+    required super.subtotal,
+    required super.discountAmount,
+    required super.serviceCharge,
+    required super.vat,
+    required super.total,
+    required super.remaining,
+    required super.isLastBatch,
+  });
+
+  factory SplitPreviewModel.fromJson(Map<String, dynamic> json) =>
+      SplitPreviewModel(
+        orderId: (json['orderId'] as num?)?.toInt() ?? 0,
+        itemIds: (json['itemIds'] as List? ?? const [])
+            .map((value) => (value as num).toInt())
+            .toList(growable: false),
+        subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
+        discountAmount: (json['discountAmount'] as num?)?.toDouble() ?? 0,
+        serviceCharge: (json['serviceCharge'] as num?)?.toDouble() ?? 0,
+        vat: (json['vat'] as num?)?.toDouble() ?? 0,
+        total: (json['total'] as num?)?.toDouble() ?? 0,
+        remaining: (json['remaining'] as num?)?.toDouble() ?? 0,
+        isLastBatch: json['isLastBatch'] as bool? ?? false,
+      );
+}

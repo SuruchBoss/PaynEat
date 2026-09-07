@@ -33,6 +33,8 @@ abstract class OrderRemoteDataSource {
   Future<OrderModel> sendToKitchen(int orderId);
   Future<OrderModel> applyDiscount(int orderId, String type, double value);
   Future<OrderModel> cancelOrder(int orderId, String reason);
+  Future<OrderModel> moveTable(int orderId, int tableId);
+  Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId);
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses});
 }
 
@@ -171,6 +173,24 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     final result = await _client.post(
       ApiEndpoints.cancelOrder(orderId),
       body: {'reason': reason},
+    );
+    return OrderModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<OrderModel> moveTable(int orderId, int tableId) async {
+    final result = await _client.patch(
+      ApiEndpoints.moveOrderTable(orderId),
+      body: {'tableId': tableId},
+    );
+    return OrderModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId) async {
+    final result = await _client.post(
+      ApiEndpoints.mergeOrder(targetOrderId),
+      body: {'sourceOrderId': sourceOrderId},
     );
     return OrderModel.fromJson(result.asMap);
   }

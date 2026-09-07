@@ -8,11 +8,13 @@ abstract class PaymentRemoteDataSource {
   Future<({PaymentResult result, OrderModel order})> pay({
     required int orderId,
     required String method,
-    required double amount,
+    double? amount,
+    List<int>? itemIds,
     double? received,
     String? reference,
   });
   Future<PaymentSummaryModel> getSummary(int orderId);
+  Future<SplitPreviewModel> getSplitPreview(int orderId, List<int> itemIds);
   Future<({Receipt receipt, OrderModel order})> getReceipt(int orderId);
 }
 
@@ -25,7 +27,8 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
   Future<({PaymentResult result, OrderModel order})> pay({
     required int orderId,
     required String method,
-    required double amount,
+    double? amount,
+    List<int>? itemIds,
     double? received,
     String? reference,
   }) async {
@@ -34,7 +37,8 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       body: {
         'orderId': orderId,
         'method': method,
-        'amount': amount,
+        'amount': ?amount,
+        if (itemIds != null && itemIds.isNotEmpty) 'itemIds': itemIds,
         'received': ?received,
         if (reference != null && reference.isNotEmpty) 'reference': reference,
       },
@@ -55,6 +59,18 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
   Future<PaymentSummaryModel> getSummary(int orderId) async {
     final response = await _client.get(ApiEndpoints.paymentSummary(orderId));
     return PaymentSummaryModel.fromJson(response.asMap);
+  }
+
+  @override
+  Future<SplitPreviewModel> getSplitPreview(
+    int orderId,
+    List<int> itemIds,
+  ) async {
+    final response = await _client.post(
+      ApiEndpoints.splitPreview(orderId),
+      body: {'itemIds': itemIds},
+    );
+    return SplitPreviewModel.fromJson(response.asMap);
   }
 
   @override

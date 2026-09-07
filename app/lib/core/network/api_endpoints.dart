@@ -40,11 +40,15 @@ class ApiEndpoints {
   static String sendToKitchen(int id) => '/orders/$id/send-to-kitchen';
   static String orderDiscount(int id) => '/orders/$id/discount';
   static String cancelOrder(int id) => '/orders/$id/cancel';
+  static String moveOrderTable(int id) => '/orders/$id/move-table';
+  static String mergeOrder(int id) => '/orders/$id/merge';
 
   // Payments
   static const String payments = '/payments';
   static String paymentSummary(int orderId) => '/payments/order/$orderId';
   static String receipt(int orderId) => '/payments/order/$orderId/receipt';
+  static String splitPreview(int orderId) =>
+      '/payments/order/$orderId/split-preview';
 
   // Reports
   static const String dashboard = '/reports/dashboard';

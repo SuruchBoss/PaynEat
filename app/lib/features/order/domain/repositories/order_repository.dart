@@ -40,5 +40,7 @@ abstract class OrderRepository {
   Future<Result<Order>> sendToKitchen(int orderId);
   Future<Result<Order>> applyDiscount(int orderId, String type, double value);
   Future<Result<Order>> cancelOrder(int orderId, String reason);
+  Future<Result<Order>> moveTable(int orderId, int tableId);
+  Future<Result<Order>> mergeOrders(int targetOrderId, int sourceOrderId);
   Future<Result<List<OrderItem>>> getKitchenQueue({List<String>? statuses});
 }

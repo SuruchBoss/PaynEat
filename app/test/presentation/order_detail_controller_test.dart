@@ -86,6 +86,8 @@ void main() {
       updateItemStatus: UpdateOrderItemStatusUseCase(repository),
       applyDiscount: ApplyDiscountUseCase(repository),
       cancelOrder: CancelOrderUseCase(repository),
+      moveOrderTable: MoveOrderTableUseCase(repository),
+      mergeOrders: MergeOrdersUseCase(repository),
       session: session,
     );
   });
@@ -133,6 +135,35 @@ void main() {
 
       expect(controller.errorMessage.value, 'ต่อเซิร์ฟเวอร์ไม่ได้');
     });
+
+    test(
+      // ล็อกบั๊กที่เคยเกิดจริง (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5): load()
+      // ถูกเรียกซ้ำจาก realtime update ด้วย order id เดิมเสมอ ถ้าไม่เคลียร์
+      // order.value เป็น null ก่อน GetX จะมองว่า "ค่าไม่เปลี่ยน" แล้วข้าม assignment
+      'load เรียกซ้ำด้วย order id เดิม (เช่น realtime update) ต้องอัปเดตรายการใหม่จริง',
+      () async {
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+        repository.nextGetOrderResult = Result.success(
+          _order(items: [_item(1, status: OrderItemStatus.pending)]),
+        );
+        await controller.load();
+        expect(
+          controller.order.value?.items.single.status,
+          OrderItemStatus.pending,
+        );
+
+        repository.nextGetOrderResult = Result.success(
+          _order(items: [_item(1, status: OrderItemStatus.cooking)]),
+        );
+        await controller.load();
+
+        expect(
+          controller.order.value?.items.single.status,
+          OrderItemStatus.cooking,
+        );
+      },
+    );
 
     test(
       'canManage / canCollectPayment อ่านสิทธิ์จากผู้ใช้ปัจจุบันในเซสชัน',

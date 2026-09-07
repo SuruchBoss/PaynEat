@@ -5,41 +5,38 @@ import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../order/domain/entities/order.dart';
+import '../../../order/domain/entities/order_item.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/usecases/payment_usecases.dart';
 
-/// หน้าจอเก็บเงิน — รองรับจ่ายครบทีเดียวและแยกจ่ายหลายช่องทาง
-class CheckoutController extends GetxController {
-  CheckoutController({
+/// แยกบิลรายการอาหาร — เลือกเมนูที่จะจ่ายรอบนี้ ดูยอดล่วงหน้า แล้วชำระเป็นก้อนๆ
+/// จนกว่าจะครบทุกรายการ (แต่ละรายการจ่ายได้แค่ครั้งเดียว กันเลือกซ้ำ)
+class SplitBillController extends GetxController {
+  SplitBillController({
     required GetOrderUseCase getOrder,
-    required GetPaymentSummaryUseCase getSummary,
+    required GetSplitPreviewUseCase getSplitPreview,
     required PayOrderUseCase pay,
   }) : _getOrder = getOrder,
-       _getSummary = getSummary,
+       _getSplitPreview = getSplitPreview,
        _pay = pay;
 
   final GetOrderUseCase _getOrder;
-  final GetPaymentSummaryUseCase _getSummary;
+  final GetSplitPreviewUseCase _getSplitPreview;
   final PayOrderUseCase _pay;
 
   final Rxn<Order> order = Rxn<Order>();
-  final Rxn<PaymentSummary> summary = Rxn<PaymentSummary>();
+  final Rxn<SplitPreview> preview = Rxn<SplitPreview>();
+  final RxSet<int> selectedItemIds = <int>{}.obs;
   final RxBool isLoading = true.obs;
   final RxBool isPaying = false.obs;
   final RxnString errorMessage = RxnString();
   final RxString method = PaymentMethod.cash.obs;
-  final RxDouble amount = 0.0.obs;
   final RxDouble received = 0.0.obs;
 
-  final TextEditingController amountController = TextEditingController();
   final TextEditingController receivedController = TextEditingController();
-  final TextEditingController referenceController = TextEditingController();
 
   late final int orderId;
-
-  /// ปุ่มลัดธนบัตรที่ใช้บ่อยในร้าน
-  static const List<double> quickCashOptions = [100, 500, 1000];
 
   @override
   void onInit() {
@@ -51,25 +48,29 @@ class CheckoutController extends GetxController {
 
   @override
   void onClose() {
-    amountController.dispose();
     receivedController.dispose();
-    referenceController.dispose();
     super.onClose();
   }
 
-  double get remaining => summary.value?.remaining ?? 0;
+  List<OrderItem> get unpaidItems =>
+      order.value?.activeItems
+          .where((item) => !item.isPaid)
+          .toList(growable: false) ??
+      const [];
+
   bool get isCash => method.value == PaymentMethod.cash;
 
-  /// เงินทอน = เงินที่รับมา - ยอดที่จ่ายรอบนี้
   double get change {
-    if (!isCash) return 0;
-    final value = received.value - amount.value;
+    final total = preview.value?.total;
+    if (!isCash || total == null) return 0;
+    final value = received.value - total;
     return value > 0 ? double.parse(value.toStringAsFixed(2)) : 0;
   }
 
   bool get canPay {
-    if (amount.value <= 0 || amount.value > remaining + 0.001) return false;
-    if (isCash && received.value + 0.001 < amount.value) return false;
+    final total = preview.value?.total;
+    if (selectedItemIds.isEmpty || total == null) return false;
+    if (isCash && received.value + 0.001 < total) return false;
     return true;
   }
 
@@ -77,63 +78,52 @@ class CheckoutController extends GetxController {
     isLoading.value = true;
     errorMessage.value = null;
 
-    final results = await Future.wait([
-      _getOrder(orderId),
-      _getSummary(orderId),
-    ]);
+    final result = await _getOrder(orderId);
 
     isLoading.value = false;
-    results[0].fold(
+    result.fold(
       onSuccess: (data) {
         // Order.== เทียบแค่ id ต้องเคลียร์เป็น null ก่อนเพื่อบังคับให้ Rxn อัปเดตจริง
-        // (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5) — โหลดซ้ำหลัง submit() ที่จ่ายไม่ครบ
-        // ใช้ order id เดิมเสมอ
+        // (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5)
         order.value = null;
-        order.value = data as Order;
-      },
-      onFailure: (failure) => errorMessage.value = failure.message,
-    );
-    results[1].fold(
-      onSuccess: (data) {
-        summary.value = data as PaymentSummary;
-        setAmount(summary.value!.remaining);
+        order.value = data;
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
   }
 
-  void selectMethod(String value) {
-    method.value = value;
-    if (value != PaymentMethod.cash) {
-      setReceived(amount.value);
-    }
-  }
-
-  void setAmount(double value) {
-    final rounded = double.parse(value.toStringAsFixed(2));
-    amount.value = rounded;
-    amountController.text = rounded.toStringAsFixed(2);
-    if (received.value < rounded) setReceived(rounded);
-  }
-
-  void onAmountChanged(String value) {
-    amount.value = double.tryParse(value.trim()) ?? 0;
-  }
+  void selectMethod(String value) => method.value = value;
 
   void setReceived(double value) {
     received.value = value;
     receivedController.text = value.toStringAsFixed(2);
   }
 
-  void onReceivedChanged(String value) {
-    received.value = double.tryParse(value.trim()) ?? 0;
+  void onReceivedChanged(String value) =>
+      received.value = double.tryParse(value.trim()) ?? 0;
+
+  Future<void> toggleItem(int itemId) async {
+    if (!selectedItemIds.add(itemId)) selectedItemIds.remove(itemId);
+    await _refreshPreview();
   }
 
-  /// ปัดขึ้นเป็นหลักร้อยถัดไป เช่น ยอด 176.55 → เสนอปุ่ม 200
-  double get roundedUpSuggestion {
-    final target = remaining;
-    if (target <= 0) return 0;
-    return (target / 100).ceil() * 100;
+  Future<void> _refreshPreview() async {
+    if (selectedItemIds.isEmpty) {
+      preview.value = null;
+      return;
+    }
+
+    final result = await _getSplitPreview(
+      SplitPreviewParams(orderId: orderId, itemIds: selectedItemIds.toList()),
+    );
+
+    result.fold(
+      onSuccess: (data) {
+        preview.value = data;
+        if (received.value < data.total) setReceived(data.total);
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
   }
 
   Future<void> submit() async {
@@ -144,15 +134,22 @@ class CheckoutController extends GetxController {
       PayParams(
         orderId: orderId,
         method: method.value,
-        amount: amount.value,
+        itemIds: selectedItemIds.toList(),
         received: isCash ? received.value : null,
-        reference: referenceController.text.trim(),
       ),
     );
     isPaying.value = false;
 
     result.fold(
       onSuccess: (data) {
+        // Order.== เทียบแค่ id ต้องเคลียร์เป็น null ก่อนเพื่อบังคับให้ Rxn อัปเดตจริง
+        // (ดู docs/CODING_STANDARDS.md หัวข้อ 3.5)
+        order.value = null;
+        order.value = data.order;
+        selectedItemIds.clear();
+        preview.value = null;
+        setReceived(0);
+
         if (data.result.isFullyPaid) {
           AppDialogs.success('ปิดบิลเรียบร้อย');
           Get.offNamed<void>(
@@ -163,8 +160,6 @@ class CheckoutController extends GetxController {
           AppDialogs.success(
             'รับชำระแล้ว คงเหลือ ${data.result.remaining.toStringAsFixed(2)} บาท',
           );
-          referenceController.clear();
-          load();
         }
       },
       onFailure: (failure) => AppDialogs.error(failure.message),

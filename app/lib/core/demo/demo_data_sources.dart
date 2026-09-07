@@ -275,6 +275,19 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
       _delayed(() => OrderModel.fromJson(_store.cancelOrder(orderId, reason)));
 
   @override
+  Future<OrderModel> moveTable(int orderId, int tableId) => _delayed(
+    () => OrderModel.fromJson(_store.moveOrderTable(orderId, tableId)),
+  );
+
+  @override
+  Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId) =>
+      _delayed(
+        () => OrderModel.fromJson(
+          _store.mergeOrders(targetOrderId, sourceOrderId),
+        ),
+      );
+
+  @override
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses}) =>
       _delayed(
         () => _store
@@ -301,7 +314,8 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
   Future<({PaymentResult result, OrderModel order})> pay({
     required int orderId,
     required String method,
-    required double amount,
+    double? amount,
+    List<int>? itemIds,
     double? received,
     String? reference,
   }) => _delayed(() {
@@ -309,6 +323,7 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
       orderId: orderId,
       method: method,
       amount: amount,
+      itemIds: itemIds,
       received: received,
       reference: reference,
       cashierId: _auth.currentUserId,
@@ -327,6 +342,12 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
   Future<PaymentSummaryModel> getSummary(int orderId) => _delayed(
     () => PaymentSummaryModel.fromJson(_store.paymentSummary(orderId)),
   );
+
+  @override
+  Future<SplitPreviewModel> getSplitPreview(int orderId, List<int> itemIds) =>
+      _delayed(
+        () => SplitPreviewModel.fromJson(_store.splitPreview(orderId, itemIds)),
+      );
 
   @override
   Future<({Receipt receipt, OrderModel order})> getReceipt(int orderId) =>

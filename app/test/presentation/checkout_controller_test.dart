@@ -33,7 +33,8 @@ class _FakePaymentRepository implements PaymentRepository {
   Future<Result<({PaymentResult result, Order order})>> pay({
     required int orderId,
     required String method,
-    required double amount,
+    double? amount,
+    List<int>? itemIds,
     double? received,
     String? reference,
   }) async {

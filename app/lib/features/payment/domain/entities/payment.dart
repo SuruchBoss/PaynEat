@@ -60,6 +60,34 @@ class PaymentResult {
   final double remaining;
 }
 
+/// ยอดที่ต้องจ่ายสำหรับรายการอาหารบางส่วน — ใช้ก่อนแยกบิลรายคนจริง
+class SplitPreview {
+  const SplitPreview({
+    required this.orderId,
+    required this.itemIds,
+    required this.subtotal,
+    required this.discountAmount,
+    required this.serviceCharge,
+    required this.vat,
+    required this.total,
+    required this.remaining,
+    required this.isLastBatch,
+  });
+
+  final int orderId;
+  final List<int> itemIds;
+  final double subtotal;
+  final double discountAmount;
+  final double serviceCharge;
+  final double vat;
+  final double total;
+  final double remaining;
+
+  /// รายการที่เลือกครอบคลุมทุกรายการที่ยังไม่จ่ายแล้วหรือไม่ — ถ้าใช่ ยอด [total]
+  /// จะถูกบังคับให้เท่ากับ [remaining] พอดี กันเศษสตางค์ตกหล่นจากการปัดเศษหลายรอบ
+  final bool isLastBatch;
+}
+
 /// ข้อมูลใบเสร็จ
 class Receipt {
   const Receipt({

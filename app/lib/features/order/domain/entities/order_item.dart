@@ -29,6 +29,7 @@ class OrderItem {
     this.options = const [],
     this.optionsPrice = 0,
     this.note,
+    this.isPaid = false,
     this.createdAt,
     this.updatedAt,
     this.orderCode,
@@ -47,6 +48,9 @@ class OrderItem {
   final double lineTotal;
   final String? note;
   final String status;
+
+  /// จ่ายไปแล้วในรอบแยกบิลรายการอาหารหรือยัง (ใช้กันเลือกจ่ายซ้ำ)
+  final bool isPaid;
   final String? createdAt;
   final String? updatedAt;
 

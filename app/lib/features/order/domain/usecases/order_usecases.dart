@@ -243,6 +243,45 @@ class CancelOrderUseCase implements UseCase<Order, CancelOrderParams> {
       _repository.cancelOrder(params.orderId, params.reason);
 }
 
+class MoveOrderTableParams {
+  const MoveOrderTableParams({required this.orderId, required this.tableId});
+
+  final int orderId;
+  final int tableId;
+}
+
+/// ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น เช่น ลูกค้าขอย้ายที่นั่ง
+class MoveOrderTableUseCase implements UseCase<Order, MoveOrderTableParams> {
+  const MoveOrderTableUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<Order>> call(MoveOrderTableParams params) =>
+      _repository.moveTable(params.orderId, params.tableId);
+}
+
+class MergeOrdersParams {
+  const MergeOrdersParams({
+    required this.targetOrderId,
+    required this.sourceOrderId,
+  });
+
+  final int targetOrderId;
+  final int sourceOrderId;
+}
+
+/// รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล
+class MergeOrdersUseCase implements UseCase<Order, MergeOrdersParams> {
+  const MergeOrdersUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<Order>> call(MergeOrdersParams params) =>
+      _repository.mergeOrders(params.targetOrderId, params.sourceOrderId);
+}
+
 /// คิวครัว
 class GetKitchenQueueUseCase
     implements UseCase<List<OrderItem>, List<String>?> {

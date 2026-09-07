@@ -101,6 +101,16 @@ class OrderRepositoryImpl implements OrderRepository {
       guard(() async => await _remote.cancelOrder(orderId, reason));
 
   @override
+  Future<Result<Order>> moveTable(int orderId, int tableId) =>
+      guard(() async => await _remote.moveTable(orderId, tableId));
+
+  @override
+  Future<Result<Order>> mergeOrders(int targetOrderId, int sourceOrderId) =>
+      guard(
+        () async => await _remote.mergeOrders(targetOrderId, sourceOrderId),
+      );
+
+  @override
   Future<Result<List<OrderItem>>> getKitchenQueue({List<String>? statuses}) =>
       guard(() async => await _remote.getKitchenQueue(statuses: statuses));
 }

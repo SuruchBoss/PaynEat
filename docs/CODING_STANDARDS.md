@@ -19,7 +19,7 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 | Technical Debt | ✅ แก้ครบทุกรายการที่แก้ได้จริง | เหลือเฉพาะ transitive dependency ที่ผูกกับ Flutter SDK เอง แก้จากในโปรเจกต์ไม่ได้ (ดูหัวข้อ 6) |
 | โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
-Flutter: 142 เทสต์ผ่าน · Backend: 87 เทสต์ผ่าน · รวม 229 เทสต์อัตโนมัติ
+Flutter: 151 เทสต์ผ่าน · Backend: 94 เทสต์ผ่าน · รวม 245 เทสต์อัตโนมัติ
 
 ดูสรุปแบบอ่านง่าย (PDF 8 หน้า) ได้ที่ [`docs/PaynEat-POS-Audit-Report-TH.pdf`](PaynEat-POS-Audit-Report-TH.pdf)
 
@@ -175,6 +175,17 @@ GetX's `RxImpl.value` setter มี short-circuit ว่า `if (_value == val) 
 `order.value = data;` ไม่มีผลอะไรเลยเพราะ id ตรงกับของเดิม ทำให้จอค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ
 ทุกครั้ง (ตรวจพบตอนเขียน unit test ที่ปลอมข้อมูลคืนค่าจาก use case ให้ต่างจากเดิมโดยตั้งใจ)
 
+**ตามไปเจอเพิ่มอีก 3 จุดตอนทำฟีเจอร์ย้ายโต๊ะ/รวมบิล/แยกบิล** — จุดที่ร้ายแรงที่สุดคือ
+`OrderDetailController.load()` (เมธอด `load()` ธรรมดา ไม่ใช่แค่ `_run()`) เพราะ `load()` ถูกเรียกซ้ำ
+จาก **realtime update** (`_listenToRealtimeUpdates` เรียก `load(showLoader: false)` ทุกครั้งที่มี
+`ORDER_UPDATED`/`ORDER_ITEM_UPDATED` เด้งมา) ตลอดเวลาที่เปิดหน้านี้ค้างไว้ — ถ้าไม่แก้
+หน้ารายละเอียดออเดอร์จะ**ไม่มีทางอัปเดตแบบเรียลไทม์เลยหลังโหลดครั้งแรก** เพราะทุก
+`load(showLoader: false)` รอบถัดไปโดน short-circuit ด้วย id เดิมหมด (มี regression test ล็อกพฤติกรรม
+นี้ไว้แล้วในชื่อ "load เรียกซ้ำด้วย order id เดิม") อีก 2 จุดคือ `CheckoutController.load()`
+(เรียกซ้ำหลัง `submit()` จ่ายไม่ครบ) และ `ReceiptController.load()`/`SplitBillController.load()`
+— ผลกระทบตอนนี้เบากว่าเพราะฟิลด์ของ `Order` ที่แสดงผลในหน้านั้นๆ ไม่ค่อยเปลี่ยนระหว่างการ reload
+แต่ก็แก้ไปด้วยเพื่อความถูกต้องและกันบั๊กแฝงในอนาคต
+
 ```dart
 // ❌ ผิด — ถ้า data.id == order.value?.id (ปกติเป็นแบบนี้เสมอ เพราะเป็นออเดอร์ใบเดิม)
 // GetX จะมองว่า "ค่าเดิม" แล้วข้าม assignment ไปเฉยๆ ตาม == ของ Order
@@ -185,8 +196,10 @@ order.value = null;
 order.value = data;
 ```
 
-ดูโค้ดจริงที่แก้แล้วที่ `app/lib/features/order/presentation/controllers/order_detail_controller.dart`
-(`_run()`) และเทสต์ที่ล็อกพฤติกรรมไว้ที่ `app/test/presentation/order_detail_controller_test.dart`
+ดูโค้ดจริงที่แก้แล้วที่ `order_detail_controller.dart` (`_run()` และ `load()`),
+`checkout_controller.dart` (`load()`), `receipt_controller.dart` (`load()`),
+`split_bill_controller.dart` (`load()`, `submit()`) และเทสต์ที่ล็อกพฤติกรรมไว้ที่
+`app/test/presentation/order_detail_controller_test.dart`
 
 **กฎจากเคสนี้**: ทุกครั้งที่ reassign `Rx<T>`/`Rxn<T>` ด้วยอ็อบเจกต์ใหม่ที่ id อาจจะซ้ำกับของเดิม
 (เช่น refetch entity เดิมหลัง mutate) ให้เคลียร์เป็น `null` ก่อนเสมอ หรือถ้าเป็น `Rx<T>` ที่ไม่รับ

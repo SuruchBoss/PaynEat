@@ -42,6 +42,8 @@ class OrderDetailBinding extends Bindings {
         updateItemStatus: Get.find<UpdateOrderItemStatusUseCase>(),
         applyDiscount: Get.find<ApplyDiscountUseCase>(),
         cancelOrder: Get.find<CancelOrderUseCase>(),
+        moveOrderTable: Get.find<MoveOrderTableUseCase>(),
+        mergeOrders: Get.find<MergeOrdersUseCase>(),
         session: Get.find<SessionService>(),
       ),
     );

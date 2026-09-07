@@ -14,7 +14,8 @@ class PaymentRepositoryImpl implements PaymentRepository {
   Future<Result<({PaymentResult result, Order order})>> pay({
     required int orderId,
     required String method,
-    required double amount,
+    double? amount,
+    List<int>? itemIds,
     double? received,
     String? reference,
   }) => guard(() async {
@@ -22,6 +23,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       orderId: orderId,
       method: method,
       amount: amount,
+      itemIds: itemIds,
       received: received,
       reference: reference,
     );
@@ -31,6 +33,12 @@ class PaymentRepositoryImpl implements PaymentRepository {
   @override
   Future<Result<PaymentSummary>> getSummary(int orderId) =>
       guard(() async => await _remote.getSummary(orderId));
+
+  @override
+  Future<Result<SplitPreview>> getSplitPreview(
+    int orderId,
+    List<int> itemIds,
+  ) => guard(() async => await _remote.getSplitPreview(orderId, itemIds));
 
   @override
   Future<Result<({Receipt receipt, Order order})>> getReceipt(int orderId) =>

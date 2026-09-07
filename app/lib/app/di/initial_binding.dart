@@ -303,6 +303,14 @@ class InitialBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
+      () => MoveOrderTableUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => MergeOrdersUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
       () => GetKitchenQueueUseCase(Get.find<OrderRepository>()),
       fenix: true,
     );
@@ -314,6 +322,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => GetPaymentSummaryUseCase(Get.find<PaymentRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetSplitPreviewUseCase(Get.find<PaymentRepository>()),
       fenix: true,
     );
     Get.lazyPut(

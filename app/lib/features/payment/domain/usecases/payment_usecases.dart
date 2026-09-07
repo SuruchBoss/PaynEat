@@ -8,19 +8,24 @@ class PayParams {
   const PayParams({
     required this.orderId,
     required this.method,
-    required this.amount,
+    this.amount,
+    this.itemIds,
     this.received,
     this.reference,
   });
 
   final int orderId;
   final String method;
-  final double amount;
+
+  /// ระบุอย่างใดอย่างหนึ่ง: [amount] (จ่ายเป็นจำนวนเงิน) หรือ [itemIds]
+  /// (แยกบิลรายการอาหาร — เซิร์ฟเวอร์คำนวณยอดเองจากรายการที่เลือก)
+  final double? amount;
+  final List<int>? itemIds;
   final double? received;
   final String? reference;
 }
 
-/// รับชำระเงิน (รองรับจ่ายบางส่วน / แยกช่องทาง)
+/// รับชำระเงิน (รองรับจ่ายบางส่วน / แยกช่องทาง / แยกบิลรายการอาหาร)
 class PayOrderUseCase
     implements UseCase<({PaymentResult result, Order order}), PayParams> {
   const PayOrderUseCase(this._repository);
@@ -34,6 +39,7 @@ class PayOrderUseCase
     orderId: params.orderId,
     method: params.method,
     amount: params.amount,
+    itemIds: params.itemIds,
     received: params.received,
     reference: params.reference,
   );
@@ -47,6 +53,25 @@ class GetPaymentSummaryUseCase implements UseCase<PaymentSummary, int> {
   @override
   Future<Result<PaymentSummary>> call(int params) =>
       _repository.getSummary(params);
+}
+
+class SplitPreviewParams {
+  const SplitPreviewParams({required this.orderId, required this.itemIds});
+
+  final int orderId;
+  final List<int> itemIds;
+}
+
+/// ดูยอดที่ต้องจ่ายล่วงหน้าก่อนแยกบิลรายการอาหารจริง
+class GetSplitPreviewUseCase
+    implements UseCase<SplitPreview, SplitPreviewParams> {
+  const GetSplitPreviewUseCase(this._repository);
+
+  final PaymentRepository _repository;
+
+  @override
+  Future<Result<SplitPreview>> call(SplitPreviewParams params) =>
+      _repository.getSplitPreview(params.orderId, params.itemIds);
 }
 
 class GetReceiptUseCase
