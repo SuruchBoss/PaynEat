@@ -19,7 +19,7 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 | Technical Debt | ⚠️ มีรายการต้องติดตาม | เทสต์ยังไม่ครบทุก controller/module (ดูหัวข้อ 6) |
 | โครงสร้างโฟลเดอร์ | ✅ แก้ครบแล้ว | backend 3 module เคยข้าม controller layer (ดูหัวข้อ 5.3) — เพิ่มครบแล้ว |
 
-Flutter: 66 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 102 เทสต์อัตโนมัติ
+Flutter: 77 เทสต์ผ่าน · Backend: 36 เทสต์ผ่าน · รวม 113 เทสต์อัตโนมัติ
 
 ดูสรุปแบบอ่านง่าย (PDF 8 หน้า) ได้ที่ [`docs/PaynEat-POS-Audit-Report-TH.pdf`](PaynEat-POS-Audit-Report-TH.pdf)
 
@@ -53,9 +53,18 @@ Flutter: 66 เทสต์ผ่าน · Backend: 36 เทสต์ผ่า�
 ไม่มีการบังคับจำนวนบรรทัดตายตัว แต่ไฟล์ไหนเกิน ~400 บรรทัด ให้ตั้งคำถามว่าแยกความรับผิดชอบได้ไหม
 ตัวอย่างที่ต้องระวังในโปรเจกต์นี้:
 
-- `core/demo/demo_store.dart` (1,142 บรรทัด) — เป็นเซิร์ฟเวอร์จำลองทั้งร้านสำหรับ Demo Mode
-  ยอมรับว่าใหญ่เพราะจำลองทุกโมดูล แต่ **ถ้าจะเพิ่มฟีเจอร์ demo ใหม่ ให้แยกเป็นไฟล์ย่อยตามโดเมน**
-  (เช่น `demo_store_orders.dart`, `demo_store_reports.dart`) แทนที่จะเพิ่มในไฟล์เดิม
+- `core/demo/demo_store.dart` — **แก้แล้ว** เคยเป็นไฟล์เดียว 1,142 บรรทัด ตอนนี้แยกเป็น
+  `demo_store.dart` (78 บรรทัด — เก็บเฉพาะ state ร่วมและ helper ที่ใช้ทุกโดเมน) บวก part file
+  ตามโดเมน: `demo_store_auth.dart` (74), `demo_store_menu.dart` (146),
+  `demo_store_tables.dart` (81), `demo_store_orders.dart` (379),
+  `demo_store_payments.dart` (108), `demo_store_reports.dart` (186),
+  `demo_store_seed_history.dart` (127) — ใช้ `part`/`part of` + `extension ... on DemoStore`
+  ต่อไฟล์ ยังเป็นคลาสเดียวกัน เข้าถึง field/เมธอด private ข้ามไฟล์ได้ปกติเพราะ part ทั้งหมดอยู่ใน
+  library เดียวกัน (สมาชิก `static` เช่น `openingHour` ต้องระบุ `DemoStore.` นำหน้าเมื่อเรียกจาก
+  extension — จุดเดียวที่ต่างจากตอนอยู่ในคลาสเดียว) ยืนยันด้วยเทสต์ใหม่
+  `test/core/demo_store_test.dart` (11 เคส ครอบคลุมทุกโดเมนรวมถึงจุดที่โดเมนหนึ่งเรียก private
+  helper ของอีกโดเมน เช่น orders เรียก `_findTable`/`_findUser`) และเทสต์เดิมทั้งหมด 77/77 ผ่าน
+  เพิ่มฟีเจอร์ demo ใหม่จากนี้ไปให้เพิ่มในไฟล์ย่อยตามโดเมนที่เกี่ยวข้อง ไม่ใช่ไฟล์เดียวรวมกัน
 - ไฟล์หน้าจอ (page) ที่เกิน 400 บรรทัดขึ้นไป ให้แยก widget ย่อยออกเป็นไฟล์ใน `presentation/widgets/`
   ของ feature เดียวกัน แทนที่จะเก็บเป็น private class ในไฟล์เดียวกันทั้งหมด
 
@@ -287,7 +296,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 | 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint.config.js` + `.prettierrc.json` แล้ว และเช็คใน CI ทุก PR (ดูหัวข้อ 2.3) | ✅ **แก้แล้ว** |
 | 2 | Controller ใน Flutter ยังไม่มี unit test ครบทุกตัว | บั๊ก logic ใน controller ที่เหลือจับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ 3 ตัวที่กระทบ user มากสุดแล้ว (`AuthController`, `OrderListController`, `TableController`) เหลือ `MenuController`, `MenuManagementController`, `KitchenController`, `CheckoutController`, `ReceiptController`, `HomeController`, `SettingsController`, `StaffController`, `OrderDetailController`, `DashboardController`, `ReportController` — ทำต่อเมื่อมีเวลา ไม่เร่งด่วนเท่า 3 ตัวแรก | ⚠️ **ทำแล้วบางส่วน** |
 | 3 | Backend module ส่วนใหญ่ไม่มี unit test เฉพาะ module (มีแค่ `auth`, `order-flow` integration, `calculator`) | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่ม unit test แยกให้ `menu.service.js`, `table.service.js`, `payment.service.js` | ค้าง |
-| 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็นไฟล์ย่อยตามโดเมนตอนแก้ไขครั้งถัดไป (ดูหัวข้อ 2.2) | ค้าง |
+| 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็น 7 ไฟล์ตามโดเมนด้วย part/part of แล้ว (ดูหัวข้อ 2.2) | ✅ **แก้แล้ว** |
 | 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
 | 6 | Flutter dependencies ล้าหลัง ~15 แพ็กเกจ (minor version) | ไม่กระทบการทำงาน แต่ควรตามให้ทันเป็นระยะ | รัน `flutter pub outdated` ทุกไตรมาส แล้วอัปเดตทีละน้อย | ค้าง |
 | 7 | domain layer import จาก data layer (`MenuItemPayload`, `OrderItemPayload`) | ผิดกฎ Clean Architecture ข้อ 4.1 | ย้ายเข้า `domain/entities/` แล้ว | ✅ **แก้แล้ว** (การตรวจครั้งนี้) |
