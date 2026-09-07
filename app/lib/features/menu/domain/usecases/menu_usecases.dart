@@ -1,6 +1,6 @@
 import '../../../../core/usecases/result.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../data/models/menu_item_model.dart';
+import '../entities/menu_item_payload.dart';
 import '../entities/category.dart';
 import '../entities/menu_item.dart';
 import '../repositories/menu_repository.dart';

@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/widgets/app_dialogs.dart';
-import '../../data/models/menu_item_model.dart';
+import '../../domain/entities/menu_item_payload.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/menu_item.dart';
 import '../../domain/usecases/menu_usecases.dart';

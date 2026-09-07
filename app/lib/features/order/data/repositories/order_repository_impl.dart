@@ -3,6 +3,7 @@ import '../../../../core/usecases/result.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_item.dart';
 import '../../domain/repositories/order_repository.dart';
+import '../../domain/entities/order_item_payload.dart';
 import '../datasources/order_remote_data_source.dart';
 
 class OrderRepositoryImpl implements OrderRepository {

@@ -5,7 +5,7 @@ import '../../domain/entities/menu_item.dart';
 import '../../domain/repositories/menu_repository.dart';
 import '../datasources/menu_remote_data_source.dart';
 import '../models/category_model.dart';
-import '../models/menu_item_model.dart';
+import '../../domain/entities/menu_item_payload.dart';
 
 class MenuRepositoryImpl implements MenuRepository {
   const MenuRepositoryImpl(this._remote);

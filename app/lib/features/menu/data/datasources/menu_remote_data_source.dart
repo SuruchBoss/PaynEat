@@ -1,6 +1,7 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../models/category_model.dart';
+import '../../domain/entities/menu_item_payload.dart';
 import '../models/menu_item_model.dart';
 
 abstract class MenuRemoteDataSource {

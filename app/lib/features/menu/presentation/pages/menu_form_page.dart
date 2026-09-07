@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
-import '../../data/models/menu_item_model.dart';
+import '../../domain/entities/menu_item_payload.dart';
 import '../../domain/entities/menu_item.dart';
 import '../../domain/entities/menu_option.dart';
 import '../controllers/menu_management_controller.dart';

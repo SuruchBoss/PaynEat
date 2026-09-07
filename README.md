@@ -637,6 +637,8 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 10 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
+- [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
+  State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม
 
 ---
