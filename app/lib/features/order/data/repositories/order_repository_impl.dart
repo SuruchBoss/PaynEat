@@ -18,21 +18,21 @@ class OrderRepositoryImpl implements OrderRepository {
     String? dateTo,
     int page = 1,
     int limit = 30,
-  }) =>
-      guard(() async {
-        final result = await _remote.getOrders(
-          status: status,
-          activeOnly: activeOnly,
-          dateFrom: dateFrom,
-          dateTo: dateTo,
-          page: page,
-          limit: limit,
-        );
-        return (orders: result.orders.cast<Order>(), total: result.total);
-      });
+  }) => guard(() async {
+    final result = await _remote.getOrders(
+      status: status,
+      activeOnly: activeOnly,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+      page: page,
+      limit: limit,
+    );
+    return (orders: result.orders.cast<Order>(), total: result.total);
+  });
 
   @override
-  Future<Result<Order>> getOrder(int id) => guard(() async => await _remote.getOrder(id));
+  Future<Result<Order>> getOrder(int id) =>
+      guard(() async => await _remote.getOrder(id));
 
   @override
   Future<Result<Order?>> getOpenOrderByTable(int tableId) =>
@@ -45,32 +45,47 @@ class OrderRepositoryImpl implements OrderRepository {
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
-  }) =>
-      guard(
-        () async => await _remote.createOrder(
-          type: type,
-          tableId: tableId,
-          guestCount: guestCount,
-          note: note,
-          items: items,
-        ),
-      );
+  }) => guard(
+    () async => await _remote.createOrder(
+      type: type,
+      tableId: tableId,
+      guestCount: guestCount,
+      note: note,
+      items: items,
+    ),
+  );
 
   @override
   Future<Result<Order>> addItems(int orderId, List<OrderItemPayload> items) =>
       guard(() async => await _remote.addItems(orderId, items));
 
   @override
-  Future<Result<Order>> updateItem(int orderId, int itemId, {int? quantity, String? note}) =>
-      guard(() async => await _remote.updateItem(orderId, itemId, quantity: quantity, note: note));
+  Future<Result<Order>> updateItem(
+    int orderId,
+    int itemId, {
+    int? quantity,
+    String? note,
+  }) => guard(
+    () async => await _remote.updateItem(
+      orderId,
+      itemId,
+      quantity: quantity,
+      note: note,
+    ),
+  );
 
   @override
   Future<Result<Order>> removeItem(int orderId, int itemId) =>
       guard(() async => await _remote.removeItem(orderId, itemId));
 
   @override
-  Future<Result<Order>> updateItemStatus(int orderId, int itemId, String status) =>
-      guard(() async => await _remote.updateItemStatus(orderId, itemId, status));
+  Future<Result<Order>> updateItemStatus(
+    int orderId,
+    int itemId,
+    String status,
+  ) => guard(
+    () async => await _remote.updateItemStatus(orderId, itemId, status),
+  );
 
   @override
   Future<Result<Order>> sendToKitchen(int orderId) =>

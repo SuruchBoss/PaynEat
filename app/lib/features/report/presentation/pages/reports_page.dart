@@ -34,24 +34,28 @@ class ReportsPage extends GetView<ReportController> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _rangeLabels.entries.map((entry) {
-                      final selected = controller.range.value == entry.key;
-                      return ChoiceChip(
-                        label: Text(entry.value),
-                        selected: selected,
-                        showCheckmark: false,
-                        onSelected: (_) => entry.key == ReportRange.custom
-                            ? _pickCustomRange(context)
-                            : controller.selectRange(entry.key),
-                        selectedColor: AppColors.primary,
-                        backgroundColor: AppColors.surfaceAlt,
-                        labelStyle: TextStyle(
-                          color: selected ? Colors.white : AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      );
-                    }).toList(growable: false),
+                    children: _rangeLabels.entries
+                        .map((entry) {
+                          final selected = controller.range.value == entry.key;
+                          return ChoiceChip(
+                            label: Text(entry.value),
+                            selected: selected,
+                            showCheckmark: false,
+                            onSelected: (_) => entry.key == ReportRange.custom
+                                ? _pickCustomRange(context)
+                                : controller.selectRange(entry.key),
+                            selectedColor: AppColors.primary,
+                            backgroundColor: AppColors.surfaceAlt,
+                            labelStyle: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                          );
+                        })
+                        .toList(growable: false),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -59,7 +63,10 @@ class ReportsPage extends GetView<ReportController> {
                   controller.fromLabel == controller.toLabel
                       ? controller.fromLabel
                       : '${controller.fromLabel} - ${controller.toLabel}',
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -70,7 +77,9 @@ class ReportsPage extends GetView<ReportController> {
             if (controller.isLoading.value) return const LoadingView();
 
             final error = controller.errorMessage.value;
-            if (error != null) return ErrorView(message: error, onRetry: controller.load);
+            if (error != null) {
+              return ErrorView(message: error, onRetry: controller.load);
+            }
 
             final summary = controller.summary.value;
             final columns = Responsive.value(context, mobile: 2, desktop: 4);
@@ -84,7 +93,11 @@ class ReportsPage extends GetView<ReportController> {
                   crossAxisCount: columns,
                   mainAxisSpacing: 12,
                   crossAxisSpacing: 12,
-                  childAspectRatio: Responsive.value(context, mobile: 1.45, desktop: 1.55),
+                  childAspectRatio: Responsive.value(
+                    context,
+                    mobile: 1.45,
+                    desktop: 1.55,
+                  ),
                   children: [
                     StatCard(
                       label: 'ยอดขายสุทธิ',
@@ -102,14 +115,16 @@ class ReportsPage extends GetView<ReportController> {
                     StatCard(
                       label: 'ยอดอาหารก่อนภาษี',
                       value: Formatters.baht(summary.subtotal),
-                      caption: 'Service ${Formatters.money(summary.serviceCharge)}',
+                      caption:
+                          'Service ${Formatters.money(summary.serviceCharge)}',
                       icon: Icons.restaurant_rounded,
                       color: AppColors.primary,
                     ),
                     StatCard(
                       label: 'เฉลี่ยต่อบิล',
                       value: Formatters.baht(summary.averagePerOrder),
-                      caption: 'ต่อหัว ${Formatters.baht(summary.averagePerGuest)}',
+                      caption:
+                          'ต่อหัว ${Formatters.baht(summary.averagePerGuest)}',
                       icon: Icons.trending_up_rounded,
                       color: AppColors.purple,
                     ),
@@ -141,7 +156,10 @@ class ReportsPage extends GetView<ReportController> {
                           child: Center(
                             child: Text(
                               'ไม่มีข้อมูลในช่วงที่เลือก',
-                              style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                              style: TextStyle(
+                                color: AppColors.textDisabled,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         )
@@ -191,7 +209,10 @@ class ReportsPage extends GetView<ReportController> {
                           child: Center(
                             child: Text(
                               'ไม่มีข้อมูลในช่วงที่เลือก',
-                              style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                              style: TextStyle(
+                                color: AppColors.textDisabled,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         )
@@ -241,7 +262,10 @@ class ReportsPage extends GetView<ReportController> {
       context: context,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(start: controller.from, end: controller.to),
+      initialDateRange: DateTimeRange(
+        start: controller.from,
+        end: controller.to,
+      ),
     );
     if (picked != null) {
       controller.setCustomRange(picked.start, picked.end);
@@ -253,7 +277,10 @@ class _DailySalesList extends GetView<ReportController> {
   @override
   Widget build(BuildContext context) {
     final data = controller.dailySales;
-    final maxTotal = data.fold<double>(0, (max, item) => item.total > max ? item.total : max);
+    final maxTotal = data.fold<double>(
+      0,
+      (max, item) => item.total > max ? item.total : max,
+    );
 
     return Column(
       children: data
@@ -266,7 +293,10 @@ class _DailySalesList extends GetView<ReportController> {
                     width: 74,
                     child: Text(
                       item.day.substring(5),
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ),
                   Expanded(
@@ -276,7 +306,9 @@ class _DailySalesList extends GetView<ReportController> {
                         value: maxTotal == 0 ? 0 : item.total / maxTotal,
                         minHeight: 8,
                         backgroundColor: AppColors.surfaceAlt,
-                        valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+                        valueColor: const AlwaysStoppedAnimation(
+                          AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -286,7 +318,10 @@ class _DailySalesList extends GetView<ReportController> {
                     child: Text(
                       Formatters.baht(item.total),
                       textAlign: TextAlign.right,
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],

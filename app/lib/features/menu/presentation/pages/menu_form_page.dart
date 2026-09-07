@@ -25,7 +25,8 @@ class _MenuFormPageState extends State<MenuFormPage> {
   final _priceController = TextEditingController();
   final _prepController = TextEditingController(text: '10');
 
-  final MenuManagementController _controller = Get.find<MenuManagementController>();
+  final MenuManagementController _controller =
+      Get.find<MenuManagementController>();
 
   MenuItem? _editing;
   int? _categoryId;
@@ -66,7 +67,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
   }
 
   Future<void> _submit() async {
-    if (!(_formKey.currentState?.validate() ?? false) || _categoryId == null) return;
+    if (!(_formKey.currentState?.validate() ?? false) || _categoryId == null) {
+      return;
+    }
 
     await _controller.save(
       id: _editing?.id,
@@ -87,7 +90,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_editing == null ? 'เพิ่มเมนูใหม่' : 'แก้ไขเมนู')),
+      appBar: AppBar(
+        title: Text(_editing == null ? 'เพิ่มเมนูใหม่' : 'แก้ไขเมนู'),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -103,28 +108,38 @@ class _MenuFormPageState extends State<MenuFormPage> {
                     controller: _nameController,
                     decoration: const InputDecoration(labelText: 'ชื่อเมนู *'),
                     validator: (value) =>
-                        (value == null || value.trim().isEmpty) ? 'กรุณากรอกชื่อเมนู' : null,
+                        (value == null || value.trim().isEmpty)
+                        ? 'กรุณากรอกชื่อเมนู'
+                        : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameEnController,
-                    decoration: const InputDecoration(labelText: 'ชื่อภาษาอังกฤษ'),
+                    decoration: const InputDecoration(
+                      labelText: 'ชื่อภาษาอังกฤษ',
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Obx(
                     () => DropdownButtonFormField<int>(
                       initialValue: _categoryId,
-                      decoration: const InputDecoration(labelText: 'หมวดหมู่ *'),
+                      decoration: const InputDecoration(
+                        labelText: 'หมวดหมู่ *',
+                      ),
                       items: _controller.categories
                           .map(
                             (category) => DropdownMenuItem(
                               value: category.id,
-                              child: Text('${category.icon ?? ''} ${category.name}'.trim()),
+                              child: Text(
+                                '${category.icon ?? ''} ${category.name}'
+                                    .trim(),
+                              ),
                             ),
                           )
                           .toList(growable: false),
                       onChanged: (value) => setState(() => _categoryId = value),
-                      validator: (value) => value == null ? 'กรุณาเลือกหมวดหมู่' : null,
+                      validator: (value) =>
+                          value == null ? 'กรุณาเลือกหมวดหมู่' : null,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -133,9 +148,13 @@ class _MenuFormPageState extends State<MenuFormPage> {
                       Expanded(
                         child: TextFormField(
                           controller: _priceController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
                           inputFormatters: [
-                            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
                           ],
                           decoration: const InputDecoration(
                             labelText: 'ราคา *',
@@ -143,7 +162,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
                           ),
                           validator: (value) {
                             final price = double.tryParse(value?.trim() ?? '');
-                            if (price == null || price < 0) return 'กรุณากรอกราคาให้ถูกต้อง';
+                            if (price == null || price < 0) {
+                              return 'กรุณากรอกราคาให้ถูกต้อง';
+                            }
                             return null;
                           },
                         ),
@@ -153,7 +174,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
                         child: TextFormField(
                           controller: _prepController,
                           keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           decoration: const InputDecoration(
                             labelText: 'เวลาทำ',
                             suffixText: 'นาที',
@@ -177,7 +200,8 @@ class _MenuFormPageState extends State<MenuFormPage> {
                   ),
                   SwitchListTile(
                     value: _isRecommended,
-                    onChanged: (value) => setState(() => _isRecommended = value),
+                    onChanged: (value) =>
+                        setState(() => _isRecommended = value),
                     title: const Text('เมนูแนะนำ'),
                     subtitle: const Text('จะมีป้ายดาวบนจอสั่งอาหาร'),
                     contentPadding: EdgeInsets.zero,
@@ -205,7 +229,10 @@ class _MenuFormPageState extends State<MenuFormPage> {
                       child: Center(
                         child: Text(
                           'ยังไม่มีกลุ่มตัวเลือก',
-                          style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                          style: TextStyle(
+                            color: AppColors.textDisabled,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     )
@@ -213,7 +240,8 @@ class _MenuFormPageState extends State<MenuFormPage> {
                     for (final entry in _optionGroups.asMap().entries)
                       _OptionGroupRow(
                         group: entry.value,
-                        onRemove: () => setState(() => _optionGroups.removeAt(entry.key)),
+                        onRemove: () =>
+                            setState(() => _optionGroups.removeAt(entry.key)),
                       ),
                 ],
               ),
@@ -226,7 +254,10 @@ class _MenuFormPageState extends State<MenuFormPage> {
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : Text(_editing == null ? 'เพิ่มเมนู' : 'บันทึกการแก้ไข'),
               ),
@@ -238,7 +269,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
   }
 
   Future<void> _addGroup() async {
-    final result = await Get.dialog<MenuOptionGroup>(const _OptionGroupDialog());
+    final result = await Get.dialog<MenuOptionGroup>(
+      const _OptionGroupDialog(),
+    );
     if (result != null) setState(() => _optionGroups.add(result));
   }
 }
@@ -265,12 +298,18 @@ class _OptionGroupRow extends StatelessWidget {
             children: [
               Text(
                 group.name,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const SizedBox(width: 8),
               Text(
                 group.isRequired ? 'ต้องเลือก' : 'เลือกได้ ${group.maxSelect}',
-                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                style: const TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textSecondary,
+                ),
               ),
               const Spacer(),
               IconButton(
@@ -337,7 +376,9 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
     setState(() {
       _options.add(
         MenuOption(
-          id: -(_options.length + 1), // id ชั่วคราวฝั่ง client — backend จะออก id จริงให้
+          id:
+              -(_options.length +
+                  1), // id ชั่วคราวฝั่ง client — backend จะออก id จริงให้
           name: name,
           priceDelta: double.tryParse(_optionPriceController.text.trim()) ?? 0,
         ),
@@ -374,8 +415,12 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                   Expanded(
                     child: CheckboxListTile(
                       value: _isRequired,
-                      onChanged: (value) => setState(() => _isRequired = value ?? false),
-                      title: const Text('ต้องเลือก', style: TextStyle(fontSize: 13.5)),
+                      onChanged: (value) =>
+                          setState(() => _isRequired = value ?? false),
+                      title: const Text(
+                        'ต้องเลือก',
+                        style: TextStyle(fontSize: 13.5),
+                      ),
                       contentPadding: EdgeInsets.zero,
                       controlAffinity: ListTileControlAffinity.leading,
                       dense: true,
@@ -385,11 +430,18 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     width: 110,
                     child: DropdownButtonFormField<int>(
                       initialValue: _maxSelect,
-                      decoration: const InputDecoration(labelText: 'เลือกได้', isDense: true),
+                      decoration: const InputDecoration(
+                        labelText: 'เลือกได้',
+                        isDense: true,
+                      ),
                       items: [1, 2, 3, 4, 5]
-                          .map((n) => DropdownMenuItem(value: n, child: Text('$n')))
+                          .map(
+                            (n) =>
+                                DropdownMenuItem(value: n, child: Text('$n')),
+                          )
                           .toList(growable: false),
-                      onChanged: (value) => setState(() => _maxSelect = value ?? 1),
+                      onChanged: (value) =>
+                          setState(() => _maxSelect = value ?? 1),
                     ),
                   ),
                 ],
@@ -413,13 +465,21 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     child: TextField(
                       controller: _optionPriceController,
                       keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-                      decoration: const InputDecoration(labelText: '+บาท', isDense: true),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      ],
+                      decoration: const InputDecoration(
+                        labelText: '+บาท',
+                        isDense: true,
+                      ),
                     ),
                   ),
                   IconButton(
                     onPressed: _addOption,
-                    icon: const Icon(Icons.add_circle_rounded, color: AppColors.primary),
+                    icon: const Icon(
+                      Icons.add_circle_rounded,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
@@ -435,7 +495,8 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                               ? '${option.name} +${option.priceDelta.toStringAsFixed(0)}'
                               : option.name,
                         ),
-                        onDeleted: () => setState(() => _options.remove(option)),
+                        onDeleted: () =>
+                            setState(() => _options.remove(option)),
                       ),
                     )
                     .toList(growable: false),
@@ -445,20 +506,23 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back<void>(), child: const Text('ยกเลิก')),
+        TextButton(
+          onPressed: () => Get.back<void>(),
+          child: const Text('ยกเลิก'),
+        ),
         FilledButton(
           onPressed: _nameController.text.trim().isEmpty || _options.isEmpty
               ? null
               : () => Get.back(
-                    result: MenuOptionGroup(
-                      id: -1,
-                      name: _nameController.text.trim(),
-                      minSelect: _isRequired ? 1 : 0,
-                      maxSelect: _maxSelect,
-                      isRequired: _isRequired,
-                      options: _options,
-                    ),
+                  result: MenuOptionGroup(
+                    id: -1,
+                    name: _nameController.text.trim(),
+                    minSelect: _isRequired ? 1 : 0,
+                    maxSelect: _maxSelect,
+                    isRequired: _isRequired,
+                    options: _options,
                   ),
+                ),
           child: const Text('เพิ่มกลุ่ม'),
         ),
       ],

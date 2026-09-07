@@ -20,18 +20,25 @@ class HomePage extends GetView<HomeController> {
   Widget build(BuildContext context) {
     final device = Responsive.of(context);
     final useRail = device != DeviceType.mobile;
-    final useDrawer = !useRail && controller.destinations.length > _bottomNavLimit;
+    final useDrawer =
+        !useRail && controller.destinations.length > _bottomNavLimit;
 
     return Obx(
       () => Scaffold(
         appBar: AppBar(
           title: Text(controller.currentTitle),
-          actions: const [_ConnectionDot(), SizedBox(width: 8), _UserChip(), SizedBox(width: 8)],
+          actions: const [
+            _ConnectionDot(),
+            SizedBox(width: 8),
+            _UserChip(),
+            SizedBox(width: 8),
+          ],
         ),
         drawer: useDrawer ? _AppDrawer() : null,
         body: Row(
           children: [
-            if (useRail) _NavigationRailSection(extended: device == DeviceType.desktop),
+            if (useRail)
+              _NavigationRailSection(extended: device == DeviceType.desktop),
             Expanded(
               child: IndexedStack(
                 index: controller.currentIndex.value,
@@ -57,7 +64,9 @@ class _NavigationRailSection extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: ConstrainedBox(
-        constraints: BoxConstraints(minHeight: MediaQuery.sizeOf(context).height - 56),
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.sizeOf(context).height - 56,
+        ),
         child: IntrinsicHeight(
           child: NavigationRail(
             extended: extended,
@@ -104,7 +113,10 @@ class _BottomNav extends GetView<HomeController> {
           .map(
             (destination) => NavigationDestination(
               icon: Icon(destination.icon),
-              selectedIcon: Icon(destination.selectedIcon, color: AppColors.primary),
+              selectedIcon: Icon(
+                destination.selectedIcon,
+                color: AppColors.primary,
+              ),
               label: destination.label,
             ),
           )
@@ -127,7 +139,11 @@ class _AppDrawer extends GetView<HomeController> {
           padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
           child: Row(
             children: [
-              const Icon(Icons.restaurant_menu_rounded, color: AppColors.primary, size: 26),
+              const Icon(
+                Icons.restaurant_menu_rounded,
+                color: AppColors.primary,
+                size: 26,
+              ),
               const SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,7 +154,10 @@ class _AppDrawer extends GetView<HomeController> {
                   ),
                   Text(
                     controller.user?.roleLabel ?? '',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -169,7 +188,9 @@ class _ConnectionDot extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: session.socket.connected,
       builder: (context, connected, _) => Tooltip(
-        message: connected ? 'เชื่อมต่อเรียลไทม์อยู่' : 'ไม่ได้เชื่อมต่อเรียลไทม์',
+        message: connected
+            ? 'เชื่อมต่อเรียลไทม์อยู่'
+            : 'ไม่ได้เชื่อมต่อเรียลไทม์',
         child: Container(
           width: 9,
           height: 9,
@@ -203,7 +224,10 @@ class _UserChip extends GetView<HomeController> {
           child: ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+            title: Text(
+              user.name,
+              style: const TextStyle(fontWeight: FontWeight.w700),
+            ),
             subtitle: Text(user.roleLabel),
           ),
         ),
@@ -213,8 +237,15 @@ class _UserChip extends GetView<HomeController> {
           child: ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.logout_rounded, size: 19, color: AppColors.danger),
-            title: Text('ออกจากระบบ', style: TextStyle(color: AppColors.danger)),
+            leading: Icon(
+              Icons.logout_rounded,
+              size: 19,
+              color: AppColors.danger,
+            ),
+            title: Text(
+              'ออกจากระบบ',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ),
       ],

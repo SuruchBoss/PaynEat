@@ -26,15 +26,16 @@ class TableRepositoryImpl implements TableRepository {
     required String name,
     String? zone,
     int? seats,
-  }) =>
-      guard(() async {
-        final body = <String, dynamic>{
-          'name': name,
-          if (zone != null && zone.isNotEmpty) 'zone': zone,
-          if (seats != null) 'seats': seats,
-        };
-        return id == null ? await _remote.create(body) : await _remote.update(id, body);
-      });
+  }) => guard(() async {
+    final body = <String, dynamic>{
+      'name': name,
+      if (zone != null && zone.isNotEmpty) 'zone': zone,
+      if (seats != null) 'seats': seats,
+    };
+    return id == null
+        ? await _remote.create(body)
+        : await _remote.update(id, body);
+  });
 
   @override
   Future<Result<void>> delete(int id) => guard(() => _remote.delete(id));

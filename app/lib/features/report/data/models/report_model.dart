@@ -42,27 +42,30 @@ class ReportMapper {
   }
 
   static TopItem topItemFromJson(Map<String, dynamic> json) => TopItem(
-        menuItemId: (json['menuItemId'] as num?)?.toInt(),
-        name: json['name'] as String? ?? '',
-        quantity: (json['quantity'] as num?)?.toInt() ?? 0,
-        revenue: (json['revenue'] as num?)?.toDouble() ?? 0,
-      );
+    menuItemId: (json['menuItemId'] as num?)?.toInt(),
+    name: json['name'] as String? ?? '',
+    quantity: (json['quantity'] as num?)?.toInt() ?? 0,
+    revenue: (json['revenue'] as num?)?.toDouble() ?? 0,
+  );
 
   static DailySales dailyFromJson(Map<String, dynamic> json) => DailySales(
-        day: json['day'] as String? ?? '',
-        orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
-        total: (json['total'] as num?)?.toDouble() ?? 0,
-      );
+    day: json['day'] as String? ?? '',
+    orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
+    total: (json['total'] as num?)?.toDouble() ?? 0,
+  );
 
   static DashboardData dashboardFromJson(Map<String, dynamic> json) {
     final live = json['live'] as Map<String, dynamic>? ?? const {};
     return DashboardData(
-      today: summaryFromJson(json['today'] as Map<String, dynamic>? ?? const {}),
+      today: summaryFromJson(
+        json['today'] as Map<String, dynamic>? ?? const {},
+      ),
       live: LiveCounters(
         openOrders: (live['openOrders'] as num?)?.toInt() ?? 0,
         occupiedTables: (live['occupiedTables'] as num?)?.toInt() ?? 0,
         totalTables: (live['totalTables'] as num?)?.toInt() ?? 0,
-        pendingKitchenItems: (live['pendingKitchenItems'] as num?)?.toInt() ?? 0,
+        pendingKitchenItems:
+            (live['pendingKitchenItems'] as num?)?.toInt() ?? 0,
       ),
       hourly: (json['hourly'] as List? ?? const [])
           .whereType<Map<String, dynamic>>()

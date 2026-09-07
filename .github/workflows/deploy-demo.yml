@@ -1,0 +1,59 @@
+# Deploy เดโมขึ้น GitHub Pages — ฟรีและไม่ต้องมีเซิร์ฟเวอร์
+#
+# ใช้ Demo Mode ของแอป (ข้อมูลจำลองอยู่ในเครื่องผู้ใช้)
+# ผู้ที่มาดูผลงานจึงกดลิงก์เดียวแล้วลองใช้ได้ครบทุกฟีเจอร์ทันที
+name: Deploy Demo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build เว็บในโหมดสาธิต
+        # base-href ต้องตรงกับชื่อ repository เพราะ Pages เสิร์ฟที่ /<repo>/
+        run: |
+          flutter build web --release \
+            --dart-define=DEMO_MODE=true \
+            --base-href="/${GITHUB_REPOSITORY#*/}/"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: app/build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

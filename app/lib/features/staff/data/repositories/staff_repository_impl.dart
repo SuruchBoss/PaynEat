@@ -19,25 +19,28 @@ class StaffRepositoryImpl implements StaffRepository {
     required String username,
     required String password,
     required String role,
-  }) =>
-      guard(
-        () async => await _remote.create(
-          name: name,
-          username: username,
-          password: password,
-          role: role,
-        ),
-      );
+  }) => guard(
+    () async => await _remote.create(
+      name: name,
+      username: username,
+      password: password,
+      role: role,
+    ),
+  );
 
   @override
-  Future<Result<User>> update(int id, {String? name, String? role, bool? isActive}) =>
-      guard(
-        () async => await _remote.update(id, {
-          if (name != null) 'name': name,
-          if (role != null) 'role': role,
-          if (isActive != null) 'isActive': isActive,
-        }),
-      );
+  Future<Result<User>> update(
+    int id, {
+    String? name,
+    String? role,
+    bool? isActive,
+  }) => guard(
+    () async => await _remote.update(id, {
+      if (name != null) 'name': name,
+      if (role != null) 'role': role,
+      if (isActive != null) 'isActive': isActive,
+    }),
+  );
 
   @override
   Future<Result<User>> resetPassword(int id, String password) =>

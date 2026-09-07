@@ -15,8 +15,8 @@ class MenuBrowseController extends GetxController {
     required GetMenuItemsUseCase getMenuItems,
     required GetCategoriesUseCase getCategories,
     this.availableOnly = true,
-  })  : _getMenuItems = getMenuItems,
-        _getCategories = getCategories;
+  }) : _getMenuItems = getMenuItems,
+       _getCategories = getCategories;
 
   final GetMenuItemsUseCase _getMenuItems;
   final GetCategoriesUseCase _getCategories;
@@ -47,14 +47,17 @@ class MenuBrowseController extends GetxController {
 
   List<MenuItem> get filteredItems {
     final query = searchQuery.value.trim().toLowerCase();
-    return items.where((item) {
-      final categoryMatched =
-          selectedCategoryId.value == null || item.categoryId == selectedCategoryId.value;
-      if (!categoryMatched) return false;
-      if (query.isEmpty) return true;
-      return item.name.toLowerCase().contains(query) ||
-          (item.nameEn?.toLowerCase().contains(query) ?? false);
-    }).toList(growable: false);
+    return items
+        .where((item) {
+          final categoryMatched =
+              selectedCategoryId.value == null ||
+              item.categoryId == selectedCategoryId.value;
+          if (!categoryMatched) return false;
+          if (query.isEmpty) return true;
+          return item.name.toLowerCase().contains(query) ||
+              (item.nameEn?.toLowerCase().contains(query) ?? false);
+        })
+        .toList(growable: false);
   }
 
   List<MenuItem> get recommendedItems =>

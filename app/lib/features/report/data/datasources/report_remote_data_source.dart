@@ -31,12 +31,18 @@ class ReportRemoteDataSourceImpl implements ReportRemoteDataSource {
   }
 
   @override
-  Future<List<TopItem>> getTopItems({String? from, String? to, int limit = 10}) async {
+  Future<List<TopItem>> getTopItems({
+    String? from,
+    String? to,
+    int limit = 10,
+  }) async {
     final result = await _client.get(
       ApiEndpoints.topItems,
       query: {'from': from, 'to': to, 'limit': limit},
     );
-    return result.asList.map(ReportMapper.topItemFromJson).toList(growable: false);
+    return result.asList
+        .map(ReportMapper.topItemFromJson)
+        .toList(growable: false);
   }
 
   @override
@@ -45,6 +51,8 @@ class ReportRemoteDataSourceImpl implements ReportRemoteDataSource {
       ApiEndpoints.salesByDay,
       query: {'from': from, 'to': to},
     );
-    return result.asList.map(ReportMapper.dailyFromJson).toList(growable: false);
+    return result.asList
+        .map(ReportMapper.dailyFromJson)
+        .toList(growable: false);
   }
 }

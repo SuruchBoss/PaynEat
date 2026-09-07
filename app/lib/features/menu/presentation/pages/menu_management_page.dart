@@ -55,12 +55,18 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                     children: [
                       Text(
                         'ทั้งหมด ${controller.items.length} เมนู',
-                        style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       if (controller.unavailableCount > 0) ...[
                         const SizedBox(width: 10),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.danger.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(6),
@@ -123,7 +129,9 @@ class MenuManagementPage extends GetView<MenuManagementController> {
   void _openCategorySheet(BuildContext context) {
     Get.bottomSheet<void>(
       Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.7),
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.sizeOf(context).height * 0.7,
+        ),
         decoration: const BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -157,7 +165,9 @@ class _MenuRow extends GetView<MenuManagementController> {
             height: 44,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: item.isAvailable ? AppColors.primarySoft : AppColors.surfaceAlt,
+              color: item.isAvailable
+                  ? AppColors.primarySoft
+                  : AppColors.surfaceAlt,
               borderRadius: BorderRadius.circular(11),
             ),
             child: Text(
@@ -165,7 +175,9 @@ class _MenuRow extends GetView<MenuManagementController> {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: item.isAvailable ? AppColors.primary : AppColors.textDisabled,
+                color: item.isAvailable
+                    ? AppColors.primary
+                    : AppColors.textDisabled,
               ),
             ),
           ),
@@ -179,13 +191,20 @@ class _MenuRow extends GetView<MenuManagementController> {
                     Flexible(
                       child: Text(
                         item.name,
-                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (item.isRecommended) ...[
                       const SizedBox(width: 6),
-                      const Icon(Icons.star_rounded, size: 15, color: AppColors.warning),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 15,
+                        color: AppColors.warning,
+                      ),
                     ],
                   ],
                 ),
@@ -193,7 +212,10 @@ class _MenuRow extends GetView<MenuManagementController> {
                 Text(
                   '${item.categoryName ?? '-'} · ${Formatters.baht(item.price)}'
                   '${item.hasOptions ? ' · ${item.optionGroups.length} กลุ่มตัวเลือก' : ''}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -264,12 +286,16 @@ class _CategorySheet extends GetView<MenuManagementController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
-                        onPressed: () => _showCategoryDialog(category: category),
+                        onPressed: () =>
+                            _showCategoryDialog(category: category),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                       ),
                       IconButton(
                         onPressed: () => controller.deleteCategory(category),
-                        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                        ),
                         color: AppColors.danger,
                       ),
                     ],
@@ -311,8 +337,14 @@ class _CategorySheet extends GetView<MenuManagementController> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Get.back<void>(), child: const Text('ยกเลิก')),
-          FilledButton(onPressed: () => Get.back(result: true), child: const Text('บันทึก')),
+          TextButton(
+            onPressed: () => Get.back<void>(),
+            child: const Text('ยกเลิก'),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: const Text('บันทึก'),
+          ),
         ],
       ),
     );
@@ -321,7 +353,9 @@ class _CategorySheet extends GetView<MenuManagementController> {
       await controller.saveCategory(
         id: category?.id,
         name: nameController.text.trim(),
-        icon: iconController.text.trim().isEmpty ? null : iconController.text.trim(),
+        icon: iconController.text.trim().isEmpty
+            ? null
+            : iconController.text.trim(),
       );
     }
   }

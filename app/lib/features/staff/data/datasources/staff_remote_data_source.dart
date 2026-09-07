@@ -35,7 +35,12 @@ class StaffRemoteDataSourceImpl implements StaffRemoteDataSource {
   }) async {
     final result = await _client.post(
       ApiEndpoints.users,
-      body: {'name': name, 'username': username, 'password': password, 'role': role},
+      body: {
+        'name': name,
+        'username': username,
+        'password': password,
+        'role': role,
+      },
     );
     return UserModel.fromJson(result.asMap);
   }

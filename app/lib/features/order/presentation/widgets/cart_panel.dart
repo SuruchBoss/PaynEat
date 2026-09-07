@@ -54,16 +54,23 @@ class _CartHeader extends GetView<CartController> {
         children: [
           Row(
             children: [
-              const Icon(Icons.receipt_long_rounded, size: 18, color: AppColors.primary),
+              const Icon(
+                Icons.receipt_long_rounded,
+                size: 18,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   controller.isAddingToExistingOrder
                       ? 'สั่งเพิ่ม'
                       : controller.tableName != null
-                          ? 'โต๊ะ ${controller.tableName}'
-                          : 'ออเดอร์ใหม่',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                      ? 'โต๊ะ ${controller.tableName}'
+                      : 'ออเดอร์ใหม่',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
               Obx(
@@ -84,18 +91,23 @@ class _CartHeader extends GetView<CartController> {
                   if (controller.tableId == null) ...[
                     _TypeToggle(
                       label: 'กลับบ้าน',
-                      selected: controller.orderType.value == OrderType.takeaway,
+                      selected:
+                          controller.orderType.value == OrderType.takeaway,
                       onTap: () => controller.setOrderType(OrderType.takeaway),
                     ),
                     const SizedBox(width: 8),
                     _TypeToggle(
                       label: 'เดลิเวอรี',
-                      selected: controller.orderType.value == OrderType.delivery,
+                      selected:
+                          controller.orderType.value == OrderType.delivery,
                       onTap: () => controller.setOrderType(OrderType.delivery),
                     ),
                   ] else ...[
-                    const Icon(Icons.people_outline_rounded,
-                        size: 16, color: AppColors.textSecondary),
+                    const Icon(
+                      Icons.people_outline_rounded,
+                      size: 16,
+                      color: AppColors.textSecondary,
+                    ),
                     const SizedBox(width: 6),
                     const Text('จำนวนลูกค้า', style: TextStyle(fontSize: 13)),
                     const Spacer(),
@@ -118,7 +130,11 @@ class _CartHeader extends GetView<CartController> {
 }
 
 class _TypeToggle extends StatelessWidget {
-  const _TypeToggle({required this.label, required this.selected, required this.onTap});
+  const _TypeToggle({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
 
   final String label;
   final bool selected;
@@ -133,8 +149,12 @@ class _TypeToggle extends StatelessWidget {
           minimumSize: const Size(0, 36),
           padding: EdgeInsets.zero,
           backgroundColor: selected ? AppColors.primarySoft : null,
-          side: BorderSide(color: selected ? AppColors.primary : AppColors.border),
-          foregroundColor: selected ? AppColors.primary : AppColors.textSecondary,
+          side: BorderSide(
+            color: selected ? AppColors.primary : AppColors.border,
+          ),
+          foregroundColor: selected
+              ? AppColors.primary
+              : AppColors.textSecondary,
         ),
         child: Text(label, style: const TextStyle(fontSize: 13)),
       ),
@@ -169,7 +189,10 @@ class _CartLineTile extends GetView<CartController> {
                   children: [
                     Text(
                       line.menuItem.name,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     if (line.selectedOptions.isNotEmpty)
                       Padding(
@@ -187,8 +210,11 @@ class _CartLineTile extends GetView<CartController> {
                         padding: const EdgeInsets.only(top: 3),
                         child: Row(
                           children: [
-                            const Icon(Icons.edit_note_rounded,
-                                size: 13, color: AppColors.warning),
+                            const Icon(
+                              Icons.edit_note_rounded,
+                              size: 13,
+                              color: AppColors.warning,
+                            ),
                             const SizedBox(width: 3),
                             Expanded(
                               child: Text(
@@ -227,7 +253,10 @@ class _CartLineTile extends GetView<CartController> {
               const Spacer(),
               Text(
                 Formatters.baht(line.lineTotal),
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),
@@ -256,7 +285,8 @@ class _CartFooter extends GetView<CartController> {
           children: [
             _SummaryRow(label: 'ยอดรวมอาหาร', value: preview.subtotal),
             _SummaryRow(
-              label: 'Service Charge ${settings.serviceChargePercent.toStringAsFixed(0)}%',
+              label:
+                  'Service Charge ${settings.serviceChargePercent.toStringAsFixed(0)}%',
               value: preview.serviceCharge,
             ),
             _SummaryRow(
@@ -295,7 +325,10 @@ class _CartFooter extends GetView<CartController> {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Icon(Icons.soup_kitchen_rounded, size: 18),
                 label: Text(
@@ -336,7 +369,13 @@ class _SummaryRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const Spacer(),
           Text(Formatters.money(value), style: const TextStyle(fontSize: 13)),
         ],

@@ -70,10 +70,22 @@ class _BrandPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          const _FeatureLine(icon: Icons.table_restaurant_rounded, text: 'ผังโต๊ะเห็นสถานะแบบเรียลไทม์'),
-          const _FeatureLine(icon: Icons.soup_kitchen_rounded, text: 'จอครัว (KDS) อัปเดตทันทีที่กดสั่ง'),
-          const _FeatureLine(icon: Icons.point_of_sale_rounded, text: 'ปิดบิล แยกจ่าย และออกใบเสร็จ'),
-          const _FeatureLine(icon: Icons.insights_rounded, text: 'รายงานยอดขายและเมนูขายดี'),
+          const _FeatureLine(
+            icon: Icons.table_restaurant_rounded,
+            text: 'ผังโต๊ะเห็นสถานะแบบเรียลไทม์',
+          ),
+          const _FeatureLine(
+            icon: Icons.soup_kitchen_rounded,
+            text: 'จอครัว (KDS) อัปเดตทันทีที่กดสั่ง',
+          ),
+          const _FeatureLine(
+            icon: Icons.point_of_sale_rounded,
+            text: 'ปิดบิล แยกจ่าย และออกใบเสร็จ',
+          ),
+          const _FeatureLine(
+            icon: Icons.insights_rounded,
+            text: 'รายงานยอดขายและเมนูขายดี',
+          ),
         ],
       ),
     );
@@ -135,7 +147,10 @@ class _LoginFormPanel extends GetView<AuthController> {
                   const Center(child: _Logo(size: 56)),
                   const SizedBox(height: 20),
                 ],
-                Text('เข้าสู่ระบบ', style: Theme.of(context).textTheme.headlineMedium),
+                Text(
+                  'เข้าสู่ระบบ',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
                 const SizedBox(height: 6),
                 const Text(
                   'ใช้บัญชีพนักงานที่ผู้จัดการออกให้',
@@ -189,17 +204,25 @@ class _LoginFormPanel extends GetView<AuthController> {
                       decoration: BoxDecoration(
                         color: AppColors.danger.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-                        border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+                        border: Border.all(
+                          color: AppColors.danger.withValues(alpha: 0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.error_outline_rounded,
-                              color: AppColors.danger, size: 18),
+                          const Icon(
+                            Icons.error_outline_rounded,
+                            color: AppColors.danger,
+                            size: 18,
+                          ),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               message,
-                              style: const TextStyle(color: AppColors.danger, fontSize: 13.5),
+                              style: const TextStyle(
+                                color: AppColors.danger,
+                                fontSize: 13.5,
+                              ),
                             ),
                           ),
                         ],
@@ -210,7 +233,9 @@ class _LoginFormPanel extends GetView<AuthController> {
 
                 Obx(
                   () => FilledButton(
-                    onPressed: controller.isLoading.value ? null : controller.submitLogin,
+                    onPressed: controller.isLoading.value
+                        ? null
+                        : controller.submitLogin,
                     child: controller.isLoading.value
                         ? const SizedBox(
                             width: 20,
@@ -225,19 +250,62 @@ class _LoginFormPanel extends GetView<AuthController> {
                 ),
 
                 const SizedBox(height: 28),
+                if (AppConfig.demoMode) ...[
+                  const _DemoModeBanner(),
+                  const SizedBox(height: 14),
+                ],
                 const DemoAccountPicker(),
 
                 const SizedBox(height: 24),
                 Center(
                   child: Text(
-                    'เชื่อมต่อ ${AppConfig.baseUrl}',
-                    style: const TextStyle(color: AppColors.textDisabled, fontSize: 11.5),
+                    AppConfig.demoMode
+                        ? 'PaynEat POS · โหมดสาธิต'
+                        : 'เชื่อมต่อ ${AppConfig.baseUrl}',
+                    style: const TextStyle(
+                      color: AppColors.textDisabled,
+                      fontSize: 11.5,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// แจ้งผู้ที่มาลองใช้ว่ากำลังอยู่ในโหมดสาธิตที่ไม่มีเซิร์ฟเวอร์
+class _DemoModeBanner extends StatelessWidget {
+  const _DemoModeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.info.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
+        border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.science_rounded, size: 18, color: AppColors.info),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'โหมดสาธิต — ข้อมูลทั้งหมดอยู่ในเครื่องคุณ กดใช้งานได้ทุกฟีเจอร์ '
+              'รีเฟรชหน้าเว็บเพื่อเริ่มใหม่',
+              style: TextStyle(
+                fontSize: 12.5,
+                color: AppColors.info,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -258,7 +326,9 @@ class _Logo extends StatelessWidget {
           width: size,
           height: size,
           decoration: BoxDecoration(
-            color: light ? Colors.white.withValues(alpha: 0.2) : AppColors.primarySoft,
+            color: light
+                ? Colors.white.withValues(alpha: 0.2)
+                : AppColors.primarySoft,
             borderRadius: BorderRadius.circular(size * 0.28),
           ),
           child: Icon(

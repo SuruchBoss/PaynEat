@@ -19,7 +19,12 @@ class FieldError {
 
 /// เซิร์ฟเวอร์ตอบกลับมาเป็น error (4xx / 5xx)
 class ServerFailure extends Failure {
-  const ServerFailure(super.message, {this.statusCode, super.details, this.code});
+  const ServerFailure(
+    super.message, {
+    this.statusCode,
+    super.details,
+    this.code,
+  });
 
   final int? statusCode;
   final String? code;
@@ -27,12 +32,16 @@ class ServerFailure extends Failure {
 
 /// ต่อเน็ตไม่ได้ / timeout
 class NetworkFailure extends Failure {
-  const NetworkFailure([super.message = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ต']);
+  const NetworkFailure([
+    super.message = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ต',
+  ]);
 }
 
 /// token หมดอายุหรือยังไม่ได้เข้าสู่ระบบ
 class UnauthorizedFailure extends Failure {
-  const UnauthorizedFailure([super.message = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่']);
+  const UnauthorizedFailure([
+    super.message = 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
+  ]);
 }
 
 /// สิทธิ์ไม่พอ

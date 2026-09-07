@@ -21,33 +21,34 @@ class MenuRepositoryImpl implements MenuRepository {
     required String name,
     String? nameEn,
     String? icon,
-  }) =>
-      guard(
-        () async => await _remote.createCategory(
-          CategoryModel.toCreateJson(name: name, nameEn: nameEn, icon: icon),
-        ),
-      );
+  }) => guard(
+    () async => await _remote.createCategory(
+      CategoryModel.toCreateJson(name: name, nameEn: nameEn, icon: icon),
+    ),
+  );
 
   @override
-  Future<Result<Category>> updateCategory(int id, Map<String, dynamic> changes) =>
-      guard(() async => await _remote.updateCategory(id, changes));
+  Future<Result<Category>> updateCategory(
+    int id,
+    Map<String, dynamic> changes,
+  ) => guard(() async => await _remote.updateCategory(id, changes));
 
   @override
-  Future<Result<void>> deleteCategory(int id) => guard(() => _remote.deleteCategory(id));
+  Future<Result<void>> deleteCategory(int id) =>
+      guard(() => _remote.deleteCategory(id));
 
   @override
   Future<Result<List<MenuItem>>> getMenuItems({
     int? categoryId,
     String? search,
     bool? availableOnly,
-  }) =>
-      guard(
-        () async => await _remote.getMenuItems(
-          categoryId: categoryId,
-          search: search,
-          availableOnly: availableOnly,
-        ),
-      );
+  }) => guard(
+    () async => await _remote.getMenuItems(
+      categoryId: categoryId,
+      search: search,
+      availableOnly: availableOnly,
+    ),
+  );
 
   @override
   Future<Result<MenuItem>> getMenuItem(int id) =>
@@ -66,5 +67,6 @@ class MenuRepositoryImpl implements MenuRepository {
       guard(() async => await _remote.setAvailability(id, isAvailable));
 
   @override
-  Future<Result<void>> deleteMenuItem(int id) => guard(() => _remote.deleteMenuItem(id));
+  Future<Result<void>> deleteMenuItem(int id) =>
+      guard(() => _remote.deleteMenuItem(id));
 }

@@ -48,7 +48,10 @@ class StatCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -67,7 +70,10 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               caption!,
-              style: const TextStyle(fontSize: 11.5, color: AppColors.textDisabled),
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textDisabled,
+              ),
             ),
           ],
         ],

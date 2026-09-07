@@ -9,7 +9,8 @@ class GetStaffUseCase implements UseCase<List<User>, String?> {
   final StaffRepository _repository;
 
   @override
-  Future<Result<List<User>>> call(String? params) => _repository.getStaff(role: params);
+  Future<Result<List<User>>> call(String? params) =>
+      _repository.getStaff(role: params);
 }
 
 class CreateStaffParams {
@@ -33,15 +34,20 @@ class CreateStaffUseCase implements UseCase<User, CreateStaffParams> {
 
   @override
   Future<Result<User>> call(CreateStaffParams params) => _repository.create(
-        name: params.name,
-        username: params.username,
-        password: params.password,
-        role: params.role,
-      );
+    name: params.name,
+    username: params.username,
+    password: params.password,
+    role: params.role,
+  );
 }
 
 class UpdateStaffParams {
-  const UpdateStaffParams({required this.id, this.name, this.role, this.isActive});
+  const UpdateStaffParams({
+    required this.id,
+    this.name,
+    this.role,
+    this.isActive,
+  });
 
   final int id;
   final String? name;
@@ -56,11 +62,11 @@ class UpdateStaffUseCase implements UseCase<User, UpdateStaffParams> {
 
   @override
   Future<Result<User>> call(UpdateStaffParams params) => _repository.update(
-        params.id,
-        name: params.name,
-        role: params.role,
-        isActive: params.isActive,
-      );
+    params.id,
+    name: params.name,
+    role: params.role,
+    isActive: params.isActive,
+  );
 }
 
 class DeleteStaffUseCase implements UseCase<void, int> {

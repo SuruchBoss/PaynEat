@@ -20,7 +20,9 @@ class Formatters {
   /// backend เก็บเวลาเป็น UTC → แปลงเป็นเวลาเครื่องก่อนแสดง
   static DateTime? parse(String? value) {
     if (value == null || value.isEmpty) return null;
-    final normalized = value.contains('T') ? value : value.replaceFirst(' ', 'T');
+    final normalized = value.contains('T')
+        ? value
+        : value.replaceFirst(' ', 'T');
     final withZone = normalized.endsWith('Z') ? normalized : '${normalized}Z';
     return DateTime.tryParse(withZone)?.toLocal();
   }
@@ -46,7 +48,9 @@ class Formatters {
     final diff = DateTime.now().difference(date);
     if (diff.inSeconds < 60) return 'เมื่อสักครู่';
     if (diff.inMinutes < 60) return '${diff.inMinutes} นาที';
-    if (diff.inHours < 24) return '${diff.inHours} ชม. ${diff.inMinutes % 60} นาที';
+    if (diff.inHours < 24) {
+      return '${diff.inHours} ชม. ${diff.inMinutes % 60} นาที';
+    }
     return '${diff.inDays} วัน';
   }
 

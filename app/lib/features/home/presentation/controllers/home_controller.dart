@@ -24,8 +24,10 @@ class HomeDestination {
 ///
 /// พนักงานแต่ละคนเห็นเฉพาะสิ่งที่ตัวเองต้องใช้ ทำให้จอไม่รกและลดโอกาสกดผิด
 class HomeController extends GetxController {
-  HomeController({required SessionService session, required this.destinationsBuilder})
-      : _session = session;
+  HomeController({
+    required SessionService session,
+    required this.destinationsBuilder,
+  }) : _session = session;
 
   final SessionService _session;
 

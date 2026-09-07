@@ -15,9 +15,9 @@ class CheckoutController extends GetxController {
     required GetOrderUseCase getOrder,
     required GetPaymentSummaryUseCase getSummary,
     required PayOrderUseCase pay,
-  })  : _getOrder = getOrder,
-        _getSummary = getSummary,
-        _pay = pay;
+  }) : _getOrder = getOrder,
+       _getSummary = getSummary,
+       _pay = pay;
 
   final GetOrderUseCase _getOrder;
   final GetPaymentSummaryUseCase _getSummary;
@@ -77,7 +77,10 @@ class CheckoutController extends GetxController {
     isLoading.value = true;
     errorMessage.value = null;
 
-    final results = await Future.wait([_getOrder(orderId), _getSummary(orderId)]);
+    final results = await Future.wait([
+      _getOrder(orderId),
+      _getSummary(orderId),
+    ]);
 
     isLoading.value = false;
     results[0].fold(
@@ -146,7 +149,10 @@ class CheckoutController extends GetxController {
       onSuccess: (data) {
         if (data.result.isFullyPaid) {
           AppDialogs.success('ปิดบิลเรียบร้อย');
-          Get.offNamed<void>(AppRoutes.receipt, arguments: {'orderId': orderId});
+          Get.offNamed<void>(
+            AppRoutes.receipt,
+            arguments: {'orderId': orderId},
+          );
         } else {
           AppDialogs.success(
             'รับชำระแล้ว คงเหลือ ${data.result.remaining.toStringAsFixed(2)} บาท',

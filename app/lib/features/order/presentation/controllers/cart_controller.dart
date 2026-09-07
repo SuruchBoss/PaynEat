@@ -20,10 +20,10 @@ class CartController extends GetxController {
     required AddOrderItemsUseCase addItems,
     required SendToKitchenUseCase sendToKitchen,
     required GetSettingsUseCase getSettings,
-  })  : _createOrder = createOrder,
-        _addItems = addItems,
-        _sendToKitchen = sendToKitchen,
-        _getSettings = getSettings;
+  }) : _createOrder = createOrder,
+       _addItems = addItems,
+       _sendToKitchen = sendToKitchen,
+       _getSettings = getSettings;
 
   final CreateOrderUseCase _createOrder;
   final AddOrderItemsUseCase _addItems;
@@ -67,10 +67,10 @@ class CartController extends GetxController {
 
   /// ตัวอย่างยอดบิล คำนวณด้วยกฎเดียวกับ backend
   BillBreakdown get preview => BillCalculator(
-        vatRate: settings.value.vatRate,
-        serviceChargeRate: settings.value.serviceChargeRate,
-        vatIncluded: settings.value.vatIncluded,
-      ).fromCart(lines);
+    vatRate: settings.value.vatRate,
+    serviceChargeRate: settings.value.serviceChargeRate,
+    vatIncluded: settings.value.vatIncluded,
+  ).fromCart(lines);
 
   Future<void> _loadSettings() async {
     final result = await _getSettings();
@@ -94,7 +94,9 @@ class CartController extends GetxController {
       note: (note?.trim().isEmpty ?? true) ? null : note!.trim(),
     );
 
-    final index = lines.indexWhere((line) => line.signature == candidate.signature);
+    final index = lines.indexWhere(
+      (line) => line.signature == candidate.signature,
+    );
     if (index >= 0) {
       lines[index].quantity += quantity;
       lines.refresh();
@@ -138,7 +140,9 @@ class CartController extends GetxController {
     isSubmitting.value = true;
 
     final result = isAddingToExistingOrder
-        ? await _addItems(AddItemsParams(orderId: existingOrderId!, lines: lines.toList()))
+        ? await _addItems(
+            AddItemsParams(orderId: existingOrderId!, lines: lines.toList()),
+          )
         : await _createOrder(
             CreateOrderParams(
               type: orderType.value,
@@ -160,7 +164,10 @@ class CartController extends GetxController {
               ? 'เพิ่มรายการเข้าออเดอร์ ${order.code} แล้ว'
               : 'เปิดออเดอร์ ${order.code} เรียบร้อย',
         );
-        Get.offNamed<void>(AppRoutes.orderDetail, arguments: {'orderId': order.id});
+        Get.offNamed<void>(
+          AppRoutes.orderDetail,
+          arguments: {'orderId': order.id},
+        );
       },
       onFailure: (failure) async {
         isSubmitting.value = false;

@@ -33,7 +33,8 @@ class ApiEndpoints {
   static String order(int id) => '/orders/$id';
   static String openOrderByTable(int tableId) => '/orders/table/$tableId/open';
   static String orderItems(int id) => '/orders/$id/items';
-  static String orderItem(int orderId, int itemId) => '/orders/$orderId/items/$itemId';
+  static String orderItem(int orderId, int itemId) =>
+      '/orders/$orderId/items/$itemId';
   static String orderItemStatus(int orderId, int itemId) =>
       '/orders/$orderId/items/$itemId/status';
   static String sendToKitchen(int id) => '/orders/$id/send-to-kitchen';

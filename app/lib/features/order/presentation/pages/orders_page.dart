@@ -29,7 +29,8 @@ class OrdersPage extends GetView<OrderListController> {
                 separatorBuilder: (_, __) => const SizedBox(width: 8),
                 itemBuilder: (context, index) {
                   final filter = OrderListController.filters[index];
-                  final selected = controller.statusFilter.value == filter.value;
+                  final selected =
+                      controller.statusFilter.value == filter.value;
                   return ChoiceChip(
                     label: Text(filter.label),
                     selected: selected,
@@ -132,26 +133,42 @@ class _OrderTile extends StatelessWidget {
                       children: [
                         Text(
                           order.displayTarget,
-                          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        StatusChip(label: order.statusLabel, color: color, dense: true),
+                        StatusChip(
+                          label: order.statusLabel,
+                          color: color,
+                          dense: true,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 3),
                     Text(
                       '${order.code} · ${order.totalQuantity} รายการ · ${Formatters.time(order.createdAt)}',
-                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                   ],
                 ),
               ),
               Text(
                 Formatters.baht(order.total),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textDisabled),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.textDisabled,
+              ),
             ],
           ),
         ),

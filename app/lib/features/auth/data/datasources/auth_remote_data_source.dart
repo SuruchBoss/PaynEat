@@ -4,7 +4,10 @@ import '../models/user_model.dart';
 
 /// คุยกับ REST API เรื่องการยืนยันตัวตน
 abstract class AuthRemoteDataSource {
-  Future<({String token, UserModel user})> login(String username, String password);
+  Future<({String token, UserModel user})> login(
+    String username,
+    String password,
+  );
   Future<UserModel> getProfile();
   Future<void> changePassword(String currentPassword, String newPassword);
 }
@@ -15,7 +18,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final ApiClient _client;
 
   @override
-  Future<({String token, UserModel user})> login(String username, String password) async {
+  Future<({String token, UserModel user})> login(
+    String username,
+    String password,
+  ) async {
     final result = await _client.post(
       ApiEndpoints.login,
       body: {'username': username, 'password': password},
@@ -34,7 +40,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> changePassword(String currentPassword, String newPassword) async {
+  Future<void> changePassword(
+    String currentPassword,
+    String newPassword,
+  ) async {
     await _client.post(
       ApiEndpoints.changePassword,
       body: {'currentPassword': currentPassword, 'newPassword': newPassword},

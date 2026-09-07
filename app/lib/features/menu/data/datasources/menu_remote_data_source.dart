@@ -44,13 +44,17 @@ class MenuRemoteDataSourceImpl implements MenuRemoteDataSource {
   }
 
   @override
-  Future<CategoryModel> updateCategory(int id, Map<String, dynamic> body) async {
+  Future<CategoryModel> updateCategory(
+    int id,
+    Map<String, dynamic> body,
+  ) async {
     final result = await _client.patch(ApiEndpoints.category(id), body: body);
     return CategoryModel.fromJson(result.asMap);
   }
 
   @override
-  Future<void> deleteCategory(int id) => _client.delete(ApiEndpoints.category(id));
+  Future<void> deleteCategory(int id) =>
+      _client.delete(ApiEndpoints.category(id));
 
   @override
   Future<List<MenuItemModel>> getMenuItems({
@@ -81,13 +85,19 @@ class MenuRemoteDataSourceImpl implements MenuRemoteDataSource {
 
   @override
   Future<MenuItemModel> createMenuItem(MenuItemPayload payload) async {
-    final result = await _client.post(ApiEndpoints.menuItems, body: payload.toJson());
+    final result = await _client.post(
+      ApiEndpoints.menuItems,
+      body: payload.toJson(),
+    );
     return MenuItemModel.fromJson(result.asMap);
   }
 
   @override
   Future<MenuItemModel> updateMenuItem(int id, MenuItemPayload payload) async {
-    final result = await _client.patch(ApiEndpoints.menuItem(id), body: payload.toJson());
+    final result = await _client.patch(
+      ApiEndpoints.menuItem(id),
+      body: payload.toJson(),
+    );
     return MenuItemModel.fromJson(result.asMap);
   }
 
@@ -101,5 +111,6 @@ class MenuRemoteDataSourceImpl implements MenuRemoteDataSource {
   }
 
   @override
-  Future<void> deleteMenuItem(int id) => _client.delete(ApiEndpoints.menuItem(id));
+  Future<void> deleteMenuItem(int id) =>
+      _client.delete(ApiEndpoints.menuItem(id));
 }

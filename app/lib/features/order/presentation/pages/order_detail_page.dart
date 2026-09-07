@@ -21,7 +21,9 @@ class OrderDetailPage extends GetView<OrderDetailController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(() => Text(controller.order.value?.code ?? 'รายละเอียดออเดอร์')),
+        title: Obx(
+          () => Text(controller.order.value?.code ?? 'รายละเอียดออเดอร์'),
+        ),
         actions: [
           Obx(() {
             final order = controller.order.value;
@@ -52,8 +54,14 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                   const PopupMenuItem(
                     value: 'cancel',
                     child: ListTile(
-                      leading: Icon(Icons.cancel_outlined, color: AppColors.danger),
-                      title: Text('ยกเลิกออเดอร์', style: TextStyle(color: AppColors.danger)),
+                      leading: Icon(
+                        Icons.cancel_outlined,
+                        color: AppColors.danger,
+                      ),
+                      title: Text(
+                        'ยกเลิกออเดอร์',
+                        style: TextStyle(color: AppColors.danger),
+                      ),
                       dense: true,
                     ),
                   ),
@@ -111,9 +119,14 @@ class OrderDetailPage extends GetView<OrderDetailController> {
   Future<void> _handleMenu(String value, Order order) async {
     switch (value) {
       case 'discount':
-        final result = await DiscountDialog.show(currentType: order.discountType);
+        final result = await DiscountDialog.show(
+          currentType: order.discountType,
+        );
         if (result != null) {
-          await controller.applyDiscount(type: result.type, value: result.value);
+          await controller.applyDiscount(
+            type: result.type,
+            value: result.value,
+          );
         }
       case 'receipt':
         await controller.openReceipt();
@@ -136,7 +149,10 @@ class OrderDetailPage extends GetView<OrderDetailController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Get.back<void>(), child: const Text('ปิด')),
+          TextButton(
+            onPressed: () => Get.back<void>(),
+            child: const Text('ปิด'),
+          ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Get.back(result: reasonController.text.trim()),
@@ -170,7 +186,10 @@ class _OrderHeader extends StatelessWidget {
             children: [
               Text(
                 order.displayTarget,
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const SizedBox(width: 10),
               StatusChip(
@@ -185,12 +204,19 @@ class _OrderHeader extends StatelessWidget {
             runSpacing: 4,
             children: [
               _MetaText(icon: Icons.tag_rounded, text: order.code),
-              _MetaText(icon: Icons.people_outline_rounded, text: '${order.guestCount} ท่าน'),
+              _MetaText(
+                icon: Icons.people_outline_rounded,
+                text: '${order.guestCount} ท่าน',
+              ),
               if (order.waiterName != null)
-                _MetaText(icon: Icons.person_outline_rounded, text: order.waiterName!),
+                _MetaText(
+                  icon: Icons.person_outline_rounded,
+                  text: order.waiterName!,
+                ),
               _MetaText(
                 icon: Icons.schedule_rounded,
-                text: '${Formatters.time(order.createdAt)} (${Formatters.elapsed(order.createdAt)})',
+                text:
+                    '${Formatters.time(order.createdAt)} (${Formatters.elapsed(order.createdAt)})',
               ),
             ],
           ),
@@ -228,7 +254,13 @@ class _MetaText extends StatelessWidget {
       children: [
         Icon(icon, size: 13, color: AppColors.textDisabled),
         const SizedBox(width: 4),
-        Text(text, style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+        Text(
+          text,
+          style: const TextStyle(
+            fontSize: 12.5,
+            color: AppColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -255,7 +287,9 @@ class _ItemList extends GetView<OrderDetailController> {
           showActions: order.isActive,
           onAdvance: () => controller.advanceItemStatus(item),
           onRemove: () => controller.removeItem(item),
-          onCancel: controller.canManage ? () => controller.cancelItem(item) : null,
+          onCancel: controller.canManage
+              ? () => controller.cancelItem(item)
+              : null,
         );
       },
     );
@@ -287,7 +321,9 @@ class _BillCard extends GetView<OrderDetailController> {
             const SizedBox(height: 16),
             if (order.canSendToKitchen)
               FilledButton.icon(
-                onPressed: controller.isBusy.value ? null : controller.sendToKitchen,
+                onPressed: controller.isBusy.value
+                    ? null
+                    : controller.sendToKitchen,
                 icon: const Icon(Icons.soup_kitchen_rounded, size: 18),
                 label: const Text('ส่งเข้าครัว'),
               ),
@@ -300,7 +336,9 @@ class _BillCard extends GetView<OrderDetailController> {
             const SizedBox(height: 8),
             if (controller.canCollectPayment)
               FilledButton.icon(
-                style: FilledButton.styleFrom(backgroundColor: AppColors.success),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.success,
+                ),
                 onPressed: controller.goToCheckout,
                 icon: const Icon(Icons.point_of_sale_rounded, size: 18),
                 label: const Text('เก็บเงิน / ปิดบิล'),
@@ -316,12 +354,19 @@ class _BillCard extends GetView<OrderDetailController> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: AppColors.success,
+                    size: 18,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'ชำระเงินแล้วเมื่อ ${Formatters.dateTime(order.closedAt)}',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.success),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.success,
+                      ),
                     ),
                   ),
                 ],

@@ -13,13 +13,13 @@ class StaffPage extends GetView<StaffController> {
   const StaffPage({super.key});
 
   static Color roleColor(String role) => switch (role) {
-        UserRole.admin => AppColors.purple,
-        UserRole.manager => AppColors.info,
-        UserRole.waiter => AppColors.primary,
-        UserRole.cashier => AppColors.success,
-        UserRole.kitchen => AppColors.warning,
-        _ => AppColors.textSecondary,
-      };
+    UserRole.admin => AppColors.purple,
+    UserRole.manager => AppColors.info,
+    UserRole.waiter => AppColors.primary,
+    UserRole.cashier => AppColors.success,
+    UserRole.kitchen => AppColors.warning,
+    _ => AppColors.textSecondary,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,8 @@ class StaffPage extends GetView<StaffController> {
                   ),
                   ...UserRole.all.map(
                     (role) => _RoleChip(
-                      label: '${UserRole.label(role)} (${controller.countByRole[role] ?? 0})',
+                      label:
+                          '${UserRole.label(role)} (${controller.countByRole[role] ?? 0})',
                       selected: controller.roleFilter.value == role,
                       color: roleColor(role),
                       onTap: () => controller.filterByRole(role),
@@ -109,15 +110,20 @@ class StaffPage extends GetView<StaffController> {
                   TextFormField(
                     controller: nameController,
                     autofocus: true,
-                    decoration: const InputDecoration(labelText: 'ชื่อ-นามสกุล'),
+                    decoration: const InputDecoration(
+                      labelText: 'ชื่อ-นามสกุล',
+                    ),
                     validator: (value) =>
-                        (value == null || value.trim().length < 2) ? 'กรุณากรอกชื่อ' : null,
+                        (value == null || value.trim().length < 2)
+                        ? 'กรุณากรอกชื่อ'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: usernameController,
                     decoration: const InputDecoration(labelText: 'ชื่อผู้ใช้'),
-                    validator: (value) => (value == null || value.trim().length < 3)
+                    validator: (value) =>
+                        (value == null || value.trim().length < 3)
                         ? 'อย่างน้อย 3 ตัวอักษร'
                         : null,
                   ),
@@ -125,8 +131,9 @@ class StaffPage extends GetView<StaffController> {
                   TextFormField(
                     controller: passwordController,
                     decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
-                    validator: (value) =>
-                        (value == null || value.length < 6) ? 'อย่างน้อย 6 ตัวอักษร' : null,
+                    validator: (value) => (value == null || value.length < 6)
+                        ? 'อย่างน้อย 6 ตัวอักษร'
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
@@ -140,14 +147,18 @@ class StaffPage extends GetView<StaffController> {
                           ),
                         )
                         .toList(growable: false),
-                    onChanged: (value) => setState(() => role = value ?? UserRole.waiter),
+                    onChanged: (value) =>
+                        setState(() => role = value ?? UserRole.waiter),
                   ),
                 ],
               ),
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Get.back<void>(), child: const Text('ยกเลิก')),
+            TextButton(
+              onPressed: () => Get.back<void>(),
+              child: const Text('ยกเลิก'),
+            ),
             FilledButton(
               onPressed: () async {
                 if (!(formKey.currentState?.validate() ?? false)) return;
@@ -222,7 +233,11 @@ class _StaffRow extends GetView<StaffController> {
             backgroundColor: color.withValues(alpha: 0.14),
             child: Text(
               user.initials,
-              style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 16),
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -235,12 +250,19 @@ class _StaffRow extends GetView<StaffController> {
                     Flexible(
                       child: Text(
                         user.name,
-                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    StatusChip(label: user.roleLabel, color: color, dense: true),
+                    StatusChip(
+                      label: user.roleLabel,
+                      color: color,
+                      dense: true,
+                    ),
                     if (!user.isActive) ...[
                       const SizedBox(width: 6),
                       const StatusChip(
@@ -254,7 +276,10 @@ class _StaffRow extends GetView<StaffController> {
                 const SizedBox(height: 2),
                 Text(
                   '@${user.username}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ),
@@ -287,7 +312,10 @@ class _StaffRow extends GetView<StaffController> {
               ),
               const PopupMenuItem(
                 value: 'delete',
-                child: Text('ลบบัญชี', style: TextStyle(color: AppColors.danger)),
+                child: Text(
+                  'ลบบัญชี',
+                  style: TextStyle(color: AppColors.danger),
+                ),
               ),
             ],
           ),

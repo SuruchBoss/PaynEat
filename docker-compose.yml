@@ -1,0 +1,37 @@
+# รันทั้งระบบด้วยคำสั่งเดียว:  docker compose up --build
+#   - เว็บผู้ดูแลระบบ/หน้าร้าน : http://localhost:8080
+#   - REST API + เอกสาร        : http://localhost:3000/docs
+services:
+  api:
+    build:
+      context: ./backend
+    container_name: payneat-api
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-payneat-local-demo-secret}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      AUTO_SEED: "true"
+      DATABASE_FILE: data/payneat.sqlite
+    ports:
+      - "3000:3000"
+    volumes:
+      - payneat-data:/app/data
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./app
+      args:
+        # เบราว์เซอร์ของผู้ใช้เป็นคนเรียก API จึงต้องชี้มาที่ localhost ของเครื่องเขา
+        API_BASE_URL: ${API_BASE_URL:-http://localhost:3000}
+        DEMO_MODE: "false"
+    container_name: payneat-web
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  payneat-data:

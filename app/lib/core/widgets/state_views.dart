@@ -65,7 +65,10 @@ class EmptyView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 16),
@@ -100,13 +103,20 @@ class ErrorView extends StatelessWidget {
                 color: AppColors.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.wifi_off_rounded, size: 32, color: AppColors.danger),
+              child: const Icon(
+                Icons.wifi_off_rounded,
+                size: 32,
+                color: AppColors.danger,
+              ),
             ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+              style: const TextStyle(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 20),

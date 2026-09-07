@@ -49,7 +49,11 @@ class OrderItemTile extends StatelessWidget {
               ),
               child: Text(
                 '${item.quantity}',
-                style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  fontSize: 14,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -65,14 +69,19 @@ class OrderItemTile extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 14.5,
                             fontWeight: FontWeight.w700,
-                            decoration: item.isCancelled ? TextDecoration.lineThrough : null,
+                            decoration: item.isCancelled
+                                ? TextDecoration.lineThrough
+                                : null,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         Formatters.baht(item.lineTotal),
-                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ],
                   ),
@@ -81,7 +90,10 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         item.optionsSummary,
-                        style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   if (item.note != null)
@@ -89,7 +101,11 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 3),
                       child: Row(
                         children: [
-                          const Icon(Icons.edit_note_rounded, size: 13, color: AppColors.warning),
+                          const Icon(
+                            Icons.edit_note_rounded,
+                            size: 13,
+                            color: AppColors.warning,
+                          ),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
@@ -117,7 +133,10 @@ class OrderItemTile extends StatelessWidget {
                         if (onRemove != null && item.isEditable)
                           IconButton(
                             onPressed: onRemove,
-                            icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 18,
+                            ),
                             visualDensity: VisualDensity.compact,
                             color: AppColors.textDisabled,
                             tooltip: 'ลบรายการ',
@@ -135,7 +154,9 @@ class OrderItemTile extends StatelessWidget {
                             onPressed: onAdvance,
                             style: FilledButton.styleFrom(
                               minimumSize: const Size(0, 32),
-                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
                               backgroundColor: color,
                               textStyle: const TextStyle(
                                 fontSize: 12.5,

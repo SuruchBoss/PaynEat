@@ -27,7 +27,10 @@ class KitchenTicketCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: accent.withValues(alpha: 0.4), width: isLate ? 2 : 1),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.4),
+          width: isLate ? 2 : 1,
+        ),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -47,12 +50,20 @@ class KitchenTicketCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  item.tableName != null ? 'โต๊ะ ${item.tableName}' : 'กลับบ้าน',
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5, color: accent),
+                  item.tableName != null
+                      ? 'โต๊ะ ${item.tableName}'
+                      : 'กลับบ้าน',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
+                    color: accent,
+                  ),
                 ),
                 const Spacer(),
                 Icon(
-                  isLate ? Icons.local_fire_department_rounded : Icons.schedule_rounded,
+                  isLate
+                      ? Icons.local_fire_department_rounded
+                      : Icons.schedule_rounded,
                   size: 14,
                   color: accent,
                 ),
@@ -77,7 +88,10 @@ class KitchenTicketCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.textPrimary,
                         borderRadius: BorderRadius.circular(7),
@@ -95,7 +109,10 @@ class KitchenTicketCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         item.name,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                   ],
@@ -109,14 +126,20 @@ class KitchenTicketCard extends StatelessWidget {
                       children: item.options
                           .map(
                             (option) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceAlt,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 option.name,
-                                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
                             ),
                           )
@@ -134,7 +157,11 @@ class KitchenTicketCard extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.campaign_rounded, size: 15, color: AppColors.warning),
+                        const Icon(
+                          Icons.campaign_rounded,
+                          size: 15,
+                          color: AppColors.warning,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(

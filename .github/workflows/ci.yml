@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (Node.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: ติดตั้ง dependencies
+        run: npm ci
+
+      - name: รันเทสต์
+        run: npm test
+
+  app:
+    name: Flutter App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: stable
+          cache: true
+
+      - name: ติดตั้ง dependencies
+        run: flutter pub get
+
+      - name: ตรวจรูปแบบโค้ด
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: วิเคราะห์โค้ดแบบ static
+        run: flutter analyze
+
+      - name: รันเทสต์
+        run: flutter test
+
+      - name: ลอง build เว็บ
+        run: flutter build web --release --dart-define=DEMO_MODE=true

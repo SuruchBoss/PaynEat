@@ -36,11 +36,12 @@ class GetTopItemsUseCase implements UseCase<List<TopItem>, DateRangeParams> {
   final ReportRepository _repository;
 
   @override
-  Future<Result<List<TopItem>>> call(DateRangeParams params) =>
-      _repository.getTopItems(from: params.from, to: params.to, limit: params.limit);
+  Future<Result<List<TopItem>>> call(DateRangeParams params) => _repository
+      .getTopItems(from: params.from, to: params.to, limit: params.limit);
 }
 
-class GetSalesByDayUseCase implements UseCase<List<DailySales>, DateRangeParams> {
+class GetSalesByDayUseCase
+    implements UseCase<List<DailySales>, DateRangeParams> {
   const GetSalesByDayUseCase(this._repository);
 
   final ReportRepository _repository;

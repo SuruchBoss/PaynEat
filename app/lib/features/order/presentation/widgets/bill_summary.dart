@@ -34,7 +34,10 @@ class BillSummary extends StatelessWidget {
           children: [
             Text(
               'รวมทั้งสิ้น',
-              style: TextStyle(fontSize: dense ? 15 : 16, fontWeight: FontWeight.w800),
+              style: TextStyle(
+                fontSize: dense ? 15 : 16,
+                fontWeight: FontWeight.w800,
+              ),
             ),
             const Spacer(),
             Text(
@@ -52,19 +55,26 @@ class BillSummary extends StatelessWidget {
   }
 
   Widget _row(String label, double value, {Color? color}) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
-        child: Row(
-          children: [
-            Text(
-              label,
-              style: TextStyle(fontSize: 13.5, color: color ?? AppColors.textSecondary),
-            ),
-            const Spacer(),
-            Text(
-              '${value < 0 ? '-' : ''}${Formatters.money(value.abs())}',
-              style: TextStyle(fontSize: 13.5, color: color, fontWeight: FontWeight.w600),
-            ),
-          ],
+    padding: const EdgeInsets.symmetric(vertical: 3),
+    child: Row(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 13.5,
+            color: color ?? AppColors.textSecondary,
+          ),
         ),
-      );
+        const Spacer(),
+        Text(
+          '${value < 0 ? '-' : ''}${Formatters.money(value.abs())}',
+          style: TextStyle(
+            fontSize: 13.5,
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
 }

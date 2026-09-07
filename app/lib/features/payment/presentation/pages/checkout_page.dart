@@ -38,12 +38,18 @@ class CheckoutPage extends GetView<CheckoutController> {
                 children: [
                   Text(
                     order.displayTarget,
-                    style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const Spacer(),
                   Text(
                     order.code,
-                    style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -93,7 +99,9 @@ class _PaidHistory extends GetView<CheckoutController> {
   @override
   Widget build(BuildContext context) {
     final summary = controller.summary.value;
-    if (summary == null || summary.payments.isEmpty) return const SizedBox.shrink();
+    if (summary == null || summary.payments.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -110,16 +118,26 @@ class _PaidHistory extends GetView<CheckoutController> {
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, size: 15, color: AppColors.success),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 15,
+                  color: AppColors.success,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   payment.methodLabel,
-                  style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const Spacer(),
                 Text(
                   Formatters.money(payment.amount),
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -163,36 +181,50 @@ class _PaymentForm extends GetView<CheckoutController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('ช่องทางชำระเงิน', style: TextStyle(fontWeight: FontWeight.w800)),
+          const Text(
+            'ช่องทางชำระเงิน',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
           const SizedBox(height: 10),
           Obx(
             () => Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: PaymentMethod.all.map((method) {
-                final selected = controller.method.value == method;
-                return ChoiceChip(
-                  avatar: Icon(_iconFor(method), size: 16,
-                      color: selected ? Colors.white : AppColors.textSecondary),
-                  label: Text(PaymentMethod.label(method)),
-                  selected: selected,
-                  showCheckmark: false,
-                  onSelected: (_) => controller.selectMethod(method),
-                  selectedColor: AppColors.primary,
-                  backgroundColor: AppColors.surfaceAlt,
-                  labelStyle: TextStyle(
-                    color: selected ? Colors.white : AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                );
-              }).toList(growable: false),
+              children: PaymentMethod.all
+                  .map((method) {
+                    final selected = controller.method.value == method;
+                    return ChoiceChip(
+                      avatar: Icon(
+                        _iconFor(method),
+                        size: 16,
+                        color: selected
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                      ),
+                      label: Text(PaymentMethod.label(method)),
+                      selected: selected,
+                      showCheckmark: false,
+                      onSelected: (_) => controller.selectMethod(method),
+                      selectedColor: AppColors.primary,
+                      backgroundColor: AppColors.surfaceAlt,
+                      labelStyle: TextStyle(
+                        color: selected
+                            ? Colors.white
+                            : AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  })
+                  .toList(growable: false),
             ),
           ),
           const SizedBox(height: 18),
           TextField(
             controller: controller.amountController,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
             onChanged: controller.onAmountChanged,
             decoration: const InputDecoration(
               labelText: 'ยอดที่รับชำระรอบนี้',
@@ -207,8 +239,12 @@ class _PaymentForm extends GetView<CheckoutController> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: controller.receivedController,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                        ],
                         onChanged: controller.onReceivedChanged,
                         decoration: const InputDecoration(
                           labelText: 'รับเงินมา',
@@ -221,22 +257,28 @@ class _PaymentForm extends GetView<CheckoutController> {
                         children: [
                           ActionChip(
                             label: const Text('พอดี'),
-                            onPressed: () => controller.setReceived(controller.amount.value),
+                            onPressed: () =>
+                                controller.setReceived(controller.amount.value),
                           ),
-                          if (controller.roundedUpSuggestion > controller.remaining)
+                          if (controller.roundedUpSuggestion >
+                              controller.remaining)
                             ActionChip(
                               label: Text(
-                                Formatters.compact(controller.roundedUpSuggestion),
+                                Formatters.compact(
+                                  controller.roundedUpSuggestion,
+                                ),
                               ),
-                              onPressed: () =>
-                                  controller.setReceived(controller.roundedUpSuggestion),
+                              onPressed: () => controller.setReceived(
+                                controller.roundedUpSuggestion,
+                              ),
                             ),
                           ...CheckoutController.quickCashOptions
                               .where((value) => value > controller.amount.value)
                               .map(
                                 (value) => ActionChip(
                                   label: Text(Formatters.compact(value)),
-                                  onPressed: () => controller.setReceived(value),
+                                  onPressed: () =>
+                                      controller.setReceived(value),
                                 ),
                               ),
                         ],
@@ -252,7 +294,10 @@ class _PaymentForm extends GetView<CheckoutController> {
                           children: [
                             const Text(
                               'เงินทอน',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                             const Spacer(),
                             Text(
@@ -293,12 +338,18 @@ class _PaymentForm extends GetView<CheckoutController> {
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
                 'รับชำระ ${Formatters.baht(controller.amount.value)}',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ),
@@ -308,10 +359,10 @@ class _PaymentForm extends GetView<CheckoutController> {
   }
 
   IconData _iconFor(String method) => switch (method) {
-        PaymentMethod.cash => Icons.payments_rounded,
-        PaymentMethod.qr => Icons.qr_code_2_rounded,
-        PaymentMethod.card => Icons.credit_card_rounded,
-        PaymentMethod.transfer => Icons.account_balance_rounded,
-        _ => Icons.payment_rounded,
-      };
+    PaymentMethod.cash => Icons.payments_rounded,
+    PaymentMethod.qr => Icons.qr_code_2_rounded,
+    PaymentMethod.card => Icons.credit_card_rounded,
+    PaymentMethod.transfer => Icons.account_balance_rounded,
+    _ => Icons.payment_rounded,
+  };
 }

@@ -65,11 +65,14 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
       _selected.values.expand((options) => options).toList(growable: false);
 
   double get _unitPrice =>
-      widget.item.price + _allSelected.fold<double>(0, (sum, o) => sum + o.priceDelta);
+      widget.item.price +
+      _allSelected.fold<double>(0, (sum, o) => sum + o.priceDelta);
 
   /// กลุ่มที่บังคับเลือกแต่ยังไม่ได้เลือก
   List<String> get _missingGroups => widget.item.optionGroups
-      .where((group) => group.isRequired && (_selected[group.id]?.isEmpty ?? true))
+      .where(
+        (group) => group.isRequired && (_selected[group.id]?.isEmpty ?? true),
+      )
       .map((group) => group.name)
       .toList(growable: false);
 
@@ -121,7 +124,10 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                     children: [
                       Text(
                         widget.item.name,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       if (widget.item.description != null)
                         Padding(
@@ -155,13 +161,19 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                     children: [
                       Text(
                         group.name,
-                        style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       if (group.isRequired)
                         const Text(
                           'ต้องเลือก',
-                          style: TextStyle(fontSize: 11.5, color: AppColors.danger),
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.danger,
+                          ),
                         )
                       else
                         Text(
@@ -177,15 +189,18 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: group.options.map((option) {
-                      final selected = _selected[group.id]?.contains(option) ?? false;
-                      return _OptionChip(
-                        label: option.name,
-                        priceDelta: option.priceDelta,
-                        selected: selected,
-                        onTap: () => _toggle(group, option),
-                      );
-                    }).toList(growable: false),
+                    children: group.options
+                        .map((option) {
+                          final selected =
+                              _selected[group.id]?.contains(option) ?? false;
+                          return _OptionChip(
+                            label: option.name,
+                            priceDelta: option.priceDelta,
+                            selected: selected,
+                            onTap: () => _toggle(group, option),
+                          );
+                        })
+                        .toList(growable: false),
                   ),
                   const SizedBox(height: 18),
                 ],
@@ -220,12 +235,12 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                   child: FilledButton(
                     onPressed: _missingGroups.isEmpty
                         ? () => Get.back(
-                              result: OptionSelectionResult(
-                                quantity: _quantity,
-                                options: _allSelected,
-                                note: _noteController.text,
-                              ),
-                            )
+                            result: OptionSelectionResult(
+                              quantity: _quantity,
+                              options: _allSelected,
+                              note: _noteController.text,
+                            ),
+                          )
                         : null,
                     child: Text(
                       _missingGroups.isEmpty
@@ -277,7 +292,11 @@ class _OptionChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (selected) ...[
-                const Icon(Icons.check_circle_rounded, size: 15, color: AppColors.primary),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 15,
+                  color: AppColors.primary,
+                ),
                 const SizedBox(width: 6),
               ],
               Text(
@@ -292,7 +311,10 @@ class _OptionChip extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   '+${Formatters.money(priceDelta)}',
-                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
               ],
             ],

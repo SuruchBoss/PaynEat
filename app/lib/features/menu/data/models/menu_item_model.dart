@@ -9,7 +9,8 @@ class MenuOptionModel extends MenuOption {
     super.isDefault,
   });
 
-  factory MenuOptionModel.fromJson(Map<String, dynamic> json) => MenuOptionModel(
+  factory MenuOptionModel.fromJson(Map<String, dynamic> json) =>
+      MenuOptionModel(
         id: (json['id'] as num?)?.toInt() ?? 0,
         name: json['name'] as String? ?? '',
         priceDelta: (json['priceDelta'] as num?)?.toDouble() ?? 0,
@@ -27,7 +28,8 @@ class MenuOptionGroupModel extends MenuOptionGroup {
     super.isRequired,
   });
 
-  factory MenuOptionGroupModel.fromJson(Map<String, dynamic> json) => MenuOptionGroupModel(
+  factory MenuOptionGroupModel.fromJson(Map<String, dynamic> json) =>
+      MenuOptionGroupModel(
         id: (json['id'] as num?)?.toInt() ?? 0,
         name: json['name'] as String? ?? '',
         minSelect: (json['minSelect'] as num?)?.toInt() ?? 0,
@@ -58,23 +60,23 @@ class MenuItemModel extends MenuItem {
   });
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) => MenuItemModel(
-        id: (json['id'] as num).toInt(),
-        categoryId: (json['categoryId'] as num?)?.toInt() ?? 0,
-        categoryName: json['categoryName'] as String?,
-        name: json['name'] as String? ?? '',
-        nameEn: json['nameEn'] as String?,
-        description: json['description'] as String?,
-        price: (json['price'] as num?)?.toDouble() ?? 0,
-        imageUrl: json['imageUrl'] as String?,
-        isAvailable: json['isAvailable'] as bool? ?? true,
-        isRecommended: json['isRecommended'] as bool? ?? false,
-        prepMinutes: (json['prepMinutes'] as num?)?.toInt() ?? 10,
-        sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
-        optionGroups: (json['optionGroups'] as List? ?? const [])
-            .whereType<Map<String, dynamic>>()
-            .map(MenuOptionGroupModel.fromJson)
-            .toList(growable: false),
-      );
+    id: (json['id'] as num).toInt(),
+    categoryId: (json['categoryId'] as num?)?.toInt() ?? 0,
+    categoryName: json['categoryName'] as String?,
+    name: json['name'] as String? ?? '',
+    nameEn: json['nameEn'] as String?,
+    description: json['description'] as String?,
+    price: (json['price'] as num?)?.toDouble() ?? 0,
+    imageUrl: json['imageUrl'] as String?,
+    isAvailable: json['isAvailable'] as bool? ?? true,
+    isRecommended: json['isRecommended'] as bool? ?? false,
+    prepMinutes: (json['prepMinutes'] as num?)?.toInt() ?? 10,
+    sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
+    optionGroups: (json['optionGroups'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(MenuOptionGroupModel.fromJson)
+        .toList(growable: false),
+  );
 }
 
 /// ข้อมูลที่ใช้สร้าง/แก้ไขเมนู (แยกจาก entity เพราะรูปร่างต่างกัน)
@@ -104,32 +106,35 @@ class MenuItemPayload {
   final List<MenuOptionGroup>? optionGroups;
 
   Map<String, dynamic> toJson() => {
-        'name': name,
-        'categoryId': categoryId,
-        'price': price,
-        if (nameEn != null && nameEn!.isNotEmpty) 'nameEn': nameEn,
-        if (description != null && description!.isNotEmpty) 'description': description,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (isAvailable != null) 'isAvailable': isAvailable,
-        if (isRecommended != null) 'isRecommended': isRecommended,
-        if (prepMinutes != null) 'prepMinutes': prepMinutes,
-        if (optionGroups != null)
-          'optionGroups': optionGroups!
-              .map(
-                (group) => {
-                  'name': group.name,
-                  'minSelect': group.minSelect,
-                  'maxSelect': group.maxSelect,
-                  'isRequired': group.isRequired,
-                  'options': group.options
-                      .map((option) => {
-                            'name': option.name,
-                            'priceDelta': option.priceDelta,
-                            'isDefault': option.isDefault,
-                          })
-                      .toList(growable: false),
-                },
-              )
-              .toList(growable: false),
-      };
+    'name': name,
+    'categoryId': categoryId,
+    'price': price,
+    if (nameEn != null && nameEn!.isNotEmpty) 'nameEn': nameEn,
+    if (description != null && description!.isNotEmpty)
+      'description': description,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    if (isAvailable != null) 'isAvailable': isAvailable,
+    if (isRecommended != null) 'isRecommended': isRecommended,
+    if (prepMinutes != null) 'prepMinutes': prepMinutes,
+    if (optionGroups != null)
+      'optionGroups': optionGroups!
+          .map(
+            (group) => {
+              'name': group.name,
+              'minSelect': group.minSelect,
+              'maxSelect': group.maxSelect,
+              'isRequired': group.isRequired,
+              'options': group.options
+                  .map(
+                    (option) => {
+                      'name': option.name,
+                      'priceDelta': option.priceDelta,
+                      'isDefault': option.isDefault,
+                    },
+                  )
+                  .toList(growable: false),
+            },
+          )
+          .toList(growable: false),
+  };
 }

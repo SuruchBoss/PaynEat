@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../app/config/app_config.dart';
+
 import '../../features/auth/domain/entities/user.dart';
 import '../network/socket_client.dart';
 import 'storage_service.dart';
@@ -9,9 +11,11 @@ import 'storage_service.dart';
 /// เป็น GetxService เพราะต้องอยู่ตลอดอายุแอป (ไม่ถูกลบทิ้งตอนเปลี่ยนหน้า)
 /// และเป็นตัวกลางเดียวที่รู้ทั้ง token, ผู้ใช้ปัจจุบัน และการต่อ socket
 class SessionService extends GetxService {
-  SessionService({required StorageService storage, required SocketClient socket})
-      : _storage = storage,
-        _socket = socket;
+  SessionService({
+    required StorageService storage,
+    required SocketClient socket,
+  }) : _storage = storage,
+       _socket = socket;
 
   final StorageService _storage;
   final SocketClient _socket;
@@ -27,7 +31,8 @@ class SessionService extends GetxService {
   /// เรียกหลัง login สำเร็จ หรือตอนเปิดแอปแล้วพบเซสชันเดิม
   void start({required User user, required String token}) {
     _currentUser.value = user;
-    _socket.connect(token);
+    // โหมดสาธิตไม่มีเซิร์ฟเวอร์ให้ต่อ จึงข้ามการเชื่อม socket
+    if (!AppConfig.demoMode) _socket.connect(token);
   }
 
   void updateUser(User user) => _currentUser.value = user;

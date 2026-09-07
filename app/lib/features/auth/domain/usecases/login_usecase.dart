@@ -11,7 +11,8 @@ class LoginParams {
 }
 
 /// เข้าสู่ระบบด้วย username/password
-class LoginUseCase implements UseCase<({String token, User user}), LoginParams> {
+class LoginUseCase
+    implements UseCase<({String token, User user}), LoginParams> {
   const LoginUseCase(this._repository);
 
   final AuthRepository _repository;

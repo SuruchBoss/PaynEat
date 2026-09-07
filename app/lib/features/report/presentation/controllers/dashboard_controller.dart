@@ -13,8 +13,8 @@ class DashboardController extends GetxController {
   DashboardController({
     required GetDashboardUseCase getDashboard,
     required SessionService session,
-  })  : _getDashboard = getDashboard,
-        _session = session;
+  }) : _getDashboard = getDashboard,
+       _session = session;
 
   final GetDashboardUseCase _getDashboard;
   final SessionService _session;

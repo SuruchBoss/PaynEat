@@ -43,7 +43,10 @@ class _SplashPageState extends State<SplashPage> {
             SizedBox(
               width: 26,
               height: 26,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2.5,
+              ),
             ),
           ],
         ),

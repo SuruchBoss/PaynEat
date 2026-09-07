@@ -17,7 +17,10 @@ class TableRemoteDataSourceImpl implements TableRemoteDataSource {
   final ApiClient _client;
 
   @override
-  Future<List<DiningTableModel>> getTables({String? zone, String? status}) async {
+  Future<List<DiningTableModel>> getTables({
+    String? zone,
+    String? status,
+  }) async {
     final result = await _client.get(
       ApiEndpoints.tables,
       query: {'zone': zone, 'status': status},
@@ -28,12 +31,17 @@ class TableRemoteDataSourceImpl implements TableRemoteDataSource {
   @override
   Future<List<String>> getZones() async {
     final result = await _client.get(ApiEndpoints.tableZones);
-    return (result.data as List? ?? const []).map((zone) => zone.toString()).toList(growable: false);
+    return (result.data as List? ?? const [])
+        .map((zone) => zone.toString())
+        .toList(growable: false);
   }
 
   @override
   Future<DiningTableModel> setStatus(int id, String status) async {
-    final result = await _client.patch(ApiEndpoints.tableStatus(id), body: {'status': status});
+    final result = await _client.patch(
+      ApiEndpoints.tableStatus(id),
+      body: {'status': status},
+    );
     return DiningTableModel.fromJson(result.asMap);
   }
 

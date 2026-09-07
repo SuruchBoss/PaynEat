@@ -11,7 +11,7 @@ import '../errors/exceptions.dart';
 /// - แปลง error ทุกแบบให้เป็น [ApiException] / [NetworkException] รูปแบบเดียว
 class ApiClient {
   ApiClient({Dio? dio, this.tokenProvider, this.onUnauthorized})
-      : _dio = dio ?? Dio() {
+    : _dio = dio ?? Dio() {
     _dio.options
       ..baseUrl = AppConfig.apiBaseUrl
       ..connectTimeout = AppConfig.connectTimeout
@@ -80,7 +80,10 @@ class ApiClient {
 
     if (statusCode >= 200 && statusCode < 300) {
       if (body is Map<String, dynamic>) {
-        return ApiResult(data: body['data'], meta: body['meta'] as Map<String, dynamic>?);
+        return ApiResult(
+          data: body['data'],
+          meta: body['meta'] as Map<String, dynamic>?,
+        );
       }
       return const ApiResult(data: null);
     }
@@ -95,9 +98,9 @@ class ApiClient {
       statusCode: statusCode,
       code: error is Map<String, dynamic> ? error['code'] as String? : null,
       details: error is Map<String, dynamic> && error['details'] is List
-          ? (error['details'] as List)
-              .whereType<Map<String, dynamic>>()
-              .toList(growable: false)
+          ? (error['details'] as List).whereType<Map<String, dynamic>>().toList(
+              growable: false,
+            )
           : null,
     );
   }
@@ -120,8 +123,9 @@ class ApiResult {
   final dynamic data;
   final Map<String, dynamic>? meta;
 
-  Map<String, dynamic> get asMap =>
-      data is Map<String, dynamic> ? data as Map<String, dynamic> : <String, dynamic>{};
+  Map<String, dynamic> get asMap => data is Map<String, dynamic>
+      ? data as Map<String, dynamic>
+      : <String, dynamic>{};
 
   List<Map<String, dynamic>> get asList => data is List
       ? (data as List).whereType<Map<String, dynamic>>().toList(growable: false)

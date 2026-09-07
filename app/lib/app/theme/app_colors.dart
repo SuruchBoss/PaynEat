@@ -30,29 +30,29 @@ class AppColors {
 
   /// สีประจำสถานะโต๊ะ ใช้ทั้งในผังโต๊ะและ chip
   static Color tableStatus(String status) => switch (status) {
-        TableStatus.available => success,
-        TableStatus.occupied => primary,
-        TableStatus.reserved => info,
-        TableStatus.billing => purple,
-        _ => textSecondary,
-      };
+    TableStatus.available => success,
+    TableStatus.occupied => primary,
+    TableStatus.reserved => info,
+    TableStatus.billing => purple,
+    _ => textSecondary,
+  };
 
   /// สีประจำสถานะรายการอาหารบนจอครัว
   static Color itemStatus(String status) => switch (status) {
-        OrderItemStatus.pending => warning,
-        OrderItemStatus.cooking => primary,
-        OrderItemStatus.ready => success,
-        OrderItemStatus.served => info,
-        OrderItemStatus.cancelled => danger,
-        _ => textSecondary,
-      };
+    OrderItemStatus.pending => warning,
+    OrderItemStatus.cooking => primary,
+    OrderItemStatus.ready => success,
+    OrderItemStatus.served => info,
+    OrderItemStatus.cancelled => danger,
+    _ => textSecondary,
+  };
 
   static Color orderStatus(String status) => switch (status) {
-        OrderStatus.open => info,
-        OrderStatus.inKitchen => primary,
-        OrderStatus.served => success,
-        OrderStatus.paid => textSecondary,
-        OrderStatus.cancelled => danger,
-        _ => textSecondary,
-      };
+    OrderStatus.open => info,
+    OrderStatus.inKitchen => primary,
+    OrderStatus.served => success,
+    OrderStatus.paid => textSecondary,
+    OrderStatus.cancelled => danger,
+    _ => textSecondary,
+  };
 }

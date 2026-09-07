@@ -6,7 +6,8 @@ import '../../domain/usecases/payment_usecases.dart';
 
 /// เตรียมข้อมูลใบเสร็จสำหรับแสดง/พิมพ์
 class ReceiptController extends GetxController {
-  ReceiptController({required GetReceiptUseCase getReceipt}) : _getReceipt = getReceipt;
+  ReceiptController({required GetReceiptUseCase getReceipt})
+    : _getReceipt = getReceipt;
 
   final GetReceiptUseCase _getReceipt;
 

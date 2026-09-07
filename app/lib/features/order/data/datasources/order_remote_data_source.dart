@@ -17,11 +17,11 @@ class OrderItemPayload {
   final String? note;
 
   Map<String, dynamic> toJson() => {
-        'menuItemId': menuItemId,
-        'quantity': quantity,
-        'optionIds': optionIds,
-        if (note != null && note!.isNotEmpty) 'note': note,
-      };
+    'menuItemId': menuItemId,
+    'quantity': quantity,
+    'optionIds': optionIds,
+    if (note != null && note!.isNotEmpty) 'note': note,
+  };
 }
 
 abstract class OrderRemoteDataSource {
@@ -43,7 +43,12 @@ abstract class OrderRemoteDataSource {
     required List<OrderItemPayload> items,
   });
   Future<OrderModel> addItems(int orderId, List<OrderItemPayload> items);
-  Future<OrderModel> updateItem(int orderId, int itemId, {int? quantity, String? note});
+  Future<OrderModel> updateItem(
+    int orderId,
+    int itemId, {
+    int? quantity,
+    String? note,
+  });
   Future<OrderModel> removeItem(int orderId, int itemId);
   Future<OrderModel> updateItemStatus(int orderId, int itemId, String status);
   Future<OrderModel> sendToKitchen(int orderId);
@@ -121,13 +126,20 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<OrderModel> addItems(int orderId, List<OrderItemPayload> items) async {
     final result = await _client.post(
       ApiEndpoints.orderItems(orderId),
-      body: {'items': items.map((item) => item.toJson()).toList(growable: false)},
+      body: {
+        'items': items.map((item) => item.toJson()).toList(growable: false),
+      },
     );
     return OrderModel.fromJson(result.asMap);
   }
 
   @override
-  Future<OrderModel> updateItem(int orderId, int itemId, {int? quantity, String? note}) async {
+  Future<OrderModel> updateItem(
+    int orderId,
+    int itemId, {
+    int? quantity,
+    String? note,
+  }) async {
     final result = await _client.patch(
       ApiEndpoints.orderItem(orderId, itemId),
       body: {
@@ -140,12 +152,18 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
 
   @override
   Future<OrderModel> removeItem(int orderId, int itemId) async {
-    final result = await _client.delete(ApiEndpoints.orderItem(orderId, itemId));
+    final result = await _client.delete(
+      ApiEndpoints.orderItem(orderId, itemId),
+    );
     return OrderModel.fromJson(result.asMap);
   }
 
   @override
-  Future<OrderModel> updateItemStatus(int orderId, int itemId, String status) async {
+  Future<OrderModel> updateItemStatus(
+    int orderId,
+    int itemId,
+    String status,
+  ) async {
     final result = await _client.patch(
       ApiEndpoints.orderItemStatus(orderId, itemId),
       body: {'status': status},
@@ -160,7 +178,11 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   }
 
   @override
-  Future<OrderModel> applyDiscount(int orderId, String type, double value) async {
+  Future<OrderModel> applyDiscount(
+    int orderId,
+    String type,
+    double value,
+  ) async {
     final result = await _client.post(
       ApiEndpoints.orderDiscount(orderId),
       body: {'type': type, 'value': value},
@@ -181,7 +203,10 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses}) async {
     final result = await _client.get(
       ApiEndpoints.kitchenQueue,
-      query: {if (statuses != null && statuses.isNotEmpty) 'status': statuses.join(',')},
+      query: {
+        if (statuses != null && statuses.isNotEmpty)
+          'status': statuses.join(','),
+      },
     );
     return result.asList.map(OrderItemModel.fromJson).toList(growable: false);
   }

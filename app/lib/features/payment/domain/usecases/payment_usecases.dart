@@ -21,19 +21,22 @@ class PayParams {
 }
 
 /// รับชำระเงิน (รองรับจ่ายบางส่วน / แยกช่องทาง)
-class PayOrderUseCase implements UseCase<({PaymentResult result, Order order}), PayParams> {
+class PayOrderUseCase
+    implements UseCase<({PaymentResult result, Order order}), PayParams> {
   const PayOrderUseCase(this._repository);
 
   final PaymentRepository _repository;
 
   @override
-  Future<Result<({PaymentResult result, Order order})>> call(PayParams params) => _repository.pay(
-        orderId: params.orderId,
-        method: params.method,
-        amount: params.amount,
-        received: params.received,
-        reference: params.reference,
-      );
+  Future<Result<({PaymentResult result, Order order})>> call(
+    PayParams params,
+  ) => _repository.pay(
+    orderId: params.orderId,
+    method: params.method,
+    amount: params.amount,
+    received: params.received,
+    reference: params.reference,
+  );
 }
 
 class GetPaymentSummaryUseCase implements UseCase<PaymentSummary, int> {
@@ -42,10 +45,12 @@ class GetPaymentSummaryUseCase implements UseCase<PaymentSummary, int> {
   final PaymentRepository _repository;
 
   @override
-  Future<Result<PaymentSummary>> call(int params) => _repository.getSummary(params);
+  Future<Result<PaymentSummary>> call(int params) =>
+      _repository.getSummary(params);
 }
 
-class GetReceiptUseCase implements UseCase<({Receipt receipt, Order order}), int> {
+class GetReceiptUseCase
+    implements UseCase<({Receipt receipt, Order order}), int> {
   const GetReceiptUseCase(this._repository);
 
   final PaymentRepository _repository;

@@ -24,11 +24,11 @@ Failure mapExceptionToFailure(Object error) {
       403 => ForbiddenFailure(error.message),
       422 => ValidationFailure(error.message, details: details),
       _ => ServerFailure(
-          error.message,
-          statusCode: error.statusCode,
-          code: error.code,
-          details: details,
-        ),
+        error.message,
+        statusCode: error.statusCode,
+        code: error.code,
+        details: details,
+      ),
     };
   }
 

@@ -13,9 +13,9 @@ class ReportController extends GetxController {
     required GetSalesSummaryUseCase getSummary,
     required GetTopItemsUseCase getTopItems,
     required GetSalesByDayUseCase getSalesByDay,
-  })  : _getSummary = getSummary,
-        _getTopItems = getTopItems,
-        _getSalesByDay = getSalesByDay;
+  }) : _getSummary = getSummary,
+       _getTopItems = getTopItems,
+       _getSalesByDay = getSalesByDay;
 
   final GetSalesSummaryUseCase _getSummary;
   final GetTopItemsUseCase _getTopItems;

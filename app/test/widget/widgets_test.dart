@@ -7,7 +7,9 @@ import 'package:payneat_pos/core/widgets/status_chip.dart';
 import 'package:payneat_pos/features/menu/domain/entities/menu_item.dart';
 import 'package:payneat_pos/features/menu/presentation/widgets/menu_item_card.dart';
 
-Widget wrap(Widget child) => MaterialApp(home: Scaffold(body: Center(child: child)));
+Widget wrap(Widget child) => MaterialApp(
+  home: Scaffold(body: Center(child: child)),
+);
 
 void main() {
   group('QuantityStepper', () {
@@ -51,7 +53,12 @@ void main() {
   });
 
   group('MenuItemCard', () {
-    const available = MenuItem(id: 1, categoryId: 1, name: 'ผัดกะเพรา', price: 75);
+    const available = MenuItem(
+      id: 1,
+      categoryId: 1,
+      name: 'ผัดกะเพรา',
+      price: 75,
+    );
     const soldOut = MenuItem(
       id: 2,
       categoryId: 1,
@@ -61,8 +68,15 @@ void main() {
     );
 
     testWidgets('แสดงชื่อและราคาของเมนู', (tester) async {
-      await tester.pumpWidget(wrap(SizedBox(width: 180, height: 220,
-          child: MenuItemCard(item: available, onTap: () {}))));
+      await tester.pumpWidget(
+        wrap(
+          SizedBox(
+            width: 180,
+            height: 220,
+            child: MenuItemCard(item: available, onTap: () {}),
+          ),
+        ),
+      );
 
       expect(find.text('ผัดกะเพรา'), findsOneWidget);
       expect(find.text('฿75.00'), findsOneWidget);
@@ -102,11 +116,15 @@ void main() {
       expect(find.text('กำลังทำ'), findsOneWidget);
     });
 
-    testWidgets('ErrorView มีปุ่มลองใหม่เมื่อส่ง onRetry เข้ามา', (tester) async {
+    testWidgets('ErrorView มีปุ่มลองใหม่เมื่อส่ง onRetry เข้ามา', (
+      tester,
+    ) async {
       var retried = false;
 
       await tester.pumpWidget(
-        wrap(ErrorView(message: 'เชื่อมต่อไม่ได้', onRetry: () => retried = true)),
+        wrap(
+          ErrorView(message: 'เชื่อมต่อไม่ได้', onRetry: () => retried = true),
+        ),
       );
 
       expect(find.text('เชื่อมต่อไม่ได้'), findsOneWidget);
@@ -117,7 +135,9 @@ void main() {
     });
 
     testWidgets('EmptyView แสดงข้อความว่าง', (tester) async {
-      await tester.pumpWidget(wrap(const EmptyView(message: 'ยังไม่มีออเดอร์')));
+      await tester.pumpWidget(
+        wrap(const EmptyView(message: 'ยังไม่มีออเดอร์')),
+      );
 
       expect(find.text('ยังไม่มีออเดอร์'), findsOneWidget);
     });

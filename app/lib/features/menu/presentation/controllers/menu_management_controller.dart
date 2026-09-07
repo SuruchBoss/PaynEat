@@ -18,14 +18,14 @@ class MenuManagementController extends GetxController {
     required ToggleMenuAvailabilityUseCase toggleAvailability,
     required SaveCategoryUseCase saveCategory,
     required DeleteCategoryUseCase deleteCategory,
-  })  : _getMenuItems = getMenuItems,
-        _getCategories = getCategories,
-        _createMenuItem = createMenuItem,
-        _updateMenuItem = updateMenuItem,
-        _deleteMenuItem = deleteMenuItem,
-        _toggleAvailability = toggleAvailability,
-        _saveCategory = saveCategory,
-        _deleteCategory = deleteCategory;
+  }) : _getMenuItems = getMenuItems,
+       _getCategories = getCategories,
+       _createMenuItem = createMenuItem,
+       _updateMenuItem = updateMenuItem,
+       _deleteMenuItem = deleteMenuItem,
+       _toggleAvailability = toggleAvailability,
+       _saveCategory = saveCategory,
+       _deleteCategory = deleteCategory;
 
   final GetMenuItemsUseCase _getMenuItems;
   final GetCategoriesUseCase _getCategories;
@@ -52,13 +52,16 @@ class MenuManagementController extends GetxController {
 
   List<MenuItem> get filteredItems {
     final query = searchQuery.value.trim().toLowerCase();
-    return items.where((item) {
-      final categoryMatched =
-          selectedCategoryId.value == null || item.categoryId == selectedCategoryId.value;
-      if (!categoryMatched) return false;
-      if (query.isEmpty) return true;
-      return item.name.toLowerCase().contains(query);
-    }).toList(growable: false);
+    return items
+        .where((item) {
+          final categoryMatched =
+              selectedCategoryId.value == null ||
+              item.categoryId == selectedCategoryId.value;
+          if (!categoryMatched) return false;
+          if (query.isEmpty) return true;
+          return item.name.toLowerCase().contains(query);
+        })
+        .toList(growable: false);
   }
 
   int get unavailableCount => items.where((item) => !item.isAvailable).length;
@@ -96,7 +99,9 @@ class MenuManagementController extends GetxController {
         final index = items.indexWhere((row) => row.id == updated.id);
         if (index >= 0) items[index] = updated;
         AppDialogs.success(
-          updated.isAvailable ? 'เปิดขาย "${updated.name}" แล้ว' : 'ปิดขาย "${updated.name}" แล้ว',
+          updated.isAvailable
+              ? 'เปิดขาย "${updated.name}" แล้ว'
+              : 'ปิดขาย "${updated.name}" แล้ว',
         );
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
@@ -112,7 +117,9 @@ class MenuManagementController extends GetxController {
 
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success(id == null ? 'เพิ่มเมนูใหม่แล้ว' : 'บันทึกการแก้ไขแล้ว');
+        AppDialogs.success(
+          id == null ? 'เพิ่มเมนูใหม่แล้ว' : 'บันทึกการแก้ไขแล้ว',
+        );
         Get.back<void>();
         load();
       },
@@ -143,11 +150,19 @@ class MenuManagementController extends GetxController {
     await Get.toNamed<void>(AppRoutes.menuForm, arguments: {'item': item});
   }
 
-  Future<void> saveCategory({int? id, required String name, String? icon}) async {
-    final result = await _saveCategory(SaveCategoryParams(id: id, name: name, icon: icon));
+  Future<void> saveCategory({
+    int? id,
+    required String name,
+    String? icon,
+  }) async {
+    final result = await _saveCategory(
+      SaveCategoryParams(id: id, name: name, icon: icon),
+    );
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success(id == null ? 'เพิ่มหมวดหมู่แล้ว' : 'แก้ไขหมวดหมู่แล้ว');
+        AppDialogs.success(
+          id == null ? 'เพิ่มหมวดหมู่แล้ว' : 'แก้ไขหมวดหมู่แล้ว',
+        );
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),

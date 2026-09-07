@@ -130,7 +130,8 @@ class LiveCounters {
   final int totalTables;
   final int pendingKitchenItems;
 
-  double get occupancyRate => totalTables == 0 ? 0 : occupiedTables / totalTables;
+  double get occupancyRate =>
+      totalTables == 0 ? 0 : occupiedTables / totalTables;
 
   static const LiveCounters empty = LiveCounters(
     openOrders: 0,

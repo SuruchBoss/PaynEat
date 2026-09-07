@@ -12,29 +12,28 @@ sealed class Result<T> {
   bool get isFailure => this is FailureResult<T>;
 
   T? get dataOrNull => switch (this) {
-        Success<T>(:final data) => data,
-        FailureResult<T>() => null,
-      };
+    Success<T>(:final data) => data,
+    FailureResult<T>() => null,
+  };
 
   Failure? get failureOrNull => switch (this) {
-        Success<T>() => null,
-        FailureResult<T>(:final failure) => failure,
-      };
+    Success<T>() => null,
+    FailureResult<T>(:final failure) => failure,
+  };
 
   /// แตกผลลัพธ์ออกเป็นสองทางแบบบังคับให้จัดการครบทั้งคู่
   R fold<R>({
     required R Function(T data) onSuccess,
     required R Function(Failure failure) onFailure,
-  }) =>
-      switch (this) {
-        Success<T>(:final data) => onSuccess(data),
-        FailureResult<T>(:final failure) => onFailure(failure),
-      };
+  }) => switch (this) {
+    Success<T>(:final data) => onSuccess(data),
+    FailureResult<T>(:final failure) => onFailure(failure),
+  };
 
   Result<R> map<R>(R Function(T data) transform) => switch (this) {
-        Success<T>(:final data) => Result<R>.success(transform(data)),
-        FailureResult<T>(:final failure) => Result<R>.failure(failure),
-      };
+    Success<T>(:final data) => Result<R>.success(transform(data)),
+    FailureResult<T>(:final failure) => Result<R>.failure(failure),
+  };
 }
 
 final class Success<T> extends Result<T> {

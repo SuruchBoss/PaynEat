@@ -15,9 +15,9 @@ class TableController extends GetxController {
     required GetTablesUseCase getTables,
     required SetTableStatusUseCase setTableStatus,
     required SessionService session,
-  })  : _getTables = getTables,
-        _setTableStatus = setTableStatus,
-        _session = session;
+  }) : _getTables = getTables,
+       _setTableStatus = setTableStatus,
+       _session = session;
 
   final GetTablesUseCase _getTables;
   final SetTableStatusUseCase _setTableStatus;
@@ -53,11 +53,16 @@ class TableController extends GetxController {
   }
 
   List<DiningTable> get filteredTables {
-    return tables.where((table) {
-      final zoneMatched = selectedZone.value == null || table.zone == selectedZone.value;
-      final statusMatched = selectedStatus.value == null || table.status == selectedStatus.value;
-      return zoneMatched && statusMatched;
-    }).toList(growable: false);
+    return tables
+        .where((table) {
+          final zoneMatched =
+              selectedZone.value == null || table.zone == selectedZone.value;
+          final statusMatched =
+              selectedStatus.value == null ||
+              table.status == selectedStatus.value;
+          return zoneMatched && statusMatched;
+        })
+        .toList(growable: false);
   }
 
   int get availableCount =>
@@ -106,7 +111,11 @@ class TableController extends GetxController {
     } else {
       await Get.toNamed<void>(
         AppRoutes.newOrder,
-        arguments: {'tableId': table.id, 'tableName': table.name, 'seats': table.seats},
+        arguments: {
+          'tableId': table.id,
+          'tableName': table.name,
+          'seats': table.seats,
+        },
       );
     }
     await loadTables(showLoader: false);
@@ -120,7 +129,9 @@ class TableController extends GetxController {
       SocketEvents.orderCreated,
       SocketEvents.orderPaid,
     ]) {
-      _unsubscribers.add(socket.on(event, (_) => loadTables(showLoader: false)));
+      _unsubscribers.add(
+        socket.on(event, (_) => loadTables(showLoader: false)),
+      );
     }
   }
 }

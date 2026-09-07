@@ -27,7 +27,9 @@ class ReceiptPage extends GetView<ReceiptController> {
         if (controller.isLoading.value) return const LoadingView();
 
         final error = controller.errorMessage.value;
-        if (error != null) return ErrorView(message: error, onRetry: controller.load);
+        if (error != null) {
+          return ErrorView(message: error, onRetry: controller.load);
+        }
 
         final order = controller.order.value;
         final receipt = controller.receipt.value;
@@ -53,28 +55,46 @@ class ReceiptPage extends GetView<ReceiptController> {
                     Center(
                       child: Column(
                         children: [
-                          const Icon(Icons.restaurant_menu_rounded,
-                              size: 30, color: AppColors.primary),
+                          const Icon(
+                            Icons.restaurant_menu_rounded,
+                            size: 30,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(height: 8),
                           Text(
                             receipt.storeName,
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           const Text(
                             'ใบเสร็จรับเงิน / ใบกำกับภาษีอย่างย่อ',
-                            style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const _DashedDivider(),
                     _KeyValue(label: 'เลขที่', value: order.code),
-                    _KeyValue(label: 'วันที่', value: Formatters.dateTime(order.closedAt)),
-                    _KeyValue(label: 'โต๊ะ / ประเภท', value: order.displayTarget),
+                    _KeyValue(
+                      label: 'วันที่',
+                      value: Formatters.dateTime(order.closedAt),
+                    ),
+                    _KeyValue(
+                      label: 'โต๊ะ / ประเภท',
+                      value: order.displayTarget,
+                    ),
                     if (order.waiterName != null)
                       _KeyValue(label: 'พนักงาน', value: order.waiterName!),
-                    _KeyValue(label: 'จำนวนลูกค้า', value: '${order.guestCount} ท่าน'),
+                    _KeyValue(
+                      label: 'จำนวนลูกค้า',
+                      value: '${order.guestCount} ท่าน',
+                    ),
                     const _DashedDivider(),
                     for (final item in order.activeItems) ...[
                       Padding(
@@ -96,7 +116,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item.name, style: const TextStyle(fontSize: 12.5)),
+                                  Text(
+                                    item.name,
+                                    style: const TextStyle(fontSize: 12.5),
+                                  ),
                                   if (item.options.isNotEmpty)
                                     Text(
                                       item.optionsSummary,
@@ -117,23 +140,31 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     ],
                     const _DashedDivider(),
-                    _KeyValue(label: 'ยอดรวมอาหาร', value: Formatters.money(order.subtotal)),
+                    _KeyValue(
+                      label: 'ยอดรวมอาหาร',
+                      value: Formatters.money(order.subtotal),
+                    ),
                     if (order.hasDiscount)
                       _KeyValue(
                         label: 'ส่วนลด',
                         value: '-${Formatters.money(order.discountAmount)}',
                       ),
                     _KeyValue(
-                      label: 'Service Charge ${(receipt.serviceChargeRate * 100).toStringAsFixed(0)}%',
+                      label:
+                          'Service Charge ${(receipt.serviceChargeRate * 100).toStringAsFixed(0)}%',
                       value: Formatters.money(order.serviceCharge),
                     ),
                     _KeyValue(
-                      label: 'VAT ${(receipt.vatRate * 100).toStringAsFixed(0)}%',
+                      label:
+                          'VAT ${(receipt.vatRate * 100).toStringAsFixed(0)}%',
                       value: Formatters.money(order.vat),
                     ),
                     const SizedBox(height: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 12,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.primarySoft,
                         borderRadius: BorderRadius.circular(10),
@@ -142,7 +173,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                         children: [
                           const Text(
                             'รวมทั้งสิ้น',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                            ),
                           ),
                           const Spacer(),
                           Text(
@@ -171,14 +205,20 @@ class ReceiptPage extends GetView<ReceiptController> {
                     const Center(
                       child: Text(
                         'ขอบคุณที่ใช้บริการ 🙏',
-                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
                     const Center(
                       child: Text(
                         'Powered by PaynEat POS',
-                        style: TextStyle(fontSize: 10.5, color: AppColors.textDisabled),
+                        style: TextStyle(
+                          fontSize: 10.5,
+                          color: AppColors.textDisabled,
+                        ),
                       ),
                     ),
                   ],
@@ -204,9 +244,18 @@ class _KeyValue extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const Spacer(),
-          Text(value, style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );
@@ -231,7 +280,9 @@ class _DashedDivider extends StatelessWidget {
               (_) => const SizedBox(
                 width: 4,
                 height: 1,
-                child: DecoratedBox(decoration: BoxDecoration(color: AppColors.border)),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(color: AppColors.border),
+                ),
               ),
             ),
           );

@@ -4,17 +4,31 @@ import 'package:payneat_pos/features/menu/domain/entities/menu_option.dart';
 import 'package:payneat_pos/features/order/domain/entities/cart_line.dart';
 
 void main() {
-  const padkrapao = MenuItem(id: 10, categoryId: 1, name: 'ผัดกะเพรา', price: 75);
+  const padkrapao = MenuItem(
+    id: 10,
+    categoryId: 1,
+    name: 'ผัดกะเพรา',
+    price: 75,
+  );
   const spicy = MenuOption(id: 1, name: 'เผ็ดมาก');
   const egg = MenuOption(id: 2, name: 'ไข่ดาว', priceDelta: 15);
 
   group('CartLine', () {
-    test('signature เหมือนกันเมื่อเมนู ตัวเลือก และโน้ตเหมือนกัน (ไม่สนลำดับตัวเลือก)', () {
-      final first = CartLine(menuItem: padkrapao, selectedOptions: [spicy, egg]);
-      final second = CartLine(menuItem: padkrapao, selectedOptions: [egg, spicy]);
+    test(
+      'signature เหมือนกันเมื่อเมนู ตัวเลือก และโน้ตเหมือนกัน (ไม่สนลำดับตัวเลือก)',
+      () {
+        final first = CartLine(
+          menuItem: padkrapao,
+          selectedOptions: [spicy, egg],
+        );
+        final second = CartLine(
+          menuItem: padkrapao,
+          selectedOptions: [egg, spicy],
+        );
 
-      expect(first.signature, second.signature);
-    });
+        expect(first.signature, second.signature);
+      },
+    );
 
     test('signature ต่างกันเมื่อโน้ตต่างกัน', () {
       final first = CartLine(menuItem: padkrapao, selectedOptions: [spicy]);

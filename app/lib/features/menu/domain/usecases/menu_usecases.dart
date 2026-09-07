@@ -21,7 +21,8 @@ class GetMenuItemsUseCase implements UseCase<List<MenuItem>, MenuFilter> {
   final MenuRepository _repository;
 
   @override
-  Future<Result<List<MenuItem>>> call(MenuFilter params) => _repository.getMenuItems(
+  Future<Result<List<MenuItem>>> call(MenuFilter params) =>
+      _repository.getMenuItems(
         categoryId: params.categoryId,
         search: params.search,
         availableOnly: params.availableOnly,
@@ -46,7 +47,8 @@ class CreateMenuItemUseCase implements UseCase<MenuItem, MenuItemPayload> {
   final MenuRepository _repository;
 
   @override
-  Future<Result<MenuItem>> call(MenuItemPayload params) => _repository.createMenuItem(params);
+  Future<Result<MenuItem>> call(MenuItemPayload params) =>
+      _repository.createMenuItem(params);
 }
 
 class UpdateMenuItemParams {
@@ -75,7 +77,8 @@ class ToggleAvailabilityParams {
 }
 
 /// เปิด/ปิดการขายเมนู — ใช้ตอนของหมดกลางวัน
-class ToggleMenuAvailabilityUseCase implements UseCase<MenuItem, ToggleAvailabilityParams> {
+class ToggleMenuAvailabilityUseCase
+    implements UseCase<MenuItem, ToggleAvailabilityParams> {
   const ToggleMenuAvailabilityUseCase(this._repository);
 
   final MenuRepository _repository;
@@ -97,7 +100,12 @@ class DeleteMenuItemUseCase implements UseCase<void, int> {
 
 /// จัดการหมวดหมู่
 class SaveCategoryParams {
-  const SaveCategoryParams({this.id, required this.name, this.nameEn, this.icon});
+  const SaveCategoryParams({
+    this.id,
+    required this.name,
+    this.nameEn,
+    this.icon,
+  });
 
   final int? id;
   final String name;

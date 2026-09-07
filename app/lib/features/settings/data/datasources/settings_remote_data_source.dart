@@ -13,12 +13,12 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
   final ApiClient _client;
 
   static StoreSettings _fromJson(Map<String, dynamic> json) => StoreSettings(
-        storeName: json['storeName'] as String? ?? '',
-        currency: json['currency'] as String? ?? 'THB',
-        vatRate: (json['vatRate'] as num?)?.toDouble() ?? 0,
-        serviceChargeRate: (json['serviceChargeRate'] as num?)?.toDouble() ?? 0,
-        vatIncluded: json['vatIncluded'] as bool? ?? false,
-      );
+    storeName: json['storeName'] as String? ?? '',
+    currency: json['currency'] as String? ?? 'THB',
+    vatRate: (json['vatRate'] as num?)?.toDouble() ?? 0,
+    serviceChargeRate: (json['serviceChargeRate'] as num?)?.toDouble() ?? 0,
+    vatIncluded: json['vatIncluded'] as bool? ?? false,
+  );
 
   @override
   Future<StoreSettings> get() async {

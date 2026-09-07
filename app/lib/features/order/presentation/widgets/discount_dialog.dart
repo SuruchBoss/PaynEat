@@ -19,7 +19,9 @@ class DiscountDialog extends StatefulWidget {
 
   final String currentType;
 
-  static Future<DiscountResult?> show({String currentType = DiscountType.none}) {
+  static Future<DiscountResult?> show({
+    String currentType = DiscountType.none,
+  }) {
     return Get.dialog<DiscountResult>(DiscountDialog(currentType: currentType));
   }
 
@@ -53,20 +55,31 @@ class _DiscountDialogState extends State<DiscountDialog> {
         children: [
           SegmentedButton<String>(
             segments: const [
-              ButtonSegment(value: DiscountType.percent, label: Text('เปอร์เซ็นต์')),
-              ButtonSegment(value: DiscountType.amount, label: Text('จำนวนเงิน')),
+              ButtonSegment(
+                value: DiscountType.percent,
+                label: Text('เปอร์เซ็นต์'),
+              ),
+              ButtonSegment(
+                value: DiscountType.amount,
+                label: Text('จำนวนเงิน'),
+              ),
             ],
             selected: {_type},
-            onSelectionChanged: (values) => setState(() => _type = values.first),
+            onSelectionChanged: (values) =>
+                setState(() => _type = values.first),
           ),
           const SizedBox(height: 16),
           TextField(
             controller: _valueController,
             autofocus: true,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+            ],
             decoration: InputDecoration(
-              labelText: _type == DiscountType.percent ? 'ลดกี่เปอร์เซ็นต์' : 'ลดกี่บาท',
+              labelText: _type == DiscountType.percent
+                  ? 'ลดกี่เปอร์เซ็นต์'
+                  : 'ลดกี่บาท',
               suffixText: _type == DiscountType.percent ? '%' : 'บาท',
             ),
             onChanged: (_) => setState(() {}),
@@ -80,7 +93,8 @@ class _DiscountDialogState extends State<DiscountDialog> {
                     (percent) => ActionChip(
                       label: Text('${percent.toStringAsFixed(0)}%'),
                       onPressed: () => setState(
-                        () => _valueController.text = percent.toStringAsFixed(0),
+                        () =>
+                            _valueController.text = percent.toStringAsFixed(0),
                       ),
                     ),
                   )
@@ -95,15 +109,23 @@ class _DiscountDialogState extends State<DiscountDialog> {
             onPressed: () => Get.back(
               result: const DiscountResult(type: DiscountType.none, value: 0),
             ),
-            child: const Text('ยกเลิกส่วนลด', style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              'ยกเลิกส่วนลด',
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         TextButton(
           onPressed: () => Get.back<void>(),
-          child: const Text('ปิด', style: TextStyle(color: AppColors.textSecondary)),
+          child: const Text(
+            'ปิด',
+            style: TextStyle(color: AppColors.textSecondary),
+          ),
         ),
         FilledButton(
           onPressed: _value > 0
-              ? () => Get.back(result: DiscountResult(type: _type, value: _value))
+              ? () => Get.back(
+                  result: DiscountResult(type: _type, value: _value),
+                )
               : null,
           child: const Text('ใช้ส่วนลด'),
         ),

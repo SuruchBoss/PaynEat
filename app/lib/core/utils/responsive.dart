@@ -17,9 +17,12 @@ class Responsive {
     return DeviceType.mobile;
   }
 
-  static bool isMobile(BuildContext context) => of(context) == DeviceType.mobile;
-  static bool isTablet(BuildContext context) => of(context) == DeviceType.tablet;
-  static bool isDesktop(BuildContext context) => of(context) == DeviceType.desktop;
+  static bool isMobile(BuildContext context) =>
+      of(context) == DeviceType.mobile;
+  static bool isTablet(BuildContext context) =>
+      of(context) == DeviceType.tablet;
+  static bool isDesktop(BuildContext context) =>
+      of(context) == DeviceType.desktop;
   static bool isWide(BuildContext context) => of(context) != DeviceType.mobile;
 
   /// เลือกค่าตามขนาดจอ — ใช้กับจำนวนคอลัมน์ grid, ระยะ padding ฯลฯ
@@ -28,12 +31,11 @@ class Responsive {
     required T mobile,
     T? tablet,
     T? desktop,
-  }) =>
-      switch (of(context)) {
-        DeviceType.desktop => desktop ?? tablet ?? mobile,
-        DeviceType.tablet => tablet ?? mobile,
-        DeviceType.mobile => mobile,
-      };
+  }) => switch (of(context)) {
+    DeviceType.desktop => desktop ?? tablet ?? mobile,
+    DeviceType.tablet => tablet ?? mobile,
+    DeviceType.mobile => mobile,
+  };
 
   /// จำนวนคอลัมน์ของ grid ที่คำนวณจากความกว้างที่เหลือจริง
   static int gridColumns(double width, {double minTileWidth = 180}) {

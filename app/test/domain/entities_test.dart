@@ -7,8 +7,13 @@ import 'package:payneat_pos/features/table/domain/entities/dining_table.dart';
 
 void main() {
   group('User (สิทธิ์ตามบทบาท)', () {
-    User userWith(String role) =>
-        User(id: 1, name: 'ทดสอบ', username: 'test', role: role, isActive: true);
+    User userWith(String role) => User(
+      id: 1,
+      name: 'ทดสอบ',
+      username: 'test',
+      role: role,
+      isActive: true,
+    );
 
     test('แอดมินและผู้จัดการมีสิทธิ์ระดับบริหาร', () {
       expect(userWith(UserRole.admin).isManagement, isTrue);
@@ -32,19 +37,28 @@ void main() {
 
   group('OrderItem (การเดินสถานะ)', () {
     OrderItem itemWith(String status) => OrderItem(
-          id: 1,
-          orderId: 1,
-          name: 'ผัดกะเพรา',
-          unitPrice: 75,
-          quantity: 1,
-          lineTotal: 75,
-          status: status,
-        );
+      id: 1,
+      orderId: 1,
+      name: 'ผัดกะเพรา',
+      unitPrice: 75,
+      quantity: 1,
+      lineTotal: 75,
+      status: status,
+    );
 
     test('สถานะเดินตามลำดับ รอทำ → กำลังทำ → พร้อมเสิร์ฟ → เสิร์ฟแล้ว', () {
-      expect(itemWith(OrderItemStatus.pending).nextStatus, OrderItemStatus.cooking);
-      expect(itemWith(OrderItemStatus.cooking).nextStatus, OrderItemStatus.ready);
-      expect(itemWith(OrderItemStatus.ready).nextStatus, OrderItemStatus.served);
+      expect(
+        itemWith(OrderItemStatus.pending).nextStatus,
+        OrderItemStatus.cooking,
+      );
+      expect(
+        itemWith(OrderItemStatus.cooking).nextStatus,
+        OrderItemStatus.ready,
+      );
+      expect(
+        itemWith(OrderItemStatus.ready).nextStatus,
+        OrderItemStatus.served,
+      );
       expect(itemWith(OrderItemStatus.served).nextStatus, isNull);
     });
 
@@ -55,16 +69,19 @@ void main() {
   });
 
   group('Order', () {
-    Order orderWith({required String status, List<OrderItem> items = const []}) => Order(
-          id: 1,
-          code: 'ORD-20260101-0001',
-          type: OrderType.dineIn,
-          status: status,
-          subtotal: 100,
-          total: 117.7,
-          tableName: 'A1',
-          items: items,
-        );
+    Order orderWith({
+      required String status,
+      List<OrderItem> items = const [],
+    }) => Order(
+      id: 1,
+      code: 'ORD-20260101-0001',
+      type: OrderType.dineIn,
+      status: status,
+      subtotal: 100,
+      total: 117.7,
+      tableName: 'A1',
+      items: items,
+    );
 
     final activeItem = OrderItem(
       id: 1,
@@ -97,12 +114,18 @@ void main() {
 
     test('ส่งครัวได้เฉพาะออเดอร์ที่ยังไม่ส่งและมีรายการอาหาร', () {
       expect(
-        orderWith(status: OrderStatus.open, items: [activeItem]).canSendToKitchen,
+        orderWith(
+          status: OrderStatus.open,
+          items: [activeItem],
+        ).canSendToKitchen,
         isTrue,
       );
       expect(orderWith(status: OrderStatus.open).canSendToKitchen, isFalse);
       expect(
-        orderWith(status: OrderStatus.inKitchen, items: [activeItem]).canSendToKitchen,
+        orderWith(
+          status: OrderStatus.inKitchen,
+          items: [activeItem],
+        ).canSendToKitchen,
         isFalse,
       );
     });

@@ -28,7 +28,12 @@ class DashboardPage extends GetView<DashboardController> {
 
       final data = controller.data.value;
       final today = data.today;
-      final columns = Responsive.value(context, mobile: 2, tablet: 2, desktop: 4);
+      final columns = Responsive.value(
+        context,
+        mobile: 2,
+        tablet: 2,
+        desktop: 4,
+      );
 
       return RefreshIndicator(
         onRefresh: controller.load,
@@ -43,7 +48,11 @@ class DashboardPage extends GetView<DashboardController> {
               crossAxisCount: columns,
               mainAxisSpacing: 12,
               crossAxisSpacing: 12,
-              childAspectRatio: Responsive.value(context, mobile: 1.45, desktop: 1.55),
+              childAspectRatio: Responsive.value(
+                context,
+                mobile: 1.45,
+                desktop: 1.55,
+              ),
               children: [
                 StatCard(
                   label: 'ยอดขายวันนี้',
@@ -159,14 +168,18 @@ class _LiveBar extends StatelessWidget {
   }
 
   Widget _divider() => Container(
-        width: 1,
-        height: 34,
-        color: Colors.white.withValues(alpha: 0.25),
-      );
+    width: 1,
+    height: 34,
+    color: Colors.white.withValues(alpha: 0.25),
+  );
 }
 
 class _LiveItem extends StatelessWidget {
-  const _LiveItem({required this.label, required this.value, required this.icon});
+  const _LiveItem({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   final String label;
   final String value;
@@ -246,7 +259,9 @@ class _TopItemsCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: entry.key == 0 ? AppColors.warning : AppColors.textSecondary,
+                          color: entry.key == 0
+                              ? AppColors.warning
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -254,13 +269,19 @@ class _TopItemsCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         entry.value.name,
-                        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+                        style: const TextStyle(
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     Text(
                       '${entry.value.quantity} จาน',
-                      style: const TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     SizedBox(
@@ -268,7 +289,10 @@ class _TopItemsCard extends StatelessWidget {
                       child: Text(
                         Formatters.baht(entry.value.revenue),
                         textAlign: TextAlign.right,
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ],
@@ -334,12 +358,18 @@ class _PaymentBreakdownCard extends StatelessWidget {
                   ),
                   Text(
                     '${entry.value.count} บิล',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textDisabled),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textDisabled,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Text(
                     Formatters.baht(entry.value.amount),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),
@@ -350,7 +380,9 @@ class _PaymentBreakdownCard extends StatelessWidget {
                   value: total == 0 ? 0 : entry.value.amount / total,
                   minHeight: 5,
                   backgroundColor: AppColors.surfaceAlt,
-                  valueColor: AlwaysStoppedAnimation(_colors[entry.key % _colors.length]),
+                  valueColor: AlwaysStoppedAnimation(
+                    _colors[entry.key % _colors.length],
+                  ),
                 ),
               ),
               const SizedBox(height: 12),

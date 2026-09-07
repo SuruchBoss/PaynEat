@@ -20,9 +20,9 @@ class KitchenController extends GetxController {
     required GetKitchenQueueUseCase getQueue,
     required UpdateOrderItemStatusUseCase updateItemStatus,
     required SessionService session,
-  })  : _getQueue = getQueue,
-        _updateItemStatus = updateItemStatus,
-        _session = session;
+  }) : _getQueue = getQueue,
+       _updateItemStatus = updateItemStatus,
+       _session = session;
 
   final GetKitchenQueueUseCase _getQueue;
   final UpdateOrderItemStatusUseCase _updateItemStatus;
@@ -44,7 +44,10 @@ class KitchenController extends GetxController {
     super.onInit();
     load();
     _listenToRealtimeUpdates();
-    _elapsedTimer = Timer.periodic(const Duration(seconds: 30), (_) => tick.value++);
+    _elapsedTimer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => tick.value++,
+    );
   }
 
   @override
@@ -71,7 +74,8 @@ class KitchenController extends GetxController {
       )
       .length;
 
-  int _minutesWaiting(OrderItem item) => Formatters.elapsedMinutes(item.createdAt);
+  int _minutesWaiting(OrderItem item) =>
+      Formatters.elapsedMinutes(item.createdAt);
 
   bool isLate(OrderItem item) => _minutesWaiting(item) >= lateThresholdMinutes;
 
@@ -100,7 +104,11 @@ class KitchenController extends GetxController {
     // อัปเดตในเครื่องก่อนเพื่อให้ปุ่มตอบสนองทันที แล้วค่อย sync กับเซิร์ฟเวอร์
     final index = queue.indexWhere((row) => row.id == item.id);
     final result = await _updateItemStatus(
-      UpdateItemStatusParams(orderId: item.orderId, itemId: item.id, status: next),
+      UpdateItemStatusParams(
+        orderId: item.orderId,
+        itemId: item.id,
+        status: next,
+      ),
     );
 
     result.fold(

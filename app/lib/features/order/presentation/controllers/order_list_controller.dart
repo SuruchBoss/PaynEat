@@ -13,8 +13,8 @@ class OrderListController extends GetxController {
   OrderListController({
     required GetOrdersUseCase getOrders,
     required SessionService session,
-  })  : _getOrders = getOrders,
-        _session = session;
+  }) : _getOrders = getOrders,
+       _session = session;
 
   final GetOrdersUseCase _getOrders;
   final SessionService _session;
@@ -63,7 +63,9 @@ class OrderListController extends GetxController {
         status: status,
         activeOnly: status == null ? true : null,
         // ออเดอร์ที่ปิดแล้วดูเฉพาะของวันนี้ก็พอ ไม่งั้นรายการยาวเกินใช้งานจริง
-        dateFrom: status == OrderStatus.paid || status == OrderStatus.cancelled ? today : null,
+        dateFrom: status == OrderStatus.paid || status == OrderStatus.cancelled
+            ? today
+            : null,
         limit: 50,
       ),
     );
@@ -81,7 +83,10 @@ class OrderListController extends GetxController {
   }
 
   Future<void> openOrder(Order order) async {
-    await Get.toNamed<void>(AppRoutes.orderDetail, arguments: {'orderId': order.id});
+    await Get.toNamed<void>(
+      AppRoutes.orderDetail,
+      arguments: {'orderId': order.id},
+    );
     await load(showLoader: false);
   }
 

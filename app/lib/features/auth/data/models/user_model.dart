@@ -12,18 +12,18 @@ class UserModel extends User {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
-        id: (json['id'] as num).toInt(),
-        name: json['name'] as String? ?? '',
-        username: json['username'] as String? ?? '',
-        role: json['role'] as String? ?? '',
-        isActive: json['isActive'] as bool? ?? true,
-      );
+    id: (json['id'] as num).toInt(),
+    name: json['name'] as String? ?? '',
+    username: json['username'] as String? ?? '',
+    role: json['role'] as String? ?? '',
+    isActive: json['isActive'] as bool? ?? true,
+  );
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'username': username,
-        'role': role,
-        'isActive': isActive,
-      };
+    'id': id,
+    'name': name,
+    'username': username,
+    'role': role,
+    'isActive': isActive,
+  };
 }

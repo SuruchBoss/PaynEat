@@ -14,11 +14,11 @@ class StaffController extends GetxController {
     required UpdateStaffUseCase updateStaff,
     required DeleteStaffUseCase deleteStaff,
     required SessionService session,
-  })  : _getStaff = getStaff,
-        _createStaff = createStaff,
-        _updateStaff = updateStaff,
-        _deleteStaff = deleteStaff,
-        _session = session;
+  }) : _getStaff = getStaff,
+       _createStaff = createStaff,
+       _updateStaff = updateStaff,
+       _deleteStaff = deleteStaff,
+       _session = session;
 
   final GetStaffUseCase _getStaff;
   final CreateStaffUseCase _createStaff;
@@ -42,7 +42,9 @@ class StaffController extends GetxController {
 
   List<User> get filteredStaff => roleFilter.value == null
       ? staff
-      : staff.where((user) => user.role == roleFilter.value).toList(growable: false);
+      : staff
+            .where((user) => user.role == roleFilter.value)
+            .toList(growable: false);
 
   Map<String, int> get countByRole {
     final counts = <String, int>{};
@@ -75,7 +77,12 @@ class StaffController extends GetxController {
   }) async {
     isSaving.value = true;
     final result = await _createStaff(
-      CreateStaffParams(name: name, username: username, password: password, role: role),
+      CreateStaffParams(
+        name: name,
+        username: username,
+        password: password,
+        role: role,
+      ),
     );
     isSaving.value = false;
 
@@ -93,7 +100,9 @@ class StaffController extends GetxController {
   }
 
   Future<void> updateRole(User user, String role) async {
-    final result = await _updateStaff(UpdateStaffParams(id: user.id, role: role));
+    final result = await _updateStaff(
+      UpdateStaffParams(id: user.id, role: role),
+    );
     result.fold(
       onSuccess: (_) {
         AppDialogs.success('เปลี่ยนบทบาทของ ${user.name} แล้ว');

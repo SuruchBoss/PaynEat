@@ -18,7 +18,9 @@ class SettingsPage extends GetView<SettingsController> {
       if (controller.isLoading.value) return const LoadingView();
 
       final error = controller.errorMessage.value;
-      if (error != null) return ErrorView(message: error, onRetry: controller.load);
+      if (error != null) {
+        return ErrorView(message: error, onRetry: controller.load);
+      }
 
       return ListView(
         padding: const EdgeInsets.all(16),
@@ -50,7 +52,9 @@ class SettingsPage extends GetView<SettingsController> {
                         child: TextField(
                           controller: controller.vatController,
                           keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           decoration: const InputDecoration(
                             labelText: 'VAT',
                             suffixText: '%',
@@ -62,7 +66,9 @@ class SettingsPage extends GetView<SettingsController> {
                         child: TextField(
                           controller: controller.serviceChargeController,
                           keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                           decoration: const InputDecoration(
                             labelText: 'Service Charge',
                             suffixText: '%',
@@ -75,16 +81,21 @@ class SettingsPage extends GetView<SettingsController> {
                   Obx(
                     () => SwitchListTile(
                       value: controller.vatIncluded.value,
-                      onChanged: (value) => controller.vatIncluded.value = value,
+                      onChanged: (value) =>
+                          controller.vatIncluded.value = value,
                       title: const Text('ราคาเมนูรวม VAT แล้ว'),
-                      subtitle: const Text('ถ้าเปิด ระบบจะถอด VAT ออกมาแสดงแทนการบวกเพิ่ม'),
+                      subtitle: const Text(
+                        'ถ้าเปิด ระบบจะถอด VAT ออกมาแสดงแทนการบวกเพิ่ม',
+                      ),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Obx(
                     () => FilledButton(
-                      onPressed: controller.isSaving.value ? null : controller.save,
+                      onPressed: controller.isSaving.value
+                          ? null
+                          : controller.save,
                       child: controller.isSaving.value
                           ? const SizedBox(
                               width: 18,
@@ -135,12 +146,21 @@ class _InfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Text(label, style: const TextStyle(fontSize: 13.5, color: AppColors.textSecondary)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 13.5,
+              color: AppColors.textSecondary,
+            ),
+          ),
           const Spacer(),
           Flexible(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.w600,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),

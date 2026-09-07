@@ -18,7 +18,8 @@ class ChangePasswordUseCase implements UseCase<void, ChangePasswordParams> {
   final AuthRepository _repository;
 
   @override
-  Future<Result<void>> call(ChangePasswordParams params) => _repository.changePassword(
+  Future<Result<void>> call(ChangePasswordParams params) =>
+      _repository.changePassword(
         currentPassword: params.currentPassword,
         newPassword: params.newPassword,
       );

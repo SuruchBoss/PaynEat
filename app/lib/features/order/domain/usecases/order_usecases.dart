@@ -36,21 +36,23 @@ class OrderListFilter {
   final int limit;
 }
 
-class GetOrdersUseCase implements UseCase<({List<Order> orders, int total}), OrderListFilter> {
+class GetOrdersUseCase
+    implements UseCase<({List<Order> orders, int total}), OrderListFilter> {
   const GetOrdersUseCase(this._repository);
 
   final OrderRepository _repository;
 
   @override
-  Future<Result<({List<Order> orders, int total})>> call(OrderListFilter params) =>
-      _repository.getOrders(
-        status: params.status,
-        activeOnly: params.activeOnly,
-        dateFrom: params.dateFrom,
-        dateTo: params.dateTo,
-        page: params.page,
-        limit: params.limit,
-      );
+  Future<Result<({List<Order> orders, int total})>> call(
+    OrderListFilter params,
+  ) => _repository.getOrders(
+    status: params.status,
+    activeOnly: params.activeOnly,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    page: params.page,
+    limit: params.limit,
+  );
 }
 
 class GetOrderUseCase implements UseCase<Order, int> {
@@ -68,7 +70,8 @@ class GetOpenOrderByTableUseCase implements UseCase<Order?, int> {
   final OrderRepository _repository;
 
   @override
-  Future<Result<Order?>> call(int params) => _repository.getOpenOrderByTable(params);
+  Future<Result<Order?>> call(int params) =>
+      _repository.getOpenOrderByTable(params);
 }
 
 class CreateOrderParams {
@@ -94,7 +97,8 @@ class CreateOrderUseCase implements UseCase<Order, CreateOrderParams> {
   final OrderRepository _repository;
 
   @override
-  Future<Result<Order>> call(CreateOrderParams params) => _repository.createOrder(
+  Future<Result<Order>> call(CreateOrderParams params) =>
+      _repository.createOrder(
         type: params.type,
         tableId: params.tableId,
         guestCount: params.guestCount,
@@ -141,7 +145,8 @@ class UpdateOrderItemUseCase implements UseCase<Order, UpdateOrderItemParams> {
   final OrderRepository _repository;
 
   @override
-  Future<Result<Order>> call(UpdateOrderItemParams params) => _repository.updateItem(
+  Future<Result<Order>> call(UpdateOrderItemParams params) =>
+      _repository.updateItem(
         params.orderId,
         params.itemId,
         quantity: params.quantity,
@@ -179,14 +184,15 @@ class UpdateItemStatusParams {
 }
 
 /// อัปเดตสถานะรายการอาหาร — ใช้ทั้งจอครัวและตอนพนักงานกดเสิร์ฟ
-class UpdateOrderItemStatusUseCase implements UseCase<Order, UpdateItemStatusParams> {
+class UpdateOrderItemStatusUseCase
+    implements UseCase<Order, UpdateItemStatusParams> {
   const UpdateOrderItemStatusUseCase(this._repository);
 
   final OrderRepository _repository;
 
   @override
-  Future<Result<Order>> call(UpdateItemStatusParams params) =>
-      _repository.updateItemStatus(params.orderId, params.itemId, params.status);
+  Future<Result<Order>> call(UpdateItemStatusParams params) => _repository
+      .updateItemStatus(params.orderId, params.itemId, params.status);
 }
 
 class SendToKitchenUseCase implements UseCase<Order, int> {
@@ -238,7 +244,8 @@ class CancelOrderUseCase implements UseCase<Order, CancelOrderParams> {
 }
 
 /// คิวครัว
-class GetKitchenQueueUseCase implements UseCase<List<OrderItem>, List<String>?> {
+class GetKitchenQueueUseCase
+    implements UseCase<List<OrderItem>, List<String>?> {
   const GetKitchenQueueUseCase(this._repository);
 
   final OrderRepository _repository;

@@ -17,24 +17,24 @@ class PaymentRepositoryImpl implements PaymentRepository {
     required double amount,
     double? received,
     String? reference,
-  }) =>
-      guard(() async {
-        final response = await _remote.pay(
-          orderId: orderId,
-          method: method,
-          amount: amount,
-          received: received,
-          reference: reference,
-        );
-        return (result: response.result, order: response.order as Order);
-      });
+  }) => guard(() async {
+    final response = await _remote.pay(
+      orderId: orderId,
+      method: method,
+      amount: amount,
+      received: received,
+      reference: reference,
+    );
+    return (result: response.result, order: response.order as Order);
+  });
 
   @override
   Future<Result<PaymentSummary>> getSummary(int orderId) =>
       guard(() async => await _remote.getSummary(orderId));
 
   @override
-  Future<Result<({Receipt receipt, Order order})>> getReceipt(int orderId) => guard(() async {
+  Future<Result<({Receipt receipt, Order order})>> getReceipt(int orderId) =>
+      guard(() async {
         final response = await _remote.getReceipt(orderId);
         return (receipt: response.receipt, order: response.order as Order);
       });

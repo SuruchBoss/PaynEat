@@ -12,8 +12,9 @@ void main() {
     });
 
     test('พนักงานเสิร์ฟไม่เห็นเมนูจัดการร้าน', () {
-      final labels =
-          HomeBinding.destinationsForRole(UserRole.waiter).map((d) => d.label).toList();
+      final labels = HomeBinding.destinationsForRole(
+        UserRole.waiter,
+      ).map((d) => d.label).toList();
 
       expect(labels, contains('ผังโต๊ะ'));
       expect(labels, contains('ออเดอร์'));
@@ -23,18 +24,23 @@ void main() {
     });
 
     test('แคชเชียร์เห็นรายงานแต่ไม่เห็นการจัดการเมนู', () {
-      final labels =
-          HomeBinding.destinationsForRole(UserRole.cashier).map((d) => d.label).toList();
+      final labels = HomeBinding.destinationsForRole(
+        UserRole.cashier,
+      ).map((d) => d.label).toList();
 
       expect(labels, contains('รายงาน'));
       expect(labels, isNot(contains('จัดการเมนู')));
     });
 
     test('แอดมินเห็นทุกเมนู', () {
-      final labels =
-          HomeBinding.destinationsForRole(UserRole.admin).map((d) => d.label).toList();
+      final labels = HomeBinding.destinationsForRole(
+        UserRole.admin,
+      ).map((d) => d.label).toList();
 
-      expect(labels, containsAll(['ภาพรวม', 'จัดการเมนู', 'พนักงาน', 'รายงาน', 'ตั้งค่า']));
+      expect(
+        labels,
+        containsAll(['ภาพรวม', 'จัดการเมนู', 'พนักงาน', 'รายงาน', 'ตั้งค่า']),
+      );
     });
   });
 }

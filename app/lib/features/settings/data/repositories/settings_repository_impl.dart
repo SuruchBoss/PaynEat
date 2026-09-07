@@ -18,13 +18,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
     double? vatRate,
     double? serviceChargeRate,
     bool? vatIncluded,
-  }) =>
-      guard(
-        () => _remote.update({
-          if (storeName != null) 'storeName': storeName,
-          if (vatRate != null) 'vatRate': vatRate,
-          if (serviceChargeRate != null) 'serviceChargeRate': serviceChargeRate,
-          if (vatIncluded != null) 'vatIncluded': vatIncluded,
-        }),
-      );
+  }) => guard(
+    () => _remote.update({
+      if (storeName != null) 'storeName': storeName,
+      if (vatRate != null) 'vatRate': vatRate,
+      if (serviceChargeRate != null) 'serviceChargeRate': serviceChargeRate,
+      if (vatIncluded != null) 'vatIncluded': vatIncluded,
+    }),
+  );
 }

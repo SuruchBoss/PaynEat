@@ -68,7 +68,8 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         storeName: store['name'] as String? ?? '',
         currency: store['currency'] as String? ?? 'THB',
         vatRate: (store['vatRate'] as num?)?.toDouble() ?? 0,
-        serviceChargeRate: (store['serviceChargeRate'] as num?)?.toDouble() ?? 0,
+        serviceChargeRate:
+            (store['serviceChargeRate'] as num?)?.toDouble() ?? 0,
         paidAt: data['paidAt'] as String?,
         changeTotal: (data['changeTotal'] as num?)?.toDouble() ?? 0,
         payments: (data['payments'] as List? ?? const [])

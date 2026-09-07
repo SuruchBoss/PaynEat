@@ -31,7 +31,8 @@ class MenuItemCard extends StatelessWidget {
     [Color(0xFFC0B3F5), Color(0xFF7048E8)],
   ];
 
-  List<Color> get _palette => _palettes[item.name.hashCode.abs() % _palettes.length];
+  List<Color> get _palette =>
+      _palettes[item.name.hashCode.abs() % _palettes.length];
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +84,10 @@ class MenuItemCard extends StatelessWidget {
                           top: 8,
                           left: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 7,
+                              vertical: 3,
+                            ),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(6),
@@ -91,11 +95,18 @@ class MenuItemCard extends StatelessWidget {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.star_rounded, size: 12, color: AppColors.warning),
+                                Icon(
+                                  Icons.star_rounded,
+                                  size: 12,
+                                  color: AppColors.warning,
+                                ),
                                 SizedBox(width: 3),
                                 Text(
                                   'แนะนำ',
-                                  style: TextStyle(fontSize: 10.5, fontWeight: FontWeight.w800),
+                                  style: TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ],
                             ),

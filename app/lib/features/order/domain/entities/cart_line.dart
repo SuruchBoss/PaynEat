@@ -38,9 +38,9 @@ class CartLine {
   }
 
   CartLine copyWith({int? quantity, String? note}) => CartLine(
-        menuItem: menuItem,
-        quantity: quantity ?? this.quantity,
-        selectedOptions: List<MenuOption>.from(selectedOptions),
-        note: note ?? this.note,
-      );
+    menuItem: menuItem,
+    quantity: quantity ?? this.quantity,
+    selectedOptions: List<MenuOption>.from(selectedOptions),
+    note: note ?? this.note,
+  );
 }

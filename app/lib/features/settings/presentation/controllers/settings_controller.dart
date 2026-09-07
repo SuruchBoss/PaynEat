@@ -10,8 +10,8 @@ class SettingsController extends GetxController {
   SettingsController({
     required GetSettingsUseCase getSettings,
     required UpdateSettingsUseCase updateSettings,
-  })  : _getSettings = getSettings,
-        _updateSettings = updateSettings;
+  }) : _getSettings = getSettings,
+       _updateSettings = updateSettings;
 
   final GetSettingsUseCase _getSettings;
   final UpdateSettingsUseCase _updateSettings;
@@ -52,7 +52,8 @@ class SettingsController extends GetxController {
         settings.value = data;
         storeNameController.text = data.storeName;
         vatController.text = data.vatPercent.toStringAsFixed(0);
-        serviceChargeController.text = data.serviceChargePercent.toStringAsFixed(0);
+        serviceChargeController.text = data.serviceChargePercent
+            .toStringAsFixed(0);
         vatIncluded.value = data.vatIncluded;
       },
       onFailure: (failure) => errorMessage.value = failure.message,

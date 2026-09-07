@@ -22,14 +22,14 @@ class OrderDetailController extends GetxController {
     required ApplyDiscountUseCase applyDiscount,
     required CancelOrderUseCase cancelOrder,
     required SessionService session,
-  })  : _getOrder = getOrder,
-        _sendToKitchen = sendToKitchen,
-        _updateItem = updateItem,
-        _removeItem = removeItem,
-        _updateItemStatus = updateItemStatus,
-        _applyDiscount = applyDiscount,
-        _cancelOrder = cancelOrder,
-        _session = session;
+  }) : _getOrder = getOrder,
+       _sendToKitchen = sendToKitchen,
+       _updateItem = updateItem,
+       _removeItem = removeItem,
+       _updateItemStatus = updateItemStatus,
+       _applyDiscount = applyDiscount,
+       _cancelOrder = cancelOrder,
+       _session = session;
 
   final GetOrderUseCase _getOrder;
   final SendToKitchenUseCase _sendToKitchen;
@@ -66,7 +66,8 @@ class OrderDetailController extends GetxController {
   }
 
   bool get canManage => _session.currentUser?.isManagement ?? false;
-  bool get canCollectPayment => _session.currentUser?.canCollectPayment ?? false;
+  bool get canCollectPayment =>
+      _session.currentUser?.canCollectPayment ?? false;
 
   Future<void> load({bool showLoader = true}) async {
     if (showLoader) isLoading.value = true;
@@ -82,13 +83,20 @@ class OrderDetailController extends GetxController {
   }
 
   Future<void> sendToKitchen() async {
-    await _run(() => _sendToKitchen(orderId), successMessage: 'ส่งออเดอร์เข้าครัวแล้ว');
+    await _run(
+      () => _sendToKitchen(orderId),
+      successMessage: 'ส่งออเดอร์เข้าครัวแล้ว',
+    );
   }
 
   Future<void> changeItemQuantity(OrderItem item, int quantity) async {
     await _run(
       () => _updateItem(
-        UpdateOrderItemParams(orderId: orderId, itemId: item.id, quantity: quantity),
+        UpdateOrderItemParams(
+          orderId: orderId,
+          itemId: item.id,
+          quantity: quantity,
+        ),
       ),
     );
   }
@@ -103,7 +111,8 @@ class OrderDetailController extends GetxController {
     if (!confirmed) return;
 
     await _run(
-      () => _removeItem(RemoveOrderItemParams(orderId: orderId, itemId: item.id)),
+      () =>
+          _removeItem(RemoveOrderItemParams(orderId: orderId, itemId: item.id)),
       successMessage: 'ลบรายการแล้ว',
     );
   }
@@ -141,10 +150,17 @@ class OrderDetailController extends GetxController {
     );
   }
 
-  Future<void> applyDiscount({required String type, required double value}) async {
+  Future<void> applyDiscount({
+    required String type,
+    required double value,
+  }) async {
     await _run(
-      () => _applyDiscount(ApplyDiscountParams(orderId: orderId, type: type, value: value)),
-      successMessage: type == DiscountType.none ? 'ยกเลิกส่วนลดแล้ว' : 'ใช้ส่วนลดแล้ว',
+      () => _applyDiscount(
+        ApplyDiscountParams(orderId: orderId, type: type, value: value),
+      ),
+      successMessage: type == DiscountType.none
+          ? 'ยกเลิกส่วนลดแล้ว'
+          : 'ใช้ส่วนลดแล้ว',
     );
   }
 
@@ -164,7 +180,10 @@ class OrderDetailController extends GetxController {
   }
 
   Future<void> goToCheckout() async {
-    await Get.toNamed<void>(AppRoutes.checkout, arguments: {'orderId': orderId});
+    await Get.toNamed<void>(
+      AppRoutes.checkout,
+      arguments: {'orderId': orderId},
+    );
     await load(showLoader: false);
   }
 
@@ -192,7 +211,10 @@ class OrderDetailController extends GetxController {
 
   void _listenToRealtimeUpdates() {
     final socket = _session.socket;
-    for (final event in [SocketEvents.orderUpdated, SocketEvents.orderItemUpdated]) {
+    for (final event in [
+      SocketEvents.orderUpdated,
+      SocketEvents.orderItemUpdated,
+    ]) {
       _unsubscribers.add(
         socket.on(event, (data) {
           // รีเฟรชเฉพาะเมื่อ event เป็นของออเดอร์ใบนี้

@@ -31,8 +31,8 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
           cart.isAddingToExistingOrder
               ? 'สั่งอาหารเพิ่ม'
               : cart.tableName != null
-                  ? 'รับออเดอร์ · โต๊ะ ${cart.tableName}'
-                  : 'ออเดอร์กลับบ้าน',
+              ? 'รับออเดอร์ · โต๊ะ ${cart.tableName}'
+              : 'ออเดอร์กลับบ้าน',
         ),
         actions: [
           if (!isWide)
@@ -64,7 +64,9 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
               ],
             )
           : const _MenuSection(),
-      bottomNavigationBar: isWide ? null : _MobileCartBar(onTap: () => _openCartSheet(context)),
+      bottomNavigationBar: isWide
+          ? null
+          : _MobileCartBar(onTap: () => _openCartSheet(context)),
     );
   }
 
@@ -131,8 +133,10 @@ class _MenuSection extends GetView<MenuBrowseController> {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                final columns =
-                    Responsive.gridColumns(constraints.maxWidth - 32, minTileWidth: 165);
+                final columns = Responsive.gridColumns(
+                  constraints.maxWidth - 32,
+                  minTileWidth: 165,
+                );
                 return GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                   itemCount: items.length,
@@ -203,11 +207,17 @@ class _MobileCartBar extends StatelessWidget {
               onTap: onTap,
               borderRadius: BorderRadius.circular(14),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 18,
+                  vertical: 14,
+                ),
                 child: Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 9,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.25),
                         borderRadius: BorderRadius.circular(7),
@@ -240,7 +250,11 @@ class _MobileCartBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 14),
+                    const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
                   ],
                 ),
               ),

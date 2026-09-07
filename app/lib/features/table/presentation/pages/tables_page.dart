@@ -64,7 +64,10 @@ class _TableGrid extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = Responsive.gridColumns(constraints.maxWidth - 32, minTileWidth: 150);
+        final columns = Responsive.gridColumns(
+          constraints.maxWidth - 32,
+          minTileWidth: 150,
+        );
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -76,12 +79,18 @@ class _TableGrid extends StatelessWidget {
                   children: [
                     Text(
                       entry.key,
-                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
                       '${entry.value.length} โต๊ะ',
-                      style: const TextStyle(color: AppColors.textDisabled, fontSize: 12),
+                      style: const TextStyle(
+                        color: AppColors.textDisabled,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -101,7 +110,8 @@ class _TableGrid extends StatelessWidget {
                   return TableCard(
                     table: table,
                     onTap: () => controller.openTable(table),
-                    onLongPress: () => _showStatusSheet(context, controller, table),
+                    onLongPress: () =>
+                        _showStatusSheet(context, controller, table),
                   );
                 },
               ),
@@ -113,7 +123,11 @@ class _TableGrid extends StatelessWidget {
     );
   }
 
-  void _showStatusSheet(BuildContext context, TableController controller, DiningTable table) {
+  void _showStatusSheet(
+    BuildContext context,
+    TableController controller,
+    DiningTable table,
+  ) {
     Get.bottomSheet<void>(
       SafeArea(
         child: Container(
@@ -131,12 +145,18 @@ class _TableGrid extends StatelessWidget {
                   children: [
                     Text(
                       'โต๊ะ ${table.name}',
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const Spacer(),
                     Text(
                       '${table.seats} ที่นั่ง · ${table.zone}',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 12.5),
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
+                        fontSize: 12.5,
+                      ),
                     ),
                   ],
                 ),
@@ -144,14 +164,23 @@ class _TableGrid extends StatelessWidget {
               const Divider(height: 1),
               for (final status in TableStatus.all)
                 ListTile(
-                  leading: Icon(Icons.circle, size: 12, color: AppColors.tableStatus(status)),
+                  leading: Icon(
+                    Icons.circle,
+                    size: 12,
+                    color: AppColors.tableStatus(status),
+                  ),
                   title: Text(TableStatus.label(status)),
                   trailing: table.status == status
-                      ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                      ? const Icon(
+                          Icons.check_rounded,
+                          color: AppColors.primary,
+                        )
                       : null,
                   onTap: () {
                     Get.back<void>();
-                    if (table.status != status) controller.changeStatus(table, status);
+                    if (table.status != status) {
+                      controller.changeStatus(table, status);
+                    }
                   },
                 ),
             ],
@@ -223,7 +252,11 @@ class _TableSummaryBar extends StatelessWidget {
 }
 
 class _CounterPill extends StatelessWidget {
-  const _CounterPill({required this.label, required this.value, required this.color});
+  const _CounterPill({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
 
   final String label;
   final String value;
@@ -242,7 +275,11 @@ class _CounterPill extends StatelessWidget {
         children: [
           Text(
             value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
           ),
           const SizedBox(width: 6),
           Text(label, style: TextStyle(fontSize: 12.5, color: color)),

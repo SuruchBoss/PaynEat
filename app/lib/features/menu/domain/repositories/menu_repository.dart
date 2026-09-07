@@ -5,7 +5,11 @@ import '../entities/menu_item.dart';
 
 abstract class MenuRepository {
   Future<Result<List<Category>>> getCategories({bool activeOnly});
-  Future<Result<Category>> createCategory({required String name, String? nameEn, String? icon});
+  Future<Result<Category>> createCategory({
+    required String name,
+    String? nameEn,
+    String? icon,
+  });
   Future<Result<Category>> updateCategory(int id, Map<String, dynamic> changes);
   Future<Result<void>> deleteCategory(int id);
 

@@ -18,14 +18,8 @@ class AppPages {
   const AppPages._();
 
   static final List<GetPage<dynamic>> pages = [
-    GetPage<void>(
-      name: AppRoutes.splash,
-      page: () => const SplashPage(),
-    ),
-    GetPage<void>(
-      name: AppRoutes.login,
-      page: () => const LoginPage(),
-    ),
+    GetPage<void>(name: AppRoutes.splash, page: () => const SplashPage()),
+    GetPage<void>(name: AppRoutes.login, page: () => const LoginPage()),
     GetPage<void>(
       name: AppRoutes.home,
       page: () => const HomePage(),
@@ -51,9 +45,6 @@ class AppPages {
       page: () => const ReceiptPage(),
       binding: ReceiptBinding(),
     ),
-    GetPage<void>(
-      name: AppRoutes.menuForm,
-      page: () => const MenuFormPage(),
-    ),
+    GetPage<void>(name: AppRoutes.menuForm, page: () => const MenuFormPage()),
   ];
 }

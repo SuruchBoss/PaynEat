@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:get_storage/get_storage.dart';
@@ -5,20 +6,54 @@ import 'package:get_storage/get_storage.dart';
 import '../constants/app_constants.dart';
 
 /// เก็บข้อมูลถาวรในเครื่อง (token / โปรไฟล์ผู้ใช้)
+///
+/// รองรับกรณีที่เบราว์เซอร์ปิด local storage (เช่นโหมดไม่ระบุตัวตนบางตัว)
+/// ด้วยการถอยไปใช้หน่วยความจำแทน เพื่อไม่ให้แอปค้างอยู่ที่จอขาวตอนเปิด
 class StorageService {
-  StorageService(this._box);
+  StorageService._(this._box);
 
-  final GetStorage _box;
+  final GetStorage? _box;
+  final Map<String, String> _memory = {};
 
-  static Future<StorageService> init() async {
-    await GetStorage.init();
-    return StorageService(GetStorage());
+  bool get isPersistent => _box != null;
+
+  /// เตรียม storage ให้พร้อมใช้งาน
+  ///
+  /// [timeout] กันกรณี GetStorage.init() ค้าง — ถ้าเกินเวลาจะใช้โหมดหน่วยความจำแทน
+  static Future<StorageService> init({
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    try {
+      await GetStorage.init().timeout(timeout);
+      return StorageService._(GetStorage());
+    } catch (_) {
+      return StorageService._(null);
+    }
   }
 
-  String? get token => _box.read<String>(StorageKeys.token);
+  String? _read(String key) =>
+      _box == null ? _memory[key] : _box.read<String>(key);
+
+  Future<void> _write(String key, String value) async {
+    if (_box == null) {
+      _memory[key] = value;
+      return;
+    }
+    await _box.write(key, value);
+  }
+
+  Future<void> _remove(String key) async {
+    if (_box == null) {
+      _memory.remove(key);
+      return;
+    }
+    await _box.remove(key);
+  }
+
+  String? get token => _read(StorageKeys.token);
 
   Map<String, dynamic>? get user {
-    final raw = _box.read<String>(StorageKeys.user);
+    final raw = _read(StorageKeys.user);
     if (raw == null) return null;
     try {
       return jsonDecode(raw) as Map<String, dynamic>;
@@ -31,12 +66,12 @@ class StorageService {
     required String token,
     required Map<String, dynamic> user,
   }) async {
-    await _box.write(StorageKeys.token, token);
-    await _box.write(StorageKeys.user, jsonEncode(user));
+    await _write(StorageKeys.token, token);
+    await _write(StorageKeys.user, jsonEncode(user));
   }
 
   Future<void> clear() async {
-    await _box.remove(StorageKeys.token);
-    await _box.remove(StorageKeys.user);
+    await _remove(StorageKeys.token);
+    await _remove(StorageKeys.user);
   }
 }

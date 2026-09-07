@@ -31,7 +31,8 @@ class SetTableStatusParams {
 }
 
 /// เปลี่ยนสถานะโต๊ะ (จอง / ว่าง / เรียกเก็บเงิน)
-class SetTableStatusUseCase implements UseCase<DiningTable, SetTableStatusParams> {
+class SetTableStatusUseCase
+    implements UseCase<DiningTable, SetTableStatusParams> {
   const SetTableStatusUseCase(this._repository);
 
   final TableRepository _repository;
@@ -57,11 +58,11 @@ class SaveTableUseCase implements UseCase<DiningTable, SaveTableParams> {
 
   @override
   Future<Result<DiningTable>> call(SaveTableParams params) => _repository.save(
-        id: params.id,
-        name: params.name,
-        zone: params.zone,
-        seats: params.seats,
-      );
+    id: params.id,
+    name: params.name,
+    zone: params.zone,
+    seats: params.seats,
+  );
 }
 
 class DeleteTableUseCase implements UseCase<void, int> {

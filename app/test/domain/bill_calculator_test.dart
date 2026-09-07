@@ -8,7 +8,8 @@ import 'package:payneat_pos/features/order/domain/services/bill_calculator.dart'
 void main() {
   const calculator = BillCalculator(vatRate: 0.07, serviceChargeRate: 0.1);
 
-  MenuItem item(double price) => MenuItem(id: 1, categoryId: 1, name: 'ทดสอบ', price: price);
+  MenuItem item(double price) =>
+      MenuItem(id: 1, categoryId: 1, name: 'ทดสอบ', price: price);
 
   group('BillCalculator', () {
     test('คิด service charge 10% และ VAT 7% ตามลำดับที่ถูกต้อง', () {
@@ -44,7 +45,11 @@ void main() {
     });
 
     test('โหมดราคารวม VAT แล้วจะถอด VAT ออกมาแสดงแทนการบวกเพิ่ม', () {
-      const inclusive = BillCalculator(vatRate: 0.07, serviceChargeRate: 0, vatIncluded: true);
+      const inclusive = BillCalculator(
+        vatRate: 0.07,
+        serviceChargeRate: 0,
+        vatIncluded: true,
+      );
       final bill = inclusive.fromSubtotal(107);
 
       expect(bill.total, 107);
@@ -62,7 +67,9 @@ void main() {
       final line = CartLine(
         menuItem: item(75),
         quantity: 2,
-        selectedOptions: [const MenuOption(id: 1, name: 'ไข่ดาว', priceDelta: 15)],
+        selectedOptions: [
+          const MenuOption(id: 1, name: 'ไข่ดาว', priceDelta: 15),
+        ],
       );
       final bill = calculator.fromCart([line]);
 

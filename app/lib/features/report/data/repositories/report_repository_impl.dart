@@ -10,15 +10,19 @@ class ReportRepositoryImpl implements ReportRepository {
   final ReportRemoteDataSource _remote;
 
   @override
-  Future<Result<DashboardData>> getDashboard() => guard(() => _remote.getDashboard());
+  Future<Result<DashboardData>> getDashboard() =>
+      guard(() => _remote.getDashboard());
 
   @override
   Future<Result<SalesSummary>> getSummary({String? from, String? to}) =>
       guard(() => _remote.getSummary(from: from, to: to));
 
   @override
-  Future<Result<List<TopItem>>> getTopItems({String? from, String? to, int limit = 10}) =>
-      guard(() => _remote.getTopItems(from: from, to: to, limit: limit));
+  Future<Result<List<TopItem>>> getTopItems({
+    String? from,
+    String? to,
+    int limit = 10,
+  }) => guard(() => _remote.getTopItems(from: from, to: to, limit: limit));
 
   @override
   Future<Result<List<DailySales>>> getSalesByDay({String? from, String? to}) =>

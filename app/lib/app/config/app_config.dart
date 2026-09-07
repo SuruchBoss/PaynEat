@@ -10,6 +10,13 @@ class AppConfig {
 
   static const String _baseUrlFromEnv = String.fromEnvironment('API_BASE_URL');
 
+  /// โหมดสาธิต — ใช้ข้อมูลจำลองในเครื่องแทนการเรียก backend
+  ///
+  /// เปิดด้วย `flutter build web --dart-define=DEMO_MODE=true`
+  /// ทำให้ deploy ขึ้น static hosting (เช่น GitHub Pages) แล้วกดเล่นได้ทันที
+  /// โดยไม่ต้องมีเซิร์ฟเวอร์ — สลับได้เพราะชั้นบนรู้จักแค่ abstract ของ data source
+  static const bool demoMode = bool.fromEnvironment('DEMO_MODE');
+
   /// URL ของ backend
   /// - Web / iOS simulator / desktop : localhost
   /// - Android emulator              : 10.0.2.2 (loopback ของเครื่อง host)

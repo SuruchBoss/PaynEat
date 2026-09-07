@@ -25,9 +25,18 @@ abstract class OrderRepository {
   });
 
   Future<Result<Order>> addItems(int orderId, List<OrderItemPayload> items);
-  Future<Result<Order>> updateItem(int orderId, int itemId, {int? quantity, String? note});
+  Future<Result<Order>> updateItem(
+    int orderId,
+    int itemId, {
+    int? quantity,
+    String? note,
+  });
   Future<Result<Order>> removeItem(int orderId, int itemId);
-  Future<Result<Order>> updateItemStatus(int orderId, int itemId, String status);
+  Future<Result<Order>> updateItemStatus(
+    int orderId,
+    int itemId,
+    String status,
+  );
   Future<Result<Order>> sendToKitchen(int orderId);
   Future<Result<Order>> applyDiscount(int orderId, String type, double value);
   Future<Result<Order>> cancelOrder(int orderId, String reason);

@@ -22,7 +22,8 @@ class HourlyBarChart extends StatelessWidget {
     final hours = [for (int h = startHour; h <= endHour; h++) h];
     final maxTotal = hours.fold<double>(
       0,
-      (max, hour) => (byHour[hour]?.total ?? 0) > max ? byHour[hour]!.total : max,
+      (max, hour) =>
+          (byHour[hour]?.total ?? 0) > max ? byHour[hour]!.total : max,
     );
 
     return SizedBox(
@@ -34,52 +35,63 @@ class HourlyBarChart extends StatelessWidget {
               builder: (context, constraints) {
                 return Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: hours.map((hour) {
-                    final total = byHour[hour]?.total ?? 0;
-                    final ratio = maxTotal == 0 ? 0.0 : total / maxTotal;
-                    final barHeight = (constraints.maxHeight - 20) * ratio;
+                  children: hours
+                      .map((hour) {
+                        final total = byHour[hour]?.total ?? 0;
+                        final ratio = maxTotal == 0 ? 0.0 : total / maxTotal;
+                        final barHeight = (constraints.maxHeight - 20) * ratio;
 
-                    return Expanded(
-                      child: Tooltip(
-                        message: '$hour:00 — ${Formatters.baht(total)}',
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              if (total > 0)
-                                Text(
-                                  Formatters.compact(total),
-                                  style: const TextStyle(
-                                    fontSize: 8.5,
-                                    color: AppColors.textDisabled,
-                                  ),
-                                ),
-                              const SizedBox(height: 3),
-                              AnimatedContainer(
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeOutCubic,
-                                height: barHeight < 3 && total > 0 ? 3 : barHeight,
-                                decoration: BoxDecoration(
-                                  gradient: total > 0
-                                      ? const LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [AppColors.primary, AppColors.primaryDark],
-                                        )
-                                      : null,
-                                  color: total > 0 ? null : AppColors.surfaceAlt,
-                                  borderRadius: const BorderRadius.vertical(
-                                    top: Radius.circular(4),
-                                  ),
-                                ),
+                        return Expanded(
+                          child: Tooltip(
+                            message: '$hour:00 — ${Formatters.baht(total)}',
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 2.5,
                               ),
-                            ],
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  if (total > 0)
+                                    Text(
+                                      Formatters.compact(total),
+                                      style: const TextStyle(
+                                        fontSize: 8.5,
+                                        color: AppColors.textDisabled,
+                                      ),
+                                    ),
+                                  const SizedBox(height: 3),
+                                  AnimatedContainer(
+                                    duration: const Duration(milliseconds: 350),
+                                    curve: Curves.easeOutCubic,
+                                    height: barHeight < 3 && total > 0
+                                        ? 3
+                                        : barHeight,
+                                    decoration: BoxDecoration(
+                                      gradient: total > 0
+                                          ? const LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                AppColors.primary,
+                                                AppColors.primaryDark,
+                                              ],
+                                            )
+                                          : null,
+                                      color: total > 0
+                                          ? null
+                                          : AppColors.surfaceAlt,
+                                      borderRadius: const BorderRadius.vertical(
+                                        top: Radius.circular(4),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    );
-                  }).toList(growable: false),
+                        );
+                      })
+                      .toList(growable: false),
                 );
               },
             ),
@@ -92,7 +104,10 @@ class HourlyBarChart extends StatelessWidget {
                     child: Text(
                       hour % 3 == 0 ? '$hour' : '',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(fontSize: 9.5, color: AppColors.textDisabled),
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        color: AppColors.textDisabled,
+                      ),
                     ),
                   ),
                 )

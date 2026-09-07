@@ -21,11 +21,11 @@ class AuthController extends GetxController {
     required LogoutUseCase logoutUseCase,
     required AuthRepository repository,
     required SessionService session,
-  })  : _login = loginUseCase,
-        _getProfile = getProfileUseCase,
-        _logout = logoutUseCase,
-        _repository = repository,
-        _session = session;
+  }) : _login = loginUseCase,
+       _getProfile = getProfileUseCase,
+       _logout = logoutUseCase,
+       _repository = repository,
+       _session = session;
 
   final LoginUseCase _login;
   final GetProfileUseCase _getProfile;

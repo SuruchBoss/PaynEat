@@ -29,7 +29,8 @@ class KitchenPage extends GetView<KitchenController> {
             }
             if (controller.queue.isEmpty) {
               return const EmptyView(
-                message: 'ยังไม่มีออเดอร์เข้าครัว\nรายการใหม่จะเด้งขึ้นมาเองทันที',
+                message:
+                    'ยังไม่มีออเดอร์เข้าครัว\nรายการใหม่จะเด้งขึ้นมาเองทันที',
                 icon: Icons.restaurant_rounded,
               );
             }
@@ -68,7 +69,11 @@ class KitchenPage extends GetView<KitchenController> {
                       unselectedLabelColor: AppColors.textSecondary,
                       indicatorColor: AppColors.primary,
                       tabs: columns
-                          .map((column) => Tab(text: '${column.title} (${column.items.length})'))
+                          .map(
+                            (column) => Tab(
+                              text: '${column.title} (${column.items.length})',
+                            ),
+                          )
                           .toList(growable: false),
                     ),
                     Expanded(
@@ -145,7 +150,10 @@ class _KitchenHeader extends GetView<KitchenController> {
             if (controller.lateCount > 0) ...[
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.danger.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -153,8 +161,11 @@ class _KitchenHeader extends GetView<KitchenController> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.local_fire_department_rounded,
-                        size: 14, color: AppColors.danger),
+                    const Icon(
+                      Icons.local_fire_department_rounded,
+                      size: 14,
+                      color: AppColors.danger,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'ช้า ${controller.lateCount}',
@@ -214,12 +225,20 @@ class _KitchenColumn extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 title,
-                style: TextStyle(fontWeight: FontWeight.w800, color: color, fontSize: 14),
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: color,
+                  fontSize: 14,
+                ),
               ),
               const Spacer(),
               Text(
                 '${items.length}',
-                style: TextStyle(fontWeight: FontWeight.w900, color: color, fontSize: 15),
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  color: color,
+                  fontSize: 15,
+                ),
               ),
             ],
           ),

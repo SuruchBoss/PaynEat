@@ -14,16 +14,16 @@ class PaymentModel extends Payment {
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) => PaymentModel(
-        id: (json['id'] as num?)?.toInt() ?? 0,
-        orderId: (json['orderId'] as num?)?.toInt() ?? 0,
-        method: json['method'] as String? ?? 'cash',
-        amount: (json['amount'] as num?)?.toDouble() ?? 0,
-        received: (json['received'] as num?)?.toDouble() ?? 0,
-        change: (json['change'] as num?)?.toDouble() ?? 0,
-        reference: json['reference'] as String?,
-        cashierName: json['cashierName'] as String?,
-        createdAt: json['createdAt'] as String?,
-      );
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    orderId: (json['orderId'] as num?)?.toInt() ?? 0,
+    method: json['method'] as String? ?? 'cash',
+    amount: (json['amount'] as num?)?.toDouble() ?? 0,
+    received: (json['received'] as num?)?.toDouble() ?? 0,
+    change: (json['change'] as num?)?.toDouble() ?? 0,
+    reference: json['reference'] as String?,
+    cashierName: json['cashierName'] as String?,
+    createdAt: json['createdAt'] as String?,
+  );
 }
 
 class PaymentSummaryModel extends PaymentSummary {
@@ -35,7 +35,8 @@ class PaymentSummaryModel extends PaymentSummary {
     super.payments,
   });
 
-  factory PaymentSummaryModel.fromJson(Map<String, dynamic> json) => PaymentSummaryModel(
+  factory PaymentSummaryModel.fromJson(Map<String, dynamic> json) =>
+      PaymentSummaryModel(
         orderId: (json['orderId'] as num?)?.toInt() ?? 0,
         total: (json['total'] as num?)?.toDouble() ?? 0,
         paid: (json['paid'] as num?)?.toDouble() ?? 0,

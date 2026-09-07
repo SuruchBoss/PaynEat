@@ -61,8 +61,7 @@ class OrderItem {
   String? get nextStatus => OrderItemStatus.next(status);
   String? get nextActionLabel => OrderItemStatus.nextActionLabel(status);
 
-  String get optionsSummary =>
-      options.map((option) => option.name).join(' • ');
+  String get optionsSummary => options.map((option) => option.name).join(' • ');
 
   @override
   bool operator ==(Object other) =>

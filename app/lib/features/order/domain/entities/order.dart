@@ -62,8 +62,10 @@ class Order {
   bool get isActive => OrderStatus.isActive(status);
   bool get isPaid => status == OrderStatus.paid;
   bool get isCancelled => status == OrderStatus.cancelled;
-  bool get canSendToKitchen => status == OrderStatus.open && activeItems.isNotEmpty;
-  bool get hasDiscount => discountType != DiscountType.none && discountAmount > 0;
+  bool get canSendToKitchen =>
+      status == OrderStatus.open && activeItems.isNotEmpty;
+  bool get hasDiscount =>
+      discountType != DiscountType.none && discountAmount > 0;
 
   List<OrderItem> get activeItems =>
       items.where((item) => !item.isCancelled).toList(growable: false);

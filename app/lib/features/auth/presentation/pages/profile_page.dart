@@ -42,11 +42,17 @@ class ProfilePage extends GetView<AuthController> {
                   const SizedBox(height: 12),
                   Text(
                     user.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primarySoft,
                       borderRadius: BorderRadius.circular(20),
@@ -63,7 +69,10 @@ class ProfilePage extends GetView<AuthController> {
                   const SizedBox(height: 6),
                   Text(
                     '@${user.username}',
-                    style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -86,13 +95,17 @@ class ProfilePage extends GetView<AuthController> {
                           width: 9,
                           height: 9,
                           decoration: BoxDecoration(
-                            color: connected ? AppColors.success : AppColors.textDisabled,
+                            color: connected
+                                ? AppColors.success
+                                : AppColors.textDisabled,
                             shape: BoxShape.circle,
                           ),
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          connected ? 'เชื่อมต่อเรียลไทม์อยู่' : 'ไม่ได้เชื่อมต่อเรียลไทม์',
+                          connected
+                              ? 'เชื่อมต่อเรียลไทม์อยู่'
+                              : 'ไม่ได้เชื่อมต่อเรียลไทม์',
                           style: const TextStyle(fontSize: 13.5),
                         ),
                       ],
@@ -101,7 +114,10 @@ class ProfilePage extends GetView<AuthController> {
                   const SizedBox(height: 8),
                   Text(
                     AppConfig.baseUrl,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textDisabled),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textDisabled,
+                    ),
                   ),
                 ],
               ),

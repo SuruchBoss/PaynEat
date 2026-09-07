@@ -5,7 +5,6 @@ import 'package:payneat_pos/features/menu/domain/entities/menu_item.dart';
 import 'package:payneat_pos/features/menu/domain/entities/menu_option.dart';
 import 'package:payneat_pos/features/order/data/datasources/order_remote_data_source.dart';
 import 'package:payneat_pos/features/order/domain/entities/order.dart';
-import 'package:payneat_pos/features/order/domain/entities/order_item.dart';
 import 'package:payneat_pos/features/order/domain/repositories/order_repository.dart';
 import 'package:payneat_pos/features/order/domain/usecases/order_usecases.dart';
 import 'package:payneat_pos/features/order/presentation/controllers/cart_controller.dart';
@@ -23,8 +22,7 @@ class _FakeOrderRepository implements OrderRepository {
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
-  }) async =>
-      const Result.failure(UnexpectedFailureStub());
+  }) async => const Result.failure(UnexpectedFailureStub());
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -33,14 +31,14 @@ class _FakeOrderRepository implements OrderRepository {
 class _FakeSettingsRepository implements SettingsRepository {
   @override
   Future<Result<StoreSettings>> get() async => const Result.success(
-        StoreSettings(
-          storeName: 'ร้านทดสอบ',
-          currency: 'THB',
-          vatRate: 0.07,
-          serviceChargeRate: 0.1,
-          vatIncluded: false,
-        ),
-      );
+    StoreSettings(
+      storeName: 'ร้านทดสอบ',
+      currency: 'THB',
+      vatRate: 0.07,
+      serviceChargeRate: 0.1,
+      vatIncluded: false,
+    ),
+  );
 
   @override
   Future<Result<StoreSettings>> update({
@@ -48,14 +46,18 @@ class _FakeSettingsRepository implements SettingsRepository {
     double? vatRate,
     double? serviceChargeRate,
     bool? vatIncluded,
-  }) async =>
-      get();
+  }) async => get();
 }
 
 void main() {
   late CartController controller;
 
-  const padkrapao = MenuItem(id: 10, categoryId: 1, name: 'ผัดกะเพรา', price: 75);
+  const padkrapao = MenuItem(
+    id: 10,
+    categoryId: 1,
+    name: 'ผัดกะเพรา',
+    price: 75,
+  );
   const somtum = MenuItem(id: 11, categoryId: 2, name: 'ส้มตำไทย', price: 80);
   const egg = MenuOption(id: 1, name: 'ไข่ดาว', priceDelta: 15);
 
@@ -76,14 +78,17 @@ void main() {
       expect(controller.subtotal, 0);
     });
 
-    test('เพิ่มเมนูซ้ำที่ตัวเลือกเหมือนกัน จะรวมเป็นบรรทัดเดียวและเพิ่มจำนวน', () {
-      controller.addItem(padkrapao, options: [egg]);
-      controller.addItem(padkrapao, quantity: 2, options: [egg]);
+    test(
+      'เพิ่มเมนูซ้ำที่ตัวเลือกเหมือนกัน จะรวมเป็นบรรทัดเดียวและเพิ่มจำนวน',
+      () {
+        controller.addItem(padkrapao, options: [egg]);
+        controller.addItem(padkrapao, quantity: 2, options: [egg]);
 
-      expect(controller.lines.length, 1);
-      expect(controller.lines.first.quantity, 3);
-      expect(controller.subtotal, 270); // (75 + 15) x 3
-    });
+        expect(controller.lines.length, 1);
+        expect(controller.lines.first.quantity, 3);
+        expect(controller.subtotal, 270); // (75 + 15) x 3
+      },
+    );
 
     test('เพิ่มเมนูเดียวกันแต่โน้ตต่างกัน จะแยกเป็นคนละบรรทัด', () {
       controller.addItem(padkrapao);

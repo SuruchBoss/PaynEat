@@ -26,13 +26,15 @@ class UpdateSettingsParams {
   final bool? vatIncluded;
 }
 
-class UpdateSettingsUseCase implements UseCase<StoreSettings, UpdateSettingsParams> {
+class UpdateSettingsUseCase
+    implements UseCase<StoreSettings, UpdateSettingsParams> {
   const UpdateSettingsUseCase(this._repository);
 
   final SettingsRepository _repository;
 
   @override
-  Future<Result<StoreSettings>> call(UpdateSettingsParams params) => _repository.update(
+  Future<Result<StoreSettings>> call(UpdateSettingsParams params) =>
+      _repository.update(
         storeName: params.storeName,
         vatRate: params.vatRate,
         serviceChargeRate: params.serviceChargeRate,

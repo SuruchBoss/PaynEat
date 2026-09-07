@@ -35,7 +35,10 @@ class TableCard extends StatelessWidget {
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-            border: Border.all(color: color.withValues(alpha: 0.35), width: 1.4),
+            border: Border.all(
+              color: color.withValues(alpha: 0.35),
+              width: 1.4,
+            ),
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -50,26 +53,38 @@ class TableCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       table.name,
-                      style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w800),
+                      style: const TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.w800,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
                     width: 9,
                     height: 9,
-                    decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 2),
               Row(
                 children: [
-                  const Icon(Icons.people_outline_rounded,
-                      size: 13, color: AppColors.textDisabled),
+                  const Icon(
+                    Icons.people_outline_rounded,
+                    size: 13,
+                    color: AppColors.textDisabled,
+                  ),
                   const SizedBox(width: 3),
                   Text(
                     '${table.seats} ที่นั่ง',
-                    style: const TextStyle(fontSize: 11.5, color: AppColors.textDisabled),
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.textDisabled,
+                    ),
                   ),
                 ],
               ),
@@ -86,7 +101,10 @@ class TableCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${order.code.split('-').last} · ${Formatters.elapsed(order.createdAt)}',
-                  style: const TextStyle(fontSize: 10.5, color: AppColors.textDisabled),
+                  style: const TextStyle(
+                    fontSize: 10.5,
+                    color: AppColors.textDisabled,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ] else
