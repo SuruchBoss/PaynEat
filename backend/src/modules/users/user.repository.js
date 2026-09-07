@@ -37,14 +37,16 @@ export const userRepository = {
 
   update(id, { name, role, isActive }) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE users
            SET name       = COALESCE(?, name),
                role       = COALESCE(?, role),
                is_active  = COALESCE(?, is_active),
                updated_at = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(name ?? null, role ?? null, isActive === undefined ? null : Number(isActive), id);
     return this.findById(id);
   },

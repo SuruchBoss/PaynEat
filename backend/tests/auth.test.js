@@ -5,7 +5,9 @@ import { api, login, authHeader, cleanup } from './helpers/testApp.js';
 after(cleanup);
 
 test('POST /auth/login — ล็อกอินสำเร็จได้ token และข้อมูลผู้ใช้', async () => {
-  const res = await api().post('/api/v1/auth/login').send({ username: 'admin', password: 'admin123' });
+  const res = await api()
+    .post('/api/v1/auth/login')
+    .send({ username: 'admin', password: 'admin123' });
 
   assert.equal(res.status, 200);
   assert.equal(res.body.success, true);

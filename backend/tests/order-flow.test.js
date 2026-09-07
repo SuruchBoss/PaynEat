@@ -5,8 +5,16 @@ import { api, login, authHeader, cleanup } from './helpers/testApp.js';
 after(cleanup);
 
 const get = (url, token) => api().get(url).set(authHeader(token));
-const post = (url, token, body) => api().post(url).set(authHeader(token)).send(body ?? {});
-const patch = (url, token, body) => api().patch(url).set(authHeader(token)).send(body ?? {});
+const post = (url, token, body) =>
+  api()
+    .post(url)
+    .set(authHeader(token))
+    .send(body ?? {});
+const patch = (url, token, body) =>
+  api()
+    .patch(url)
+    .set(authHeader(token))
+    .send(body ?? {});
 
 test('เส้นทางหลักของร้าน: รับออเดอร์ → ส่งครัว → ครัวทำ → เสิร์ฟ → ชำระเงิน → เข้ารายงาน', async (t) => {
   const waiter = await login('waiter1', 'waiter123');
@@ -132,7 +140,9 @@ test('เส้นทางหลักของร้าน: รับออเ
     const order = await get(`/api/v1/orders/${orderId}`, waiter.token);
     const itemId = order.body.data.items[0].id;
 
-    const res = await patch(`/api/v1/orders/${orderId}/items/${itemId}`, waiter.token, { quantity: 5 });
+    const res = await patch(`/api/v1/orders/${orderId}/items/${itemId}`, waiter.token, {
+      quantity: 5,
+    });
     assert.equal(res.status, 409);
   });
 
@@ -154,9 +164,9 @@ test('เส้นทางหลักของร้าน: รับออเ
     });
     assert.equal(res.status, 200);
     const order = res.body.data;
-    assert.equal(order.discountAmount, 18);   // 10% ของ 180
-    assert.equal(order.serviceCharge, 16.2);  // 10% ของ 162
-    assert.equal(order.total, 190.67);        // 162 + 16.20 + 12.47
+    assert.equal(order.discountAmount, 18); // 10% ของ 180
+    assert.equal(order.serviceCharge, 16.2); // 10% ของ 162
+    assert.equal(order.total, 190.67); // 162 + 16.20 + 12.47
   });
 
   await t.test('12) จ่ายไม่ครบยอด ออเดอร์ยังไม่ปิด (รองรับแยกจ่าย)', async () => {
@@ -232,7 +242,9 @@ test('กฎทางธุรกิจอื่น ๆ', async (t) => {
   await t.test('เพิ่มเมนูที่ปิดขายอยู่ลงออเดอร์ไม่ได้', async () => {
     const menu = await get('/api/v1/menu-items?limit=1', waiter.token);
     const item = menu.body.data[0];
-    await patch(`/api/v1/menu-items/${item.id}/availability`, manager.token, { isAvailable: false });
+    await patch(`/api/v1/menu-items/${item.id}/availability`, manager.token, {
+      isAvailable: false,
+    });
 
     const tables = await get('/api/v1/tables?status=available', waiter.token);
     const res = await post('/api/v1/orders', waiter.token, {
@@ -269,7 +281,9 @@ test('กฎทางธุรกิจอื่น ๆ', async (t) => {
     });
     const orderId = createRes.body.data.id;
 
-    const denied = await post(`/api/v1/orders/${orderId}/cancel`, waiter.token, { reason: 'ลูกค้าเปลี่ยนใจ' });
+    const denied = await post(`/api/v1/orders/${orderId}/cancel`, waiter.token, {
+      reason: 'ลูกค้าเปลี่ยนใจ',
+    });
     assert.equal(denied.status, 403);
 
     const cancelled = await post(`/api/v1/orders/${orderId}/cancel`, manager.token, {

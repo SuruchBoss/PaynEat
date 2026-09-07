@@ -76,20 +76,21 @@ export const orderRepository = {
 
   findOpenByTable(tableId) {
     return getDb()
-      .prepare(`${ORDER_SELECT} WHERE o.table_id = ? AND o.status IN ('open','in_kitchen','served') LIMIT 1`)
+      .prepare(
+        `${ORDER_SELECT} WHERE o.table_id = ? AND o.status IN ('open','in_kitchen','served') LIMIT 1`,
+      )
       .get(tableId);
   },
 
   findItems(orderId) {
-    return getDb()
-      .prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id')
-      .all(orderId);
+    return getDb().prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id').all(orderId);
   },
 
   findItemsByStatuses(statuses) {
     const placeholders = statuses.map(() => '?').join(',');
     return getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT oi.*, o.code AS order_code, o.type AS order_type, t.name AS table_name
           FROM order_items oi
           JOIN orders o ON o.id = oi.order_id
@@ -97,7 +98,8 @@ export const orderRepository = {
          WHERE oi.status IN (${placeholders})
            AND o.status IN ('in_kitchen', 'served')
          ORDER BY oi.created_at
-      `)
+      `,
+      )
       .all(...statuses);
   },
 
@@ -107,21 +109,25 @@ export const orderRepository = {
 
   create({ code, type, tableId, waiterId, guestCount, note }) {
     const info = getDb()
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO orders (code, type, table_id, waiter_id, guest_count, note)
         VALUES (?, ?, ?, ?, ?, ?)
-      `)
+      `,
+      )
       .run(code, type, tableId ?? null, waiterId ?? null, guestCount ?? 1, note ?? null);
     return this.findById(info.lastInsertRowid);
   },
 
   addItem(orderId, item) {
     const info = getDb()
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO order_items
           (order_id, menu_item_id, name_snapshot, unit_price, quantity, options_json, options_price, line_total, note)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
+      `,
+      )
       .run(
         orderId,
         item.menuItemId,
@@ -138,7 +144,8 @@ export const orderRepository = {
 
   updateItem(itemId, { quantity, note, lineTotal, status }) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE order_items
            SET quantity   = COALESCE(?, quantity),
                note       = COALESCE(?, note),
@@ -146,7 +153,8 @@ export const orderRepository = {
                status     = COALESCE(?, status),
                updated_at = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(quantity ?? null, note ?? null, lineTotal ?? null, status ?? null, itemId);
     return this.findItemById(itemId);
   },
@@ -157,13 +165,16 @@ export const orderRepository = {
 
   markItemsStatus(orderId, fromStatus, toStatus) {
     return getDb()
-      .prepare("UPDATE order_items SET status = ?, updated_at = datetime('now') WHERE order_id = ? AND status = ?")
+      .prepare(
+        "UPDATE order_items SET status = ?, updated_at = datetime('now') WHERE order_id = ? AND status = ?",
+      )
       .run(toStatus, orderId, fromStatus).changes;
   },
 
   updateTotals(orderId, totals) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE orders
            SET subtotal        = ?,
                discount_type   = ?,
@@ -174,7 +185,8 @@ export const orderRepository = {
                total           = ?,
                updated_at      = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(
         totals.subtotal,
         totals.discountType,
@@ -189,27 +201,31 @@ export const orderRepository = {
 
   updateStatus(orderId, status, { closedAt = null, cancelledReason = null } = {}) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE orders
            SET status           = ?,
                closed_at        = COALESCE(?, closed_at),
                cancelled_reason = COALESCE(?, cancelled_reason),
                updated_at       = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(status, closedAt, cancelledReason, orderId);
     return this.findById(orderId);
   },
 
   updateMeta(orderId, { guestCount, note }) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE orders
            SET guest_count = COALESCE(?, guest_count),
                note        = COALESCE(?, note),
                updated_at  = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(guestCount ?? null, note ?? null, orderId);
     return this.findById(orderId);
   },

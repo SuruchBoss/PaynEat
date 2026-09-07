@@ -22,7 +22,10 @@ export const calculateBill = ({
   vatIncluded = false,
 }) => {
   const activeItems = items.filter((item) => item.status !== 'cancelled');
-  const subtotal = activeItems.reduce((acc, item) => acc + Number(item.line_total ?? item.lineTotal ?? 0), 0);
+  const subtotal = activeItems.reduce(
+    (acc, item) => acc + Number(item.line_total ?? item.lineTotal ?? 0),
+    0,
+  );
 
   let discountAmount = 0;
   if (discountType === 'amount') {

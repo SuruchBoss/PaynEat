@@ -15,7 +15,13 @@ const manager = authorize('admin', 'manager');
 
 router.get('/', authenticate, validate({ query: listMenuQuerySchema }), menuController.list);
 router.get('/:id', authenticate, validate({ params: idParamSchema }), menuController.detail);
-router.post('/', authenticate, manager, validate({ body: createMenuItemSchema }), menuController.create);
+router.post(
+  '/',
+  authenticate,
+  manager,
+  validate({ body: createMenuItemSchema }),
+  menuController.create,
+);
 router.patch(
   '/:id',
   authenticate,
@@ -31,6 +37,12 @@ router.patch(
   validate({ params: idParamSchema, body: toggleAvailabilitySchema }),
   menuController.setAvailability,
 );
-router.delete('/:id', authenticate, manager, validate({ params: idParamSchema }), menuController.remove);
+router.delete(
+  '/:id',
+  authenticate,
+  manager,
+  validate({ params: idParamSchema }),
+  menuController.remove,
+);
 
 export default router;

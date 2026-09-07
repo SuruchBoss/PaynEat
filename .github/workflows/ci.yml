@@ -25,6 +25,12 @@ jobs:
       - name: ติดตั้ง dependencies
         run: npm ci
 
+      - name: ตรวจรูปแบบโค้ด
+        run: npm run format:check
+
+      - name: วิเคราะห์โค้ดแบบ static
+        run: npm run lint
+
       - name: รันเทสต์
         run: npm test
 

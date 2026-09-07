@@ -4,13 +4,15 @@ export const categoryRepository = {
   findAll({ activeOnly = false } = {}) {
     const where = activeOnly ? 'WHERE is_active = 1' : '';
     return getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT c.*, (
           SELECT COUNT(*) FROM menu_items m WHERE m.category_id = c.id
         ) AS item_count
         FROM categories c ${where}
         ORDER BY c.sort_order, c.id
-      `)
+      `,
+      )
       .all();
   },
 
@@ -27,7 +29,8 @@ export const categoryRepository = {
 
   update(id, { name, nameEn, icon, sortOrder, isActive }) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE categories
            SET name       = COALESCE(?, name),
                name_en    = COALESCE(?, name_en),
@@ -36,7 +39,8 @@ export const categoryRepository = {
                is_active  = COALESCE(?, is_active),
                updated_at = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(
         name ?? null,
         nameEn ?? null,

@@ -227,7 +227,11 @@ export const orderService = {
       throw ApiError.conflict(`เปลี่ยนสถานะจาก "${item.status}" เป็น "${status}" ไม่ได้`);
     }
     // ยกเลิกรายการที่ครัวลงมือทำแล้ว ต้องเป็นผู้จัดการขึ้นไป (void)
-    if (status === 'cancelled' && item.status !== 'pending' && !['admin', 'manager'].includes(user.role)) {
+    if (
+      status === 'cancelled' &&
+      item.status !== 'pending' &&
+      !['admin', 'manager'].includes(user.role)
+    ) {
       throw ApiError.forbidden('ยกเลิกรายการที่ครัวทำแล้วต้องใช้สิทธิ์ผู้จัดการ');
     }
 
@@ -237,7 +241,11 @@ export const orderService = {
     // ถ้าเสิร์ฟครบทุกรายการแล้ว ให้ออเดอร์ขึ้นสถานะ "เสิร์ฟครบ" อัตโนมัติ
     const items = orderRepository.findItems(order.id);
     const active = items.filter((row) => row.status !== 'cancelled');
-    if (active.length > 0 && active.every((row) => row.status === 'served') && order.status === 'in_kitchen') {
+    if (
+      active.length > 0 &&
+      active.every((row) => row.status === 'served') &&
+      order.status === 'in_kitchen'
+    ) {
       orderRepository.updateStatus(order.id, 'served');
     }
 

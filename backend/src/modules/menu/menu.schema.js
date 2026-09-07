@@ -37,8 +37,14 @@ export const toggleAvailabilitySchema = z.object({
 export const listMenuQuerySchema = z.object({
   categoryId: z.coerce.number().int().positive().optional(),
   search: z.string().max(120).optional(),
-  availableOnly: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
-  recommendedOnly: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
+  availableOnly: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
+  recommendedOnly: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(200).default(100),
 });

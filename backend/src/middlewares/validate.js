@@ -17,7 +17,9 @@ export const validate = (schemas) => (req, _res, next) => {
         field: issue.path.join('.') || key,
         message: issue.message,
       }));
-      return next(new ApiError(422, 'ข้อมูลที่ส่งมาไม่ถูกต้อง', { code: 'VALIDATION_ERROR', details }));
+      return next(
+        new ApiError(422, 'ข้อมูลที่ส่งมาไม่ถูกต้อง', { code: 'VALIDATION_ERROR', details }),
+      );
     }
     validated[key] = result.data;
   }

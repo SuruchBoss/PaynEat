@@ -38,10 +38,12 @@ export const authenticate = (req, _res, next) => {
  * จำกัดสิทธิ์ตาม role
  * ตัวอย่าง: router.post('/', authenticate, authorize('admin', 'manager'), handler)
  */
-export const authorize = (...roles) => (req, _res, next) => {
-  if (!req.user) return next(ApiError.unauthorized());
-  if (roles.length > 0 && !roles.includes(req.user.role)) {
-    return next(ApiError.forbidden(`ต้องมีสิทธิ์: ${roles.join(', ')}`));
-  }
-  return next();
-};
+export const authorize =
+  (...roles) =>
+  (req, _res, next) => {
+    if (!req.user) return next(ApiError.unauthorized());
+    if (roles.length > 0 && !roles.includes(req.user.role)) {
+      return next(ApiError.forbidden(`ต้องมีสิทธิ์: ${roles.join(', ')}`));
+    }
+    return next();
+  };

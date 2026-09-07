@@ -22,7 +22,11 @@ const service = authorize('admin', 'manager', 'waiter', 'cashier');
 const manager = authorize('admin', 'manager');
 
 // เส้นทางเฉพาะต้องมาก่อน /:id เสมอ ไม่งั้นจะโดน pattern ทั่วไปจับไปก่อน
-router.get('/kitchen/queue', authorize('admin', 'manager', 'kitchen', 'waiter'), orderController.kitchenQueue);
+router.get(
+  '/kitchen/queue',
+  authorize('admin', 'manager', 'kitchen', 'waiter'),
+  orderController.kitchenQueue,
+);
 router.get('/code/:code', orderController.byCode);
 router.get('/table/:id/open', validate({ params: idParamSchema }), orderController.openByTable);
 

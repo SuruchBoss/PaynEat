@@ -42,12 +42,11 @@ export const paymentService = {
     const amount = toSatang(payload.amount);
 
     if (amount > remaining) {
-      throw ApiError.badRequest(
-        `ยอดชำระเกินยอดคงเหลือ (คงเหลือ ${toBaht(remaining)} บาท)`,
-      );
+      throw ApiError.badRequest(`ยอดชำระเกินยอดคงเหลือ (คงเหลือ ${toBaht(remaining)} บาท)`);
     }
 
-    const received = payload.method === 'cash' ? toSatang(payload.received ?? payload.amount) : amount;
+    const received =
+      payload.method === 'cash' ? toSatang(payload.received ?? payload.amount) : amount;
     const changeAmount = payload.method === 'cash' ? Math.max(received - amount, 0) : 0;
     const isFullyPaid = alreadyPaid + amount >= order.total;
 

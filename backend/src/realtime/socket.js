@@ -57,7 +57,10 @@ export const initSocket = (httpServer) => {
   io.on('connection', (socket) => {
     const { user } = socket.data;
     for (const room of roomsForRole(user.role)) socket.join(room);
-    socket.emit('connected', { message: `เชื่อมต่อสำเร็จ (${user.name})`, rooms: roomsForRole(user.role) });
+    socket.emit('connected', {
+      message: `เชื่อมต่อสำเร็จ (${user.name})`,
+      rooms: roomsForRole(user.role),
+    });
   });
 
   return io;

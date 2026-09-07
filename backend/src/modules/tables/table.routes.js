@@ -16,7 +16,13 @@ const manager = authorize('admin', 'manager');
 router.get('/', authenticate, validate({ query: listTableQuerySchema }), tableController.list);
 router.get('/zones', authenticate, tableController.zones);
 router.get('/:id', authenticate, validate({ params: idParamSchema }), tableController.detail);
-router.post('/', authenticate, manager, validate({ body: createTableSchema }), tableController.create);
+router.post(
+  '/',
+  authenticate,
+  manager,
+  validate({ body: createTableSchema }),
+  tableController.create,
+);
 router.patch(
   '/:id',
   authenticate,
@@ -30,6 +36,12 @@ router.patch(
   validate({ params: idParamSchema, body: setStatusSchema }),
   tableController.setStatus,
 );
-router.delete('/:id', authenticate, manager, validate({ params: idParamSchema }), tableController.remove);
+router.delete(
+  '/:id',
+  authenticate,
+  manager,
+  validate({ params: idParamSchema }),
+  tableController.remove,
+);
 
 export default router;

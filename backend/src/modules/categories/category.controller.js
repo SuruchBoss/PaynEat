@@ -4,7 +4,9 @@ import { categoryService } from './category.service.js';
 
 export const categoryController = {
   list: asyncHandler(async (req, res) => ok(res, categoryService.list(req.validated?.query ?? {}))),
-  detail: asyncHandler(async (req, res) => ok(res, categoryService.getById(req.validated.params.id))),
+  detail: asyncHandler(async (req, res) =>
+    ok(res, categoryService.getById(req.validated.params.id)),
+  ),
   create: asyncHandler(async (req, res) => created(res, categoryService.create(req.body))),
   update: asyncHandler(async (req, res) =>
     ok(res, categoryService.update(req.validated.params.id, req.body)),

@@ -11,10 +11,12 @@ export const settingsRepository = {
 
   set(key, value) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO settings (key, value) VALUES (?, ?)
         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = datetime('now')
-      `)
+      `,
+      )
       .run(key, String(value));
   },
 };

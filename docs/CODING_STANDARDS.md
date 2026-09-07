@@ -13,7 +13,7 @@ State Management, Clean Architecture, Technical Debt และโครงสร
 
 | มิติ | สถานะ | รายละเอียด |
 |---|---|---|
-| Clean Code | ✅ ดี | `flutter analyze` ไม่มี warning, `dart format` ผ่าน, ไม่มี `print()`/`TODO`/`FIXME` ค้าง |
+| Clean Code | ✅ ดี | `flutter analyze` ไม่มี warning, `dart format` ผ่าน, ไม่มี `print()`/`TODO`/`FIXME` ค้าง, backend มี ESLint + Prettier ครบแล้ว |
 | State Management (GetX) | ✅ ดี | แยก ephemeral state (setState) กับ app state (Rx) ชัดเจน, ไม่มี controller รั่ว |
 | Clean Architecture | ✅ แก้ครบแล้ว | domain เคย import จาก data (ดูหัวข้อ 4.4) — แก้แล้ว |
 | Technical Debt | ⚠️ มีรายการต้องติดตาม | เทสต์ยังไม่ครบทุก controller/module (ดูหัวข้อ 6) |
@@ -33,7 +33,7 @@ Flutter: 46 เทสต์ผ่าน · Backend: 36 เทสต์ผ่า�
 3. **ฟังก์ชันคิดเงินต้องเป็น pure function และมีเทสต์คู่กันเสมอ** — ห้ามมี side effect
 4. **ไฟล์ใหม่ต้องอยู่ในตำแหน่งที่ layer เดียวกันหาเจอโดยไม่ต้องเดา** — ดูหัวข้อ 5
 5. **ก่อน merge: `flutter analyze` + `dart format --set-exit-if-changed` + `flutter test` ต้องผ่านทั้งหมด**
-   ฝั่ง backend: `npm test` ต้องผ่านทั้งหมด — ไม่มีข้อยกเว้น
+   ฝั่ง backend: `npm run lint` + `npm run format:check` + `npm test` ต้องผ่านทั้งหมด — ไม่มีข้อยกเว้น
 
 ---
 
@@ -59,11 +59,30 @@ Flutter: 46 เทสต์ผ่าน · Backend: 36 เทสต์ผ่า�
 - ไฟล์หน้าจอ (page) ที่เกิน 400 บรรทัดขึ้นไป ให้แยก widget ย่อยออกเป็นไฟล์ใน `presentation/widgets/`
   ของ feature เดียวกัน แทนที่จะเก็บเป็น private class ในไฟล์เดียวกันทั้งหมด
 
-### 2.3 Backend logging
+### 2.3 Backend: ESLint + Prettier — แก้แล้ว
 
-ตอนนี้ backend ไม่มี ESLint/Prettier config — พึ่งเทสต์ (`npm test`, 36 เทสต์) กับ code review
-เป็นตัวจับความผิดพลาดเท่านั้น **ถือเป็น technical debt** (บันทึกไว้ในหัวข้อ 6) เพราะ error ทาง
-syntax/style เล็กๆ (unused var, inconsistent quotes) จะไม่ถูกจับอัตโนมัติ
+เพิ่ม `backend/eslint.config.js` (flat config ของ ESLint 9) และ `backend/.prettierrc.json` แล้ว
+ทั้งคู่ต้องผ่านก่อน merge เสมอ (CI เช็คให้อัตโนมัติในทุก PR):
+
+```bash
+cd backend
+npm run lint           # eslint src tests — 0 errors, 0 warnings
+npm run format:check   # prettier --check src tests
+npm run format         # prettier --write src tests (รันตอนแก้เอง ก่อน commit)
+```
+
+**กฎที่บังคับใช้**: `no-unused-vars` (ยกเว้นชื่อขึ้นต้นด้วย `_` เช่น พารามิเตอร์ `_next` ที่ Express
+error middleware ต้องมีแต่ไม่ได้ใช้), `no-var`, `prefer-const`, `eqeqeq` (สมาร์ต — ยกเว้น `== null`),
+`no-console` (warn เฉพาะ `console.log`/`console.error` เท่านั้น ตัวอื่นห้ามใช้)
+
+**Prettier**: `singleQuote: true`, `printWidth: 100`, `trailingComma: "all"` — ตรงกับสไตล์เดิมของ
+โค้ดเบสอยู่แล้ว (single quote + semicolon) จึงมีไฟล์ที่ format เปลี่ยนแค่การตัดบรรทัดยาวเกิน 100
+ตัวอักษรเป็นส่วนใหญ่ ไม่ใช่การเปลี่ยนสไตล์ทั้งหมด
+
+**ข้อยกเว้นที่ตั้งใจ**: อาเรย์ข้อมูลตัวอย่าง (`USERS`, `CATEGORIES`, `MENU`, `TABLES` ใน
+`backend/src/db/seed.js`) ใส่ `// prettier-ignore` ไว้เพราะเป็นข้อมูลดิบแบบตาราง (1 บรรทัด/1 แถว)
+ที่ scan ด้วยตาง่ายกว่าเวอร์ชันขยายหลายบรรทัดของ Prettier ชัดเจน — ใช้ `// prettier-ignore` แบบนี้
+ได้เฉพาะกับ literal ข้อมูลดิบเท่านั้น ห้ามใช้กับ logic code เพื่อเลี่ยงกฎ format
 
 ---
 
@@ -265,7 +284,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 
 | # | รายการ | ผลกระทบ | แผนแก้ | สถานะ |
 |---|---|---|---|---|
-| 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint` + `eslint-config-airbnb-base` หรือเทียบเท่า ก่อนโค้ดเบสใหญ่กว่านี้ | ค้าง |
+| 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint.config.js` + `.prettierrc.json` แล้ว และเช็คใน CI ทุก PR (ดูหัวข้อ 2.3) | ✅ **แก้แล้ว** |
 | 2 | Controller ส่วนใหญ่ใน Flutter ไม่มี unit test เฉพาะตัว (มีแค่ `CartController`) | บั๊ก logic ใน controller (เช่น auth flow, order list filter) จับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ให้ `AuthController`, `OrderListController`, `TableController` เป็นลำดับแรก (กระทบ user มากสุด) | ค้าง |
 | 3 | Backend module ส่วนใหญ่ไม่มี unit test เฉพาะ module (มีแค่ `auth`, `order-flow` integration, `calculator`) | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่ม unit test แยกให้ `menu.service.js`, `table.service.js`, `payment.service.js` | ค้าง |
 | 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็นไฟล์ย่อยตามโดเมนตอนแก้ไขครั้งถัดไป (ดูหัวข้อ 2.2) | ค้าง |
@@ -300,6 +319,8 @@ flutter test                                        # ต้อง "All tests pa
 
 # Backend
 cd backend
+npm run format:check                                # ต้อง "All matched files use Prettier code style!"
+npm run lint                                        # ต้อง 0 errors, 0 warnings
 npm test                                            # ต้อง fail 0
 ```
 

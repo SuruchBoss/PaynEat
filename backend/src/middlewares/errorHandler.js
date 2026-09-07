@@ -5,7 +5,6 @@ export const notFoundHandler = (req, _res, next) => {
   next(ApiError.notFound(`ไม่พบเส้นทาง ${req.method} ${req.originalUrl}`));
 };
 
-// eslint-disable-next-line no-unused-vars -- Express ต้องการ 4 อาร์กิวเมนต์เพื่อระบุว่านี่คือ error middleware
 export const errorHandler = (err, _req, res, _next) => {
   const isApiError = err instanceof ApiError;
   const statusCode = isApiError ? err.statusCode : 500;

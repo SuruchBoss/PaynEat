@@ -17,7 +17,8 @@ export const tableRepository = {
 
     // ผูกออเดอร์ที่ยังเปิดอยู่ของแต่ละโต๊ะมาด้วย เพื่อให้หน้าผังโต๊ะแสดงยอดได้ทันที
     return getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT t.*,
                o.id         AS order_id,
                o.code       AS order_code,
@@ -31,7 +32,8 @@ export const tableRepository = {
                 AND o.status IN ('open', 'in_kitchen', 'served')
           ${where}
          ORDER BY t.zone, t.name
-      `)
+      `,
+      )
       .all(...params);
   },
 
@@ -59,7 +61,8 @@ export const tableRepository = {
 
   update(id, { name, zone, seats, status, isActive }) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE dining_tables
            SET name       = COALESCE(?, name),
                zone       = COALESCE(?, zone),
@@ -68,7 +71,8 @@ export const tableRepository = {
                is_active  = COALESCE(?, is_active),
                updated_at = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(
         name ?? null,
         zone ?? null,
@@ -90,10 +94,12 @@ export const tableRepository = {
   hasOpenOrder(id) {
     return (
       getDb()
-        .prepare(`
+        .prepare(
+          `
           SELECT COUNT(*) AS c FROM orders
            WHERE table_id = ? AND status IN ('open', 'in_kitchen', 'served')
-        `)
+        `,
+        )
         .get(id).c > 0
     );
   },

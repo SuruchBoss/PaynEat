@@ -27,9 +27,8 @@ export const settingsService = {
     };
     for (const [field, key] of Object.entries(map)) {
       if (payload[field] === undefined) continue;
-      const value = NUMBER_KEYS.has(key) || BOOLEAN_KEYS.has(key)
-        ? String(payload[field])
-        : payload[field];
+      const value =
+        NUMBER_KEYS.has(key) || BOOLEAN_KEYS.has(key) ? String(payload[field]) : payload[field];
       settingsRepository.set(key, value);
     }
     return this.get();

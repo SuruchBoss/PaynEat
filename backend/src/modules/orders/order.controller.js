@@ -28,7 +28,10 @@ export const orderController = {
   ),
 
   updateItem: asyncHandler(async (req, res) =>
-    ok(res, orderService.updateItem(req.validated.params.id, req.validated.params.itemId, req.body)),
+    ok(
+      res,
+      orderService.updateItem(req.validated.params.id, req.validated.params.itemId, req.body),
+    ),
   ),
 
   removeItem: asyncHandler(async (req, res) =>
@@ -61,7 +64,9 @@ export const orderController = {
 
   kitchenQueue: asyncHandler(async (req, res) => {
     const statuses = req.query.status
-      ? String(req.query.status).split(',').map((value) => value.trim())
+      ? String(req.query.status)
+          .split(',')
+          .map((value) => value.trim())
       : undefined;
     return ok(res, orderService.kitchenQueue(statuses));
   }),

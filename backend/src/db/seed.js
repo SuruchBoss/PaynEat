@@ -6,6 +6,7 @@ import { toSatang } from '../core/money.js';
 /**
  * ข้อมูลตัวอย่างสำหรับเดโม — รันซ้ำได้ (idempotent) เพราะเช็คก่อนว่ามีข้อมูลแล้วหรือยัง
  */
+// prettier-ignore
 const USERS = [
   { name: 'ผู้ดูแลระบบ', username: 'admin', password: 'admin123', role: 'admin' },
   { name: 'สมชาย (ผู้จัดการ)', username: 'manager', password: 'manager123', role: 'manager' },
@@ -15,6 +16,7 @@ const USERS = [
   { name: 'พี่แอน (แคชเชียร์)', username: 'cashier', password: 'cashier123', role: 'cashier' },
 ];
 
+// prettier-ignore
 const CATEGORIES = [
   { name: 'แนะนำ', nameEn: 'Recommended', icon: '⭐', sortOrder: 1 },
   { name: 'อาหารจานเดียว', nameEn: 'Rice & Noodles', icon: '🍛', sortOrder: 2 },
@@ -25,6 +27,7 @@ const CATEGORIES = [
   { name: 'ของหวาน', nameEn: 'Desserts', icon: '🍨', sortOrder: 7 },
 ];
 
+// prettier-ignore
 const MENU = [
   // อาหารจานเดียว
   { cat: 'อาหารจานเดียว', name: 'ข้าวผัดกุ้ง', nameEn: 'Shrimp Fried Rice', price: 90, prep: 10, recommended: true, desc: 'ข้าวผัดหอมกระทะ กุ้งสดตัวโต' },
@@ -108,17 +111,18 @@ const OPTION_TEMPLATES = {
 };
 
 const MENU_OPTIONS = {
-  'ผัดกะเพราหมูสับ': ['spicy', 'extra'],
-  'ข้าวผัดกุ้ง': ['extra'],
-  'ผัดไทยกุ้งสด': ['spicy', 'extra'],
-  'ส้มตำไทย': ['spicy'],
-  'ลาบหมู': ['spicy'],
-  'ยำวุ้นเส้นทะเล': ['spicy'],
-  'ต้มยำกุ้งน้ำข้น': ['spicy'],
-  'ชาไทยเย็น': ['sweet', 'ice'],
-  'น้ำมะนาวโซดา': ['sweet', 'ice'],
+  ผัดกะเพราหมูสับ: ['spicy', 'extra'],
+  ข้าวผัดกุ้ง: ['extra'],
+  ผัดไทยกุ้งสด: ['spicy', 'extra'],
+  ส้มตำไทย: ['spicy'],
+  ลาบหมู: ['spicy'],
+  ยำวุ้นเส้นทะเล: ['spicy'],
+  ต้มยำกุ้งน้ำข้น: ['spicy'],
+  ชาไทยเย็น: ['sweet', 'ice'],
+  น้ำมะนาวโซดา: ['sweet', 'ice'],
 };
 
+// prettier-ignore
 const TABLES = [
   ...Array.from({ length: 8 }, (_, i) => ({ name: `A${i + 1}`, zone: 'โซนในร้าน', seats: i < 4 ? 2 : 4 })),
   ...Array.from({ length: 6 }, (_, i) => ({ name: `B${i + 1}`, zone: 'โซนริมหน้าต่าง', seats: 4 })),
@@ -155,7 +159,10 @@ export const seed = () => {
     const menuCount = db.prepare('SELECT COUNT(*) AS c FROM menu_items').get().c;
     if (menuCount === 0) {
       const categoryIdByName = new Map(
-        db.prepare('SELECT id, name FROM categories').all().map((row) => [row.name, row.id]),
+        db
+          .prepare('SELECT id, name FROM categories')
+          .all()
+          .map((row) => [row.name, row.id]),
       );
       const insertMenu = db.prepare(`
         INSERT INTO menu_items (category_id, name, name_en, description, price, is_recommended, prep_minutes, sort_order)
@@ -220,7 +227,9 @@ export const seed = () => {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   seed();
-  console.log('🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)');
+  console.log(
+    '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
+  );
 }
 
 export default seed;

@@ -46,7 +46,8 @@ export const toOrderDto = (row, items = []) => {
     note: row.note,
     subtotal: toBaht(row.subtotal),
     discountType: row.discount_type,
-    discountValue: row.discount_type === 'percent' ? row.discount_value / 100 : toBaht(row.discount_value),
+    discountValue:
+      row.discount_type === 'percent' ? row.discount_value / 100 : toBaht(row.discount_value),
     discountAmount: toBaht(row.discount_amount),
     serviceCharge: toBaht(row.service_charge),
     vat: toBaht(row.vat),

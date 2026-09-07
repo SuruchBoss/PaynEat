@@ -12,9 +12,20 @@ import {
 const router = Router();
 const manager = authorize('admin', 'manager');
 
-router.get('/', authenticate, validate({ query: listCategoryQuerySchema }), categoryController.list);
+router.get(
+  '/',
+  authenticate,
+  validate({ query: listCategoryQuerySchema }),
+  categoryController.list,
+);
 router.get('/:id', authenticate, validate({ params: idParamSchema }), categoryController.detail);
-router.post('/', authenticate, manager, validate({ body: createCategorySchema }), categoryController.create);
+router.post(
+  '/',
+  authenticate,
+  manager,
+  validate({ body: createCategorySchema }),
+  categoryController.create,
+);
 router.patch(
   '/:id',
   authenticate,
@@ -22,6 +33,12 @@ router.patch(
   validate({ params: idParamSchema, body: updateCategorySchema }),
   categoryController.update,
 );
-router.delete('/:id', authenticate, manager, validate({ params: idParamSchema }), categoryController.remove);
+router.delete(
+  '/:id',
+  authenticate,
+  manager,
+  validate({ params: idParamSchema }),
+  categoryController.remove,
+);
 
 export default router;

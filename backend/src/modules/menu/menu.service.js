@@ -92,12 +92,14 @@ export const menuService = {
   remove(id) {
     this.getById(id);
     const inUse = getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT COUNT(*) AS c
           FROM order_items oi
           JOIN orders o ON o.id = oi.order_id
          WHERE oi.menu_item_id = ? AND o.status NOT IN ('paid', 'cancelled')
-      `)
+      `,
+      )
       .get(id).c;
     if (inUse > 0) {
       throw ApiError.conflict('ลบไม่ได้ เพราะเมนูนี้อยู่ในออเดอร์ที่ยังไม่ปิด');

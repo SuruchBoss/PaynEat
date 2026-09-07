@@ -22,14 +22,16 @@ export const menuRepository = {
     const offset = (page - 1) * limit;
 
     const items = db
-      .prepare(`
+      .prepare(
+        `
         SELECT m.*, c.name AS category_name
           FROM menu_items m
           JOIN categories c ON c.id = m.category_id
           ${where}
          ORDER BY m.sort_order, m.id
          LIMIT ? OFFSET ?
-      `)
+      `,
+      )
       .all(...params, limit, offset);
 
     return { items, total };
@@ -37,12 +39,14 @@ export const menuRepository = {
 
   findById(id) {
     return getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT m.*, c.name AS category_name
           FROM menu_items m
           JOIN categories c ON c.id = m.category_id
          WHERE m.id = ?
-      `)
+      `,
+      )
       .get(id);
   },
 
@@ -54,12 +58,14 @@ export const menuRepository = {
     if (groups.length === 0) return [];
 
     const options = db
-      .prepare(`
+      .prepare(
+        `
         SELECT o.* FROM options o
           JOIN option_groups g ON g.id = o.group_id
          WHERE g.menu_item_id = ?
          ORDER BY o.sort_order, o.id
-      `)
+      `,
+      )
       .all(menuItemId);
 
     return groups.map((group) => ({
@@ -75,15 +81,19 @@ export const menuRepository = {
     const db = getDb();
 
     const groups = db
-      .prepare(`SELECT * FROM option_groups WHERE menu_item_id IN (${placeholders}) ORDER BY sort_order, id`)
+      .prepare(
+        `SELECT * FROM option_groups WHERE menu_item_id IN (${placeholders}) ORDER BY sort_order, id`,
+      )
       .all(...menuItemIds);
     const options = db
-      .prepare(`
+      .prepare(
+        `
         SELECT o.* FROM options o
           JOIN option_groups g ON g.id = o.group_id
          WHERE g.menu_item_id IN (${placeholders})
          ORDER BY o.sort_order, o.id
-      `)
+      `,
+      )
       .all(...menuItemIds);
 
     const grouped = new Map();
@@ -98,22 +108,26 @@ export const menuRepository = {
 
   findOptionById(optionId) {
     return getDb()
-      .prepare(`
+      .prepare(
+        `
         SELECT o.*, g.menu_item_id, g.name AS group_name
           FROM options o
           JOIN option_groups g ON g.id = o.group_id
          WHERE o.id = ?
-      `)
+      `,
+      )
       .get(optionId);
   },
 
   create(payload) {
     const info = getDb()
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO menu_items
           (category_id, name, name_en, description, price, image_url, is_available, is_recommended, prep_minutes, sort_order)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `)
+      `,
+      )
       .run(
         payload.categoryId,
         payload.name,
@@ -131,7 +145,8 @@ export const menuRepository = {
 
   update(id, payload) {
     getDb()
-      .prepare(`
+      .prepare(
+        `
         UPDATE menu_items
            SET category_id    = COALESCE(?, category_id),
                name           = COALESCE(?, name),
@@ -145,7 +160,8 @@ export const menuRepository = {
                sort_order     = COALESCE(?, sort_order),
                updated_at     = datetime('now')
          WHERE id = ?
-      `)
+      `,
+      )
       .run(
         payload.categoryId ?? null,
         payload.name ?? null,
@@ -168,17 +184,21 @@ export const menuRepository = {
 
   createOptionGroup(menuItemId, { name, minSelect, maxSelect, isRequired, sortOrder }) {
     const info = getDb()
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO option_groups (menu_item_id, name, min_select, max_select, is_required, sort_order)
         VALUES (?, ?, ?, ?, ?, ?)
-      `)
+      `,
+      )
       .run(menuItemId, name, minSelect ?? 0, maxSelect ?? 1, isRequired ? 1 : 0, sortOrder ?? 0);
     return info.lastInsertRowid;
   },
 
   createOption(groupId, { name, priceDelta, isDefault, sortOrder }) {
     return getDb()
-      .prepare('INSERT INTO options (group_id, name, price_delta, is_default, sort_order) VALUES (?, ?, ?, ?, ?)')
+      .prepare(
+        'INSERT INTO options (group_id, name, price_delta, is_default, sort_order) VALUES (?, ?, ?, ?, ?)',
+      )
       .run(groupId, name, priceDelta ?? 0, isDefault ? 1 : 0, sortOrder ?? 0).lastInsertRowid;
   },
 

@@ -56,7 +56,10 @@ export const listOrderQuerySchema = z.object({
   waiterId: z.coerce.number().int().positive().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
-  activeOnly: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
+  activeOnly: z
+    .enum(['true', 'false'])
+    .transform((v) => v === 'true')
+    .optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
