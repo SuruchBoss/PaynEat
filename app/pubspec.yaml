@@ -1,0 +1,36 @@
+name: payneat_pos
+description: "PaynEat POS — แอปหน้าร้านสำหรับพนักงานเสิร์ฟ ครัว แคชเชียร์ และเว็บผู้ดูแลระบบ"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management + DI + routing
+  get: ^4.7.2
+
+  # HTTP client
+  dio: ^5.7.0
+
+  # Local key-value storage (เก็บ token / session)
+  get_storage: ^2.1.1
+
+  # Realtime กับฝั่ง backend (Socket.IO)
+  socket_io_client: ^3.1.2
+
+  # จัดรูปแบบวันที่ / ตัวเลข / สกุลเงิน
+  intl: ^0.20.2
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
