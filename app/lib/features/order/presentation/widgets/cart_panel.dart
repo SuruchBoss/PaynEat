@@ -111,7 +111,10 @@ class _CartHeader extends GetView<CartController> {
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 6),
-                    Text('order_guest_count_label'.tr, style: const TextStyle(fontSize: 13)),
+                    Text(
+                      'order_guest_count_label'.tr,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     const Spacer(),
                     QuantityStepper(
                       value: controller.guestCount.value,
@@ -285,7 +288,10 @@ class _CartFooter extends GetView<CartController> {
         ),
         child: Column(
           children: [
-            _SummaryRow(label: 'order_subtotal_label'.tr, value: preview.subtotal),
+            _SummaryRow(
+              label: 'order_subtotal_label'.tr,
+              value: preview.subtotal,
+            ),
             _SummaryRow(
               label: 'order_service_charge_percent_label'.trParams({
                 'percent': settings.serviceChargePercent.toStringAsFixed(0),
@@ -306,7 +312,10 @@ class _CartFooter extends GetView<CartController> {
               children: [
                 Text(
                   'order_total_label'.tr,
-                  style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const Spacer(),
                 Text(
