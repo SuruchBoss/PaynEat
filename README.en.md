@@ -68,7 +68,7 @@ control and 292 automated tests.
 
 - [Screenshots](#-screenshots)
 - [Why this project](#-why-this-project)
-- [How to run it (for reviewers)](#-how-to-run-it-for-reviewers)
+- [How to run it](#-how-to-run-it)
 - [Features](#-features)
 - [Tech stack](#-tech-stack)
 - [Architecture](#-architecture)
@@ -83,8 +83,7 @@ control and 292 automated tests.
 
 ## 🎯 Why this project
 
-I wanted to build something that **isn't just a to-do list app**, but a system with real business rules to
-manage.
+This project was built to be more than a to-do-list app — a system with real business rules to manage.
 
 A restaurant is a great problem for that — it has more hidden edge cases than it looks:
 
@@ -100,7 +99,7 @@ So this project prioritizes **correct business logic and a maintainable structur
 
 ---
 
-## 🚀 How to run it (for reviewers)
+## 🚀 How to run it
 
 > Takes about 5 minutes · if you get stuck, see [Troubleshooting](#-troubleshooting) at the end of this section
 
@@ -218,6 +217,10 @@ The login page has one-tap buttons for each account — no need to type anything
 | Waiter | `waiter1` | `waiter123` | Table map, orders, kitchen display |
 | Kitchen | `kitchen` | `kitchen123` | Kitchen display only |
 | Cashier | `cashier` | `cashier123` | Table map, orders, reports |
+
+> ⚠️ **These accounts are for demo purposes only.** If you deploy this backend for real use (not just
+> running it locally), always change these passwords or disable `AUTO_SEED` first — see
+> [`SECURITY.md`](SECURITY.md) for the full pre-deployment checklist.
 
 ---
 
