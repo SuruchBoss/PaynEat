@@ -58,4 +58,9 @@ class ApiEndpoints {
 
   // Settings
   static const String settings = '/settings';
+
+  // Shifts
+  static const String shifts = '/shifts';
+  static const String currentShift = '/shifts/current';
+  static String closeShift(int id) => '/shifts/$id/close';
 }

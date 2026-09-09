@@ -20,6 +20,7 @@ import '../../../report/presentation/pages/reports_page.dart';
 import '../../../settings/domain/usecases/settings_usecases.dart';
 import '../../../settings/presentation/controllers/settings_controller.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
+import '../../../shift/presentation/pages/shift_page.dart';
 import '../../../staff/domain/usecases/staff_usecases.dart';
 import '../../../staff/presentation/controllers/staff_controller.dart';
 import '../../../staff/presentation/pages/staff_page.dart';
@@ -172,6 +173,12 @@ class HomeBinding extends Bindings {
       selectedIcon: Icons.person_rounded,
       page: ProfilePage(),
     );
+    const shift = HomeDestination(
+      label: 'กะ',
+      icon: Icons.point_of_sale_outlined,
+      selectedIcon: Icons.point_of_sale_rounded,
+      page: ShiftPage(),
+    );
 
     return switch (role) {
       UserRole.admin || UserRole.manager => const [
@@ -182,10 +189,11 @@ class HomeBinding extends Bindings {
         menu,
         staff,
         reports,
+        shift,
         settings,
         profile,
       ],
-      UserRole.cashier => const [tables, orders, reports, profile],
+      UserRole.cashier => const [tables, orders, shift, reports, profile],
       UserRole.kitchen => const [kitchen, profile],
       _ => const [tables, orders, kitchen, profile],
     };

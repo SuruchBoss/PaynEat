@@ -9,6 +9,9 @@ import 'package:payneat_pos/features/payment/domain/entities/payment.dart';
 import 'package:payneat_pos/features/payment/domain/repositories/payment_repository.dart';
 import 'package:payneat_pos/features/payment/domain/usecases/payment_usecases.dart';
 import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
+import 'package:payneat_pos/features/shift/domain/entities/shift.dart';
+import 'package:payneat_pos/features/shift/domain/repositories/shift_repository.dart';
+import 'package:payneat_pos/features/shift/domain/usecases/shift_usecases.dart';
 
 class _FakeOrderRepository implements OrderRepository {
   Result<Order> nextOrderResult = Result.success(_order());
@@ -46,6 +49,24 @@ class _FakePaymentRepository implements PaymentRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _FakeShiftRepository implements ShiftRepository {
+  Result<Shift?> nextCurrentResult = Result.success(_openShift());
+
+  @override
+  Future<Result<Shift?>> getCurrent() async => nextCurrentResult;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Shift _openShift() => const Shift(
+  id: 1,
+  status: 'open',
+  openedBy: 1,
+  openedAt: '2026-01-01T00:00:00Z',
+  openingCash: 2000,
+);
+
 Order _order({int id = 1, double total = 107}) => Order(
   id: id,
   code: 'A001',
@@ -66,15 +87,18 @@ PaymentSummary _summary({double total = 107, double paid = 0}) =>
 void main() {
   late _FakeOrderRepository orderRepository;
   late _FakePaymentRepository paymentRepository;
+  late _FakeShiftRepository shiftRepository;
   late CheckoutController controller;
 
   setUp(() {
     orderRepository = _FakeOrderRepository();
     paymentRepository = _FakePaymentRepository();
+    shiftRepository = _FakeShiftRepository();
     controller = CheckoutController(
       getOrder: GetOrderUseCase(orderRepository),
       getSummary: GetPaymentSummaryUseCase(paymentRepository),
       pay: PayOrderUseCase(paymentRepository),
+      getCurrentShift: GetCurrentShiftUseCase(shiftRepository),
     );
   });
 
@@ -213,5 +237,32 @@ void main() {
         expect(paymentRepository.payCallCount, 0);
       },
     );
+
+    test(
+      'ไม่มีกะเปิดอยู่ → hasOpenShift เป็นเท็จ และ canPay ถูกบล็อกเสมอ',
+      () async {
+        shiftRepository.nextCurrentResult = const Result.success(null);
+        orderRepository.nextOrderResult = Result.success(_order(total: 100));
+        paymentRepository.nextSummaryResult = Result.success(
+          _summary(total: 100, paid: 0),
+        );
+
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+        controller.selectMethod(PaymentMethod.cash);
+        controller.setAmount(100);
+        controller.setReceived(100);
+
+        expect(controller.hasOpenShift.value, isFalse);
+        expect(controller.canPay, isFalse);
+      },
+    );
+
+    test('มีกะเปิดอยู่ → hasOpenShift เป็นจริง', () async {
+      controller.onInit();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.hasOpenShift.value, isTrue);
+    });
   });
 }

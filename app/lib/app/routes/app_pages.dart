@@ -12,6 +12,7 @@ import '../../features/payment/presentation/bindings/payment_bindings.dart';
 import '../../features/payment/presentation/pages/checkout_page.dart';
 import '../../features/payment/presentation/pages/receipt_page.dart';
 import '../../features/payment/presentation/pages/split_bill_page.dart';
+import '../../features/shift/presentation/pages/shift_page.dart';
 import 'app_routes.dart';
 
 /// ตารางเส้นทางของแอป — ผูก route → หน้าจอ → binding (DI เฉพาะของหน้านั้น)
@@ -52,5 +53,6 @@ class AppPages {
       binding: ReceiptBinding(),
     ),
     GetPage<void>(name: AppRoutes.menuForm, page: () => const MenuFormPage()),
+    GetPage<void>(name: AppRoutes.shift, page: () => const ShiftPage()),
   ];
 }

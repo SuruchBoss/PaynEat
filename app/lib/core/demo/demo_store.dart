@@ -10,6 +10,7 @@ part 'demo_store_menu.dart';
 part 'demo_store_tables.dart';
 part 'demo_store_orders.dart';
 part 'demo_store_payments.dart';
+part 'demo_store_shifts.dart';
 part 'demo_store_reports.dart';
 part 'demo_store_seed_history.dart';
 
@@ -26,7 +27,8 @@ part 'demo_store_seed_history.dart';
 /// library เดียวกัน) — ไฟล์นี้เก็บเฉพาะ state และ helper ที่ใช้ร่วมกันทุกโดเมน:
 /// [DemoStoreAuth] บัญชี/พนักงาน · [DemoStoreMenu] เมนู/หมวดหมู่ ·
 /// [DemoStoreTables] ผังโต๊ะ · [DemoStoreOrders] ออเดอร์ ·
-/// [DemoStorePayments] การชำระเงิน · [DemoStoreReports] รายงาน/แดชบอร์ด ·
+/// [DemoStorePayments] การชำระเงิน · [DemoStoreShifts] กะทำงาน/กระทบยอดเงินสด ·
+/// [DemoStoreReports] รายงาน/แดชบอร์ด ·
 /// [DemoStoreSeedHistory] สร้างยอดขายย้อนหลังไว้ให้รายงานมีข้อมูลตั้งแต่เปิดแอป
 class DemoStore {
   DemoStore() {
@@ -43,6 +45,10 @@ class DemoStore {
 
   final List<Map<String, dynamic>> orders = [];
   final List<Map<String, dynamic>> payments = [];
+  final List<Map<String, dynamic>> shifts = [];
+
+  /// ผู้ใช้แคชเชียร์ที่ seed ไว้ให้ — ใช้เปิดกะแรกอัตโนมัติเหมือนวันแรกที่ร้านเปิดใช้ระบบ
+  static const int _defaultCashierId = 6;
 
   int _orderSequence = 0;
   int _idSequence = 1000;
@@ -61,9 +67,11 @@ class DemoStore {
     settings = DemoSeed.settings();
     orders.clear();
     payments.clear();
+    shifts.clear();
     _orderSequence = 0;
     _idSequence = 1000;
     _seedHistoricalSales();
+    openShift(openingCash: 2000, openedById: _defaultCashierId);
   }
 
   int _nextId() => ++_idSequence;

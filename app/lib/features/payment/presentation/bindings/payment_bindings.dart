@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 
 import '../../../order/domain/usecases/order_usecases.dart';
+import '../../../shift/domain/usecases/shift_usecases.dart';
 import '../../domain/usecases/payment_usecases.dart';
 import '../controllers/checkout_controller.dart';
 import '../controllers/receipt_controller.dart';
@@ -14,6 +15,7 @@ class CheckoutBinding extends Bindings {
         getOrder: Get.find<GetOrderUseCase>(),
         getSummary: Get.find<GetPaymentSummaryUseCase>(),
         pay: Get.find<PayOrderUseCase>(),
+        getCurrentShift: Get.find<GetCurrentShiftUseCase>(),
       ),
     );
   }

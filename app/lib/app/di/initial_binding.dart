@@ -34,6 +34,11 @@ import '../../features/settings/data/datasources/settings_remote_data_source.dar
 import '../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../features/settings/domain/repositories/settings_repository.dart';
 import '../../features/settings/domain/usecases/settings_usecases.dart';
+import '../../features/shift/data/datasources/shift_remote_data_source.dart';
+import '../../features/shift/data/repositories/shift_repository_impl.dart';
+import '../../features/shift/domain/repositories/shift_repository.dart';
+import '../../features/shift/domain/usecases/shift_usecases.dart';
+import '../../features/shift/presentation/controllers/shift_controller.dart';
 import '../../features/staff/data/datasources/staff_remote_data_source.dart';
 import '../../features/staff/data/repositories/staff_repository_impl.dart';
 import '../../features/staff/domain/repositories/staff_repository.dart';
@@ -121,6 +126,10 @@ class InitialBinding extends Bindings {
       () => SettingsRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<ShiftRemoteDataSource>(
+      () => ShiftRemoteDataSourceImpl(client),
+      fenix: true,
+    );
   }
 
   /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -146,6 +155,10 @@ class InitialBinding extends Bindings {
     Get.put<StaffRemoteDataSource>(DemoStaffDataSource(store), permanent: true);
     Get.put<SettingsRemoteDataSource>(
       DemoSettingsDataSource(store),
+      permanent: true,
+    );
+    Get.put<ShiftRemoteDataSource>(
+      DemoShiftDataSource(store, auth),
       permanent: true,
     );
   }
@@ -184,6 +197,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<SettingsRepository>(
       () => SettingsRepositoryImpl(Get.find<SettingsRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<ShiftRepository>(
+      () => ShiftRepositoryImpl(Get.find<ShiftRemoteDataSource>()),
       fenix: true,
     );
   }
@@ -330,6 +347,37 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => GetReceiptUseCase(Get.find<PaymentRepository>()),
+      fenix: true,
+    );
+
+    // shift
+    Get.lazyPut(
+      () => GetCurrentShiftUseCase(Get.find<ShiftRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => OpenShiftUseCase(Get.find<ShiftRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => CloseShiftUseCase(Get.find<ShiftRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetShiftHistoryUseCase(Get.find<ShiftRepository>()),
+      fenix: true,
+    );
+    // lazyPut (ไม่ eager) เพราะ onInit ของ controller นี้ยิง API ทันที
+    // ถ้าสร้างตอนแอปเริ่ม (ก่อนล็อกอิน) จะโดน 401 และอาจไปเข้าเงื่อนไข session
+    // หมดอายุใน ApiClient ทั้งที่ผู้ใช้ยังไม่เคยล็อกอินเลย — ต้องรอให้มีคนเรียกใช้จริง
+    // (เปิดแท็บ "กะ" หรือเข้าหน้าเก็บเงิน ซึ่งเกิดหลังล็อกอินเสมอ) ก่อนจะสร้าง
+    Get.lazyPut(
+      () => ShiftController(
+        getCurrent: Get.find<GetCurrentShiftUseCase>(),
+        openShift: Get.find<OpenShiftUseCase>(),
+        closeShift: Get.find<CloseShiftUseCase>(),
+        getHistory: Get.find<GetShiftHistoryUseCase>(),
+      ),
       fenix: true,
     );
 
