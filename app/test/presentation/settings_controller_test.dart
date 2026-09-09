@@ -58,7 +58,7 @@ void main() {
     });
 
     test('load ล้มเหลว → ตั้ง errorMessage และไม่แตะช่องกรอก', () async {
-      repository.nextGetResult = const Result.failure(
+      repository.nextGetResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

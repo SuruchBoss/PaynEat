@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../order/domain/entities/order_item.dart';
 
@@ -51,8 +53,10 @@ class KitchenTicketCard extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   item.tableName != null
-                      ? 'โต๊ะ ${item.tableName}'
-                      : 'กลับบ้าน',
+                      ? 'kitchen_table_label'.trParams({
+                          'table': item.tableName!,
+                        })
+                      : OrderType.label(OrderType.takeaway),
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,

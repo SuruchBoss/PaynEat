@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
@@ -70,7 +71,7 @@ class MenuItemCard extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            item.name.substring(0, 1),
+                            item.displayName.substring(0, 1),
                             style: TextStyle(
                               fontSize: 34,
                               fontWeight: FontWeight.w900,
@@ -92,18 +93,18 @@ class MenuItemCard extends StatelessWidget {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(
+                                const Icon(
                                   Icons.star_rounded,
                                   size: 12,
                                   color: AppColors.warning,
                                 ),
-                                SizedBox(width: 3),
+                                const SizedBox(width: 3),
                                 Text(
-                                  'แนะนำ',
-                                  style: TextStyle(
+                                  'menu_recommended_badge'.tr,
+                                  style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -116,9 +117,9 @@ class MenuItemCard extends StatelessWidget {
                         Container(
                           color: Colors.black.withValues(alpha: 0.45),
                           alignment: Alignment.center,
-                          child: const Text(
-                            'ของหมด',
-                            style: TextStyle(
+                          child: Text(
+                            'menu_sold_out_badge'.tr,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
@@ -136,7 +137,7 @@ class MenuItemCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.name,
+                          item.displayName,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

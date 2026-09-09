@@ -24,7 +24,7 @@ class _FakeOrderRepository implements OrderRepository {
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
-  }) async => const Result.failure(UnexpectedFailureStub());
+  }) async => Result.failure(UnexpectedFailureStub());
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -145,5 +145,5 @@ void main() {
 
 /// Failure ตัวอย่างสำหรับ repository ปลอม
 class UnexpectedFailureStub extends UnexpectedFailure {
-  const UnexpectedFailureStub() : super('ไม่ได้ใช้งานในเทสต์นี้');
+  UnexpectedFailureStub() : super('ไม่ได้ใช้งานในเทสต์นี้');
 }

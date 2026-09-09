@@ -26,8 +26,8 @@ extension DemoStorePayments on DemoStore {
     final items = (order['items'] as List).cast<Map<String, dynamic>>();
     for (final id in itemIds) {
       if (!items.any((item) => item['id'] == id)) {
-        throw const ApiException(
-          message: 'มีรายการที่ไม่ได้อยู่ในออเดอร์นี้',
+        throw ApiException(
+          message: 'payment_error_items_not_in_order'.tr,
           statusCode: 400,
         );
       }
@@ -35,13 +35,17 @@ extension DemoStorePayments on DemoStore {
     for (final item in items.where((item) => itemIds.contains(item['id']))) {
       if (item['isPaid'] == true) {
         throw ApiException(
-          message: '"${item['name']}" ถูกจ่ายไปแล้ว',
+          message: 'payment_error_item_already_paid'.trParams({
+            'name': '${item['name']}',
+          }),
           statusCode: 409,
         );
       }
       if (item['status'] == OrderItemStatus.cancelled) {
         throw ApiException(
-          message: '"${item['name']}" ถูกยกเลิกไปแล้ว เลือกจ่ายไม่ได้',
+          message: 'payment_error_item_cancelled'.trParams({
+            'name': '${item['name']}',
+          }),
           statusCode: 400,
         );
       }
@@ -103,14 +107,14 @@ extension DemoStorePayments on DemoStore {
   Map<String, dynamic> splitPreview(int orderId, List<int> itemIds) {
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.cancelled) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ถูกยกเลิกแล้ว',
+      throw ApiException(
+        message: 'payment_error_order_cancelled'.tr,
         statusCode: 409,
       );
     }
     if (order['status'] == OrderStatus.paid) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ชำระเงินครบแล้ว',
+      throw ApiException(
+        message: 'payment_order_already_paid'.tr,
         statusCode: 409,
       );
     }
@@ -148,22 +152,22 @@ extension DemoStorePayments on DemoStore {
   }) {
     final shift = _openShift;
     if (shift == null) {
-      throw const ApiException(
-        message: 'ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
+      throw ApiException(
+        message: 'payment_error_shift_required'.tr,
         statusCode: 409,
       );
     }
 
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.cancelled) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ถูกยกเลิกแล้ว',
+      throw ApiException(
+        message: 'payment_error_order_cancelled'.tr,
         statusCode: 409,
       );
     }
     if (order['status'] == OrderStatus.paid) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ชำระเงินครบแล้ว',
+      throw ApiException(
+        message: 'payment_order_already_paid'.tr,
         statusCode: 409,
       );
     }
@@ -185,8 +189,9 @@ extension DemoStorePayments on DemoStore {
 
     if (resolvedAmount > remaining + 0.001) {
       throw ApiException(
-        message:
-            'ยอดชำระเกินยอดคงเหลือ (คงเหลือ ${remaining.toStringAsFixed(2)} บาท)',
+        message: 'payment_error_amount_exceeds_remaining'.trParams({
+          'remaining': remaining.toStringAsFixed(2),
+        }),
         statusCode: 400,
       );
     }
@@ -196,8 +201,8 @@ extension DemoStorePayments on DemoStore {
         : resolvedAmount;
     if (method == PaymentMethod.cash &&
         actualReceived + 0.001 < resolvedAmount) {
-      throw const ApiException(
-        message: 'เงินที่รับมาต้องไม่น้อยกว่ายอดที่ชำระ',
+      throw ApiException(
+        message: 'payment_error_received_less_than_amount'.tr,
         statusCode: 400,
       );
     }

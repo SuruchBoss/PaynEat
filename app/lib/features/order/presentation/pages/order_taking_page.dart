@@ -29,10 +29,10 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
       appBar: AppBar(
         title: Text(
           cart.isAddingToExistingOrder
-              ? 'สั่งอาหารเพิ่ม'
+              ? 'order_taking_title_add'.tr
               : cart.tableName != null
-              ? 'รับออเดอร์ · โต๊ะ ${cart.tableName}'
-              : 'ออเดอร์กลับบ้าน',
+              ? 'order_taking_title_table'.trParams({'table': cart.tableName!})
+              : 'order_taking_title_takeaway'.tr,
         ),
         actions: [
           if (!isWide)
@@ -98,9 +98,9 @@ class _MenuSection extends GetView<MenuBrowseController> {
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
           child: TextField(
             onChanged: controller.search,
-            decoration: const InputDecoration(
-              hintText: 'ค้นหาเมนู...',
-              prefixIcon: Icon(Icons.search_rounded),
+            decoration: InputDecoration(
+              hintText: 'order_search_menu_hint'.tr,
+              prefixIcon: const Icon(Icons.search_rounded),
               isDense: true,
             ),
           ),
@@ -116,7 +116,7 @@ class _MenuSection extends GetView<MenuBrowseController> {
         Expanded(
           child: Obx(() {
             if (controller.isLoading.value) {
-              return const LoadingView(message: 'กำลังโหลดเมนู...');
+              return LoadingView(message: 'order_menu_loading'.tr);
             }
             final error = controller.errorMessage.value;
             if (error != null && controller.items.isEmpty) {
@@ -125,8 +125,8 @@ class _MenuSection extends GetView<MenuBrowseController> {
 
             final items = controller.filteredItems;
             if (items.isEmpty) {
-              return const EmptyView(
-                message: 'ไม่พบเมนูที่ค้นหา',
+              return EmptyView(
+                message: 'order_menu_search_empty'.tr,
                 icon: Icons.search_off_rounded,
               );
             }
@@ -232,9 +232,9 @@ class _MobileCartBar extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'ดูตะกร้า',
-                      style: TextStyle(
+                    Text(
+                      'order_view_cart'.tr,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                         fontSize: 15,

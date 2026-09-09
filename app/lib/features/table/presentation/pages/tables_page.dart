@@ -21,7 +21,7 @@ class TablesPage extends GetView<TableController> {
         Expanded(
           child: Obx(() {
             if (controller.isLoading.value && controller.tables.isEmpty) {
-              return const LoadingView(message: 'กำลังโหลดผังโต๊ะ...');
+              return LoadingView(message: 'table_loading_message'.tr);
             }
             final error = controller.errorMessage.value;
             if (error != null && controller.tables.isEmpty) {
@@ -30,8 +30,8 @@ class TablesPage extends GetView<TableController> {
 
             final tables = controller.filteredTables;
             if (tables.isEmpty) {
-              return const EmptyView(
-                message: 'ไม่พบโต๊ะตามเงื่อนไขที่เลือก',
+              return EmptyView(
+                message: 'table_empty_filtered_message'.tr,
                 icon: Icons.table_restaurant_outlined,
               );
             }
@@ -86,7 +86,9 @@ class _TableGrid extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${entry.value.length} โต๊ะ',
+                      'table_count_in_zone'.trParams({
+                        'count': entry.value.length.toString(),
+                      }),
                       style: const TextStyle(
                         color: AppColors.textDisabled,
                         fontSize: 12,
@@ -144,7 +146,7 @@ class _TableGrid extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'โต๊ะ ${table.name}',
+                      'table_number_label'.trParams({'name': table.name}),
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -152,7 +154,7 @@ class _TableGrid extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${table.seats} ที่นั่ง · ${table.zone}',
+                      '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
                       style: const TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
@@ -206,13 +208,13 @@ class _TableSummaryBar extends StatelessWidget {
             Row(
               children: [
                 _CounterPill(
-                  label: 'โต๊ะว่าง',
+                  label: 'table_available_count_label'.tr,
                   value: '${controller.availableCount}',
                   color: AppColors.success,
                 ),
                 const SizedBox(width: 10),
                 _CounterPill(
-                  label: 'มีลูกค้า',
+                  label: 'table_occupied_count_label'.tr,
                   value: '${controller.occupiedCount}',
                   color: AppColors.primary,
                 ),
@@ -220,7 +222,7 @@ class _TableSummaryBar extends StatelessWidget {
                 IconButton(
                   onPressed: controller.loadTables,
                   icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'รีเฟรช',
+                  tooltip: 'table_refresh_tooltip'.tr,
                 ),
               ],
             ),
@@ -231,7 +233,7 @@ class _TableSummaryBar extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _FilterChipItem(
-                    label: 'ทุกโซน',
+                    label: 'table_all_zones_filter'.tr,
                     selected: controller.selectedZone.value == null,
                     onTap: () => controller.filterByZone(null),
                   ),

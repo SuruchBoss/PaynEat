@@ -71,7 +71,7 @@ class ShiftController extends GetxController {
   Future<void> submitOpen() async {
     final openingCash = double.tryParse(openingCashController.text.trim());
     if (openingCash == null || openingCash < 0) {
-      AppDialogs.error('กรุณากรอกเงินตั้งต้นให้ถูกต้อง');
+      AppDialogs.error('shift_invalid_opening_cash'.tr);
       return;
     }
 
@@ -84,7 +84,7 @@ class ShiftController extends GetxController {
         current.value = shift;
         lastClosed.value = null;
         openingCashController.clear();
-        AppDialogs.success('เปิดกะเรียบร้อย');
+        AppDialogs.success('shift_open_success'.tr);
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
@@ -96,13 +96,13 @@ class ShiftController extends GetxController {
     if (shift == null) return;
     final countedCash = double.tryParse(countedCashController.text.trim());
     if (countedCash == null || countedCash < 0) {
-      AppDialogs.error('กรุณากรอกยอดเงินสดที่นับได้ให้ถูกต้อง');
+      AppDialogs.error('shift_invalid_counted_cash'.tr);
       return;
     }
 
     final confirmed = await AppDialogs.confirm(
-      title: 'ยืนยันปิดกะ',
-      message: 'ปิดกะนี้แล้วจะแก้ไขไม่ได้ ต้องการดำเนินการต่อหรือไม่?',
+      title: 'shift_close_confirm_title'.tr,
+      message: 'shift_close_confirm_message'.tr,
     );
     if (!confirmed) return;
 
@@ -124,7 +124,7 @@ class ShiftController extends GetxController {
         lastClosed.value = closed;
         countedCashController.clear();
         noteController.clear();
-        AppDialogs.success('ปิดกะเรียบร้อย');
+        AppDialogs.success('shift_close_success'.tr);
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),

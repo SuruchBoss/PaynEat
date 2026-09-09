@@ -4,8 +4,10 @@ part of 'demo_store.dart';
 extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> findOrder(int id) => orders.firstWhere(
     (row) => row['id'] == id,
-    orElse: () =>
-        throw const ApiException(message: 'ไม่พบออเดอร์นี้', statusCode: 404),
+    orElse: () => throw ApiException(
+      message: 'order_error_not_found'.tr,
+      statusCode: 404,
+    ),
   );
 
   List<Map<String, dynamic>> orderList({
@@ -42,8 +44,8 @@ extension DemoStoreOrders on DemoStore {
     int? waiterId,
   }) {
     if (tableId != null && openOrderByTable(tableId) != null) {
-      throw const ApiException(
-        message: 'โต๊ะนี้มีออเดอร์ที่เปิดอยู่แล้ว',
+      throw ApiException(
+        message: 'order_error_table_has_open_order'.tr,
         statusCode: 409,
       );
     }
@@ -106,7 +108,9 @@ extension DemoStoreOrders on DemoStore {
       final menu = menuItem(input['menuItemId'] as int);
       if (menu['isAvailable'] != true) {
         throw ApiException(
-          message: 'เมนู "${menu['name']}" ปิดการขายอยู่',
+          message: 'order_error_menu_item_unavailable'.trParams({
+            'name': menu['name'] as String,
+          }),
           statusCode: 409,
         );
       }
@@ -167,8 +171,8 @@ extension DemoStoreOrders on DemoStore {
     final item = _findItem(order, itemId);
 
     if (item['status'] != OrderItemStatus.pending) {
-      throw const ApiException(
-        message: 'แก้ไขไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว',
+      throw ApiException(
+        message: 'order_error_item_locked_edit'.tr,
         statusCode: 409,
       );
     }
@@ -191,9 +195,8 @@ extension DemoStoreOrders on DemoStore {
     final item = _findItem(order, itemId);
 
     if (item['status'] != OrderItemStatus.pending) {
-      throw const ApiException(
-        message:
-            'ลบไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว กรุณาใช้การยกเลิกรายการแทน',
+      throw ApiException(
+        message: 'order_error_item_locked_remove'.tr,
         statusCode: 409,
       );
     }
@@ -231,7 +234,10 @@ extension DemoStoreOrders on DemoStore {
     final allowed = transitions[item['status']] ?? const <String>[];
     if (!allowed.contains(status)) {
       throw ApiException(
-        message: 'เปลี่ยนสถานะจาก "${item['status']}" เป็น "$status" ไม่ได้',
+        message: 'order_error_invalid_status_transition'.trParams({
+          'from': item['status'] as String,
+          'to': status,
+        }),
         statusCode: 409,
       );
     }
@@ -259,10 +265,7 @@ extension DemoStoreOrders on DemoStore {
       (row) => row['status'] != OrderItemStatus.cancelled,
     );
     if (active.isEmpty) {
-      throw const ApiException(
-        message: 'ออเดอร์ยังไม่มีรายการอาหาร',
-        statusCode: 400,
-      );
+      throw ApiException(message: 'order_error_no_items'.tr, statusCode: 400);
     }
 
     if (order['status'] == OrderStatus.open) {
@@ -285,20 +288,14 @@ extension DemoStoreOrders on DemoStore {
     _assertMutable(order);
     final oldTableId = order['tableId'];
     if (oldTableId == null) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้',
-        statusCode: 400,
-      );
+      throw ApiException(message: 'order_error_no_table'.tr, statusCode: 400);
     }
     if (oldTableId == tableId) {
-      throw const ApiException(
-        message: 'เลือกโต๊ะเดิม ไม่ต้องย้าย',
-        statusCode: 400,
-      );
+      throw ApiException(message: 'order_error_same_table'.tr, statusCode: 400);
     }
     if (openOrderByTable(tableId) != null) {
-      throw const ApiException(
-        message: 'โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว',
+      throw ApiException(
+        message: 'order_error_destination_table_occupied'.tr,
         statusCode: 409,
       );
     }
@@ -321,8 +318,8 @@ extension DemoStoreOrders on DemoStore {
   /// รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล
   Map<String, dynamic> mergeOrders(int targetOrderId, int sourceOrderId) {
     if (targetOrderId == sourceOrderId) {
-      throw const ApiException(
-        message: 'เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้',
+      throw ApiException(
+        message: 'order_error_merge_same_order'.tr,
         statusCode: 400,
       );
     }
@@ -343,7 +340,9 @@ extension DemoStoreOrders on DemoStore {
     sourceItems.clear();
 
     source['status'] = OrderStatus.cancelled;
-    source['cancelledReason'] = 'รวมเข้ากับบิล #${target['code']}';
+    source['cancelledReason'] = 'order_merged_into_reason'.trParams({
+      'code': target['code'] as String,
+    });
     source['closedAt'] = _now();
     _freeTable(source);
 
@@ -353,8 +352,8 @@ extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> cancelOrder(int orderId, String reason) {
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.paid) {
-      throw const ApiException(
-        message: 'ออเดอร์ที่ชำระแล้วยกเลิกไม่ได้',
+      throw ApiException(
+        message: 'order_error_already_paid_cannot_cancel'.tr,
         statusCode: 409,
       );
     }
@@ -399,16 +398,16 @@ extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> _findItem(Map<String, dynamic> order, int itemId) =>
       (order['items'] as List).cast<Map<String, dynamic>>().firstWhere(
         (row) => row['id'] == itemId,
-        orElse: () => throw const ApiException(
-          message: 'ไม่พบรายการนี้ในออเดอร์',
+        orElse: () => throw ApiException(
+          message: 'order_error_item_not_found'.tr,
           statusCode: 404,
         ),
       );
 
   void _assertMutable(Map<String, dynamic> order) {
     if (!OrderStatus.isActive(order['status'] as String)) {
-      throw const ApiException(
-        message: 'ออเดอร์นี้ปิดแล้ว ไม่สามารถแก้ไขได้',
+      throw ApiException(
+        message: 'order_error_closed_cannot_edit'.tr,
         statusCode: 409,
       );
     }

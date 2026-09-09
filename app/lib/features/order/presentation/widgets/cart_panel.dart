@@ -23,8 +23,8 @@ class CartPanel extends GetView<CartController> {
         Expanded(
           child: Obx(() {
             if (controller.isEmpty) {
-              return const EmptyView(
-                message: 'ยังไม่มีรายการในออเดอร์\nแตะเมนูทางซ้ายเพื่อเพิ่ม',
+              return EmptyView(
+                message: 'order_cart_empty_message'.tr,
                 icon: Icons.shopping_basket_outlined,
               );
             }
@@ -63,10 +63,12 @@ class _CartHeader extends GetView<CartController> {
               Expanded(
                 child: Text(
                   controller.isAddingToExistingOrder
-                      ? 'สั่งเพิ่ม'
+                      ? 'order_cart_title_add'.tr
                       : controller.tableName != null
-                      ? 'โต๊ะ ${controller.tableName}'
-                      : 'ออเดอร์ใหม่',
+                      ? 'order_table_prefix'.trParams({
+                          'table': controller.tableName!,
+                        })
+                      : 'order_cart_title_new'.tr,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -78,7 +80,7 @@ class _CartHeader extends GetView<CartController> {
                     ? const SizedBox.shrink()
                     : TextButton(
                         onPressed: controller.clear,
-                        child: const Text('ล้าง'),
+                        child: Text('order_clear_button'.tr),
                       ),
               ),
             ],
@@ -90,14 +92,14 @@ class _CartHeader extends GetView<CartController> {
                 children: [
                   if (controller.tableId == null) ...[
                     _TypeToggle(
-                      label: 'กลับบ้าน',
+                      label: OrderType.label(OrderType.takeaway),
                       selected:
                           controller.orderType.value == OrderType.takeaway,
                       onTap: () => controller.setOrderType(OrderType.takeaway),
                     ),
                     const SizedBox(width: 8),
                     _TypeToggle(
-                      label: 'เดลิเวอรี',
+                      label: OrderType.label(OrderType.delivery),
                       selected:
                           controller.orderType.value == OrderType.delivery,
                       onTap: () => controller.setOrderType(OrderType.delivery),
@@ -109,7 +111,10 @@ class _CartHeader extends GetView<CartController> {
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 6),
-                    const Text('จำนวนลูกค้า', style: TextStyle(fontSize: 13)),
+                    Text(
+                      'order_guest_count_label'.tr,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     const Spacer(),
                     QuantityStepper(
                       value: controller.guestCount.value,
@@ -237,7 +242,7 @@ class _CartLineTile extends GetView<CartController> {
                 icon: const Icon(Icons.close_rounded, size: 16),
                 visualDensity: VisualDensity.compact,
                 color: AppColors.textDisabled,
-                tooltip: 'ลบรายการ',
+                tooltip: 'order_remove_item'.tr,
               ),
             ],
           ),
@@ -283,14 +288,20 @@ class _CartFooter extends GetView<CartController> {
         ),
         child: Column(
           children: [
-            _SummaryRow(label: 'ยอดรวมอาหาร', value: preview.subtotal),
             _SummaryRow(
-              label:
-                  'Service Charge ${settings.serviceChargePercent.toStringAsFixed(0)}%',
+              label: 'order_subtotal_label'.tr,
+              value: preview.subtotal,
+            ),
+            _SummaryRow(
+              label: 'order_service_charge_percent_label'.trParams({
+                'percent': settings.serviceChargePercent.toStringAsFixed(0),
+              }),
               value: preview.serviceCharge,
             ),
             _SummaryRow(
-              label: 'VAT ${settings.vatPercent.toStringAsFixed(0)}%',
+              label: 'order_vat_percent_label'.trParams({
+                'percent': settings.vatPercent.toStringAsFixed(0),
+              }),
               value: preview.vat,
             ),
             const Padding(
@@ -299,9 +310,12 @@ class _CartFooter extends GetView<CartController> {
             ),
             Row(
               children: [
-                const Text(
-                  'รวมทั้งสิ้น',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                Text(
+                  'order_total_label'.tr,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const Spacer(),
                 Text(
@@ -333,8 +347,12 @@ class _CartFooter extends GetView<CartController> {
                     : const Icon(Icons.soup_kitchen_rounded, size: 18),
                 label: Text(
                   controller.isAddingToExistingOrder
-                      ? 'ยืนยันสั่งเพิ่ม (${controller.totalQuantity})'
-                      : 'ยืนยันและส่งครัว (${controller.totalQuantity})',
+                      ? 'order_confirm_add_items_button'.trParams({
+                          'count': '${controller.totalQuantity}',
+                        })
+                      : 'order_confirm_send_kitchen_button'.trParams({
+                          'count': '${controller.totalQuantity}',
+                        }),
                 ),
               ),
             ),
@@ -346,7 +364,7 @@ class _CartFooter extends GetView<CartController> {
                   onPressed: controller.isEmpty || controller.isSubmitting.value
                       ? null
                       : () => controller.submit(sendToKitchenNow: false),
-                  child: const Text('บันทึกไว้ก่อน (ยังไม่ส่งครัว)'),
+                  child: Text('order_save_draft_button'.tr),
                 ),
               ),
             ],

@@ -67,9 +67,10 @@ extension DemoStoreReports on DemoStore {
         if (item['status'] == OrderItemStatus.cancelled) continue;
         final menu = menuItems.firstWhere(
           (row) => row['id'] == item['menuItemId'],
-          orElse: () => const {'categoryName': 'ไม่ระบุหมวดหมู่'},
+          orElse: () => {'categoryName': 'report_uncategorized'.tr},
         );
-        final name = menu['categoryName'] as String? ?? 'ไม่ระบุหมวดหมู่';
+        final name =
+            menu['categoryName'] as String? ?? 'report_uncategorized'.tr;
         final entry = byCategory.putIfAbsent(
           name,
           () => {'category': name, 'quantity': 0, 'revenue': 0.0},

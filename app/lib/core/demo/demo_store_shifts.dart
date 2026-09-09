@@ -19,8 +19,8 @@ extension DemoStoreShifts on DemoStore {
     required int openedById,
   }) {
     if (_openShift != null) {
-      throw const ApiException(
-        message: 'มีกะที่เปิดอยู่แล้ว ต้องปิดกะเดิมก่อนเปิดกะใหม่',
+      throw ApiException(
+        message: 'shift_error_already_open'.tr,
         statusCode: 409,
       );
     }
@@ -58,11 +58,16 @@ extension DemoStoreShifts on DemoStore {
   }) {
     final shift = shifts.firstWhere(
       (row) => row['id'] == id,
-      orElse: () =>
-          throw const ApiException(message: 'ไม่พบกะนี้', statusCode: 404),
+      orElse: () => throw ApiException(
+        message: 'shift_error_not_found'.tr,
+        statusCode: 404,
+      ),
     );
     if (shift['status'] != ShiftStatus.open) {
-      throw const ApiException(message: 'กะนี้ปิดไปแล้ว', statusCode: 409);
+      throw ApiException(
+        message: 'shift_error_already_closed'.tr,
+        statusCode: 409,
+      );
     }
 
     final expected =

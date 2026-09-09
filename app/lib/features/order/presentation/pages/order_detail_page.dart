@@ -28,7 +28,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     return Scaffold(
       appBar: AppBar(
         title: Obx(
-          () => Text(controller.order.value?.code ?? 'รายละเอียดออเดอร์'),
+          () => Text(controller.order.value?.code ?? 'order_detail_title'.tr),
         ),
         actions: [
           Obx(() {
@@ -39,52 +39,52 @@ class OrderDetailPage extends GetView<OrderDetailController> {
               onSelected: (value) => _handleMenu(value, order),
               itemBuilder: (context) => [
                 if (order.isActive)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'discount',
                     child: ListTile(
-                      leading: Icon(Icons.percent_rounded),
-                      title: Text('ให้ส่วนลด'),
+                      leading: const Icon(Icons.percent_rounded),
+                      title: Text('order_menu_discount'.tr),
                       dense: true,
                     ),
                   ),
                 if (order.isPaid)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'receipt',
                     child: ListTile(
-                      leading: Icon(Icons.receipt_rounded),
-                      title: Text('ดูใบเสร็จ'),
+                      leading: const Icon(Icons.receipt_rounded),
+                      title: Text('order_menu_view_receipt'.tr),
                       dense: true,
                     ),
                   ),
                 if (order.isActive && order.tableId != null)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'moveTable',
                     child: ListTile(
-                      leading: Icon(Icons.swap_horiz_rounded),
-                      title: Text('ย้ายโต๊ะ'),
+                      leading: const Icon(Icons.swap_horiz_rounded),
+                      title: Text('order_menu_move_table'.tr),
                       dense: true,
                     ),
                   ),
                 if (order.isActive)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'merge',
                     child: ListTile(
-                      leading: Icon(Icons.call_merge_rounded),
-                      title: Text('รวมบิลจากออเดอร์อื่น'),
+                      leading: const Icon(Icons.call_merge_rounded),
+                      title: Text('order_menu_merge_bill'.tr),
                       dense: true,
                     ),
                   ),
                 if (order.isActive && controller.canCollectPayment)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'splitBill',
                     child: ListTile(
-                      leading: Icon(Icons.call_split_rounded),
-                      title: Text('แยกบิลรายคน'),
+                      leading: const Icon(Icons.call_split_rounded),
+                      title: Text('order_menu_split_bill'.tr),
                       dense: true,
                     ),
                   ),
                 if (order.isActive && controller.canManage)
-                  const PopupMenuItem(
+                  PopupMenuItem(
                     value: 'cancel',
                     child: ListTile(
                       leading: Icon(
@@ -92,8 +92,8 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                         color: AppColors.danger,
                       ),
                       title: Text(
-                        'ยกเลิกออเดอร์',
-                        style: TextStyle(color: AppColors.danger),
+                        'order_menu_cancel_order'.tr,
+                        style: const TextStyle(color: AppColors.danger),
                       ),
                       dense: true,
                     ),
@@ -105,7 +105,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
       ),
       body: Obx(() {
         if (controller.isLoading.value) {
-          return const LoadingView(message: 'กำลังโหลดออเดอร์...');
+          return LoadingView(message: 'order_detail_loading'.tr);
         }
         final error = controller.errorMessage.value;
         if (error != null) {
@@ -113,7 +113,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
         }
         final order = controller.order.value;
         if (order == null) {
-          return const EmptyView(message: 'ไม่พบออเดอร์นี้');
+          return EmptyView(message: 'order_not_found'.tr);
         }
 
         final isWide = Responsive.isWide(context);
@@ -205,24 +205,24 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     final reasonController = TextEditingController();
     final reason = await Get.dialog<String>(
       AlertDialog(
-        title: const Text('ยกเลิกออเดอร์'),
+        title: Text('order_menu_cancel_order'.tr),
         content: TextField(
           controller: reasonController,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'เหตุผลการยกเลิก',
-            hintText: 'เช่น ลูกค้าเปลี่ยนใจ',
+          decoration: InputDecoration(
+            labelText: 'order_cancel_order_reason_label'.tr,
+            hintText: 'order_cancel_order_reason_hint'.tr,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Get.back<void>(),
-            child: const Text('ปิด'),
+            child: Text('common_close'.tr),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Get.back(result: reasonController.text.trim()),
-            child: const Text('ยืนยันยกเลิก'),
+            child: Text('order_cancel_order_confirm_button'.tr),
           ),
         ],
       ),
@@ -272,7 +272,9 @@ class _OrderHeader extends StatelessWidget {
               _MetaText(icon: Icons.tag_rounded, text: order.code),
               _MetaText(
                 icon: Icons.people_outline_rounded,
-                text: '${order.guestCount} ท่าน',
+                text: 'order_guest_count_summary'.trParams({
+                  'count': '${order.guestCount}',
+                }),
               ),
               if (order.waiterName != null)
                 _MetaText(
@@ -296,7 +298,9 @@ class _OrderHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(
-                'เหตุผลที่ยกเลิก: ${order.cancelledReason}',
+                'order_cancelled_reason_prefix'.trParams({
+                  'reason': order.cancelledReason!,
+                }),
                 style: const TextStyle(color: AppColors.danger, fontSize: 13),
               ),
             ),
@@ -391,13 +395,13 @@ class _BillCard extends GetView<OrderDetailController> {
                     ? null
                     : controller.sendToKitchen,
                 icon: const Icon(Icons.soup_kitchen_rounded, size: 18),
-                label: const Text('ส่งเข้าครัว'),
+                label: Text('order_send_to_kitchen_button'.tr),
               ),
             if (order.canSendToKitchen) const SizedBox(height: 8),
             OutlinedButton.icon(
               onPressed: controller.addMoreItems,
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('สั่งอาหารเพิ่ม'),
+              label: Text('order_add_more_items_button'.tr),
             ),
             const SizedBox(height: 8),
             if (controller.canCollectPayment)
@@ -407,7 +411,7 @@ class _BillCard extends GetView<OrderDetailController> {
                 ),
                 onPressed: controller.goToCheckout,
                 icon: const Icon(Icons.point_of_sale_rounded, size: 18),
-                label: const Text('เก็บเงิน / ปิดบิล'),
+                label: Text('order_checkout_button'.tr),
               ),
           ],
           if (order.isPaid) ...[
@@ -428,7 +432,9 @@ class _BillCard extends GetView<OrderDetailController> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'ชำระเงินแล้วเมื่อ ${Formatters.dateTime(order.closedAt)}',
+                      'order_paid_at_summary'.trParams({
+                        'datetime': Formatters.dateTime(order.closedAt),
+                      }),
                       style: const TextStyle(
                         fontSize: 12.5,
                         color: AppColors.success,
@@ -442,7 +448,7 @@ class _BillCard extends GetView<OrderDetailController> {
             OutlinedButton.icon(
               onPressed: controller.openReceipt,
               icon: const Icon(Icons.receipt_long_rounded, size: 18),
-              label: const Text('ดูใบเสร็จ'),
+              label: Text('order_menu_view_receipt'.tr),
             ),
           ],
         ],

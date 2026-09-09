@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import 'order_item.dart';
 
@@ -74,8 +76,9 @@ class Order {
       activeItems.fold(0, (sum, item) => sum + item.quantity);
 
   /// ชื่อที่ใช้แสดงหัวออเดอร์ เช่น "โต๊ะ A3" หรือ "กลับบ้าน"
-  String get displayTarget =>
-      tableName != null ? 'โต๊ะ $tableName' : OrderType.label(type);
+  String get displayTarget => tableName != null
+      ? 'order_table_prefix'.trParams({'table': tableName!})
+      : OrderType.label(type);
 
   @override
   bool operator ==(Object other) =>

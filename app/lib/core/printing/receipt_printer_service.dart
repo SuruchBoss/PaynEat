@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:get/get.dart';
 
 import '../../features/order/domain/entities/order.dart';
 import '../../features/payment/domain/entities/payment.dart';
@@ -37,17 +38,13 @@ class ReceiptPrinterService {
     PrinterProfile printer,
   ) async {
     if (kIsWeb) {
-      return const Result.failure(
-        UnexpectedFailure(
-          'พิมพ์ผ่านเครื่องพิมพ์ความร้อนยังไม่รองรับบนเว็บ ใช้ใบเสร็จบนจอแทนได้',
-        ),
+      return Result.failure(
+        UnexpectedFailure('settings_printer_web_not_supported'.tr),
       );
     }
     if (!printer.isConfigured) {
-      return const Result.failure(
-        ValidationFailure(
-          'ยังไม่ได้ตั้งค่าเครื่องพิมพ์ ไปที่ตั้งค่า > เครื่องพิมพ์ใบเสร็จ',
-        ),
+      return Result.failure(
+        ValidationFailure('settings_printer_not_configured'.tr),
       );
     }
     try {
@@ -59,7 +56,7 @@ class ReceiptPrinterService {
     } catch (e) {
       return Result.failure(
         NetworkFailure(
-          'พิมพ์ใบเสร็จไม่สำเร็จ: เชื่อมต่อเครื่องพิมพ์ไม่ได้ ($e)',
+          'settings_printer_print_failed'.trParams({'error': e.toString()}),
         ),
       );
     }

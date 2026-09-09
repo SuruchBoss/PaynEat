@@ -1,4 +1,5 @@
 import 'package:esc_pos_utils_plus/esc_pos_utils_plus.dart';
+import 'package:get/get.dart';
 
 import '../../features/order/domain/entities/order.dart';
 import '../../features/payment/domain/entities/payment.dart';
@@ -35,21 +36,45 @@ class ReceiptTicketBuilder {
     );
     bytes.addAll(
       generator.text(
-        'ใบเสร็จรับเงิน / ใบกำกับภาษีอย่างย่อ',
+        'printing_receipt_subtitle'.tr,
         styles: const PosStyles(align: PosAlign.center),
       ),
     );
     bytes.addAll(generator.hr(linesAfter: 1));
 
-    bytes.addAll(generator.text('เลขที่: ${order.code}'));
     bytes.addAll(
-      generator.text('วันที่: ${Formatters.dateTime(order.closedAt)}'),
+      generator.text(
+        'printing_receipt_no_label'.trParams({'code': order.code}),
+      ),
     );
-    bytes.addAll(generator.text('โต๊ะ/ประเภท: ${order.displayTarget}'));
+    bytes.addAll(
+      generator.text(
+        'printing_receipt_date_label'.trParams({
+          'datetime': Formatters.dateTime(order.closedAt),
+        }),
+      ),
+    );
+    bytes.addAll(
+      generator.text(
+        'printing_receipt_target_label'.trParams({
+          'target': order.displayTarget,
+        }),
+      ),
+    );
     if (order.waiterName != null) {
-      bytes.addAll(generator.text('พนักงาน: ${order.waiterName}'));
+      bytes.addAll(
+        generator.text(
+          'printing_receipt_waiter_label'.trParams({'name': order.waiterName!}),
+        ),
+      );
     }
-    bytes.addAll(generator.text('จำนวนลูกค้า: ${order.guestCount} ท่าน'));
+    bytes.addAll(
+      generator.text(
+        'printing_receipt_guest_count_label'.trParams({
+          'count': order.guestCount.toString(),
+        }),
+      ),
+    );
     bytes.addAll(generator.hr(linesAfter: 1));
 
     for (final item in order.activeItems) {
@@ -71,13 +96,17 @@ class ReceiptTicketBuilder {
     bytes.addAll(generator.hr(linesAfter: 1));
 
     bytes.addAll(
-      _line(generator, 'ยอดรวมอาหาร', Formatters.money(order.subtotal)),
+      _line(
+        generator,
+        'payment_receipt_subtotal_label'.tr,
+        Formatters.money(order.subtotal),
+      ),
     );
     if (order.hasDiscount) {
       bytes.addAll(
         _line(
           generator,
-          'ส่วนลด',
+          'payment_discount_label'.tr,
           '-${Formatters.money(order.discountAmount)}',
         ),
       );
@@ -85,14 +114,18 @@ class ReceiptTicketBuilder {
     bytes.addAll(
       _line(
         generator,
-        'Service Charge ${(receipt.serviceChargeRate * 100).toStringAsFixed(0)}%',
+        'payment_service_charge_rate_label'.trParams({
+          'rate': (receipt.serviceChargeRate * 100).toStringAsFixed(0),
+        }),
         Formatters.money(order.serviceCharge),
       ),
     );
     bytes.addAll(
       _line(
         generator,
-        'VAT ${(receipt.vatRate * 100).toStringAsFixed(0)}%',
+        'payment_vat_rate_label'.trParams({
+          'rate': (receipt.vatRate * 100).toStringAsFixed(0),
+        }),
         Formatters.money(order.vat),
       ),
     );
@@ -101,7 +134,7 @@ class ReceiptTicketBuilder {
     bytes.addAll(
       generator.row([
         PosColumn(
-          text: 'รวมทั้งสิ้น',
+          text: 'payment_grand_total_label'.tr,
           width: 6,
           styles: const PosStyles(bold: true, height: PosTextSize.size2),
         ),
@@ -125,14 +158,21 @@ class ReceiptTicketBuilder {
     }
     if (receipt.changeTotal > 0) {
       bytes.addAll(
-        _line(generator, 'เงินทอน', Formatters.money(receipt.changeTotal)),
+        _line(
+          generator,
+          'payment_change_due_label'.tr,
+          Formatters.money(receipt.changeTotal),
+        ),
       );
     }
 
     if (receipt.isRefunded) {
       bytes.addAll(generator.hr(linesAfter: 1));
       bytes.addAll(
-        generator.text('รายการคืนเงิน', styles: const PosStyles(bold: true)),
+        generator.text(
+          'printing_refund_section_title'.tr,
+          styles: const PosStyles(bold: true),
+        ),
       );
       for (final refund in receipt.refunds) {
         bytes.addAll(
@@ -146,7 +186,7 @@ class ReceiptTicketBuilder {
       bytes.addAll(
         _line(
           generator,
-          'ยอดสุทธิหลังคืนเงิน',
+          'payment_net_total_after_refund_label'.tr,
           Formatters.money(order.total - receipt.refundedTotal),
         ),
       );
@@ -155,7 +195,7 @@ class ReceiptTicketBuilder {
     bytes.addAll(generator.feed(1));
     bytes.addAll(
       generator.text(
-        'ขอบคุณที่ใช้บริการ',
+        'printing_thank_you'.tr,
         styles: const PosStyles(align: PosAlign.center),
       ),
     );
@@ -174,19 +214,19 @@ class ReceiptTicketBuilder {
     final bytes = <int>[];
     bytes.addAll(
       generator.text(
-        'ทดสอบเครื่องพิมพ์ PaynEat POS',
+        'printing_test_page_title'.tr,
         styles: const PosStyles(align: PosAlign.center, bold: true),
       ),
     );
     bytes.addAll(
       generator.text(
-        'พิมพ์ได้ถูกต้อง แปลว่าตั้งค่าสำเร็จ',
+        'printing_test_page_success_message'.tr,
         styles: const PosStyles(align: PosAlign.center),
       ),
     );
     bytes.addAll(
       generator.text(
-        'ทดสอบอักษรไทย: ก-ฮ ๐-๙ ฿100.00',
+        'printing_test_thai_charset'.tr,
         styles: const PosStyles(align: PosAlign.center),
       ),
     );

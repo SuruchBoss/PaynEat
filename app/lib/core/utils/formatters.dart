@@ -1,3 +1,4 @@
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 /// จัดรูปแบบจำนวนเงินและวันที่ให้ตรงกับที่คนไทยอ่านแล้วเข้าใจทันที
@@ -46,12 +47,19 @@ class Formatters {
     final date = parse(value);
     if (date == null) return '-';
     final diff = DateTime.now().difference(date);
-    if (diff.inSeconds < 60) return 'เมื่อสักครู่';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} นาที';
-    if (diff.inHours < 24) {
-      return '${diff.inHours} ชม. ${diff.inMinutes % 60} นาที';
+    if (diff.inSeconds < 60) return 'common_time_just_now'.tr;
+    if (diff.inMinutes < 60) {
+      return 'common_time_minutes'.trParams({
+        'minutes': diff.inMinutes.toString(),
+      });
     }
-    return '${diff.inDays} วัน';
+    if (diff.inHours < 24) {
+      return 'common_time_hours_minutes'.trParams({
+        'hours': diff.inHours.toString(),
+        'minutes': (diff.inMinutes % 60).toString(),
+      });
+    }
+    return 'common_time_days'.trParams({'days': diff.inDays.toString()});
   }
 
   static int elapsedMinutes(String? value) {

@@ -23,7 +23,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
         heroTag: 'fab-menu-management',
         onPressed: () => controller.openForm(),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('เพิ่มเมนู'),
+        label: Text('menu_add_item_button'.tr),
       ),
       body: Column(
         children: [
@@ -37,9 +37,9 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                     Expanded(
                       child: TextField(
                         onChanged: controller.search,
-                        decoration: const InputDecoration(
-                          hintText: 'ค้นหาเมนู...',
-                          prefixIcon: Icon(Icons.search_rounded),
+                        decoration: InputDecoration(
+                          hintText: 'menu_search_hint'.tr,
+                          prefixIcon: const Icon(Icons.search_rounded),
                           isDense: true,
                         ),
                       ),
@@ -48,7 +48,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                     OutlinedButton.icon(
                       onPressed: () => _openCategorySheet(context),
                       icon: const Icon(Icons.category_rounded, size: 17),
-                      label: const Text('หมวดหมู่'),
+                      label: Text('menu_category_button'.tr),
                     ),
                   ],
                 ),
@@ -57,7 +57,9 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                   () => Row(
                     children: [
                       Text(
-                        'ทั้งหมด ${controller.items.length} เมนู',
+                        'menu_total_count'.trParams({
+                          'count': '${controller.items.length}',
+                        }),
                         style: const TextStyle(
                           fontSize: 12.5,
                           color: AppColors.textSecondary,
@@ -75,7 +77,9 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'ปิดขายอยู่ ${controller.unavailableCount}',
+                            'menu_unavailable_count'.trParams({
+                              'count': '${controller.unavailableCount}',
+                            }),
                             style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.danger,
@@ -110,8 +114,8 @@ class MenuManagementPage extends GetView<MenuManagementController> {
 
               final items = controller.filteredItems;
               if (items.isEmpty) {
-                return const EmptyView(
-                  message: 'ยังไม่มีเมนูในหมวดนี้',
+                return EmptyView(
+                  message: 'menu_empty_category'.tr,
                   icon: Icons.restaurant_menu_rounded,
                 );
               }
@@ -174,7 +178,7 @@ class _MenuRow extends GetView<MenuManagementController> {
               borderRadius: BorderRadius.circular(11),
             ),
             child: Text(
-              item.name.substring(0, 1),
+              item.displayName.substring(0, 1),
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
@@ -193,7 +197,7 @@ class _MenuRow extends GetView<MenuManagementController> {
                   children: [
                     Flexible(
                       child: Text(
-                        item.name,
+                        item.displayName,
                         style: const TextStyle(
                           fontSize: 14.5,
                           fontWeight: FontWeight.w700,
@@ -214,7 +218,7 @@ class _MenuRow extends GetView<MenuManagementController> {
                 const SizedBox(height: 2),
                 Text(
                   '${item.categoryName ?? '-'} · ${Formatters.baht(item.price)}'
-                  '${item.hasOptions ? ' · ${item.optionGroups.length} กลุ่มตัวเลือก' : ''}',
+                  '${item.hasOptions ? ' · ${'menu_option_groups_count'.trParams({'count': '${item.optionGroups.length}'})}' : ''}',
                   style: const TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
@@ -231,13 +235,13 @@ class _MenuRow extends GetView<MenuManagementController> {
           IconButton(
             onPressed: () => controller.openForm(item: item),
             icon: const Icon(Icons.edit_outlined, size: 19),
-            tooltip: 'แก้ไข',
+            tooltip: 'common_edit'.tr,
           ),
           IconButton(
             onPressed: () => controller.delete(item),
             icon: const Icon(Icons.delete_outline_rounded, size: 19),
             color: AppColors.danger,
-            tooltip: 'ลบ',
+            tooltip: 'common_delete'.tr,
           ),
         ],
       ),
@@ -257,15 +261,18 @@ class _CategorySheet extends GetView<MenuManagementController> {
           padding: const EdgeInsets.fromLTRB(20, 16, 12, 8),
           child: Row(
             children: [
-              const Text(
-                'จัดการหมวดหมู่',
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+              Text(
+                'menu_manage_categories_title'.tr,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
               const Spacer(),
               TextButton.icon(
                 onPressed: () => _showCategoryDialog(),
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('เพิ่ม'),
+                label: Text('common_add'.tr),
               ),
             ],
           ),
@@ -283,8 +290,12 @@ class _CategorySheet extends GetView<MenuManagementController> {
                     category.icon ?? '🍽️',
                     style: const TextStyle(fontSize: 20),
                   ),
-                  title: Text(category.name),
-                  subtitle: Text('${category.itemCount} เมนู'),
+                  title: Text(category.displayName),
+                  subtitle: Text(
+                    'menu_category_item_count'.trParams({
+                      'count': '${category.itemCount}',
+                    }),
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -318,21 +329,27 @@ class _CategorySheet extends GetView<MenuManagementController> {
 
     final saved = await Get.dialog<bool>(
       AlertDialog(
-        title: Text(category == null ? 'เพิ่มหมวดหมู่' : 'แก้ไขหมวดหมู่'),
+        title: Text(
+          category == null
+              ? 'menu_add_category_title'.tr
+              : 'menu_edit_category_title'.tr,
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'ชื่อหมวดหมู่'),
+              decoration: InputDecoration(
+                labelText: 'menu_category_name_label'.tr,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: iconController,
               maxLength: 2,
-              decoration: const InputDecoration(
-                labelText: 'ไอคอน (อีโมจิ)',
+              decoration: InputDecoration(
+                labelText: 'menu_category_icon_label'.tr,
                 hintText: '🍛',
                 counterText: '',
               ),
@@ -342,11 +359,11 @@ class _CategorySheet extends GetView<MenuManagementController> {
         actions: [
           TextButton(
             onPressed: () => Get.back<void>(),
-            child: const Text('ยกเลิก'),
+            child: Text('common_cancel'.tr),
           ),
           FilledButton(
             onPressed: () => Get.back(result: true),
-            child: const Text('บันทึก'),
+            child: Text('common_save'.tr),
           ),
         ],
       ),

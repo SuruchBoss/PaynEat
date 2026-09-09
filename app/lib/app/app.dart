@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../core/localization/app_translations.dart';
+import '../core/services/storage_service.dart';
 import 'config/app_config.dart';
 import 'di/initial_binding.dart';
 import 'routes/app_pages.dart';
@@ -9,6 +11,14 @@ import 'theme/app_theme.dart';
 
 class PaynEatApp extends StatelessWidget {
   const PaynEatApp({super.key});
+
+  /// ภาษาที่ผู้ใช้เลือกไว้ล่าสุด (ถ้ามี) — ค่าเริ่มต้นคือไทย
+  Locale get _initialLocale {
+    final saved = Get.isRegistered<StorageService>()
+        ? Get.find<StorageService>().locale
+        : null;
+    return saved == 'en' ? const Locale('en', 'US') : const Locale('th', 'TH');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +32,9 @@ class PaynEatApp extends StatelessWidget {
       getPages: AppPages.pages,
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 220),
-      locale: const Locale('th', 'TH'),
-      fallbackLocale: const Locale('en', 'US'),
+      translations: AppTranslations(),
+      locale: _initialLocale,
+      fallbackLocale: AppTranslations.fallbackLocale,
       // ล็อกขนาดตัวอักษรไม่ให้ใหญ่เกินจนผังโต๊ะเพี้ยนบนแท็บเล็ตร้าน
       builder: (context, child) => MediaQuery.withClampedTextScaling(
         minScaleFactor: 0.9,

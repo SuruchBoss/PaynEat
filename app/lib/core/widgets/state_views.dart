@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../app/theme/app_colors.dart';
 
@@ -123,7 +124,7 @@ class ErrorView extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('ลองใหม่อีกครั้ง'),
+                label: Text('common_retry'.tr),
               ),
             ],
           ],

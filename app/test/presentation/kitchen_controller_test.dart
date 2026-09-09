@@ -88,7 +88,7 @@ void main() {
     });
 
     test('load ล้มเหลว → ตั้ง errorMessage', () async {
-      repository.nextQueueResult = const Result.failure(
+      repository.nextQueueResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

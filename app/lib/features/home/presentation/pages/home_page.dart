@@ -91,7 +91,7 @@ class _NavigationRailSection extends GetView<HomeController> {
                   (destination) => NavigationRailDestination(
                     icon: Icon(destination.icon),
                     selectedIcon: Icon(destination.selectedIcon),
-                    label: Text(destination.label),
+                    label: Text(destination.label.tr),
                   ),
                 )
                 .toList(growable: false),
@@ -120,7 +120,7 @@ class _BottomNav extends GetView<HomeController> {
                 destination.selectedIcon,
                 color: AppColors.primary,
               ),
-              label: destination.label,
+              label: destination.label.tr,
             ),
           )
           .toList(growable: false),
@@ -151,9 +151,12 @@ class _AppDrawer extends GetView<HomeController> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'PaynEat POS',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                  Text(
+                    'home_drawer_brand_name'.tr,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
                   Text(
                     controller.user?.roleLabel ?? '',
@@ -172,7 +175,7 @@ class _AppDrawer extends GetView<HomeController> {
           (destination) => NavigationDrawerDestination(
             icon: Icon(destination.icon),
             selectedIcon: Icon(destination.selectedIcon),
-            label: Text(destination.label),
+            label: Text(destination.label.tr),
           ),
         ),
       ],
@@ -194,7 +197,9 @@ class _OfflineQueueBadge extends StatelessWidget {
       if (count == 0) return const SizedBox.shrink();
 
       return Tooltip(
-        message: 'มีรายการรอส่งเข้าระบบ $count รายการ (เน็ตหลุดตอนสั่งเพิ่ม)',
+        message: 'home_offline_queue_tooltip'.trParams({
+          'count': count.toString(),
+        }),
         child: ActionChip(
           avatar: const Icon(
             Icons.cloud_off_rounded,
@@ -203,7 +208,7 @@ class _OfflineQueueBadge extends StatelessWidget {
           ),
           backgroundColor: AppColors.danger,
           label: Text(
-            'รอซิงก์ $count',
+            'home_pending_sync_badge'.trParams({'count': count.toString()}),
             style: const TextStyle(color: Colors.white, fontSize: 12.5),
           ),
           onPressed: () => _showPendingSheet(context, queue),
@@ -221,19 +226,21 @@ class _OfflineQueueBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
                 child: Text(
-                  'รายการรอส่งเข้าระบบ',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                  'home_offline_queue_sheet_title'.tr,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
-                  'เน็ตหลุดตอนสั่งเพิ่มเข้าออเดอร์ — บันทึกไว้ในเครื่องแล้ว จะส่งอัตโนมัติ'
-                  'เมื่อเน็ตกลับมา',
-                  style: TextStyle(
+                  'home_offline_queue_sheet_subtitle'.tr,
+                  style: const TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,
                   ),
@@ -263,7 +270,7 @@ class _OfflineQueueBadge extends StatelessWidget {
                             color: Colors.white,
                           ),
                         )
-                      : const Text('ซิงก์ตอนนี้'),
+                      : Text('home_sync_now_button'.tr),
                 ),
               ),
             ],
@@ -286,8 +293,8 @@ class _ConnectionDot extends StatelessWidget {
       valueListenable: session.socket.connected,
       builder: (context, connected, _) => Tooltip(
         message: connected
-            ? 'เชื่อมต่อเรียลไทม์อยู่'
-            : 'ไม่ได้เชื่อมต่อเรียลไทม์',
+            ? 'home_connection_online_tooltip'.tr
+            : 'home_connection_offline_tooltip'.tr,
         child: Container(
           width: 9,
           height: 9,
@@ -329,19 +336,19 @@ class _UserChip extends GetView<HomeController> {
           ),
         ),
         const PopupMenuDivider(),
-        const PopupMenuItem(
+        PopupMenuItem(
           value: 'logout',
           child: ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            leading: Icon(
+            leading: const Icon(
               Icons.logout_rounded,
               size: 19,
               color: AppColors.danger,
             ),
             title: Text(
-              'ออกจากระบบ',
-              style: TextStyle(color: AppColors.danger),
+              'home_logout_menu_item'.tr,
+              style: const TextStyle(color: AppColors.danger),
             ),
           ),
         ),

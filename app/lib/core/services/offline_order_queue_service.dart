@@ -102,9 +102,10 @@ class OfflineOrderQueueService extends GetxService {
         onFailure: (failure) {
           if (failure is NetworkFailure) return true;
           pending.removeWhere((item) => item.id == entry.id);
-          lastFailureMessage.value =
-              'ส่งรายการที่ค้างไว้ของ ${entry.orderLabel} ไม่สำเร็จ: '
-              '${failure.message}';
+          lastFailureMessage.value = 'order_offline_sync_failed'.trParams({
+            'label': entry.orderLabel,
+            'message': failure.message,
+          });
           return false;
         },
       );

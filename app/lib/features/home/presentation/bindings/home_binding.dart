@@ -129,62 +129,65 @@ class HomeBinding extends Bindings {
 
   /// เมนูที่แต่ละบทบาทเห็น — เป็นฟังก์ชันบริสุทธิ์จึงเขียนเทสต์ได้ง่าย
   static List<HomeDestination> destinationsForRole(String role) {
+    // labels are translation keys — resolved with `.tr` where they are
+    // displayed (AppBar title, nav rail/bar/drawer) so they stay in sync
+    // when the user switches language at runtime.
     const tables = HomeDestination(
-      label: 'ผังโต๊ะ',
+      label: 'home_nav_tables',
       icon: Icons.table_restaurant_outlined,
       selectedIcon: Icons.table_restaurant_rounded,
       page: TablesPage(),
     );
     const orders = HomeDestination(
-      label: 'ออเดอร์',
+      label: 'home_nav_orders',
       icon: Icons.receipt_long_outlined,
       selectedIcon: Icons.receipt_long_rounded,
       page: OrdersPage(),
     );
     const kitchen = HomeDestination(
-      label: 'ครัว',
+      label: 'home_nav_kitchen',
       icon: Icons.soup_kitchen_outlined,
       selectedIcon: Icons.soup_kitchen_rounded,
       page: KitchenPage(),
     );
     const dashboard = HomeDestination(
-      label: 'ภาพรวม',
+      label: 'home_nav_dashboard',
       icon: Icons.dashboard_outlined,
       selectedIcon: Icons.dashboard_rounded,
       page: DashboardPage(),
     );
     const menu = HomeDestination(
-      label: 'จัดการเมนู',
+      label: 'home_nav_menu',
       icon: Icons.restaurant_menu_outlined,
       selectedIcon: Icons.restaurant_menu_rounded,
       page: MenuManagementPage(),
     );
     const staff = HomeDestination(
-      label: 'พนักงาน',
+      label: 'home_nav_staff',
       icon: Icons.people_outline_rounded,
       selectedIcon: Icons.people_rounded,
       page: StaffPage(),
     );
     const reports = HomeDestination(
-      label: 'รายงาน',
+      label: 'home_nav_reports',
       icon: Icons.insights_outlined,
       selectedIcon: Icons.insights_rounded,
       page: ReportsPage(),
     );
     const settings = HomeDestination(
-      label: 'ตั้งค่า',
+      label: 'home_nav_settings',
       icon: Icons.settings_outlined,
       selectedIcon: Icons.settings_rounded,
       page: SettingsPage(),
     );
     const profile = HomeDestination(
-      label: 'บัญชี',
+      label: 'home_nav_profile',
       icon: Icons.person_outline_rounded,
       selectedIcon: Icons.person_rounded,
       page: ProfilePage(),
     );
     const shift = HomeDestination(
-      label: 'กะ',
+      label: 'home_nav_shift',
       icon: Icons.point_of_sale_outlined,
       selectedIcon: Icons.point_of_sale_rounded,
       page: ShiftPage(),

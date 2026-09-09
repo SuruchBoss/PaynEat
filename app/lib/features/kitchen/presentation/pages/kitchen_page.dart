@@ -21,16 +21,15 @@ class KitchenPage extends GetView<KitchenController> {
         Expanded(
           child: Obx(() {
             if (controller.isLoading.value && controller.queue.isEmpty) {
-              return const LoadingView(message: 'กำลังโหลดคิวครัว...');
+              return LoadingView(message: 'kitchen_loading_queue'.tr);
             }
             final error = controller.errorMessage.value;
             if (error != null && controller.queue.isEmpty) {
               return ErrorView(message: error, onRetry: controller.load);
             }
             if (controller.queue.isEmpty) {
-              return const EmptyView(
-                message:
-                    'ยังไม่มีออเดอร์เข้าครัว\nรายการใหม่จะเด้งขึ้นมาเองทันที',
+              return EmptyView(
+                message: 'kitchen_empty_queue_message'.tr,
                 icon: Icons.restaurant_rounded,
               );
             }
@@ -40,19 +39,19 @@ class KitchenPage extends GetView<KitchenController> {
 
             final columns = [
               (
-                title: 'รอทำ',
+                title: OrderItemStatus.label(OrderItemStatus.pending),
                 status: OrderItemStatus.pending,
                 items: controller.pending,
                 color: AppColors.warning,
               ),
               (
-                title: 'กำลังทำ',
+                title: OrderItemStatus.label(OrderItemStatus.cooking),
                 status: OrderItemStatus.cooking,
                 items: controller.cooking,
                 color: AppColors.primary,
               ),
               (
-                title: 'พร้อมเสิร์ฟ',
+                title: OrderItemStatus.label(OrderItemStatus.ready),
                 status: OrderItemStatus.ready,
                 items: controller.ready,
                 color: AppColors.success,
@@ -71,7 +70,10 @@ class KitchenPage extends GetView<KitchenController> {
                       tabs: columns
                           .map(
                             (column) => Tab(
-                              text: '${column.title} (${column.items.length})',
+                              text: 'kitchen_column_count_label'.trParams({
+                                'title': column.title,
+                                'count': column.items.length.toString(),
+                              }),
                             ),
                           )
                           .toList(growable: false),
@@ -82,7 +84,9 @@ class KitchenPage extends GetView<KitchenController> {
                             .map(
                               (column) => _TicketList(
                                 items: column.items,
-                                emptyMessage: 'ไม่มีรายการ${column.title}',
+                                emptyMessage: 'kitchen_column_empty'.trParams({
+                                  'title': column.title,
+                                }),
                               ),
                             )
                             .toList(growable: false),
@@ -127,9 +131,9 @@ class _KitchenHeader extends GetView<KitchenController> {
           children: [
             const Icon(Icons.soup_kitchen_rounded, color: AppColors.primary),
             const SizedBox(width: 8),
-            const Text(
-              'คิวครัว',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+            Text(
+              'kitchen_header_title'.tr,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
             ),
             const SizedBox(width: 12),
             Container(
@@ -139,7 +143,9 @@ class _KitchenHeader extends GetView<KitchenController> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
-                '${controller.queue.length} รายการ',
+                'kitchen_queue_count'.trParams({
+                  'count': controller.queue.length.toString(),
+                }),
                 style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
@@ -168,7 +174,9 @@ class _KitchenHeader extends GetView<KitchenController> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'ช้า ${controller.lateCount}',
+                      'kitchen_late_count'.trParams({
+                        'count': controller.lateCount.toString(),
+                      }),
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
@@ -183,7 +191,7 @@ class _KitchenHeader extends GetView<KitchenController> {
             IconButton(
               onPressed: controller.load,
               icon: const Icon(Icons.refresh_rounded),
-              tooltip: 'รีเฟรช',
+              tooltip: 'kitchen_refresh_tooltip'.tr,
             ),
           ],
         ),
@@ -244,7 +252,10 @@ class _KitchenColumn extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: _TicketList(items: items, emptyMessage: 'ไม่มีรายการ$title'),
+          child: _TicketList(
+            items: items,
+            emptyMessage: 'kitchen_column_empty'.trParams({'title': title}),
+          ),
         ),
       ],
     );

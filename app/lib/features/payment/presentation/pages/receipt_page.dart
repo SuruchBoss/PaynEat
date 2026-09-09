@@ -16,7 +16,7 @@ class ReceiptPage extends GetView<ReceiptController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ใบเสร็จรับเงิน'),
+        title: Text('payment_receipt_title'.tr),
         actions: [
           Obx(
             () => IconButton(
@@ -30,13 +30,13 @@ class ReceiptPage extends GetView<ReceiptController> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.print_rounded),
-              tooltip: 'พิมพ์ใบเสร็จ',
+              tooltip: 'payment_print_receipt_tooltip'.tr,
             ),
           ),
           IconButton(
             onPressed: () => Get.until((route) => route.isFirst),
             icon: const Icon(Icons.home_rounded),
-            tooltip: 'กลับหน้าหลัก',
+            tooltip: 'payment_back_to_home_tooltip'.tr,
           ),
         ],
       ),
@@ -51,7 +51,7 @@ class ReceiptPage extends GetView<ReceiptController> {
         final order = controller.order.value;
         final receipt = controller.receipt.value;
         if (order == null || receipt == null) {
-          return const EmptyView(message: 'ไม่พบข้อมูลใบเสร็จ');
+          return EmptyView(message: 'payment_receipt_not_found'.tr);
         }
 
         return Center(
@@ -86,9 +86,9 @@ class ReceiptPage extends GetView<ReceiptController> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'ใบเสร็จรับเงิน / ใบกำกับภาษีอย่างย่อ',
-                            style: TextStyle(
+                          Text(
+                            'payment_receipt_subtitle'.tr,
+                            style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.textSecondary,
                             ),
@@ -97,20 +97,28 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     ),
                     const _DashedDivider(),
-                    _KeyValue(label: 'เลขที่', value: order.code),
                     _KeyValue(
-                      label: 'วันที่',
+                      label: 'payment_receipt_order_code_label'.tr,
+                      value: order.code,
+                    ),
+                    _KeyValue(
+                      label: 'payment_receipt_date_label'.tr,
                       value: Formatters.dateTime(order.closedAt),
                     ),
                     _KeyValue(
-                      label: 'โต๊ะ / ประเภท',
+                      label: 'payment_receipt_table_type_label'.tr,
                       value: order.displayTarget,
                     ),
                     if (order.waiterName != null)
-                      _KeyValue(label: 'พนักงาน', value: order.waiterName!),
+                      _KeyValue(
+                        label: 'payment_receipt_staff_label'.tr,
+                        value: order.waiterName!,
+                      ),
                     _KeyValue(
-                      label: 'จำนวนลูกค้า',
-                      value: '${order.guestCount} ท่าน',
+                      label: 'payment_receipt_guest_count_label'.tr,
+                      value: 'payment_guest_count_value'.trParams({
+                        'count': order.guestCount.toString(),
+                      }),
                     ),
                     const _DashedDivider(),
                     for (final item in order.activeItems) ...[
@@ -158,22 +166,25 @@ class ReceiptPage extends GetView<ReceiptController> {
                     ],
                     const _DashedDivider(),
                     _KeyValue(
-                      label: 'ยอดรวมอาหาร',
+                      label: 'payment_receipt_subtotal_label'.tr,
                       value: Formatters.money(order.subtotal),
                     ),
                     if (order.hasDiscount)
                       _KeyValue(
-                        label: 'ส่วนลด',
+                        label: 'payment_discount_label'.tr,
                         value: '-${Formatters.money(order.discountAmount)}',
                       ),
                     _KeyValue(
-                      label:
-                          'Service Charge ${(receipt.serviceChargeRate * 100).toStringAsFixed(0)}%',
+                      label: 'payment_service_charge_rate_label'.trParams({
+                        'rate': (receipt.serviceChargeRate * 100)
+                            .toStringAsFixed(0),
+                      }),
                       value: Formatters.money(order.serviceCharge),
                     ),
                     _KeyValue(
-                      label:
-                          'VAT ${(receipt.vatRate * 100).toStringAsFixed(0)}%',
+                      label: 'payment_vat_rate_label'.trParams({
+                        'rate': (receipt.vatRate * 100).toStringAsFixed(0),
+                      }),
                       value: Formatters.money(order.vat),
                     ),
                     const SizedBox(height: 8),
@@ -188,9 +199,9 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                       child: Row(
                         children: [
-                          const Text(
-                            'รวมทั้งสิ้น',
-                            style: TextStyle(
+                          Text(
+                            'payment_grand_total_label'.tr,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                             ),
@@ -249,14 +260,14 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     if (receipt.changeTotal > 0)
                       _KeyValue(
-                        label: 'เงินทอน',
+                        label: 'payment_change_due_label'.tr,
                         value: Formatters.money(receipt.changeTotal),
                       ),
                     if (receipt.isRefunded) ...[
                       const _DashedDivider(),
-                      const Text(
-                        'รายการคืนเงิน',
-                        style: TextStyle(
+                      Text(
+                        'payment_refund_list_title'.tr,
+                        style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.danger,
@@ -291,27 +302,27 @@ class ReceiptPage extends GetView<ReceiptController> {
                         ),
                       const SizedBox(height: 4),
                       _KeyValue(
-                        label: 'ยอดสุทธิหลังคืนเงิน',
+                        label: 'payment_net_total_after_refund_label'.tr,
                         value: Formatters.money(
                           order.total - receipt.refundedTotal,
                         ),
                       ),
                     ],
                     const SizedBox(height: 18),
-                    const Center(
+                    Center(
                       child: Text(
-                        'ขอบคุณที่ใช้บริการ 🙏',
-                        style: TextStyle(
+                        'payment_thank_you_message'.tr,
+                        style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Center(
+                    Center(
                       child: Text(
-                        'Powered by PaynEat POS',
-                        style: TextStyle(
+                        'payment_powered_by'.tr,
+                        style: const TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textDisabled,
                         ),

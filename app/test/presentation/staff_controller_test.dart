@@ -67,7 +67,7 @@ void main() {
     });
 
     test('load ล้มเหลว → ตั้ง errorMessage', () async {
-      repository.nextGetStaffResult = const Result.failure(
+      repository.nextGetStaffResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

@@ -96,7 +96,7 @@ void main() {
     });
 
     test('load ล้มเหลว → ตั้ง errorMessage และไม่เติมข้อมูล', () async {
-      repository.nextReceiptResult = const Result.failure(
+      repository.nextReceiptResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
       controller.onInit();

@@ -5,10 +5,15 @@ import 'package:payneat_pos/features/home/presentation/bindings/home_binding.dar
 /// เมนูที่แต่ละบทบาทเห็น เป็นกฎด้านสิทธิ์ที่ต้องไม่หลุด จึงต้องมีเทสต์คุม
 void main() {
   group('เมนูนำทางตามบทบาท', () {
+    // d.label เก็บ "คีย์คำแปล" ดิบไว้ (ไม่ใช่ข้อความไทย) เพราะ HomeDestination
+    // เป็น const — เรียก .tr ตอนสร้าง object ไม่ได้ ต้อง resolve ตอนแสดงผลจริง
     test('ครัวเห็นเฉพาะจอครัวกับบัญชีของตัวเอง', () {
       final destinations = HomeBinding.destinationsForRole(UserRole.kitchen);
 
-      expect(destinations.map((d) => d.label), ['ครัว', 'บัญชี']);
+      expect(destinations.map((d) => d.label), [
+        'home_nav_kitchen',
+        'home_nav_profile',
+      ]);
     });
 
     test('พนักงานเสิร์ฟไม่เห็นเมนูจัดการร้าน', () {
@@ -16,11 +21,11 @@ void main() {
         UserRole.waiter,
       ).map((d) => d.label).toList();
 
-      expect(labels, contains('ผังโต๊ะ'));
-      expect(labels, contains('ออเดอร์'));
-      expect(labels, isNot(contains('พนักงาน')));
-      expect(labels, isNot(contains('รายงาน')));
-      expect(labels, isNot(contains('ตั้งค่า')));
+      expect(labels, contains('home_nav_tables'));
+      expect(labels, contains('home_nav_orders'));
+      expect(labels, isNot(contains('home_nav_staff')));
+      expect(labels, isNot(contains('home_nav_reports')));
+      expect(labels, isNot(contains('home_nav_settings')));
     });
 
     test('แคชเชียร์เห็นรายงานแต่ไม่เห็นการจัดการเมนู', () {
@@ -28,8 +33,8 @@ void main() {
         UserRole.cashier,
       ).map((d) => d.label).toList();
 
-      expect(labels, contains('รายงาน'));
-      expect(labels, isNot(contains('จัดการเมนู')));
+      expect(labels, contains('home_nav_reports'));
+      expect(labels, isNot(contains('home_nav_menu')));
     });
 
     test('แอดมินเห็นทุกเมนู', () {
@@ -39,7 +44,13 @@ void main() {
 
       expect(
         labels,
-        containsAll(['ภาพรวม', 'จัดการเมนู', 'พนักงาน', 'รายงาน', 'ตั้งค่า']),
+        containsAll([
+          'home_nav_dashboard',
+          'home_nav_menu',
+          'home_nav_staff',
+          'home_nav_reports',
+          'home_nav_settings',
+        ]),
       );
     });
   });

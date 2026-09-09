@@ -168,16 +168,18 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                       ),
                       const SizedBox(width: 8),
                       if (group.isRequired)
-                        const Text(
-                          'ต้องเลือก',
-                          style: TextStyle(
+                        Text(
+                          'order_option_required'.tr,
+                          style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.danger,
                           ),
                         )
                       else
                         Text(
-                          'เลือกได้ ${group.maxSelect} อย่าง',
+                          'order_option_max_select'.trParams({
+                            'count': '${group.maxSelect}',
+                          }),
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.textDisabled,
@@ -207,9 +209,9 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                 TextField(
                   controller: _noteController,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'บอกครัวเพิ่มเติม (ถ้ามี)',
-                    hintText: 'เช่น ไม่ใส่ผักชี, แยกน้ำจิ้ม',
+                  decoration: InputDecoration(
+                    labelText: 'order_kitchen_note_label'.tr,
+                    hintText: 'order_kitchen_note_hint'.tr,
                   ),
                 ),
               ],
@@ -244,8 +246,12 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                         : null,
                     child: Text(
                       _missingGroups.isEmpty
-                          ? 'เพิ่มลงออเดอร์ · ${Formatters.baht(_unitPrice * _quantity)}'
-                          : 'กรุณาเลือก ${_missingGroups.first}',
+                          ? 'order_add_to_cart_button'.trParams({
+                              'price': Formatters.baht(_unitPrice * _quantity),
+                            })
+                          : 'order_select_required_group'.trParams({
+                              'group': _missingGroups.first,
+                            }),
                     ),
                   ),
                 ),

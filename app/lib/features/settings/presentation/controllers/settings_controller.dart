@@ -65,11 +65,11 @@ class SettingsController extends GetxController {
     final servicePercent = double.tryParse(serviceChargeController.text.trim());
 
     if (vatPercent == null || vatPercent < 0 || vatPercent > 100) {
-      AppDialogs.error('VAT ต้องอยู่ระหว่าง 0-100');
+      AppDialogs.error('settings_vat_range_error'.tr);
       return;
     }
     if (servicePercent == null || servicePercent < 0 || servicePercent > 100) {
-      AppDialogs.error('Service Charge ต้องอยู่ระหว่าง 0-100');
+      AppDialogs.error('settings_service_charge_range_error'.tr);
       return;
     }
 
@@ -87,7 +87,7 @@ class SettingsController extends GetxController {
     result.fold(
       onSuccess: (data) {
         settings.value = data;
-        AppDialogs.success('บันทึกการตั้งค่าแล้ว');
+        AppDialogs.success('settings_saved_success'.tr);
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
     );

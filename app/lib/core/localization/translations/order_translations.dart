@@ -1,0 +1,254 @@
+/// คำแปลของฟีเจอร์ order
+const Map<String, String> orderTranslationsTh = {
+  // ป้ายเรียกใช้ร่วมกันหลายจุด
+  'order_table_prefix': 'โต๊ะ @table',
+  'order_number_prefix': 'ออเดอร์ #@id',
+  'order_remove_item': 'ลบรายการ',
+  'order_remove_item_confirm': 'ต้องการลบ "@name" ออกจากออเดอร์ใช่หรือไม่?',
+  'order_remove_item_success': 'ลบรายการแล้ว',
+  'order_cancel_item': 'ยกเลิกรายการ',
+  'order_cancel_item_confirm': 'ยกเลิก "@name" ออกจากบิลใช่หรือไม่?',
+  'order_cancel_item_success': 'ยกเลิกรายการแล้ว',
+  'order_total_label': 'รวมทั้งสิ้น',
+  'order_subtotal_label': 'ยอดรวมอาหาร',
+  'order_subtotal_with_count': 'ยอดรวมอาหาร (@count รายการ)',
+  'order_service_charge_label': 'Service Charge',
+  'order_service_charge_percent_label': 'Service Charge @percent%',
+  'order_vat_label': 'VAT',
+  'order_vat_percent_label': 'VAT @percent%',
+  'order_discount_label': 'ส่วนลด',
+  'order_discount_percent_label': 'ส่วนลด @percent%',
+
+  // หน้ารับออเดอร์
+  'order_taking_title_add': 'สั่งอาหารเพิ่ม',
+  'order_taking_title_table': 'รับออเดอร์ · โต๊ะ @table',
+  'order_taking_title_takeaway': 'ออเดอร์กลับบ้าน',
+  'order_search_menu_hint': 'ค้นหาเมนู...',
+  'order_menu_loading': 'กำลังโหลดเมนู...',
+  'order_menu_search_empty': 'ไม่พบเมนูที่ค้นหา',
+  'order_view_cart': 'ดูตะกร้า',
+
+  // แผงตะกร้า
+  'order_cart_empty_message':
+      'ยังไม่มีรายการในออเดอร์\nแตะเมนูทางซ้ายเพื่อเพิ่ม',
+  'order_cart_title_add': 'สั่งเพิ่ม',
+  'order_cart_title_new': 'ออเดอร์ใหม่',
+  'order_clear_button': 'ล้าง',
+  'order_guest_count_label': 'จำนวนลูกค้า',
+  'order_confirm_add_items_button': 'ยืนยันสั่งเพิ่ม (@count)',
+  'order_confirm_send_kitchen_button': 'ยืนยันและส่งครัว (@count)',
+  'order_save_draft_button': 'บันทึกไว้ก่อน (ยังไม่ส่งครัว)',
+
+  // กล่องส่วนลด
+  'order_discount_title': 'ส่วนลด',
+  'order_discount_percent_option': 'เปอร์เซ็นต์',
+  'order_discount_amount_option': 'จำนวนเงิน',
+  'order_discount_percent_hint': 'ลดกี่เปอร์เซ็นต์',
+  'order_discount_amount_hint': 'ลดกี่บาท',
+  'order_discount_remove_button': 'ยกเลิกส่วนลด',
+  'order_discount_apply_button': 'ใช้ส่วนลด',
+  'order_discount_removed_success': 'ยกเลิกส่วนลดแล้ว',
+  'order_discount_applied_success': 'ใช้ส่วนลดแล้ว',
+
+  // แผ่นเลือกตัวเลือกเมนู
+  'order_option_required': 'ต้องเลือก',
+  'order_option_max_select': 'เลือกได้ @count อย่าง',
+  'order_kitchen_note_label': 'บอกครัวเพิ่มเติม (ถ้ามี)',
+  'order_kitchen_note_hint': 'เช่น ไม่ใส่ผักชี, แยกน้ำจิ้ม',
+  'order_add_to_cart_button': 'เพิ่มลงออเดอร์ · @price',
+  'order_select_required_group': 'กรุณาเลือก @group',
+
+  // กล่องเลือกออเดอร์/โต๊ะ
+  'order_merge_picker_title': 'รวมบิลจากออเดอร์ไหน',
+  'order_merge_picker_empty': 'ไม่มีออเดอร์ที่เปิดอยู่ให้รวมตอนนี้',
+  'order_move_table_picker_title': 'ย้ายไปโต๊ะไหน',
+  'order_move_table_picker_empty': 'ไม่มีโต๊ะว่างให้ย้ายตอนนี้',
+  'order_table_seats_summary': '@zone · @seats ที่นั่ง',
+
+  // หน้ารายการออเดอร์
+  'order_list_empty': 'ยังไม่มีออเดอร์ในหมวดนี้',
+  'order_item_count_label': '@count รายการ',
+  'order_list_row_summary': '@code · @count รายการ · @time',
+  'order_filter_active': 'กำลังดำเนินการ',
+  'order_filter_not_sent': 'ยังไม่ส่งครัว',
+  'order_filter_in_kitchen': 'อยู่ในครัว',
+  'order_filter_paid_today': 'ชำระแล้ววันนี้',
+
+  // หน้ารายละเอียดออเดอร์
+  'order_detail_title': 'รายละเอียดออเดอร์',
+  'order_menu_discount': 'ให้ส่วนลด',
+  'order_menu_view_receipt': 'ดูใบเสร็จ',
+  'order_menu_move_table': 'ย้ายโต๊ะ',
+  'order_menu_merge_bill': 'รวมบิลจากออเดอร์อื่น',
+  'order_menu_split_bill': 'แยกบิลรายคน',
+  'order_menu_cancel_order': 'ยกเลิกออเดอร์',
+  'order_detail_loading': 'กำลังโหลดออเดอร์...',
+  'order_not_found': 'ไม่พบออเดอร์นี้',
+  'order_cancel_order_reason_label': 'เหตุผลการยกเลิก',
+  'order_cancel_order_reason_hint': 'เช่น ลูกค้าเปลี่ยนใจ',
+  'order_cancel_order_confirm_button': 'ยืนยันยกเลิก',
+  'order_guest_count_summary': '@count ท่าน',
+  'order_cancelled_reason_prefix': 'เหตุผลที่ยกเลิก: @reason',
+  'order_send_to_kitchen_button': 'ส่งเข้าครัว',
+  'order_add_more_items_button': 'สั่งอาหารเพิ่ม',
+  'order_checkout_button': 'เก็บเงิน / ปิดบิล',
+  'order_paid_at_summary': 'ชำระเงินแล้วเมื่อ @datetime',
+
+  // ผลลัพธ์การกระทำในหน้ารายละเอียดออเดอร์
+  'order_sent_to_kitchen_success': 'ส่งออเดอร์เข้าครัวแล้ว',
+  'order_cancel_order_success': 'ยกเลิกออเดอร์แล้ว',
+  'order_move_table_success': 'ย้ายโต๊ะแล้ว',
+  'order_merge_bill_success': 'รวมบิลแล้ว',
+
+  // ตะกร้า/ยืนยันออเดอร์
+  'order_no_items_selected': 'ยังไม่ได้เลือกรายการอาหาร',
+  'order_add_items_success': 'เพิ่มรายการเข้าออเดอร์ @code แล้ว',
+  'order_create_success': 'เปิดออเดอร์ @code เรียบร้อย',
+  'order_offline_queued_message':
+      'ออฟไลน์ — บันทึกรายการไว้ในเครื่องแล้ว จะส่งเข้าระบบอัตโนมัติเมื่อเน็ตกลับมา',
+
+  // ข้อความ error จาก demo store (ฝั่งจำลอง backend)
+  'order_error_not_found': 'ไม่พบออเดอร์นี้',
+  'order_error_table_has_open_order': 'โต๊ะนี้มีออเดอร์ที่เปิดอยู่แล้ว',
+  'order_error_menu_item_unavailable': 'เมนู "@name" ปิดการขายอยู่',
+  'order_error_item_locked_edit': 'แก้ไขไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว',
+  'order_error_item_locked_remove':
+      'ลบไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว กรุณาใช้การยกเลิกรายการแทน',
+  'order_error_invalid_status_transition':
+      'เปลี่ยนสถานะจาก "@from" เป็น "@to" ไม่ได้',
+  'order_error_no_items': 'ออเดอร์ยังไม่มีรายการอาหาร',
+  'order_error_no_table': 'ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้',
+  'order_error_same_table': 'เลือกโต๊ะเดิม ไม่ต้องย้าย',
+  'order_error_destination_table_occupied':
+      'โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว',
+  'order_error_merge_same_order': 'เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้',
+  'order_merged_into_reason': 'รวมเข้ากับบิล #@code',
+  'order_error_already_paid_cannot_cancel': 'ออเดอร์ที่ชำระแล้วยกเลิกไม่ได้',
+  'order_error_item_not_found': 'ไม่พบรายการนี้ในออเดอร์',
+  'order_error_closed_cannot_edit': 'ออเดอร์นี้ปิดแล้ว ไม่สามารถแก้ไขได้',
+  'order_offline_sync_failed':
+      'ส่งรายการที่ค้างไว้ของ @label ไม่สำเร็จ: @message',
+};
+
+const Map<String, String> orderTranslationsEn = {
+  'order_table_prefix': 'Table @table',
+  'order_number_prefix': 'Order #@id',
+  'order_remove_item': 'Remove item',
+  'order_remove_item_confirm': 'Remove "@name" from the order?',
+  'order_remove_item_success': 'Item removed',
+  'order_cancel_item': 'Cancel item',
+  'order_cancel_item_confirm': 'Cancel "@name" from the bill?',
+  'order_cancel_item_success': 'Item cancelled',
+  'order_total_label': 'Total',
+  'order_subtotal_label': 'Food subtotal',
+  'order_subtotal_with_count': 'Food subtotal (@count items)',
+  'order_service_charge_label': 'Service charge',
+  'order_service_charge_percent_label': 'Service charge @percent%',
+  'order_vat_label': 'VAT',
+  'order_vat_percent_label': 'VAT @percent%',
+  'order_discount_label': 'Discount',
+  'order_discount_percent_label': 'Discount @percent%',
+
+  'order_taking_title_add': 'Add to order',
+  'order_taking_title_table': 'New order · Table @table',
+  'order_taking_title_takeaway': 'Takeaway order',
+  'order_search_menu_hint': 'Search menu...',
+  'order_menu_loading': 'Loading menu...',
+  'order_menu_search_empty': 'No matching menu items',
+  'order_view_cart': 'View cart',
+
+  'order_cart_empty_message':
+      'No items in the order yet\nTap a menu item on the left to add',
+  'order_cart_title_add': 'Add items',
+  'order_cart_title_new': 'New order',
+  'order_clear_button': 'Clear',
+  'order_guest_count_label': 'Guest count',
+  'order_confirm_add_items_button': 'Confirm add items (@count)',
+  'order_confirm_send_kitchen_button': 'Confirm and send to kitchen (@count)',
+  'order_save_draft_button': 'Save for later (not sent to kitchen)',
+
+  'order_discount_title': 'Discount',
+  'order_discount_percent_option': 'Percent',
+  'order_discount_amount_option': 'Amount',
+  'order_discount_percent_hint': 'Discount percent',
+  'order_discount_amount_hint': 'Discount amount',
+  'order_discount_remove_button': 'Remove discount',
+  'order_discount_apply_button': 'Apply discount',
+  'order_discount_removed_success': 'Discount removed',
+  'order_discount_applied_success': 'Discount applied',
+
+  'order_option_required': 'Required',
+  'order_option_max_select': 'Choose up to @count',
+  'order_kitchen_note_label': 'Note to kitchen (optional)',
+  'order_kitchen_note_hint': 'e.g. no cilantro, sauce on the side',
+  'order_add_to_cart_button': 'Add to order · @price',
+  'order_select_required_group': 'Please choose @group',
+
+  'order_merge_picker_title': 'Merge bill from which order',
+  'order_merge_picker_empty': 'No open orders available to merge right now',
+  'order_move_table_picker_title': 'Move to which table',
+  'order_move_table_picker_empty': 'No available tables to move to right now',
+  'order_table_seats_summary': '@zone · @seats seats',
+
+  'order_list_empty': 'No orders in this category yet',
+  'order_item_count_label': '@count items',
+  'order_list_row_summary': '@code · @count items · @time',
+  'order_filter_active': 'In progress',
+  'order_filter_not_sent': 'Not sent yet',
+  'order_filter_in_kitchen': 'In kitchen',
+  'order_filter_paid_today': 'Paid today',
+
+  'order_detail_title': 'Order details',
+  'order_menu_discount': 'Apply discount',
+  'order_menu_view_receipt': 'View receipt',
+  'order_menu_move_table': 'Move table',
+  'order_menu_merge_bill': 'Merge bill from another order',
+  'order_menu_split_bill': 'Split bill',
+  'order_menu_cancel_order': 'Cancel order',
+  'order_detail_loading': 'Loading order...',
+  'order_not_found': 'Order not found',
+  'order_cancel_order_reason_label': 'Cancellation reason',
+  'order_cancel_order_reason_hint': 'e.g. customer changed their mind',
+  'order_cancel_order_confirm_button': 'Confirm cancel',
+  'order_guest_count_summary': '@count guests',
+  'order_cancelled_reason_prefix': 'Cancellation reason: @reason',
+  'order_send_to_kitchen_button': 'Send to kitchen',
+  'order_add_more_items_button': 'Add more items',
+  'order_checkout_button': 'Collect payment / close bill',
+  'order_paid_at_summary': 'Paid at @datetime',
+
+  'order_sent_to_kitchen_success': 'Order sent to kitchen',
+  'order_cancel_order_success': 'Order cancelled',
+  'order_move_table_success': 'Table moved',
+  'order_merge_bill_success': 'Bill merged',
+
+  'order_no_items_selected': 'No items selected yet',
+  'order_add_items_success': 'Items added to order @code',
+  'order_create_success': 'Order @code opened',
+  'order_offline_queued_message':
+      "Offline — saved on this device. It will sync automatically once you're back online.",
+
+  'order_error_not_found': 'Order not found',
+  'order_error_table_has_open_order': 'This table already has an open order',
+  'order_error_menu_item_unavailable': 'Menu item "@name" is unavailable',
+  'order_error_item_locked_edit':
+      'Cannot edit — the kitchen has already started this item',
+  'order_error_item_locked_remove':
+      'Cannot remove — the kitchen has already started this item. Use cancel item instead.',
+  'order_error_invalid_status_transition':
+      'Cannot change status from "@from" to "@to"',
+  'order_error_no_items': 'The order has no items yet',
+  'order_error_no_table':
+      'This order is not linked to a table, so it cannot be moved',
+  'order_error_same_table': 'That is already the current table',
+  'order_error_destination_table_occupied':
+      'The destination table already has an open order',
+  'order_error_merge_same_order':
+      'The destination order cannot be the same as the source',
+  'order_merged_into_reason': 'Merged into bill #@code',
+  'order_error_already_paid_cannot_cancel': 'A paid order cannot be cancelled',
+  'order_error_item_not_found': 'Item not found in this order',
+  'order_error_closed_cannot_edit': 'This order is closed and cannot be edited',
+  'order_offline_sync_failed':
+      'Failed to sync pending items for @label: @message',
+};

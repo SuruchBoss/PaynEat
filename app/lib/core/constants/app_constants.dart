@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 /// บทบาทของผู้ใช้ในระบบ — ตรงกับ enum ฝั่ง backend
 class UserRole {
   const UserRole._();
@@ -10,15 +12,15 @@ class UserRole {
 
   static const List<String> all = [admin, manager, waiter, cashier, kitchen];
 
-  static const Map<String, String> labels = {
-    admin: 'ผู้ดูแลระบบ',
-    manager: 'ผู้จัดการ',
-    waiter: 'พนักงานเสิร์ฟ',
-    cashier: 'แคชเชียร์',
-    kitchen: 'ครัว',
+  static const Map<String, String> _keys = {
+    admin: 'role_admin',
+    manager: 'role_manager',
+    waiter: 'role_waiter',
+    cashier: 'role_cashier',
+    kitchen: 'role_kitchen',
   };
 
-  static String label(String role) => labels[role] ?? role;
+  static String label(String role) => (_keys[role] ?? role).tr;
 
   static bool isManagement(String role) => role == admin || role == manager;
   static bool canTakeOrder(String role) =>
@@ -40,14 +42,14 @@ class TableStatus {
 
   static const List<String> all = [available, occupied, reserved, billing];
 
-  static const Map<String, String> labels = {
-    available: 'ว่าง',
-    occupied: 'มีลูกค้า',
-    reserved: 'จองแล้ว',
-    billing: 'เรียกเก็บเงิน',
+  static const Map<String, String> _keys = {
+    available: 'table_status_available',
+    occupied: 'table_status_occupied',
+    reserved: 'table_status_reserved',
+    billing: 'table_status_billing',
   };
 
-  static String label(String status) => labels[status] ?? status;
+  static String label(String status) => (_keys[status] ?? status).tr;
 }
 
 /// สถานะออเดอร์
@@ -60,15 +62,15 @@ class OrderStatus {
   static const String paid = 'paid';
   static const String cancelled = 'cancelled';
 
-  static const Map<String, String> labels = {
-    open: 'เปิดออเดอร์',
-    inKitchen: 'ส่งครัวแล้ว',
-    served: 'เสิร์ฟครบ',
-    paid: 'ชำระเงินแล้ว',
-    cancelled: 'ยกเลิก',
+  static const Map<String, String> _keys = {
+    open: 'order_status_open',
+    inKitchen: 'order_status_in_kitchen',
+    served: 'order_status_served',
+    paid: 'order_status_paid',
+    cancelled: 'order_status_cancelled',
   };
 
-  static String label(String status) => labels[status] ?? status;
+  static String label(String status) => (_keys[status] ?? status).tr;
 
   static bool isActive(String status) =>
       status == open || status == inKitchen || status == served;
@@ -84,15 +86,15 @@ class OrderItemStatus {
   static const String served = 'served';
   static const String cancelled = 'cancelled';
 
-  static const Map<String, String> labels = {
-    pending: 'รอทำ',
-    cooking: 'กำลังทำ',
-    ready: 'พร้อมเสิร์ฟ',
-    served: 'เสิร์ฟแล้ว',
-    cancelled: 'ยกเลิก',
+  static const Map<String, String> _keys = {
+    pending: 'order_item_status_pending',
+    cooking: 'order_item_status_cooking',
+    ready: 'order_item_status_ready',
+    served: 'order_item_status_served',
+    cancelled: 'order_item_status_cancelled',
   };
 
-  static String label(String status) => labels[status] ?? status;
+  static String label(String status) => (_keys[status] ?? status).tr;
 
   /// สถานะถัดไปที่กดได้จากหน้าจอครัว/พนักงานเสิร์ฟ
   static String? next(String status) {
@@ -111,11 +113,11 @@ class OrderItemStatus {
   static String? nextActionLabel(String status) {
     switch (status) {
       case pending:
-        return 'เริ่มทำ';
+        return 'order_item_next_action_pending'.tr;
       case cooking:
-        return 'ทำเสร็จแล้ว';
+        return 'order_item_next_action_cooking'.tr;
       case ready:
-        return 'เสิร์ฟแล้ว';
+        return 'order_item_next_action_ready'.tr;
       default:
         return null;
     }
@@ -130,13 +132,13 @@ class OrderType {
   static const String takeaway = 'takeaway';
   static const String delivery = 'delivery';
 
-  static const Map<String, String> labels = {
-    dineIn: 'ทานที่ร้าน',
-    takeaway: 'กลับบ้าน',
-    delivery: 'เดลิเวอรี',
+  static const Map<String, String> _keys = {
+    dineIn: 'order_type_dine_in',
+    takeaway: 'order_type_takeaway',
+    delivery: 'order_type_delivery',
   };
 
-  static String label(String type) => labels[type] ?? type;
+  static String label(String type) => (_keys[type] ?? type).tr;
 }
 
 /// ช่องทางชำระเงิน
@@ -150,14 +152,14 @@ class PaymentMethod {
 
   static const List<String> all = [cash, qr, card, transfer];
 
-  static const Map<String, String> labels = {
-    cash: 'เงินสด',
-    qr: 'พร้อมเพย์ / QR',
-    card: 'บัตรเครดิต',
-    transfer: 'โอนเงิน',
+  static const Map<String, String> _keys = {
+    cash: 'payment_method_cash',
+    qr: 'payment_method_qr',
+    card: 'payment_method_card',
+    transfer: 'payment_method_transfer',
   };
 
-  static String label(String method) => labels[method] ?? method;
+  static String label(String method) => (_keys[method] ?? method).tr;
 }
 
 /// สถานะกะทำงานของแคชเชียร์
@@ -185,4 +187,5 @@ class StorageKeys {
   static const String user = 'auth_user';
   static const String printerProfile = 'printer_profile';
   static const String pendingOrderItems = 'pending_order_items';
+  static const String locale = 'app_locale';
 }

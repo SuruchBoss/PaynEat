@@ -13,11 +13,11 @@ import '../widgets/stat_card.dart';
 class ReportsPage extends GetView<ReportController> {
   const ReportsPage({super.key});
 
-  static const Map<ReportRange, String> _rangeLabels = {
-    ReportRange.today: 'วันนี้',
-    ReportRange.last7Days: '7 วันล่าสุด',
-    ReportRange.thisMonth: 'เดือนนี้',
-    ReportRange.custom: 'กำหนดเอง',
+  static const Map<ReportRange, String> _rangeLabelKeys = {
+    ReportRange.today: 'report_range_today',
+    ReportRange.last7Days: 'report_range_last_7_days',
+    ReportRange.thisMonth: 'report_range_this_month',
+    ReportRange.custom: 'report_range_custom',
   };
 
   @override
@@ -34,11 +34,11 @@ class ReportsPage extends GetView<ReportController> {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: _rangeLabels.entries
+                    children: _rangeLabelKeys.entries
                         .map((entry) {
                           final selected = controller.range.value == entry.key;
                           return ChoiceChip(
-                            label: Text(entry.value),
+                            label: Text(entry.value.tr),
                             selected: selected,
                             showCheckmark: false,
                             onSelected: (_) => entry.key == ReportRange.custom
@@ -100,31 +100,35 @@ class ReportsPage extends GetView<ReportController> {
                   ),
                   children: [
                     StatCard(
-                      label: 'ยอดขายสุทธิ',
+                      label: 'report_net_sales_label'.tr,
                       value: Formatters.baht(summary.netSales),
                       icon: Icons.payments_rounded,
                       color: AppColors.success,
                     ),
                     StatCard(
-                      label: 'จำนวนบิล',
+                      label: 'report_order_count_label'.tr,
                       value: '${summary.orderCount}',
-                      caption: 'ลูกค้า ${summary.guestCount} ท่าน',
+                      caption: 'report_guest_count_caption'.trParams({
+                        'count': summary.guestCount.toString(),
+                      }),
                       icon: Icons.receipt_long_rounded,
                       color: AppColors.info,
                     ),
                     StatCard(
-                      label: 'ยอดอาหารก่อนภาษี',
+                      label: 'report_subtotal_label'.tr,
                       value: Formatters.baht(summary.subtotal),
-                      caption:
-                          'Service ${Formatters.money(summary.serviceCharge)}',
+                      caption: 'report_service_charge_caption'.trParams({
+                        'amount': Formatters.money(summary.serviceCharge),
+                      }),
                       icon: Icons.restaurant_rounded,
                       color: AppColors.primary,
                     ),
                     StatCard(
-                      label: 'เฉลี่ยต่อบิล',
+                      label: 'report_average_per_order_label'.tr,
                       value: Formatters.baht(summary.averagePerOrder),
-                      caption:
-                          'ต่อหัว ${Formatters.baht(summary.averagePerGuest)}',
+                      caption: 'report_average_per_guest_caption'.trParams({
+                        'amount': Formatters.baht(summary.averagePerGuest),
+                      }),
                       icon: Icons.trending_up_rounded,
                       color: AppColors.purple,
                     ),
@@ -136,7 +140,7 @@ class ReportsPage extends GetView<ReportController> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SectionHeader(title: 'ยอดขายรายวัน'),
+                        SectionHeader(title: 'report_daily_sales_title'.tr),
                         const SizedBox(height: 14),
                         _DailySalesList(),
                       ],
@@ -148,15 +152,15 @@ class ReportsPage extends GetView<ReportController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SectionHeader(title: 'เมนูขายดี 10 อันดับ'),
+                      SectionHeader(title: 'report_top_items_title'.tr),
                       const SizedBox(height: 8),
                       if (controller.topItems.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 18),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           child: Center(
                             child: Text(
-                              'ไม่มีข้อมูลในช่วงที่เลือก',
-                              style: TextStyle(
+                              'report_no_data_for_range'.tr,
+                              style: const TextStyle(
                                 color: AppColors.textDisabled,
                                 fontSize: 13,
                               ),
@@ -184,7 +188,11 @@ class ReportsPage extends GetView<ReportController> {
                               entry.value.name,
                               style: const TextStyle(fontSize: 13.5),
                             ),
-                            subtitle: Text('${entry.value.quantity} จาน'),
+                            subtitle: Text(
+                              'report_quantity_plates'.trParams({
+                                'count': entry.value.quantity.toString(),
+                              }),
+                            ),
                             trailing: Text(
                               Formatters.baht(entry.value.revenue),
                               style: const TextStyle(
@@ -201,15 +209,15 @@ class ReportsPage extends GetView<ReportController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SectionHeader(title: 'ยอดขายแยกตามหมวดหมู่'),
+                      SectionHeader(title: 'report_sales_by_category_title'.tr),
                       const SizedBox(height: 8),
                       if (summary.categories.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 18),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
                           child: Center(
                             child: Text(
-                              'ไม่มีข้อมูลในช่วงที่เลือก',
-                              style: TextStyle(
+                              'report_no_data_for_range'.tr,
+                              style: const TextStyle(
                                 color: AppColors.textDisabled,
                                 fontSize: 13,
                               ),
@@ -229,7 +237,9 @@ class ReportsPage extends GetView<ReportController> {
                                   ),
                                 ),
                                 Text(
-                                  '${category.quantity} จาน',
+                                  'report_quantity_plates'.trParams({
+                                    'count': category.quantity.toString(),
+                                  }),
                                   style: const TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textDisabled,
