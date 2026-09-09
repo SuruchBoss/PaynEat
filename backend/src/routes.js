@@ -8,6 +8,7 @@ import orderRoutes from './modules/orders/order.routes.js';
 import paymentRoutes from './modules/payments/payment.routes.js';
 import reportRoutes from './modules/reports/report.routes.js';
 import settingsRoutes from './modules/settings/settings.routes.js';
+import shiftRoutes from './modules/shifts/shift.routes.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/orders', orderRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/reports', reportRoutes);
 router.use('/settings', settingsRoutes);
+router.use('/shifts', shiftRoutes);
 
 export default router;

@@ -7,6 +7,7 @@ import { orderService } from '../orders/order.service.js';
 import { calculateItemsShare } from '../orders/order.calculator.js';
 import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
+import { shiftRepository } from '../shifts/shift.repository.js';
 import { paymentRepository } from './payment.repository.js';
 import { toPaymentDto } from './payment.mapper.js';
 
@@ -89,6 +90,9 @@ export const paymentService = {
   },
 
   pay(payload, user) {
+    const shift = shiftRepository.findOpen();
+    if (!shift) throw ApiError.conflict('ต้องเปิดกะก่อนจึงจะรับชำระเงินได้');
+
     const order = orderRepository.findById(payload.orderId);
     if (!order) throw ApiError.notFound('ไม่พบออเดอร์นี้');
     if (order.status === 'cancelled') throw ApiError.conflict('ออเดอร์นี้ถูกยกเลิกแล้ว');
@@ -125,6 +129,7 @@ export const paymentService = {
     const run = getDb().transaction(() => {
       const payment = paymentRepository.create({
         orderId: order.id,
+        shiftId: shift.id,
         method: payload.method,
         amount,
         received,

@@ -5,6 +5,7 @@ export const toPaymentDto = (row) => {
   return {
     id: row.id,
     orderId: row.order_id,
+    shiftId: row.shift_id,
     method: row.method,
     amount: toBaht(row.amount),
     received: toBaht(row.received),

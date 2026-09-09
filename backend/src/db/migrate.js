@@ -22,6 +22,12 @@ export const migrate = () => {
   db.exec(sql);
 
   addColumnIfMissing(db, 'order_items', 'is_paid', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(
+    db,
+    'payments',
+    'shift_id',
+    'INTEGER REFERENCES shifts(id) ON DELETE SET NULL',
+  );
 
   const defaults = {
     store_name: env.store.name,

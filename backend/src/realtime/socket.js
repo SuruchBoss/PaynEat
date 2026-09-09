@@ -9,6 +9,8 @@ export const EVENTS = {
   ORDER_PAID: 'order:paid',
   KITCHEN_TICKET: 'kitchen:ticket',
   TABLE_UPDATED: 'table:updated',
+  SHIFT_OPENED: 'shift:opened',
+  SHIFT_CLOSED: 'shift:closed',
 };
 
 /** ห้องแยกตาม role — ครัวรับเฉพาะตั๋วครัว, พนักงานเสิร์ฟรับสถานะอาหาร */
