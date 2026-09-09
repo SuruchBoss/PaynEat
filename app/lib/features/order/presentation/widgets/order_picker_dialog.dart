@@ -16,13 +16,13 @@ class OrderPickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('รวมบิลจากออเดอร์ไหน'),
+      title: Text('order_merge_picker_title'.tr),
       content: SizedBox(
         width: double.maxFinite,
         child: orders.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('ไม่มีออเดอร์ที่เปิดอยู่ให้รวมตอนนี้'),
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text('order_merge_picker_empty'.tr),
               )
             : ListView.builder(
                 shrinkWrap: true,
@@ -41,7 +41,10 @@ class OrderPickerDialog extends StatelessWidget {
               ),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back<void>(), child: const Text('ปิด')),
+        TextButton(
+          onPressed: () => Get.back<void>(),
+          child: Text('common_close'.tr),
+        ),
       ],
     );
   }

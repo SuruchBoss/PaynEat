@@ -16,7 +16,7 @@ class ShiftPage extends GetView<ShiftController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('เปิด / ปิดกะ')),
+      appBar: AppBar(title: Text('shift_page_title'.tr)),
       body: Obx(() {
         if (controller.isLoading.value) return const LoadingView();
         final error = controller.errorMessage.value;
@@ -54,14 +54,17 @@ class _OpenShiftForm extends GetView<ShiftController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'เปิดกะใหม่',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          Text(
+            'shift_open_new_shift'.tr,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'กรอกเงินสดตั้งต้นในลิ้นชักก่อนเริ่มรับชำระเงิน',
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+          Text(
+            'shift_open_new_subtitle'.tr,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -70,9 +73,9 @@ class _OpenShiftForm extends GetView<ShiftController> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            decoration: const InputDecoration(
-              labelText: 'เงินตั้งต้น',
-              suffixText: 'บาท',
+            decoration: InputDecoration(
+              labelText: 'shift_starting_cash_label'.tr,
+              suffixText: 'common_baht'.tr,
             ),
           ),
           const SizedBox(height: 16),
@@ -92,7 +95,7 @@ class _OpenShiftForm extends GetView<ShiftController> {
                       ),
                     )
                   : const Icon(Icons.lock_open_rounded),
-              label: const Text('เปิดกะ'),
+              label: Text('shift_open_button'.tr),
             ),
           ),
         ],
@@ -123,31 +126,40 @@ class _OpenShiftCard extends GetView<ShiftController> {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'กะกำลังเปิดอยู่',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+              Text(
+                'shift_currently_open_title'.tr,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _InfoRow(label: 'เปิดโดย', value: shift.openedByName ?? '-'),
           _InfoRow(
-            label: 'เวลาเปิดกะ',
+            label: 'shift_opened_by_label'.tr,
+            value: shift.openedByName ?? '-',
+          ),
+          _InfoRow(
+            label: 'shift_opened_at_label'.tr,
             value: Formatters.dateTime(shift.openedAt),
           ),
           _InfoRow(
-            label: 'เงินตั้งต้น',
+            label: 'shift_starting_cash_label'.tr,
             value: Formatters.baht(shift.openingCash),
           ),
           const Divider(height: 28),
-          const Text(
-            'ปิดกะ',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+          Text(
+            'shift_close_button'.tr,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'นับเงินสดในลิ้นชักจริงแล้วกรอกยอด ระบบจะคำนวณส่วนต่างให้อัตโนมัติ',
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+          Text(
+            'shift_close_subtitle'.tr,
+            style: const TextStyle(
+              fontSize: 12.5,
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -156,15 +168,15 @@ class _OpenShiftCard extends GetView<ShiftController> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            decoration: const InputDecoration(
-              labelText: 'ยอดเงินสดที่นับได้จริง',
-              suffixText: 'บาท',
+            decoration: InputDecoration(
+              labelText: 'shift_counted_cash_label'.tr,
+              suffixText: 'common_baht'.tr,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: controller.noteController,
-            decoration: const InputDecoration(labelText: 'หมายเหตุ (ถ้ามี)'),
+            decoration: InputDecoration(labelText: 'shift_note_label'.tr),
           ),
           const SizedBox(height: 16),
           Obx(
@@ -186,7 +198,7 @@ class _OpenShiftCard extends GetView<ShiftController> {
                       ),
                     )
                   : const Icon(Icons.lock_rounded),
-              label: const Text('ปิดกะ'),
+              label: Text('shift_close_button'.tr),
             ),
           ),
         ],
@@ -207,28 +219,28 @@ class _ClosedShiftSummary extends GetView<ShiftController> {
         ? AppColors.success
         : (variance < 0 ? AppColors.danger : AppColors.warning);
     final varianceLabel = variance == 0
-        ? 'ยอดตรงพอดี'
-        : (variance < 0 ? 'เงินขาด' : 'เงินเกิน');
+        ? 'shift_variance_balanced'.tr
+        : (variance < 0 ? 'shift_variance_short'.tr : 'shift_variance_over'.tr);
 
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'สรุปผลปิดกะ',
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
+          Text(
+            'shift_close_summary_title'.tr,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 12),
           _InfoRow(
-            label: 'เงินตั้งต้น',
+            label: 'shift_starting_cash_label'.tr,
             value: Formatters.baht(shift.openingCash),
           ),
           _InfoRow(
-            label: 'ยอดที่ระบบคาดไว้',
+            label: 'shift_expected_cash_label'.tr,
             value: Formatters.baht(shift.expectedCash ?? 0),
           ),
           _InfoRow(
-            label: 'ยอดที่นับได้จริง',
+            label: 'shift_counted_cash_label'.tr,
             value: Formatters.baht(shift.countedCash ?? 0),
           ),
           const Divider(height: 24),
@@ -265,7 +277,7 @@ class _ClosedShiftSummary extends GetView<ShiftController> {
             style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
             onPressed: controller.startNewShift,
             icon: const Icon(Icons.lock_open_rounded),
-            label: const Text('เปิดกะใหม่'),
+            label: Text('shift_open_new_shift'.tr),
           ),
         ],
       ),
@@ -315,11 +327,11 @@ class _ShiftHistory extends GetView<ShiftController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 14, 16, 6),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
               child: Text(
-                'ประวัติกะย้อนหลัง',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                'shift_history_title'.tr,
+                style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ),
             for (final shift in history) _HistoryTile(shift: shift),
@@ -347,8 +359,12 @@ class _HistoryTile extends StatelessWidget {
       title: Text(Formatters.dateTime(shift.openedAt)),
       subtitle: Text(
         isOpen
-            ? 'เปิดอยู่ · ${shift.openedByName ?? '-'}'
-            : 'ปิดแล้ว · ส่วนต่าง ${Formatters.baht((shift.variance ?? 0).abs())}',
+            ? 'shift_history_open_subtitle'.trParams({
+                'name': shift.openedByName ?? '-',
+              })
+            : 'shift_variance_label'.trParams({
+                'amount': Formatters.baht((shift.variance ?? 0).abs()),
+              }),
       ),
       trailing: Text(
         Formatters.baht(shift.openingCash),

@@ -19,7 +19,7 @@ class CheckoutPage extends GetView<CheckoutController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('เก็บเงิน / ปิดบิล')),
+      appBar: AppBar(title: Text('payment_checkout_title'.tr)),
       body: Obx(() {
         if (controller.isLoading.value) {
           return const LoadingView();
@@ -29,7 +29,9 @@ class CheckoutPage extends GetView<CheckoutController> {
           return ErrorView(message: error, onRetry: controller.load);
         }
         final order = controller.order.value;
-        if (order == null) return const EmptyView(message: 'ไม่พบออเดอร์');
+        if (order == null) {
+          return EmptyView(message: 'payment_order_not_found'.tr);
+        }
 
         final billCard = AppCard(
           child: Column(
@@ -118,10 +120,10 @@ class _NoShiftBanner extends GetView<CheckoutController> {
         children: [
           const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
           const SizedBox(width: 10),
-          const Expanded(
+          Expanded(
             child: Text(
-              'ยังไม่ได้เปิดกะ ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
-              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              'payment_no_shift_banner'.tr,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
             ),
           ),
           TextButton(
@@ -129,7 +131,7 @@ class _NoShiftBanner extends GetView<CheckoutController> {
               await Get.toNamed<void>(AppRoutes.shift);
               controller.load();
             },
-            child: const Text('ไปเปิดกะ'),
+            child: Text('payment_go_open_shift'.tr),
           ),
         ],
       ),
@@ -152,9 +154,9 @@ class _PaidHistory extends GetView<CheckoutController> {
       children: [
         const Divider(),
         const SizedBox(height: 4),
-        const Text(
-          'ชำระมาแล้ว',
-          style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+        Text(
+          'payment_already_paid_section_title'.tr,
+          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 6),
         for (final payment in summary.payments)
@@ -195,9 +197,9 @@ class _PaidHistory extends GetView<CheckoutController> {
           ),
           child: Row(
             children: [
-              const Text(
-                'คงเหลือต้องชำระ',
-                style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+              Text(
+                'payment_remaining_due_label'.tr,
+                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
               ),
               const Spacer(),
               Text(
@@ -225,9 +227,9 @@ class _PaymentForm extends GetView<CheckoutController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'ช่องทางชำระเงิน',
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            'payment_method_section_title'.tr,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
           Obx(
@@ -270,9 +272,9 @@ class _PaymentForm extends GetView<CheckoutController> {
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
             onChanged: controller.onAmountChanged,
-            decoration: const InputDecoration(
-              labelText: 'ยอดที่รับชำระรอบนี้',
-              suffixText: 'บาท',
+            decoration: InputDecoration(
+              labelText: 'payment_amount_this_round_label'.tr,
+              suffixText: 'common_baht'.tr,
             ),
           ),
           Obx(
@@ -290,9 +292,9 @@ class _PaymentForm extends GetView<CheckoutController> {
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                         ],
                         onChanged: controller.onReceivedChanged,
-                        decoration: const InputDecoration(
-                          labelText: 'รับเงินมา',
-                          suffixText: 'บาท',
+                        decoration: InputDecoration(
+                          labelText: 'payment_received_label'.tr,
+                          suffixText: 'common_baht'.tr,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -300,7 +302,7 @@ class _PaymentForm extends GetView<CheckoutController> {
                         spacing: 8,
                         children: [
                           ActionChip(
-                            label: const Text('พอดี'),
+                            label: Text('payment_exact_amount_label'.tr),
                             onPressed: () =>
                                 controller.setReceived(controller.amount.value),
                           ),
@@ -336,9 +338,9 @@ class _PaymentForm extends GetView<CheckoutController> {
                         ),
                         child: Row(
                           children: [
-                            const Text(
-                              'เงินทอน',
-                              style: TextStyle(
+                            Text(
+                              'payment_change_due_label'.tr,
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -361,9 +363,9 @@ class _PaymentForm extends GetView<CheckoutController> {
                     padding: const EdgeInsets.only(top: 12),
                     child: TextField(
                       controller: controller.referenceController,
-                      decoration: const InputDecoration(
-                        labelText: 'เลขอ้างอิง (ถ้ามี)',
-                        hintText: 'เช่น เลขที่สลิป / 4 ตัวท้ายบัตร',
+                      decoration: InputDecoration(
+                        labelText: 'payment_reference_label'.tr,
+                        hintText: 'payment_reference_hint'.tr,
                       ),
                     ),
                   ),
@@ -389,7 +391,9 @@ class _PaymentForm extends GetView<CheckoutController> {
                     )
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
-                'รับชำระ ${Formatters.baht(controller.amount.value)}',
+                'payment_submit_button'.trParams({
+                  'amount': Formatters.baht(controller.amount.value),
+                }),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

@@ -35,7 +35,7 @@ class CategoryFilterBar extends StatelessWidget {
           }
           final category = categories[index - 1];
           return _CategoryChip(
-            label: '${category.icon ?? ''} ${category.name}'.trim(),
+            label: '${category.icon ?? ''} ${category.displayName}'.trim(),
             selected: selectedId == category.id,
             onTap: () => onSelected(category.id),
           );

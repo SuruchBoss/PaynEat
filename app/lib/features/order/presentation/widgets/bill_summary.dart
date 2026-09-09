@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
@@ -15,17 +16,24 @@ class BillSummary extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _row('ยอดรวมอาหาร (${order.totalQuantity} รายการ)', order.subtotal),
+        _row(
+          'order_subtotal_with_count'.trParams({
+            'count': '${order.totalQuantity}',
+          }),
+          order.subtotal,
+        ),
         if (order.hasDiscount)
           _row(
             order.discountType == 'percent'
-                ? 'ส่วนลด ${order.discountValue.toStringAsFixed(0)}%'
-                : 'ส่วนลด',
+                ? 'order_discount_percent_label'.trParams({
+                    'percent': order.discountValue.toStringAsFixed(0),
+                  })
+                : 'order_discount_label'.tr,
             -order.discountAmount,
             color: AppColors.success,
           ),
-        _row('Service Charge', order.serviceCharge),
-        _row('VAT', order.vat),
+        _row('order_service_charge_label'.tr, order.serviceCharge),
+        _row('order_vat_label'.tr, order.vat),
         Padding(
           padding: EdgeInsets.symmetric(vertical: dense ? 6 : 10),
           child: const Divider(height: 1),
@@ -33,7 +41,7 @@ class BillSummary extends StatelessWidget {
         Row(
           children: [
             Text(
-              'รวมทั้งสิ้น',
+              'order_total_label'.tr,
               style: TextStyle(
                 fontSize: dense ? 15 : 16,
                 fontWeight: FontWeight.w800,

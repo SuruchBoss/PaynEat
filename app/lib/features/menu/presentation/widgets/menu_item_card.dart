@@ -70,7 +70,7 @@ class MenuItemCard extends StatelessWidget {
                         ),
                         child: Center(
                           child: Text(
-                            item.name.substring(0, 1),
+                            item.displayName.substring(0, 1),
                             style: TextStyle(
                               fontSize: 34,
                               fontWeight: FontWeight.w900,
@@ -136,7 +136,7 @@ class MenuItemCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.name,
+                          item.displayName,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(

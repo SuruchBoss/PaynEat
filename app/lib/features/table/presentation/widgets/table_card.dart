@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
@@ -80,7 +81,9 @@ class TableCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    '${table.seats} ที่นั่ง',
+                    'table_seat_count'.trParams({
+                      'count': table.seats.toString(),
+                    }),
                     style: const TextStyle(
                       fontSize: 11.5,
                       color: AppColors.textDisabled,

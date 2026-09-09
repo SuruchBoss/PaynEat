@@ -47,13 +47,13 @@ class HomeController extends GetxController {
 
   String get greeting {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'สวัสดีตอนเช้า';
-    if (hour < 17) return 'สวัสดีตอนบ่าย';
-    return 'สวัสดีตอนเย็น';
+    if (hour < 12) return 'home_greeting_morning'.tr;
+    if (hour < 17) return 'home_greeting_afternoon'.tr;
+    return 'home_greeting_evening'.tr;
   }
 
   String get currentTitle =>
-      destinations.isEmpty ? '' : destinations[currentIndex.value].label;
+      destinations.isEmpty ? '' : destinations[currentIndex.value].label.tr;
 
   void changeTab(int index) {
     if (index < 0 || index >= destinations.length) return;

@@ -19,7 +19,7 @@ class DashboardPage extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const LoadingView(message: 'กำลังโหลดข้อมูลภาพรวม...');
+        return LoadingView(message: 'report_dashboard_loading'.tr);
       }
       final error = controller.errorMessage.value;
       if (error != null) {
@@ -55,30 +55,36 @@ class DashboardPage extends GetView<DashboardController> {
               ),
               children: [
                 StatCard(
-                  label: 'ยอดขายวันนี้',
+                  label: 'report_today_sales_label'.tr,
                   value: Formatters.baht(today.netSales),
-                  caption: 'รวม VAT และ Service Charge',
+                  caption: 'report_today_sales_caption'.tr,
                   icon: Icons.payments_rounded,
                   color: AppColors.success,
                 ),
                 StatCard(
-                  label: 'จำนวนบิล',
+                  label: 'report_order_count_label'.tr,
                   value: '${today.orderCount}',
-                  caption: 'ลูกค้า ${today.guestCount} ท่าน',
+                  caption: 'report_guest_count_caption'.trParams({
+                    'count': today.guestCount.toString(),
+                  }),
                   icon: Icons.receipt_long_rounded,
                   color: AppColors.info,
                 ),
                 StatCard(
-                  label: 'เฉลี่ยต่อบิล',
+                  label: 'report_average_per_order_label'.tr,
                   value: Formatters.baht(today.averagePerOrder),
-                  caption: 'ต่อหัว ${Formatters.baht(today.averagePerGuest)}',
+                  caption: 'report_average_per_guest_caption'.trParams({
+                    'amount': Formatters.baht(today.averagePerGuest),
+                  }),
                   icon: Icons.trending_up_rounded,
                   color: AppColors.primary,
                 ),
                 StatCard(
-                  label: 'ส่วนลดที่ให้ไป',
+                  label: 'report_discount_given_label'.tr,
                   value: Formatters.baht(today.discount),
-                  caption: 'VAT ${Formatters.money(today.vat)}',
+                  caption: 'report_vat_caption'.trParams({
+                    'amount': Formatters.money(today.vat),
+                  }),
                   icon: Icons.local_offer_rounded,
                   color: AppColors.purple,
                 ),
@@ -89,9 +95,9 @@ class DashboardPage extends GetView<DashboardController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionHeader(
-                    title: 'ยอดขายรายชั่วโมง',
-                    subtitle: 'ดูว่าช่วงไหนลูกค้าเยอะที่สุดของวัน',
+                  SectionHeader(
+                    title: 'report_hourly_sales_title'.tr,
+                    subtitle: 'report_hourly_sales_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
                   HourlyBarChart(data: data.hourly),
@@ -141,7 +147,7 @@ class _LiveBar extends StatelessWidget {
         children: [
           Expanded(
             child: _LiveItem(
-              label: 'ออเดอร์ที่เปิดอยู่',
+              label: 'report_open_orders_label'.tr,
               value: '${live.openOrders}',
               icon: Icons.pending_actions_rounded,
             ),
@@ -149,7 +155,7 @@ class _LiveBar extends StatelessWidget {
           _divider(),
           Expanded(
             child: _LiveItem(
-              label: 'โต๊ะที่ใช้งาน',
+              label: 'report_occupied_tables_label'.tr,
               value: '${live.occupiedTables}/${live.totalTables}',
               icon: Icons.table_restaurant_rounded,
             ),
@@ -157,7 +163,7 @@ class _LiveBar extends StatelessWidget {
           _divider(),
           Expanded(
             child: _LiveItem(
-              label: 'รอครัวทำ',
+              label: 'report_pending_kitchen_label'.tr,
               value: '${live.pendingKitchenItems}',
               icon: Icons.soup_kitchen_rounded,
             ),
@@ -226,15 +232,18 @@ class _TopItemsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'เมนูขายดีวันนี้'),
+          SectionHeader(title: 'report_top_items_today_title'.tr),
           const SizedBox(height: 12),
           if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Text(
-                  'ยังไม่มียอดขายวันนี้',
-                  style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                  'report_no_sales_today'.tr,
+                  style: const TextStyle(
+                    color: AppColors.textDisabled,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             )
@@ -277,7 +286,9 @@ class _TopItemsCard extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      '${entry.value.quantity} จาน',
+                      'report_quantity_plates'.trParams({
+                        'count': entry.value.quantity.toString(),
+                      }),
                       style: const TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
@@ -325,15 +336,18 @@ class _PaymentBreakdownCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'ช่องทางชำระเงิน'),
+          SectionHeader(title: 'report_payment_methods_title'.tr),
           const SizedBox(height: 12),
           if (methods.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Text(
-                  'ยังไม่มีรายการชำระเงิน',
-                  style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                  'report_no_payments_yet'.tr,
+                  style: const TextStyle(
+                    color: AppColors.textDisabled,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             )
@@ -357,7 +371,9 @@ class _PaymentBreakdownCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${entry.value.count} บิล',
+                    'report_bill_count'.trParams({
+                      'count': entry.value.count.toString(),
+                    }),
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppColors.textDisabled,

@@ -88,7 +88,7 @@ class StaffController extends GetxController {
 
     return result.fold(
       onSuccess: (_) {
-        AppDialogs.success('เพิ่มพนักงานแล้ว');
+        AppDialogs.success('staff_added_success'.tr);
         load();
         return true;
       },
@@ -105,7 +105,9 @@ class StaffController extends GetxController {
     );
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success('เปลี่ยนบทบาทของ ${user.name} แล้ว');
+        AppDialogs.success(
+          'staff_role_changed_success'.trParams({'name': user.name}),
+        );
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
@@ -119,7 +121,9 @@ class StaffController extends GetxController {
     result.fold(
       onSuccess: (_) {
         AppDialogs.success(
-          user.isActive ? 'ปิดการใช้งานบัญชีแล้ว' : 'เปิดการใช้งานบัญชีแล้ว',
+          user.isActive
+              ? 'staff_deactivated_success'.tr
+              : 'staff_activated_success'.tr,
         );
         load();
       },
@@ -129,14 +133,14 @@ class StaffController extends GetxController {
 
   Future<void> delete(User user) async {
     if (user.id == currentUserId) {
-      AppDialogs.error('ลบบัญชีของตัวเองไม่ได้');
+      AppDialogs.error('staff_cannot_delete_self'.tr);
       return;
     }
 
     final confirmed = await AppDialogs.confirm(
-      title: 'ลบพนักงาน',
-      message: 'ต้องการลบบัญชีของ ${user.name} ใช่หรือไม่?',
-      confirmLabel: 'ลบบัญชี',
+      title: 'staff_delete_title'.tr,
+      message: 'staff_delete_confirm'.trParams({'name': user.name}),
+      confirmLabel: 'staff_delete_account'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -144,7 +148,7 @@ class StaffController extends GetxController {
     final result = await _deleteStaff(user.id);
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success('ลบบัญชีแล้ว');
+        AppDialogs.success('staff_deleted_success'.tr);
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),

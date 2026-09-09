@@ -85,7 +85,7 @@ class ProfilePage extends GetView<AuthController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader(title: 'การเชื่อมต่อ'),
+                  SectionHeader(title: 'auth_profile_connection_title'.tr),
                   const SizedBox(height: 12),
                   ValueListenableBuilder<bool>(
                     valueListenable: session.socket.connected,
@@ -104,8 +104,8 @@ class ProfilePage extends GetView<AuthController> {
                         const SizedBox(width: 8),
                         Text(
                           connected
-                              ? 'เชื่อมต่อเรียลไทม์อยู่'
-                              : 'ไม่ได้เชื่อมต่อเรียลไทม์',
+                              ? 'auth_profile_realtime_connected'.tr
+                              : 'auth_profile_realtime_disconnected'.tr,
                           style: const TextStyle(fontSize: 13.5),
                         ),
                       ],
@@ -133,7 +133,7 @@ class ProfilePage extends GetView<AuthController> {
                 side: const BorderSide(color: AppColors.danger),
               ),
               icon: const Icon(Icons.logout_rounded, size: 18),
-              label: const Text('ออกจากระบบ'),
+              label: Text('auth_logout'.tr),
             ),
           ),
         ],

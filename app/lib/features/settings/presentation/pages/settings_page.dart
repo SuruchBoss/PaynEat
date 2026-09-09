@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/localization/locale_service.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../controllers/printer_settings_controller.dart';
@@ -32,19 +33,21 @@ class SettingsPage extends GetView<SettingsController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader(
-                    title: 'ข้อมูลร้าน',
-                    subtitle: 'ชื่อร้านจะแสดงบนใบเสร็จ',
+                  SectionHeader(
+                    title: 'settings_store_info_title'.tr,
+                    subtitle: 'settings_store_info_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
                   TextField(
                     controller: controller.storeNameController,
-                    decoration: const InputDecoration(labelText: 'ชื่อร้าน'),
+                    decoration: InputDecoration(
+                      labelText: 'settings_store_name_label'.tr,
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  const SectionHeader(
-                    title: 'การคำนวณบิล',
-                    subtitle: 'มีผลกับทุกออเดอร์ที่เปิดใหม่หลังจากนี้',
+                  SectionHeader(
+                    title: 'settings_bill_calc_title'.tr,
+                    subtitle: 'settings_bill_calc_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -56,8 +59,8 @@ class SettingsPage extends GetView<SettingsController> {
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                          decoration: const InputDecoration(
-                            labelText: 'VAT',
+                          decoration: InputDecoration(
+                            labelText: 'settings_vat_label'.tr,
                             suffixText: '%',
                           ),
                         ),
@@ -70,8 +73,8 @@ class SettingsPage extends GetView<SettingsController> {
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                          decoration: const InputDecoration(
-                            labelText: 'Service Charge',
+                          decoration: InputDecoration(
+                            labelText: 'settings_service_charge_label'.tr,
                             suffixText: '%',
                           ),
                         ),
@@ -84,10 +87,8 @@ class SettingsPage extends GetView<SettingsController> {
                       value: controller.vatIncluded.value,
                       onChanged: (value) =>
                           controller.vatIncluded.value = value,
-                      title: const Text('ราคาเมนูรวม VAT แล้ว'),
-                      subtitle: const Text(
-                        'ถ้าเปิด ระบบจะถอด VAT ออกมาแสดงแทนการบวกเพิ่ม',
-                      ),
+                      title: Text('settings_vat_included_title'.tr),
+                      subtitle: Text('settings_vat_included_subtitle'.tr),
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
@@ -106,12 +107,17 @@ class SettingsPage extends GetView<SettingsController> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('บันทึกการตั้งค่า'),
+                          : Text('settings_save_button'.tr),
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
+            child: const _LanguageCard(),
           ),
           const SizedBox(height: 12),
           ConstrainedBox(
@@ -125,11 +131,20 @@ class SettingsPage extends GetView<SettingsController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionHeader(title: 'เกี่ยวกับระบบ'),
+                  SectionHeader(title: 'settings_about_title'.tr),
                   const SizedBox(height: 12),
-                  _InfoRow(label: 'แอปพลิเคชัน', value: AppConfig.appName),
-                  _InfoRow(label: 'เวอร์ชัน', value: '1.0.0'),
-                  _InfoRow(label: 'เซิร์ฟเวอร์', value: AppConfig.baseUrl),
+                  _InfoRow(
+                    label: 'settings_about_app_label'.tr,
+                    value: AppConfig.appName,
+                  ),
+                  _InfoRow(
+                    label: 'settings_about_version_label'.tr,
+                    value: '1.0.0',
+                  ),
+                  _InfoRow(
+                    label: 'settings_about_server_label'.tr,
+                    value: AppConfig.baseUrl,
+                  ),
                 ],
               ),
             ),
@@ -137,6 +152,55 @@ class SettingsPage extends GetView<SettingsController> {
         ],
       );
     });
+  }
+}
+
+/// สลับภาษาไทย/อังกฤษของทั้งแอป
+class _LanguageCard extends StatefulWidget {
+  const _LanguageCard();
+
+  @override
+  State<_LanguageCard> createState() => _LanguageCardState();
+}
+
+class _LanguageCardState extends State<_LanguageCard> {
+  @override
+  Widget build(BuildContext context) {
+    final isEnglish = LocaleService.isEnglish;
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionHeader(
+            title: 'settings_language_title'.tr,
+            subtitle: 'settings_language_subtitle'.tr,
+          ),
+          const SizedBox(height: 16),
+          SegmentedButton<bool>(
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text('settings_language_th'.tr),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('settings_language_en'.tr),
+              ),
+            ],
+            selected: {isEnglish},
+            onSelectionChanged: (selection) async {
+              final wantsEnglish = selection.first;
+              await LocaleService.change(
+                wantsEnglish
+                    ? const Locale('en', 'US')
+                    : const Locale('th', 'TH'),
+              );
+              if (mounted) setState(() {});
+            },
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -28,7 +28,9 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     return Scaffold(
       appBar: AppBar(
         title: Obx(
-          () => Text(controller.order.value?.code ?? 'รายละเอียดออเดอร์'),
+          () => Text(
+            controller.order.value?.code ?? 'order_detail_title'.tr,
+          ),
         ),
         actions: [
           Obx(() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -139,7 +140,7 @@ class OrderItemTile extends StatelessWidget {
                             ),
                             visualDensity: VisualDensity.compact,
                             color: AppColors.textDisabled,
-                            tooltip: 'ลบรายการ',
+                            tooltip: 'order_remove_item'.tr,
                           ),
                         if (onCancel != null && !item.isEditable)
                           IconButton(
@@ -147,7 +148,7 @@ class OrderItemTile extends StatelessWidget {
                             icon: const Icon(Icons.block_rounded, size: 17),
                             visualDensity: VisualDensity.compact,
                             color: AppColors.textDisabled,
-                            tooltip: 'ยกเลิกรายการ',
+                            tooltip: 'order_cancel_item'.tr,
                           ),
                         if (onAdvance != null && item.nextActionLabel != null)
                           FilledButton(

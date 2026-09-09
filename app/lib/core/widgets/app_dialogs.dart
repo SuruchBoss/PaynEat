@@ -10,10 +10,12 @@ class AppDialogs {
   static Future<bool> confirm({
     required String title,
     required String message,
-    String confirmLabel = 'ยืนยัน',
-    String cancelLabel = 'ยกเลิก',
+    String? confirmLabel,
+    String? cancelLabel,
     bool destructive = false,
   }) async {
+    confirmLabel ??= 'common_confirm'.tr;
+    cancelLabel ??= 'common_cancel'.tr;
     final result = await Get.dialog<bool>(
       AlertDialog(
         title: Text(title),
@@ -39,9 +41,9 @@ class AppDialogs {
     return result ?? false;
   }
 
-  static void success(String message, {String title = 'สำเร็จ'}) {
+  static void success(String message, {String? title}) {
     Get.snackbar(
-      title,
+      title ?? 'common_success_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.success,
@@ -52,9 +54,9 @@ class AppDialogs {
     );
   }
 
-  static void error(String message, {String title = 'เกิดข้อผิดพลาด'}) {
+  static void error(String message, {String? title}) {
     Get.snackbar(
-      title,
+      title ?? 'common_error_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.danger,
@@ -65,9 +67,9 @@ class AppDialogs {
     );
   }
 
-  static void info(String message, {String title = 'แจ้งเตือน'}) {
+  static void info(String message, {String? title}) {
     Get.snackbar(
-      title,
+      title ?? 'common_info_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.textPrimary,

@@ -48,20 +48,20 @@ class _DiscountDialogState extends State<DiscountDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('ส่วนลด'),
+      title: Text('order_discount_title'.tr),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SegmentedButton<String>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: DiscountType.percent,
-                label: Text('เปอร์เซ็นต์'),
+                label: Text('order_discount_percent_option'.tr),
               ),
               ButtonSegment(
                 value: DiscountType.amount,
-                label: Text('จำนวนเงิน'),
+                label: Text('order_discount_amount_option'.tr),
               ),
             ],
             selected: {_type},
@@ -78,9 +78,11 @@ class _DiscountDialogState extends State<DiscountDialog> {
             ],
             decoration: InputDecoration(
               labelText: _type == DiscountType.percent
-                  ? 'ลดกี่เปอร์เซ็นต์'
-                  : 'ลดกี่บาท',
-              suffixText: _type == DiscountType.percent ? '%' : 'บาท',
+                  ? 'order_discount_percent_hint'.tr
+                  : 'order_discount_amount_hint'.tr,
+              suffixText: _type == DiscountType.percent
+                  ? '%'
+                  : 'common_baht'.tr,
             ),
             onChanged: (_) => setState(() {}),
           ),
@@ -109,16 +111,16 @@ class _DiscountDialogState extends State<DiscountDialog> {
             onPressed: () => Get.back(
               result: const DiscountResult(type: DiscountType.none, value: 0),
             ),
-            child: const Text(
-              'ยกเลิกส่วนลด',
-              style: TextStyle(color: AppColors.danger),
+            child: Text(
+              'order_discount_remove_button'.tr,
+              style: const TextStyle(color: AppColors.danger),
             ),
           ),
         TextButton(
           onPressed: () => Get.back<void>(),
-          child: const Text(
-            'ปิด',
-            style: TextStyle(color: AppColors.textSecondary),
+          child: Text(
+            'common_close'.tr,
+            style: const TextStyle(color: AppColors.textSecondary),
           ),
         ),
         FilledButton(
@@ -127,7 +129,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
                   result: DiscountResult(type: _type, value: _value),
                 )
               : null,
-          child: const Text('ใช้ส่วนลด'),
+          child: Text('order_discount_apply_button'.tr),
         ),
       ],
     );

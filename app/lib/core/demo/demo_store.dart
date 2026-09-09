@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:get/get.dart';
+
 import '../../features/order/domain/services/bill_calculator.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';

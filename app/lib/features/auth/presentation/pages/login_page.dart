@@ -51,9 +51,9 @@ class _BrandPanel extends StatelessWidget {
         children: [
           const _Logo(size: 64, light: true),
           const SizedBox(height: 28),
-          const Text(
-            'ระบบขายหน้าร้าน\nสำหรับร้านอาหาร',
-            style: TextStyle(
+          Text(
+            'auth_login_brand_headline'.tr,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 34,
               height: 1.25,
@@ -62,7 +62,7 @@ class _BrandPanel extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(
-            'รับออเดอร์บนแท็บเล็ต ส่งเข้าครัวทันที ปิดบิลและดูยอดขายได้ในที่เดียว',
+            'auth_login_brand_subheadline'.tr,
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.85),
               fontSize: 15,
@@ -70,21 +70,21 @@ class _BrandPanel extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 40),
-          const _FeatureLine(
+          _FeatureLine(
             icon: Icons.table_restaurant_rounded,
-            text: 'ผังโต๊ะเห็นสถานะแบบเรียลไทม์',
+            text: 'auth_login_feature_tables'.tr,
           ),
-          const _FeatureLine(
+          _FeatureLine(
             icon: Icons.soup_kitchen_rounded,
-            text: 'จอครัว (KDS) อัปเดตทันทีที่กดสั่ง',
+            text: 'auth_login_feature_kds'.tr,
           ),
-          const _FeatureLine(
+          _FeatureLine(
             icon: Icons.point_of_sale_rounded,
-            text: 'ปิดบิล แยกจ่าย และออกใบเสร็จ',
+            text: 'auth_login_feature_billing'.tr,
           ),
-          const _FeatureLine(
+          _FeatureLine(
             icon: Icons.insights_rounded,
-            text: 'รายงานยอดขายและเมนูขายดี',
+            text: 'auth_login_feature_reports'.tr,
           ),
         ],
       ),
@@ -148,13 +148,13 @@ class _LoginFormPanel extends GetView<AuthController> {
                   const SizedBox(height: 20),
                 ],
                 Text(
-                  'เข้าสู่ระบบ',
+                  'auth_login_title'.tr,
                   style: Theme.of(context).textTheme.headlineMedium,
                 ),
                 const SizedBox(height: 6),
-                const Text(
-                  'ใช้บัญชีพนักงานที่ผู้จัดการออกให้',
-                  style: TextStyle(color: AppColors.textSecondary),
+                Text(
+                  'auth_login_subtitle'.tr,
+                  style: const TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 28),
 
@@ -163,10 +163,10 @@ class _LoginFormPanel extends GetView<AuthController> {
                   validator: controller.validateUsername,
                   textInputAction: TextInputAction.next,
                   autofillHints: const [AutofillHints.username],
-                  decoration: const InputDecoration(
-                    labelText: 'ชื่อผู้ใช้',
-                    hintText: 'เช่น waiter1',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
+                  decoration: InputDecoration(
+                    labelText: 'auth_username_label'.tr,
+                    hintText: 'auth_username_hint'.tr,
+                    prefixIcon: const Icon(Icons.person_outline_rounded),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -180,7 +180,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                     autofillHints: const [AutofillHints.password],
                     onFieldSubmitted: (_) => controller.submitLogin(),
                     decoration: InputDecoration(
-                      labelText: 'รหัสผ่าน',
+                      labelText: 'auth_password_label'.tr,
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
                         onPressed: controller.toggleObscure,
@@ -245,7 +245,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('เข้าสู่ระบบ'),
+                        : Text('auth_login_title'.tr),
                   ),
                 ),
 
@@ -260,8 +260,10 @@ class _LoginFormPanel extends GetView<AuthController> {
                 Center(
                   child: Text(
                     AppConfig.demoMode
-                        ? 'PaynEat POS · โหมดสาธิต'
-                        : 'เชื่อมต่อ ${AppConfig.baseUrl}',
+                        ? 'auth_login_footer_demo'.tr
+                        : 'auth_login_footer_connected'.trParams({
+                            'url': AppConfig.baseUrl,
+                          }),
                     style: const TextStyle(
                       color: AppColors.textDisabled,
                       fontSize: 11.5,
@@ -290,15 +292,14 @@ class _DemoModeBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppTheme.radiusMd),
         border: Border.all(color: AppColors.info.withValues(alpha: 0.25)),
       ),
-      child: const Row(
+      child: Row(
         children: [
-          Icon(Icons.science_rounded, size: 18, color: AppColors.info),
-          SizedBox(width: 10),
+          const Icon(Icons.science_rounded, size: 18, color: AppColors.info),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'โหมดสาธิต — ข้อมูลทั้งหมดอยู่ในเครื่องคุณ กดใช้งานได้ทุกฟีเจอร์ '
-              'รีเฟรชหน้าเว็บเพื่อเริ่มใหม่',
-              style: TextStyle(
+              'auth_demo_mode_banner'.tr,
+              style: const TextStyle(
                 fontSize: 12.5,
                 color: AppColors.info,
                 height: 1.4,

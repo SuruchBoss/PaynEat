@@ -1,3 +1,4 @@
+import '../../../../core/localization/locale_service.dart';
 import 'menu_option.dart';
 
 /// เมนูอาหาร 1 รายการ
@@ -31,6 +32,10 @@ class MenuItem {
   final int prepMinutes;
   final int sortOrder;
   final List<MenuOptionGroup> optionGroups;
+
+  /// ชื่อที่จะแสดงตามภาษาปัจจุบัน — ถอยกลับไปใช้ [name] (ไทย) ถ้าไม่มี [nameEn]
+  String get displayName =>
+      LocaleService.isEnglish && (nameEn?.isNotEmpty ?? false) ? nameEn! : name;
 
   bool get hasOptions => optionGroups.isNotEmpty;
 

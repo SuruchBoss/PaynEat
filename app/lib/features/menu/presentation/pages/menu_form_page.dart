@@ -91,7 +91,11 @@ class _MenuFormPageState extends State<MenuFormPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_editing == null ? 'เพิ่มเมนูใหม่' : 'แก้ไขเมนู'),
+        title: Text(
+          _editing == null
+              ? 'menu_form_add_title'.tr
+              : 'menu_form_edit_title'.tr,
+        ),
       ),
       body: Form(
         key: _formKey,
@@ -102,29 +106,31 @@ class _MenuFormPageState extends State<MenuFormPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SectionHeader(title: 'ข้อมูลเมนู'),
+                  SectionHeader(title: 'menu_form_info_section'.tr),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'ชื่อเมนู *'),
+                    decoration: InputDecoration(
+                      labelText: 'menu_form_name_label'.tr,
+                    ),
                     validator: (value) =>
                         (value == null || value.trim().isEmpty)
-                        ? 'กรุณากรอกชื่อเมนู'
+                        ? 'menu_form_name_required'.tr
                         : null,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameEnController,
-                    decoration: const InputDecoration(
-                      labelText: 'ชื่อภาษาอังกฤษ',
+                    decoration: InputDecoration(
+                      labelText: 'menu_form_name_en_label'.tr,
                     ),
                   ),
                   const SizedBox(height: 14),
                   Obx(
                     () => DropdownButtonFormField<int>(
                       initialValue: _categoryId,
-                      decoration: const InputDecoration(
-                        labelText: 'หมวดหมู่ *',
+                      decoration: InputDecoration(
+                        labelText: 'menu_form_category_label'.tr,
                       ),
                       items: _controller.categories
                           .map(
@@ -139,7 +145,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                           .toList(growable: false),
                       onChanged: (value) => setState(() => _categoryId = value),
                       validator: (value) =>
-                          value == null ? 'กรุณาเลือกหมวดหมู่' : null,
+                          value == null ? 'menu_form_category_required'.tr : null,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -156,14 +162,14 @@ class _MenuFormPageState extends State<MenuFormPage> {
                               RegExp(r'[0-9.]'),
                             ),
                           ],
-                          decoration: const InputDecoration(
-                            labelText: 'ราคา *',
-                            suffixText: 'บาท',
+                          decoration: InputDecoration(
+                            labelText: 'menu_form_price_label'.tr,
+                            suffixText: 'common_baht'.tr,
                           ),
                           validator: (value) {
                             final price = double.tryParse(value?.trim() ?? '');
                             if (price == null || price < 0) {
-                              return 'กรุณากรอกราคาให้ถูกต้อง';
+                              return 'menu_form_price_invalid'.tr;
                             }
                             return null;
                           },
@@ -177,9 +183,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                           ],
-                          decoration: const InputDecoration(
-                            labelText: 'เวลาทำ',
-                            suffixText: 'นาที',
+                          decoration: InputDecoration(
+                            labelText: 'menu_form_prep_time_label'.tr,
+                            suffixText: 'menu_form_minutes_suffix'.tr,
                           ),
                         ),
                       ),
@@ -189,21 +195,23 @@ class _MenuFormPageState extends State<MenuFormPage> {
                   TextFormField(
                     controller: _descriptionController,
                     maxLines: 2,
-                    decoration: const InputDecoration(labelText: 'คำอธิบาย'),
+                    decoration: InputDecoration(
+                      labelText: 'menu_form_description_label'.tr,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   SwitchListTile(
                     value: _isAvailable,
                     onChanged: (value) => setState(() => _isAvailable = value),
-                    title: const Text('เปิดขาย'),
+                    title: Text('menu_form_available_label'.tr),
                     contentPadding: EdgeInsets.zero,
                   ),
                   SwitchListTile(
                     value: _isRecommended,
                     onChanged: (value) =>
                         setState(() => _isRecommended = value),
-                    title: const Text('เมนูแนะนำ'),
-                    subtitle: const Text('จะมีป้ายดาวบนจอสั่งอาหาร'),
+                    title: Text('menu_form_recommended_label'.tr),
+                    subtitle: Text('menu_form_recommended_subtitle'.tr),
                     contentPadding: EdgeInsets.zero,
                   ),
                 ],
@@ -215,21 +223,21 @@ class _MenuFormPageState extends State<MenuFormPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SectionHeader(
-                    title: 'กลุ่มตัวเลือก',
-                    subtitle: 'เช่น ระดับความเผ็ด, เพิ่มไข่ดาว',
+                    title: 'menu_form_option_groups_section'.tr,
+                    subtitle: 'menu_form_option_groups_hint'.tr,
                     trailing: TextButton.icon(
                       onPressed: _addGroup,
                       icon: const Icon(Icons.add_rounded, size: 18),
-                      label: const Text('เพิ่มกลุ่ม'),
+                      label: Text('menu_form_add_group_button'.tr),
                     ),
                   ),
                   if (_optionGroups.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
                       child: Center(
                         child: Text(
-                          'ยังไม่มีกลุ่มตัวเลือก',
-                          style: TextStyle(
+                          'menu_form_no_option_groups'.tr,
+                          style: const TextStyle(
                             color: AppColors.textDisabled,
                             fontSize: 13,
                           ),
@@ -259,7 +267,11 @@ class _MenuFormPageState extends State<MenuFormPage> {
                           color: Colors.white,
                         ),
                       )
-                    : Text(_editing == null ? 'เพิ่มเมนู' : 'บันทึกการแก้ไข'),
+                    : Text(
+                        _editing == null
+                            ? 'menu_add_item_button'.tr
+                            : 'menu_form_submit_edit'.tr,
+                      ),
               ),
             ),
           ],
@@ -305,7 +317,11 @@ class _OptionGroupRow extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                group.isRequired ? 'ต้องเลือก' : 'เลือกได้ ${group.maxSelect}',
+                group.isRequired
+                    ? 'menu_option_required_badge'.tr
+                    : 'menu_option_max_select_badge'.trParams({
+                        'count': '${group.maxSelect}',
+                      }),
                 style: const TextStyle(
                   fontSize: 11.5,
                   color: AppColors.textSecondary,
@@ -391,7 +407,7 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('เพิ่มกลุ่มตัวเลือก'),
+      title: Text('menu_option_group_dialog_title'.tr),
       content: SizedBox(
         width: 380,
         child: SingleChildScrollView(
@@ -404,9 +420,9 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                 autofocus: true,
                 // rebuild เพื่อให้ปุ่ม "เพิ่มกลุ่ม" เปิด-ปิดตามความถูกต้องของฟอร์มทันที
                 onChanged: (_) => setState(() {}),
-                decoration: const InputDecoration(
-                  labelText: 'ชื่อกลุ่ม',
-                  hintText: 'เช่น ระดับความเผ็ด',
+                decoration: InputDecoration(
+                  labelText: 'menu_option_group_name_label'.tr,
+                  hintText: 'menu_option_group_name_hint'.tr,
                 ),
               ),
               const SizedBox(height: 12),
@@ -417,9 +433,9 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                       value: _isRequired,
                       onChanged: (value) =>
                           setState(() => _isRequired = value ?? false),
-                      title: const Text(
-                        'ต้องเลือก',
-                        style: TextStyle(fontSize: 13.5),
+                      title: Text(
+                        'menu_option_required_badge'.tr,
+                        style: const TextStyle(fontSize: 13.5),
                       ),
                       contentPadding: EdgeInsets.zero,
                       controlAffinity: ListTileControlAffinity.leading,
@@ -430,8 +446,8 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     width: 110,
                     child: DropdownButtonFormField<int>(
                       initialValue: _maxSelect,
-                      decoration: const InputDecoration(
-                        labelText: 'เลือกได้',
+                      decoration: InputDecoration(
+                        labelText: 'menu_option_max_select_label'.tr,
                         isDense: true,
                       ),
                       items: [1, 2, 3, 4, 5]
@@ -453,8 +469,8 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     flex: 3,
                     child: TextField(
                       controller: _optionNameController,
-                      decoration: const InputDecoration(
-                        labelText: 'ตัวเลือก',
+                      decoration: InputDecoration(
+                        labelText: 'menu_option_name_label'.tr,
                         isDense: true,
                       ),
                       onSubmitted: (_) => _addOption(),
@@ -468,8 +484,8 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                       inputFormatters: [
                         FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                       ],
-                      decoration: const InputDecoration(
-                        labelText: '+บาท',
+                      decoration: InputDecoration(
+                        labelText: 'menu_option_price_delta_label'.tr,
                         isDense: true,
                       ),
                     ),
@@ -508,7 +524,7 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
       actions: [
         TextButton(
           onPressed: () => Get.back<void>(),
-          child: const Text('ยกเลิก'),
+          child: Text('common_cancel'.tr),
         ),
         FilledButton(
           onPressed: _nameController.text.trim().isEmpty || _options.isEmpty
@@ -523,7 +539,7 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     options: _options,
                   ),
                 ),
-          child: const Text('เพิ่มกลุ่ม'),
+          child: Text('menu_form_add_group_button'.tr),
         ),
       ],
     );

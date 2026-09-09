@@ -100,8 +100,10 @@ class MenuManagementController extends GetxController {
         if (index >= 0) items[index] = updated;
         AppDialogs.success(
           updated.isAvailable
-              ? 'เปิดขาย "${updated.name}" แล้ว'
-              : 'ปิดขาย "${updated.name}" แล้ว',
+              ? 'menu_mark_available_success'.trParams({'name': updated.name})
+              : 'menu_mark_unavailable_success'.trParams({
+                  'name': updated.name,
+                }),
         );
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
@@ -118,7 +120,9 @@ class MenuManagementController extends GetxController {
     result.fold(
       onSuccess: (_) {
         AppDialogs.success(
-          id == null ? 'เพิ่มเมนูใหม่แล้ว' : 'บันทึกการแก้ไขแล้ว',
+          id == null
+              ? 'menu_item_created_success'.tr
+              : 'menu_item_updated_success'.tr,
         );
         Get.back<void>();
         load();
@@ -129,9 +133,9 @@ class MenuManagementController extends GetxController {
 
   Future<void> delete(MenuItem item) async {
     final confirmed = await AppDialogs.confirm(
-      title: 'ลบเมนู',
-      message: 'ต้องการลบ "${item.name}" ออกจากระบบใช่หรือไม่?',
-      confirmLabel: 'ลบเมนู',
+      title: 'menu_delete_item_title'.tr,
+      message: 'menu_delete_item_confirm'.trParams({'name': item.name}),
+      confirmLabel: 'menu_delete_item_title'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -140,7 +144,7 @@ class MenuManagementController extends GetxController {
     result.fold(
       onSuccess: (_) {
         items.removeWhere((row) => row.id == item.id);
-        AppDialogs.success('ลบเมนูแล้ว');
+        AppDialogs.success('menu_item_deleted_success'.tr);
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
@@ -161,7 +165,9 @@ class MenuManagementController extends GetxController {
     result.fold(
       onSuccess: (_) {
         AppDialogs.success(
-          id == null ? 'เพิ่มหมวดหมู่แล้ว' : 'แก้ไขหมวดหมู่แล้ว',
+          id == null
+              ? 'menu_category_created_success'.tr
+              : 'menu_category_updated_success'.tr,
         );
         load();
       },
@@ -171,9 +177,11 @@ class MenuManagementController extends GetxController {
 
   Future<void> deleteCategory(Category category) async {
     final confirmed = await AppDialogs.confirm(
-      title: 'ลบหมวดหมู่',
-      message: 'ต้องการลบหมวดหมู่ "${category.name}" ใช่หรือไม่?',
-      confirmLabel: 'ลบ',
+      title: 'menu_delete_category_title'.tr,
+      message: 'menu_delete_category_confirm'.trParams({
+        'name': category.name,
+      }),
+      confirmLabel: 'common_delete'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -181,7 +189,7 @@ class MenuManagementController extends GetxController {
     final result = await _deleteCategory(category.id);
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success('ลบหมวดหมู่แล้ว');
+        AppDialogs.success('menu_category_deleted_success'.tr);
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
