@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/network/socket_client.dart';
+import 'package:payneat_pos/core/printing/receipt_printer_service.dart';
+import 'package:payneat_pos/core/services/printer_settings_service.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
@@ -70,6 +72,8 @@ void main() {
       getReceipt: GetReceiptUseCase(repository),
       refundPayment: RefundPaymentUseCase(repository),
       session: session,
+      printerSettings: PrinterSettingsService(storage: StorageService.memory()),
+      printerService: ReceiptPrinterService(),
     );
   });
 
@@ -162,5 +166,23 @@ void main() {
     // submitRefund ทั้งสองผลลัพธ์ (สำเร็จ/ล้มเหลว) แตะ AppDialogs เสมอ (ไม่มี guard
     // ให้ return ก่อนแบบ submit() ของ checkout) จึงไม่ครอบคลุมในเทสต์ระดับ unit นี้
     // (ดู docs/CODING_STANDARDS.md — รูปแบบเดียวกับ checkout_controller_test.dart)
+
+    test(
+      'printerConfigured อ่านจาก PrinterSettingsService — ค่าเริ่มต้นยังไม่ได้ตั้งค่า',
+      () {
+        expect(controller.printerConfigured, isFalse);
+      },
+    );
+
+    test(
+      'printReceipt ก่อนโหลดใบเสร็จสำเร็จ (order/receipt ยังเป็น null) → ไม่ทำอะไรและไม่ throw',
+      () async {
+        // ไม่เรียก onInit()/load() จึง order.value และ receipt.value ยังเป็น null
+        // ครอบคลุมเฉพาะ guard นี้ตามธรรมเนียมโปรเจกต์ (path ที่ทำสำเร็จแตะ AppDialogs
+        // เหมือน submitRefund ด้านบน จึงไม่ครอบคลุมในเทสต์ระดับ unit)
+        await expectLater(controller.printReceipt(), completes);
+        expect(controller.isPrinting.value, isFalse);
+      },
+    );
   });
 }

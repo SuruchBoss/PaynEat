@@ -18,6 +18,21 @@ class ReceiptPage extends GetView<ReceiptController> {
       appBar: AppBar(
         title: const Text('ใบเสร็จรับเงิน'),
         actions: [
+          Obx(
+            () => IconButton(
+              onPressed: controller.isPrinting.value
+                  ? null
+                  : controller.printReceipt,
+              icon: controller.isPrinting.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.print_rounded),
+              tooltip: 'พิมพ์ใบเสร็จ',
+            ),
+          ),
           IconButton(
             onPressed: () => Get.until((route) => route.isFirst),
             icon: const Icon(Icons.home_rounded),

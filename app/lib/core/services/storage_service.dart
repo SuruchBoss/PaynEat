@@ -79,4 +79,10 @@ class StorageService {
     await _remove(StorageKeys.token);
     await _remove(StorageKeys.user);
   }
+
+  /// ตั้งค่าเครื่องพิมพ์ใบเสร็จ — ผูกกับเครื่องนี้เท่านั้น จึงไม่ถูกล้างตอน [clear] (logout)
+  String? get printerProfileJson => _read(StorageKeys.printerProfile);
+
+  Future<void> savePrinterProfile(String json) =>
+      _write(StorageKeys.printerProfile, json);
 }

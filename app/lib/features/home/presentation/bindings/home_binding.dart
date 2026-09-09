@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/printing/receipt_printer_service.dart';
+import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/presentation/pages/profile_page.dart';
 import '../../../kitchen/presentation/controllers/kitchen_controller.dart';
@@ -18,6 +20,7 @@ import '../../../report/presentation/controllers/report_controller.dart';
 import '../../../report/presentation/pages/dashboard_page.dart';
 import '../../../report/presentation/pages/reports_page.dart';
 import '../../../settings/domain/usecases/settings_usecases.dart';
+import '../../../settings/presentation/controllers/printer_settings_controller.dart';
 import '../../../settings/presentation/controllers/settings_controller.dart';
 import '../../../settings/presentation/pages/settings_page.dart';
 import '../../../shift/presentation/pages/shift_page.dart';
@@ -112,6 +115,13 @@ class HomeBinding extends Bindings {
       () => SettingsController(
         getSettings: Get.find<GetSettingsUseCase>(),
         updateSettings: Get.find<UpdateSettingsUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => PrinterSettingsController(
+        settingsService: Get.find<PrinterSettingsService>(),
+        printerService: Get.find<ReceiptPrinterService>(),
       ),
       fenix: true,
     );

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../../core/printing/receipt_printer_service.dart';
+import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../../shift/domain/usecases/shift_usecases.dart';
@@ -30,6 +32,8 @@ class ReceiptBinding extends Bindings {
         getReceipt: Get.find<GetReceiptUseCase>(),
         refundPayment: Get.find<RefundPaymentUseCase>(),
         session: Get.find<SessionService>(),
+        printerSettings: Get.find<PrinterSettingsService>(),
+        printerService: Get.find<ReceiptPrinterService>(),
       ),
     );
   }

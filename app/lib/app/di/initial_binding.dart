@@ -4,6 +4,8 @@ import '../../core/demo/demo_data_sources.dart';
 import '../../core/demo/demo_store.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/socket_client.dart';
+import '../../core/printing/receipt_printer_service.dart';
+import '../../core/services/printer_settings_service.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/storage_service.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -83,6 +85,14 @@ class InitialBinding extends Bindings {
     Get.put<SessionService>(
       SessionService(storage: storage, socket: Get.find<SocketClient>()),
       permanent: true,
+    );
+    Get.put<PrinterSettingsService>(
+      PrinterSettingsService(storage: storage),
+      permanent: true,
+    );
+    Get.lazyPut<ReceiptPrinterService>(
+      () => ReceiptPrinterService(),
+      fenix: true,
     );
   }
 
