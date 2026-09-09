@@ -1,0 +1,33 @@
+# Ticket: Audit Log
+
+**Priority:** 🟠 High
+**Ref:** `docs/FEATURE-GAP-ANALYSIS.md` #8
+
+## ปัญหา
+ไม่มี table audit log ในระบบ การกระทำที่มีความเสี่ยงต่อการทุจริต เช่น ยกเลิกออเดอร์/
+รายการ (`orders.status = cancelled`, `order_items.status = cancelled`), ให้ส่วนลดพิเศษ,
+แก้ไขราคาเมนู, ลบ/ปลด staff ไม่ถูกบันทึกว่าใครทำเมื่อไหร่และเหตุผลอะไร
+
+## ทำไมสำคัญ
+เป็นฟีเจอร์พื้นฐานของ POS เพื่อป้องกันการทุจริตหน้าร้าน (เช่น cashier ยกเลิกบิลหลังรับเงิน
+สดแล้วเก็บเงินเอง) และช่วย manager/owner ตรวจสอบย้อนหลังได้เมื่อมีข้อสงสัย
+
+## ขอบเขตงาน (คร่าวๆ)
+- Schema: table `audit_logs` (id, actor_user_id, action type, entity_type, entity_id,
+  before/after JSON หรือ diff, reason nullable, created_at)
+- กำหนด action ที่ต้อง log เป็นอย่างน้อย: cancel order, void order item (หลัง cooking),
+  แก้ไขราคา/ส่วนลด, ลบ/ปิดใช้งาน staff, แก้ settings (VAT/service charge), refund
+  (ผูกกับ ticket #2)
+- Backend: middleware/หรือ service-level logging ที่จุดที่ action เหล่านี้เกิดขึ้น (ไม่ใช่
+  generic HTTP logging — ต้องมี context ทางธุรกิจ เช่น "ยกเลิกออเดอร์ #123 เหตุผล: ...")
+- Frontend: หน้าจอดู audit log สำหรับ admin (filter ตามผู้ใช้/ช่วงเวลา/ประเภท action)
+
+## Acceptance Criteria
+- [ ] ทุก action เสี่ยง (ตามรายการข้างบน) ถูกบันทึกพร้อมผู้ทำ/เวลา/รายละเอียด
+- [ ] Admin ดูประวัติ audit log ทั้งหมด filter ได้ตามผู้ใช้/ช่วงเวลา/ประเภท
+- [ ] Log ไม่สามารถแก้ไข/ลบได้จาก UI ปกติ (append-only)
+
+## ไฟล์ที่เกี่ยวข้อง
+- `backend/src/db/schema.sql`
+- `backend/src/middlewares/`
+- `backend/src/modules/orders/`, `backend/src/modules/users/`, `backend/src/modules/settings/`
