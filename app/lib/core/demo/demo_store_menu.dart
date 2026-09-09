@@ -86,7 +86,7 @@ extension DemoStoreMenu on DemoStore {
         'nameEn': body['nameEn'],
         'description': body['description'],
         'price': body['price'],
-        'imageUrl': null,
+        'imageUrl': body['imageUrl'],
         'isAvailable': body['isAvailable'] ?? true,
         'isRecommended': body['isRecommended'] ?? false,
         'prepMinutes': body['prepMinutes'] ?? 10,

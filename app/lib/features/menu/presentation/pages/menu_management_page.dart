@@ -8,6 +8,7 @@ import '../../domain/entities/category.dart';
 import '../../domain/entities/menu_item.dart';
 import '../controllers/menu_management_controller.dart';
 import '../widgets/category_filter_bar.dart';
+import '../widgets/menu_item_thumbnail.dart';
 
 /// หน้าจัดการเมนู — ออกแบบสำหรับจอกว้าง (เว็บผู้ดูแลระบบ) แต่ยังใช้บนแท็บเล็ตได้
 class MenuManagementPage extends GetView<MenuManagementController> {
@@ -167,24 +168,29 @@ class _MenuRow extends GetView<MenuManagementController> {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: item.isAvailable
-                  ? AppColors.primarySoft
-                  : AppColors.surfaceAlt,
-              borderRadius: BorderRadius.circular(11),
-            ),
-            child: Text(
-              item.displayName.substring(0, 1),
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-                color: item.isAvailable
-                    ? AppColors.primary
-                    : AppColors.textDisabled,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(11),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: MenuItemThumbnail(
+                imageUrl: item.imageUrl,
+                placeholder: Container(
+                  alignment: Alignment.center,
+                  color: item.isAvailable
+                      ? AppColors.primarySoft
+                      : AppColors.surfaceAlt,
+                  child: Text(
+                    item.displayName.substring(0, 1),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: item.isAvailable
+                          ? AppColors.primary
+                          : AppColors.textDisabled,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

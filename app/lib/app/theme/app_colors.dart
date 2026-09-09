@@ -29,9 +29,12 @@ class AppColors {
   static const Color purple = Color(0xFF7048E8);
 
   /// สีประจำสถานะโต๊ะ ใช้ทั้งในผังโต๊ะและ chip
+  ///
+  /// ตั้งใจไม่ใช้ [primary] กับสถานะไหนเลย — ส้มแบรนด์ถูกใช้เป็นสี CTA/แท็บที่เลือกอยู่
+  /// ทั่วแอปอยู่แล้ว ถ้าเอามาใช้ซ้ำเป็นสีสถานะโต๊ะด้วย จะแยกไม่ออกว่าส้มหมายถึงอะไรกันแน่
   static Color tableStatus(String status) => switch (status) {
     TableStatus.available => success,
-    TableStatus.occupied => primary,
+    TableStatus.occupied => warning,
     TableStatus.reserved => info,
     TableStatus.billing => purple,
     _ => textSecondary,

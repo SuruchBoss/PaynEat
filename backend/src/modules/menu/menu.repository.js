@@ -144,16 +144,15 @@ export const menuRepository = {
   },
 
   update(id, payload) {
-    getDb()
-      .prepare(
-        `
+    const db = getDb();
+    db.prepare(
+      `
         UPDATE menu_items
            SET category_id    = COALESCE(?, category_id),
                name           = COALESCE(?, name),
                name_en        = COALESCE(?, name_en),
                description    = COALESCE(?, description),
                price          = COALESCE(?, price),
-               image_url      = COALESCE(?, image_url),
                is_available   = COALESCE(?, is_available),
                is_recommended = COALESCE(?, is_recommended),
                prep_minutes   = COALESCE(?, prep_minutes),
@@ -161,20 +160,26 @@ export const menuRepository = {
                updated_at     = datetime('now')
          WHERE id = ?
       `,
-      )
-      .run(
-        payload.categoryId ?? null,
-        payload.name ?? null,
-        payload.nameEn ?? null,
-        payload.description ?? null,
-        payload.price ?? null,
-        payload.imageUrl ?? null,
-        payload.isAvailable === undefined ? null : Number(payload.isAvailable),
-        payload.isRecommended === undefined ? null : Number(payload.isRecommended),
-        payload.prepMinutes ?? null,
-        payload.sortOrder ?? null,
-        id,
-      );
+    ).run(
+      payload.categoryId ?? null,
+      payload.name ?? null,
+      payload.nameEn ?? null,
+      payload.description ?? null,
+      payload.price ?? null,
+      payload.isAvailable === undefined ? null : Number(payload.isAvailable),
+      payload.isRecommended === undefined ? null : Number(payload.isRecommended),
+      payload.prepMinutes ?? null,
+      payload.sortOrder ?? null,
+      id,
+    );
+
+    // image_url ต้องแก้แยกจาก COALESCE ด้านบน — COALESCE(?, col) ไม่มีทางเซ็ตเป็น NULL ได้เลย
+    // (พารามิเตอร์ null กับ "ไม่ได้ส่งมา" กลายเป็นค่าเดียวกันไปหมด) ทำให้ "ลบรูปเมนู" ใช้ไม่ได้จริง
+    // ถ้า payload.imageUrl === undefined แปลว่าไม่ได้ตั้งใจแก้ช่องนี้ จึงข้ามไปเลย
+    if (payload.imageUrl !== undefined) {
+      db.prepare('UPDATE menu_items SET image_url = ? WHERE id = ?').run(payload.imageUrl, id);
+    }
+
     return this.findById(id);
   },
 

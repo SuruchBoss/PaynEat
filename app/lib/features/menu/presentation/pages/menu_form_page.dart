@@ -1,13 +1,19 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../domain/entities/menu_item_payload.dart';
 import '../../domain/entities/menu_item.dart';
 import '../../domain/entities/menu_option.dart';
 import '../controllers/menu_management_controller.dart';
+import '../widgets/menu_image_picker_stub.dart'
+    if (dart.library.html) '../widgets/menu_image_picker_web.dart'
+    as image_picker;
+import '../widgets/menu_item_thumbnail.dart';
 
 /// ฟอร์มเพิ่ม/แก้ไขเมนู พร้อมตัวจัดการกลุ่มตัวเลือก
 class MenuFormPage extends StatefulWidget {
@@ -34,6 +40,15 @@ class _MenuFormPageState extends State<MenuFormPage> {
   bool _isRecommended = false;
   final List<MenuOptionGroup> _optionGroups = [];
 
+  /// เก็บเป็น data URL (base64) ตอนเลือกรูปใหม่ หรือ URL เดิมจากเซิร์ฟเวอร์
+  /// ค่าเป็น `''` หมายถึง "ผู้ใช้ตั้งใจลบรูป" (ต้องส่งค่านี้จริงไปให้ backend เพราะ
+  /// `MenuItemPayload.toJson` จะไม่ส่ง key นี้เลยถ้าเป็น null — ดู menu_item_payload.dart)
+  String? _imageUrl;
+
+  bool get _hasImage => _imageUrl != null && _imageUrl!.isNotEmpty;
+
+  static const _maxImageBytes = 1600 * 1024;
+
   @override
   void initState() {
     super.initState();
@@ -51,10 +66,27 @@ class _MenuFormPageState extends State<MenuFormPage> {
       _isAvailable = item.isAvailable;
       _isRecommended = item.isRecommended;
       _optionGroups.addAll(item.optionGroups);
+      _imageUrl = (item.imageUrl?.isNotEmpty ?? false) ? item.imageUrl : null;
     } else if (_controller.categories.isNotEmpty) {
       _categoryId = _controller.categories.first.id;
     }
   }
+
+  Future<void> _pickImage() async {
+    try {
+      final picked = await image_picker.pickMenuImage();
+      if (picked == null) return;
+      if (picked.sizeBytes > _maxImageBytes) {
+        AppDialogs.error('menu_form_photo_too_large'.tr);
+        return;
+      }
+      setState(() => _imageUrl = picked.dataUrl);
+    } catch (_) {
+      AppDialogs.error('menu_form_photo_pick_failed'.tr);
+    }
+  }
+
+  void _removeImage() => setState(() => _imageUrl = '');
 
   @override
   void dispose() {
@@ -80,6 +112,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
         categoryId: _categoryId!,
         price: double.parse(_priceController.text.trim()),
         prepMinutes: int.tryParse(_prepController.text.trim()) ?? 10,
+        imageUrl: _imageUrl,
         isAvailable: _isAvailable,
         isRecommended: _isRecommended,
         optionGroups: _optionGroups,
@@ -108,6 +141,90 @@ class _MenuFormPageState extends State<MenuFormPage> {
                 children: [
                   SectionHeader(title: 'menu_form_info_section'.tr),
                   const SizedBox(height: 16),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: SizedBox(
+                          width: 88,
+                          height: 88,
+                          child: MenuItemThumbnail(
+                            imageUrl: _imageUrl,
+                            placeholder: Container(
+                              color: AppColors.surfaceAlt,
+                              alignment: Alignment.center,
+                              child: const Icon(
+                                Icons.image_outlined,
+                                color: AppColors.textDisabled,
+                                size: 28,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'menu_form_photo_label'.tr,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            if (kIsWeb) ...[
+                              Wrap(
+                                spacing: 10,
+                                runSpacing: 6,
+                                children: [
+                                  OutlinedButton.icon(
+                                    onPressed: _pickImage,
+                                    icon: const Icon(
+                                      Icons.upload_rounded,
+                                      size: 17,
+                                    ),
+                                    label: Text(
+                                      _hasImage
+                                          ? 'menu_form_photo_change'.tr
+                                          : 'menu_form_photo_pick'.tr,
+                                    ),
+                                  ),
+                                  if (_hasImage)
+                                    TextButton(
+                                      onPressed: _removeImage,
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: AppColors.danger,
+                                      ),
+                                      child: Text('menu_form_photo_remove'.tr),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'menu_form_photo_hint'.tr,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  color: AppColors.textDisabled,
+                                ),
+                              ),
+                            ] else
+                              Text(
+                                'menu_form_photo_web_only'.tr,
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  color: AppColors.textDisabled,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(

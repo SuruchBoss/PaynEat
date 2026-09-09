@@ -5,6 +5,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/menu_item.dart';
+import 'menu_item_thumbnail.dart';
 
 /// การ์ดเมนู 1 รายการ
 ///
@@ -61,21 +62,24 @@ class MenuItemCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: _palette,
+                      MenuItemThumbnail(
+                        imageUrl: item.imageUrl,
+                        placeholder: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _palette,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            item.displayName.substring(0, 1),
-                            style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white.withValues(alpha: 0.9),
+                          child: Center(
+                            child: Text(
+                              item.displayName.substring(0, 1),
+                              style: TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
                             ),
                           ),
                         ),
