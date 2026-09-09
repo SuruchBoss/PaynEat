@@ -25,6 +25,7 @@ tags:
   - name: Tables
   - name: Orders
   - name: Payments
+  - name: Shifts
   - name: Reports
   - name: Settings
 
@@ -644,6 +645,40 @@ paths:
                       order: { $ref: '#/components/schemas/Order' }
                       isFullyPaid: { type: boolean }
                       remaining: { type: number }
+  /payments/{id}/refund:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+        description: id ของ payment ที่จะคืนเงิน
+    post:
+      tags: [Payments]
+      summary: คืนเงินหลังชำระเงินแล้ว (เต็มจำนวนหรือบางส่วน — manager ขึ้นไป)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, reason]
+              properties:
+                amount: { type: number, example: 50, description: ต้องไม่เกินยอดที่ยังคืนได้ของ payment นี้ }
+                reason: { type: string, example: ลูกค้าคืนอาหารบางส่วน }
+      responses:
+        '201':
+          description: บันทึกการคืนเงินสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      refund: { type: object }
+                      order: { $ref: '#/components/schemas/Order' }
   /payments/order/{id}/split-preview:
     parameters:
       - in: path
@@ -688,6 +723,69 @@ paths:
       summary: ข้อมูลใบเสร็จสำหรับพิมพ์
       responses:
         '200': { description: สำเร็จ }
+
+  /shifts/current:
+    get:
+      tags: [Shifts]
+      summary: กะที่เปิดอยู่ตอนนี้ (ถ้ามี) — admin/manager/cashier
+      responses:
+        '200': { description: สำเร็จ (data เป็น null ถ้าไม่มีกะเปิดอยู่) }
+  /shifts:
+    get:
+      tags: [Shifts]
+      summary: ประวัติกะย้อนหลัง
+      parameters:
+        - { in: query, name: limit, schema: { type: integer, minimum: 1, maximum: 100 } }
+      responses:
+        '200': { description: สำเร็จ }
+    post:
+      tags: [Shifts]
+      summary: เปิดกะใหม่ พร้อมเงินทอนตั้งต้น
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [openingCash]
+              properties:
+                openingCash: { type: number, minimum: 0, example: 2000 }
+      responses:
+        '201': { description: เปิดกะสำเร็จ }
+        '409': { description: มีกะเปิดอยู่แล้ว ต้องปิดก่อนเปิดกะใหม่ }
+  /shifts/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Shifts]
+      summary: รายละเอียดกะ
+      responses:
+        '200': { description: สำเร็จ }
+  /shifts/{id}/close:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Shifts]
+      summary: ปิดกะ — นับเงินสดจริงเทียบกับยอดที่ระบบคาดไว้ (กระทบยอด)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [countedCash]
+              properties:
+                countedCash: { type: number, minimum: 0, example: 5230 }
+                note: { type: string, maxLength: 300 }
+      responses:
+        '200':
+          description: ปิดกะสำเร็จ (data มี expectedCash/countedCash/difference ให้เทียบ)
 
   /reports/dashboard:
     get:
