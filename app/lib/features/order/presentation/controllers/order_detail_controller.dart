@@ -98,7 +98,7 @@ class OrderDetailController extends GetxController {
   Future<void> sendToKitchen() async {
     await _run(
       () => _sendToKitchen(orderId),
-      successMessage: 'ส่งออเดอร์เข้าครัวแล้ว',
+      successMessage: 'order_sent_to_kitchen_success'.tr,
     );
   }
 
@@ -116,9 +116,9 @@ class OrderDetailController extends GetxController {
 
   Future<void> removeItem(OrderItem item) async {
     final confirmed = await AppDialogs.confirm(
-      title: 'ลบรายการ',
-      message: 'ต้องการลบ "${item.name}" ออกจากออเดอร์ใช่หรือไม่?',
-      confirmLabel: 'ลบรายการ',
+      title: 'order_remove_item'.tr,
+      message: 'order_remove_item_confirm'.trParams({'name': item.name}),
+      confirmLabel: 'order_remove_item'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -126,7 +126,7 @@ class OrderDetailController extends GetxController {
     await _run(
       () =>
           _removeItem(RemoveOrderItemParams(orderId: orderId, itemId: item.id)),
-      successMessage: 'ลบรายการแล้ว',
+      successMessage: 'order_remove_item_success'.tr,
     );
   }
 
@@ -144,9 +144,9 @@ class OrderDetailController extends GetxController {
 
   Future<void> cancelItem(OrderItem item) async {
     final confirmed = await AppDialogs.confirm(
-      title: 'ยกเลิกรายการ',
-      message: 'ยกเลิก "${item.name}" ออกจากบิลใช่หรือไม่?',
-      confirmLabel: 'ยกเลิกรายการ',
+      title: 'order_cancel_item'.tr,
+      message: 'order_cancel_item_confirm'.trParams({'name': item.name}),
+      confirmLabel: 'order_cancel_item'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -159,7 +159,7 @@ class OrderDetailController extends GetxController {
           status: OrderItemStatus.cancelled,
         ),
       ),
-      successMessage: 'ยกเลิกรายการแล้ว',
+      successMessage: 'order_cancel_item_success'.tr,
     );
   }
 
@@ -172,15 +172,15 @@ class OrderDetailController extends GetxController {
         ApplyDiscountParams(orderId: orderId, type: type, value: value),
       ),
       successMessage: type == DiscountType.none
-          ? 'ยกเลิกส่วนลดแล้ว'
-          : 'ใช้ส่วนลดแล้ว',
+          ? 'order_discount_removed_success'.tr
+          : 'order_discount_applied_success'.tr,
     );
   }
 
   Future<void> cancelOrder(String reason) async {
     await _run(
       () => _cancelOrder(CancelOrderParams(orderId: orderId, reason: reason)),
-      successMessage: 'ยกเลิกออเดอร์แล้ว',
+      successMessage: 'order_cancel_order_success'.tr,
     );
   }
 
@@ -189,7 +189,7 @@ class OrderDetailController extends GetxController {
       () => _moveOrderTable(
         MoveOrderTableParams(orderId: orderId, tableId: tableId),
       ),
-      successMessage: 'ย้ายโต๊ะแล้ว',
+      successMessage: 'order_move_table_success'.tr,
     );
   }
 
@@ -198,7 +198,7 @@ class OrderDetailController extends GetxController {
       () => _mergeOrders(
         MergeOrdersParams(targetOrderId: orderId, sourceOrderId: sourceOrderId),
       ),
-      successMessage: 'รวมบิลแล้ว',
+      successMessage: 'order_merge_bill_success'.tr,
     );
   }
 

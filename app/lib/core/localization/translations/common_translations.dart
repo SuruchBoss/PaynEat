@@ -11,7 +11,7 @@ const Map<String, String> commonTranslationsTh = {
   'common_search': 'ค้นหา',
   'common_close': 'ปิด',
   'common_back': 'ย้อนกลับ',
-  'common_retry': 'ลองอีกครั้ง',
+  'common_retry': 'ลองใหม่อีกครั้ง',
   'common_loading': 'กำลังโหลด...',
   'common_success_title': 'สำเร็จ',
   'common_error_title': 'เกิดข้อผิดพลาด',
@@ -27,6 +27,17 @@ const Map<String, String> commonTranslationsTh = {
   'common_baht': 'บาท',
   'error_network_unreachable': 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้',
   'error_cache_io': 'อ่าน/เขียนข้อมูลในเครื่องไม่สำเร็จ',
+  'error_network_check_connection':
+      'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ต',
+  'error_session_expired': 'เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่',
+  'error_forbidden': 'บัญชีนี้ไม่มีสิทธิ์ทำรายการนี้',
+  'error_unexpected': 'เกิดข้อผิดพลาดที่ไม่คาดคิด',
+  'error_api_call_failed': 'เรียก API ไม่สำเร็จ',
+  'error_api_call_failed_with_status': 'เรียก API ไม่สำเร็จ (HTTP @status)',
+  'common_time_just_now': 'เมื่อสักครู่',
+  'common_time_minutes': '@minutes นาที',
+  'common_time_hours_minutes': '@hours ชม. @minutes นาที',
+  'common_time_days': '@days วัน',
 };
 
 const Map<String, String> commonTranslationsEn = {
@@ -55,4 +66,15 @@ const Map<String, String> commonTranslationsEn = {
   'common_baht': 'THB',
   'error_network_unreachable': 'Could not connect to the server',
   'error_cache_io': 'Failed to read or write local data',
+  'error_network_check_connection':
+      'Could not connect to the server. Please check your internet connection.',
+  'error_session_expired': 'Your session has expired. Please log in again.',
+  'error_forbidden': 'This account is not allowed to perform this action.',
+  'error_unexpected': 'An unexpected error occurred.',
+  'error_api_call_failed': 'API call failed',
+  'error_api_call_failed_with_status': 'API call failed (HTTP @status)',
+  'common_time_just_now': 'just now',
+  'common_time_minutes': '@minutes min',
+  'common_time_hours_minutes': '@hours hr @minutes min',
+  'common_time_days': '@days days',
 };

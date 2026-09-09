@@ -22,7 +22,7 @@ class _FakeAuthRepository implements AuthRepository {
     required String password,
   }) async {
     loginCallCount++;
-    return const Result.failure(UnexpectedFailure('ไม่ได้ใช้งานในเทสต์นี้'));
+    return Result.failure(UnexpectedFailure('ไม่ได้ใช้งานในเทสต์นี้'));
   }
 
   @override

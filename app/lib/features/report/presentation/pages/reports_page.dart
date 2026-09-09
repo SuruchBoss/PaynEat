@@ -209,9 +209,7 @@ class ReportsPage extends GetView<ReportController> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SectionHeader(
-                        title: 'report_sales_by_category_title'.tr,
-                      ),
+                      SectionHeader(title: 'report_sales_by_category_title'.tr),
                       const SizedBox(height: 8),
                       if (summary.categories.isEmpty)
                         Padding(

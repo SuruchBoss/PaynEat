@@ -27,13 +27,16 @@ class OrderListController extends GetxController {
 
   final List<VoidCallback> _unsubscribers = [];
 
-  static const List<({String? value, String label})> filters = [
-    (value: null, label: 'กำลังดำเนินการ'),
-    (value: OrderStatus.open, label: 'ยังไม่ส่งครัว'),
-    (value: OrderStatus.inKitchen, label: 'อยู่ในครัว'),
-    (value: OrderStatus.served, label: 'เสิร์ฟครบ'),
-    (value: OrderStatus.paid, label: 'ชำระแล้ววันนี้'),
-    (value: OrderStatus.cancelled, label: 'ยกเลิก'),
+  static List<({String? value, String label})> get filters => [
+    (value: null, label: 'order_filter_active'.tr),
+    (value: OrderStatus.open, label: 'order_filter_not_sent'.tr),
+    (value: OrderStatus.inKitchen, label: 'order_filter_in_kitchen'.tr),
+    (value: OrderStatus.served, label: OrderStatus.label(OrderStatus.served)),
+    (value: OrderStatus.paid, label: 'order_filter_paid_today'.tr),
+    (
+      value: OrderStatus.cancelled,
+      label: OrderStatus.label(OrderStatus.cancelled),
+    ),
   ];
 
   @override

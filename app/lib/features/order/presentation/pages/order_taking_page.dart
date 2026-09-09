@@ -31,9 +31,7 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
           cart.isAddingToExistingOrder
               ? 'order_taking_title_add'.tr
               : cart.tableName != null
-              ? 'order_taking_title_table'.trParams({
-                  'table': cart.tableName!,
-                })
+              ? 'order_taking_title_table'.trParams({'table': cart.tableName!})
               : 'order_taking_title_takeaway'.tr,
         ),
         actions: [

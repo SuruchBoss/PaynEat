@@ -54,7 +54,7 @@ void main() {
       final service = OfflineOrderQueueService(
         storage: storage,
         orderRepository: _FakeOrderRepository({
-          1: [const Result.failure(NetworkFailure())],
+          1: [Result.failure(NetworkFailure())],
         }),
         retryInterval: const Duration(minutes: 10),
       );
@@ -105,7 +105,7 @@ void main() {
       'syncNow เจอ NetworkFailure ของรายการแรก → หยุดทั้งรอบ ไม่แตะรายการถัดไป',
       () async {
         final repo = _FakeOrderRepository({
-          1: [const Result.failure(NetworkFailure())],
+          1: [Result.failure(NetworkFailure())],
         });
         final storage = StorageService.memory();
         final service = OfflineOrderQueueService(
@@ -199,7 +199,7 @@ void main() {
         final first = OfflineOrderQueueService(
           storage: storage,
           orderRepository: _FakeOrderRepository({
-            1: [const Result.failure(NetworkFailure())],
+            1: [Result.failure(NetworkFailure())],
           }),
           retryInterval: const Duration(minutes: 10),
         );
@@ -214,7 +214,7 @@ void main() {
         final second = OfflineOrderQueueService(
           storage: storage,
           orderRepository: _FakeOrderRepository({
-            1: [const Result.failure(NetworkFailure())],
+            1: [Result.failure(NetworkFailure())],
           }),
           retryInterval: const Duration(minutes: 10),
         );

@@ -1,5 +1,7 @@
 /// คำแปลของฟีเจอร์ report
 const Map<String, String> reportTranslationsTh = {
+  'report_uncategorized': 'ไม่ระบุหมวดหมู่',
+
   // ช่วงเวลาที่เลือกดูรายงาน
   'report_range_today': 'วันนี้',
   'report_range_last_7_days': '7 วันล่าสุด',
@@ -48,6 +50,8 @@ const Map<String, String> reportTranslationsTh = {
 };
 
 const Map<String, String> reportTranslationsEn = {
+  'report_uncategorized': 'Uncategorized',
+
   // Date range selector
   'report_range_today': 'Today',
   'report_range_last_7_days': 'Last 7 days',

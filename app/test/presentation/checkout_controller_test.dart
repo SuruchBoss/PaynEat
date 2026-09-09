@@ -142,7 +142,7 @@ void main() {
     );
 
     test('load ล้มเหลว → ตั้ง errorMessage', () async {
-      orderRepository.nextOrderResult = const Result.failure(
+      orderRepository.nextOrderResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

@@ -247,9 +247,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                     child: Text(
                       _missingGroups.isEmpty
                           ? 'order_add_to_cart_button'.trParams({
-                              'price': Formatters.baht(
-                                _unitPrice * _quantity,
-                              ),
+                              'price': Formatters.baht(_unitPrice * _quantity),
                             })
                           : 'order_select_required_group'.trParams({
                               'group': _missingGroups.first,

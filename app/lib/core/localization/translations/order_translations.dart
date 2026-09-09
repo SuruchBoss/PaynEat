@@ -29,7 +29,8 @@ const Map<String, String> orderTranslationsTh = {
   'order_view_cart': 'ดูตะกร้า',
 
   // แผงตะกร้า
-  'order_cart_empty_message': 'ยังไม่มีรายการในออเดอร์\nแตะเมนูทางซ้ายเพื่อเพิ่ม',
+  'order_cart_empty_message':
+      'ยังไม่มีรายการในออเดอร์\nแตะเมนูทางซ้ายเพื่อเพิ่ม',
   'order_cart_title_add': 'สั่งเพิ่ม',
   'order_cart_title_new': 'ออเดอร์ใหม่',
   'order_clear_button': 'ล้าง',
@@ -67,6 +68,7 @@ const Map<String, String> orderTranslationsTh = {
   // หน้ารายการออเดอร์
   'order_list_empty': 'ยังไม่มีออเดอร์ในหมวดนี้',
   'order_item_count_label': '@count รายการ',
+  'order_list_row_summary': '@code · @count รายการ · @time',
   'order_filter_active': 'กำลังดำเนินการ',
   'order_filter_not_sent': 'ยังไม่ส่งครัว',
   'order_filter_in_kitchen': 'อยู่ในครัว',
@@ -117,12 +119,15 @@ const Map<String, String> orderTranslationsTh = {
   'order_error_no_items': 'ออเดอร์ยังไม่มีรายการอาหาร',
   'order_error_no_table': 'ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้',
   'order_error_same_table': 'เลือกโต๊ะเดิม ไม่ต้องย้าย',
-  'order_error_destination_table_occupied': 'โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว',
+  'order_error_destination_table_occupied':
+      'โต๊ะปลายทางมีออเดอร์ที่เปิดอยู่แล้ว',
   'order_error_merge_same_order': 'เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้',
   'order_merged_into_reason': 'รวมเข้ากับบิล #@code',
   'order_error_already_paid_cannot_cancel': 'ออเดอร์ที่ชำระแล้วยกเลิกไม่ได้',
   'order_error_item_not_found': 'ไม่พบรายการนี้ในออเดอร์',
   'order_error_closed_cannot_edit': 'ออเดอร์นี้ปิดแล้ว ไม่สามารถแก้ไขได้',
+  'order_offline_sync_failed':
+      'ส่งรายการที่ค้างไว้ของ @label ไม่สำเร็จ: @message',
 };
 
 const Map<String, String> orderTranslationsEn = {
@@ -187,6 +192,7 @@ const Map<String, String> orderTranslationsEn = {
 
   'order_list_empty': 'No orders in this category yet',
   'order_item_count_label': '@count items',
+  'order_list_row_summary': '@code · @count items · @time',
   'order_filter_active': 'In progress',
   'order_filter_not_sent': 'Not sent yet',
   'order_filter_in_kitchen': 'In kitchen',
@@ -243,4 +249,6 @@ const Map<String, String> orderTranslationsEn = {
   'order_error_already_paid_cannot_cancel': 'A paid order cannot be cancelled',
   'order_error_item_not_found': 'Item not found in this order',
   'order_error_closed_cannot_edit': 'This order is closed and cannot be edited',
+  'order_offline_sync_failed':
+      'Failed to sync pending items for @label: @message',
 };

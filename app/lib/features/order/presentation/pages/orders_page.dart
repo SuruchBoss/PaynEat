@@ -62,8 +62,8 @@ class OrdersPage extends GetView<OrderListController> {
               return ErrorView(message: error, onRetry: controller.load);
             }
             if (controller.orders.isEmpty) {
-              return const EmptyView(
-                message: 'ยังไม่มีออเดอร์ในหมวดนี้',
+              return EmptyView(
+                message: 'order_list_empty'.tr,
                 icon: Icons.receipt_long_outlined,
               );
             }
@@ -151,7 +151,11 @@ class _OrderTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${order.code} · ${order.totalQuantity} รายการ · ${Formatters.time(order.createdAt)}',
+                      'order_list_row_summary'.trParams({
+                        'code': order.code,
+                        'count': order.totalQuantity.toString(),
+                        'time': Formatters.time(order.createdAt),
+                      }),
                       style: const TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,

@@ -214,18 +214,17 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionHeader(
-            title: 'เครื่องพิมพ์ใบเสร็จ',
-            subtitle:
-                'พิมพ์ผ่านเครื่องพิมพ์ความร้อนบนวง LAN/WiFi เดียวกัน (ยังไม่รองรับบนเว็บ)',
+          SectionHeader(
+            title: 'settings_printer_title'.tr,
+            subtitle: 'settings_printer_subtitle'.tr,
           ),
           const SizedBox(height: 16),
           Obx(
             () => SwitchListTile(
               value: controller.enabled.value,
               onChanged: (value) => controller.enabled.value = value,
-              title: const Text('เปิดใช้เครื่องพิมพ์นี้'),
-              subtitle: const Text('ปิดไว้ = ใช้ใบเสร็จบนจอเหมือนเดิม'),
+              title: Text('settings_printer_enable_title'.tr),
+              subtitle: Text('settings_printer_enable_subtitle'.tr),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -237,9 +236,9 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
                 flex: 2,
                 child: TextField(
                   controller: controller.ipController,
-                  decoration: const InputDecoration(
-                    labelText: 'IP เครื่องพิมพ์',
-                    hintText: 'เช่น 192.168.1.50',
+                  decoration: InputDecoration(
+                    labelText: 'settings_printer_ip_label'.tr,
+                    hintText: 'settings_printer_ip_hint'.tr,
                   ),
                 ),
               ),
@@ -249,7 +248,9 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
                   controller: controller.portController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(labelText: 'พอร์ต'),
+                  decoration: InputDecoration(
+                    labelText: 'settings_printer_port_label'.tr,
+                  ),
                 ),
               ),
             ],
@@ -257,9 +258,15 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
           const SizedBox(height: 12),
           Obx(
             () => SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 58, label: Text('58 มม.')),
-                ButtonSegment(value: 80, label: Text('80 มม.')),
+              segments: [
+                ButtonSegment(
+                  value: 58,
+                  label: Text('settings_printer_paper_58mm'.tr),
+                ),
+                ButtonSegment(
+                  value: 80,
+                  label: Text('settings_printer_paper_80mm'.tr),
+                ),
               ],
               selected: {controller.paperWidthMm.value},
               onSelectionChanged: (selection) =>
@@ -281,7 +288,7 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
                             height: 18,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('ทดสอบพิมพ์'),
+                        : Text('settings_printer_test_button'.tr),
                   ),
                 ),
               ),
@@ -301,7 +308,7 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
                               color: Colors.white,
                             ),
                           )
-                        : const Text('บันทึก'),
+                        : Text('common_save'.tr),
                   ),
                 ),
               ),
