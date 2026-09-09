@@ -11,7 +11,8 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-245%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-292%20passing-2F9E44">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
@@ -718,9 +719,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 - [`docs/PaynEat-POS-Audit-Report-TH.pdf`](docs/PaynEat-POS-Audit-Report-TH.pdf) — รายงานผลตรวจคุณภาพโค้ด
   ฉบับอ่านง่าย 8 หน้า (PDF) สรุปผลตรวจทั้ง 5 มิติพร้อมตัวอย่างบั๊กจริงที่พบและแก้แล้ว
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — อยากช่วยพัฒนาต่อ? เริ่มที่นี่ (setup, มาตรฐานโค้ด, PR workflow)
 
 ---
 
 ## 📄 License
 
-MIT — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย
+[MIT](LICENSE) — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย
