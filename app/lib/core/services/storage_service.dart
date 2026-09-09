@@ -85,4 +85,11 @@ class StorageService {
 
   Future<void> savePrinterProfile(String json) =>
       _write(StorageKeys.printerProfile, json);
+
+  /// คิวรายการอาหารที่สั่งเพิ่มไว้ตอนออฟไลน์ รอส่งขึ้นเซิร์ฟเวอร์ — เก็บในเครื่องเท่านั้น
+  /// ไม่ผูกกับผู้ใช้ที่ login จึงไม่ถูกล้างตอน [clear] เช่นกัน (พนักงานคนอื่นอาจต้อง sync ต่อ)
+  String? get pendingOrderItemsJson => _read(StorageKeys.pendingOrderItems);
+
+  Future<void> savePendingOrderItems(String json) =>
+      _write(StorageKeys.pendingOrderItems, json);
 }

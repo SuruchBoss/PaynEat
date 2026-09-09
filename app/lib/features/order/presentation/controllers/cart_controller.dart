@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/failures.dart';
+import '../../../../core/services/offline_order_queue_service.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../menu/domain/entities/menu_item.dart';
 import '../../../menu/domain/entities/menu_option.dart';
@@ -20,15 +22,18 @@ class CartController extends GetxController {
     required AddOrderItemsUseCase addItems,
     required SendToKitchenUseCase sendToKitchen,
     required GetSettingsUseCase getSettings,
+    required OfflineOrderQueueService offlineQueue,
   }) : _createOrder = createOrder,
        _addItems = addItems,
        _sendToKitchen = sendToKitchen,
-       _getSettings = getSettings;
+       _getSettings = getSettings,
+       _offlineQueue = offlineQueue;
 
   final CreateOrderUseCase _createOrder;
   final AddOrderItemsUseCase _addItems;
   final SendToKitchenUseCase _sendToKitchen;
   final GetSettingsUseCase _getSettings;
+  final OfflineOrderQueueService _offlineQueue;
 
   final RxList<CartLine> lines = <CartLine>[].obs;
   final RxBool isSubmitting = false.obs;
@@ -171,6 +176,30 @@ class CartController extends GetxController {
       },
       onFailure: (failure) async {
         isSubmitting.value = false;
+
+        // สั่งเพิ่มเข้าออเดอร์เดิมที่พังเพราะเน็ตหลุด (ไม่ใช่เปิดออเดอร์ใหม่ — ความเสี่ยง
+        // conflict สูงกว่า จึงยังไม่รองรับออฟไลน์ ดู docs/DECISIONS.md) ให้ queue รายการไว้
+        // ในเครื่องแทนที่จะบล็อกพนักงาน แล้วส่งขึ้นเซิร์ฟเวอร์อัตโนมัติเมื่อเน็ตกลับมา
+        if (isAddingToExistingOrder && failure is NetworkFailure) {
+          final queuedLines = lines.toList();
+          await _offlineQueue.enqueue(
+            orderId: existingOrderId!,
+            orderLabel: tableName != null
+                ? 'โต๊ะ $tableName'
+                : 'ออเดอร์ #$existingOrderId',
+            items: cartToPayload(queuedLines),
+            summary: queuedLines
+                .map((line) => '${line.menuItem.name} x${line.quantity}')
+                .join(', '),
+          );
+          clear();
+          AppDialogs.info(
+            'ออฟไลน์ — บันทึกรายการไว้ในเครื่องแล้ว จะส่งเข้าระบบอัตโนมัติเมื่อเน็ตกลับมา',
+          );
+          Get.back<void>();
+          return;
+        }
+
         AppDialogs.error(failure.message);
       },
     );

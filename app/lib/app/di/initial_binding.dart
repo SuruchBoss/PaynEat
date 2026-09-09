@@ -5,6 +5,7 @@ import '../../core/demo/demo_store.dart';
 import '../../core/network/api_client.dart';
 import '../../core/network/socket_client.dart';
 import '../../core/printing/receipt_printer_service.dart';
+import '../../core/services/offline_order_queue_service.dart';
 import '../../core/services/printer_settings_service.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/storage_service.dart';
@@ -303,6 +304,16 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => AddOrderItemsUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
+    // lazyPut (ไม่ eager) ด้วยเหตุผลเดียวกับ ShiftController ด้านล่าง — สร้างตอนแอปเริ่ม
+    // (ก่อน login เสร็จ) อาจแข่งกับการกู้เซสชันแล้วยิง sync ด้วย token ที่ยังไม่พร้อม
+    // ทำให้เจอ 401 ชั่วคราวแล้วเข้าใจผิดว่าเป็น conflict จริงจนตัดรายการทิ้งทั้งที่ไม่ควร
+    Get.lazyPut(
+      () => OfflineOrderQueueService(
+        storage: Get.find<StorageService>(),
+        orderRepository: Get.find<OrderRepository>(),
+      ),
       fenix: true,
     );
     Get.lazyPut(

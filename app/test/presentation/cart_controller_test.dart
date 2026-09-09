@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
+import 'package:payneat_pos/core/services/offline_order_queue_service.dart';
+import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
 import 'package:payneat_pos/features/menu/domain/entities/menu_item.dart';
 import 'package:payneat_pos/features/menu/domain/entities/menu_option.dart';
@@ -68,6 +70,10 @@ void main() {
       addItems: AddOrderItemsUseCase(orderRepository),
       sendToKitchen: SendToKitchenUseCase(orderRepository),
       getSettings: GetSettingsUseCase(_FakeSettingsRepository()),
+      offlineQueue: OfflineOrderQueueService(
+        storage: StorageService.memory(),
+        orderRepository: orderRepository,
+      ),
     );
   });
 
