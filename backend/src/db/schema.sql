@@ -155,6 +155,20 @@ CREATE TABLE IF NOT EXISTS payments (
 );
 CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_shift ON payments(shift_id);
+
+-- คืนเงินหลังชำระเงินแล้ว — แยกจาก payment เดิมเสมอเพื่อเก็บ audit trail
+-- (ดู docs/tickets/02-refund-flow.md)
+CREATE TABLE IF NOT EXISTS refunds (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  payment_id  INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  order_id    INTEGER NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+  amount      INTEGER NOT NULL CHECK (amount > 0),
+  reason      TEXT    NOT NULL,
+  refunded_by INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_refunds_payment ON refunds(payment_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_order ON refunds(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_created ON payments(created_at);
 
 CREATE TABLE IF NOT EXISTS settings (

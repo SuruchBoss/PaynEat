@@ -31,3 +31,8 @@ export const splitPreviewSchema = z.object({
 });
 
 export const idParamSchema = z.object({ id: z.coerce.number().int().positive() });
+
+export const createRefundSchema = z.object({
+  amount: z.number().min(0.01, 'ยอดคืนต้องมากกว่า 0'),
+  reason: z.string().min(1, 'กรุณาระบุเหตุผลที่คืนเงิน').max(300),
+});

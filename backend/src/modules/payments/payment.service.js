@@ -9,7 +9,9 @@ import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
 import { paymentRepository } from './payment.repository.js';
+import { refundRepository } from './refund.repository.js';
 import { toPaymentDto } from './payment.mapper.js';
+import { toRefundDto } from './refund.mapper.js';
 
 /** ตรวจว่ารายการที่เลือกแยกบิลถูกต้อง — อยู่ในออเดอร์จริง ยังไม่ถูกยกเลิก และยังไม่ถูกจ่ายไปก่อนหน้า */
 const assertItemsSelectable = (items, itemIds) => {
@@ -168,6 +170,7 @@ export const paymentService = {
     const order = orderService.getById(orderId);
     const settings = settingsService.get();
     const payments = this.listByOrder(orderId);
+    const refunds = refundRepository.findByOrder(orderId).map(toRefundDto);
 
     return {
       store: {
@@ -178,9 +181,39 @@ export const paymentService = {
       },
       order,
       payments,
+      refunds,
+      refundedTotal: refunds.reduce((acc, refund) => acc + refund.amount, 0),
       paidAt: order.closedAt,
       changeTotal: payments.reduce((acc, payment) => acc + payment.change, 0),
     };
+  },
+
+  /**
+   * คืนเงินหลังชำระเงินแล้ว (เต็มจำนวน/บางส่วน) — ผูกกับ payment โดยตรงเพราะออเดอร์
+   * เดียวอาจมีหลาย payment (แยกจ่าย) แยกเป็น record ใหม่เสมอเพื่อเก็บ audit trail
+   * ไม่แก้ payment เดิมหรือสถานะออเดอร์ — ยอดขายสุทธิหักออกตอนทำรายงานแทน
+   */
+  refund(paymentId, { amount, reason }, user) {
+    const payment = paymentRepository.findById(paymentId);
+    if (!payment) throw ApiError.notFound('ไม่พบรายการชำระเงินนี้');
+
+    const amountSatang = toSatang(amount);
+    const alreadyRefunded = refundRepository.totalByPayment(paymentId);
+    const refundable = payment.amount - alreadyRefunded;
+    if (amountSatang > refundable) {
+      throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
+    }
+
+    const refund = refundRepository.create({
+      paymentId,
+      orderId: payment.order_id,
+      amount: amountSatang,
+      reason,
+      refundedBy: user.id,
+    });
+    const dto = toRefundDto(refund);
+    emit(EVENTS.REFUND_CREATED, dto);
+    return dto;
   },
 };
 
