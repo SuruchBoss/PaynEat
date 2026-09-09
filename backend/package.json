@@ -27,6 +27,15 @@
     "clean-architecture"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuruchBoss/PaynEat.git",
+    "directory": "backend"
+  },
+  "bugs": {
+    "url": "https://github.com/SuruchBoss/PaynEat/issues"
+  },
+  "homepage": "https://github.com/SuruchBoss/PaynEat#readme",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "better-sqlite3": "^12.4.1",
