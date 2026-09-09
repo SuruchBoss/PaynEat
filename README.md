@@ -720,6 +720,8 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
   ฉบับอ่านง่าย 8 หน้า (PDF) สรุปผลตรวจทั้ง 5 มิติพร้อมตัวอย่างบั๊กจริงที่พบและแก้แล้ว
 - [`backend/docs/openapi.yaml`](backend/docs/openapi.yaml) — สเปก API ฉบับเต็ม
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — อยากช่วยพัฒนาต่อ? เริ่มที่นี่ (setup, มาตรฐานโค้ด, PR workflow)
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — จรรยาบรรณของผู้มีส่วนร่วมในโปรเจกต์
+- [`SECURITY.md`](SECURITY.md) — วิธีรายงานช่องโหว่ด้านความปลอดภัย และข้อควรระวังก่อน deploy ใช้งานจริง
 
 ---
 
