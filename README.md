@@ -1,5 +1,7 @@
 # 🍽️ PaynEat POS — ระบบขายหน้าร้านสำหรับร้านอาหาร
 
+**ภาษา:** ไทย · [English](README.en.md)
+
 > ระบบ POS ครบวงจร: พนักงานเสิร์ฟรับออเดอร์บนแท็บเล็ต → เด้งเข้าจอครัวทันที → แคชเชียร์ปิดบิล → ผู้จัดการดูยอดขายบนเว็บ
 >
 > **Flutter (GetX + Clean Architecture)** + **Node.js / Express + SQLite + Socket.IO** — โค้ดชุดเดียวรันได้ทั้ง Android, iOS และ Web
@@ -19,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 245 automated tests.
+control and 292 automated tests.
 
 ---
 
@@ -244,8 +246,8 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 94 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 151 เคส — domain / controller / widget
+cd backend && npm test      # 108 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 184 เคส — domain / controller / widget
 ```
 
 ---
@@ -607,11 +609,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 94 เคส
-cd app && flutter test      # 151 เคส
+cd backend && npm test      # 108 เคส
+cd app && flutter test      # 184 เคส
 ```
 
-**Backend (94 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (108 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -632,7 +634,7 @@ cd app && flutter test      # 151 เคส
 คืนโต๊ะ) + ปฏิเสธการรวมกับตัวเอง, พรีวิวยอดแยกบิลตามสัดส่วน, จ่ายทีละรายการจนครบปิดบิล,
 ปฏิเสธการเลือกรายการที่จ่ายไปแล้วซ้ำ
 
-**Flutter (151 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (184 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
