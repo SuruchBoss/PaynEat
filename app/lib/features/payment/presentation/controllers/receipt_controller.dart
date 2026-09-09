@@ -91,7 +91,7 @@ class ReceiptController extends GetxController {
 
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success('คืนเงินเรียบร้อย');
+        AppDialogs.success('payment_refund_success'.tr);
         load();
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
@@ -114,7 +114,7 @@ class ReceiptController extends GetxController {
     isPrinting.value = false;
 
     result.fold(
-      onSuccess: (_) => AppDialogs.success('พิมพ์ใบเสร็จแล้ว'),
+      onSuccess: (_) => AppDialogs.success('payment_print_success'.tr),
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
   }

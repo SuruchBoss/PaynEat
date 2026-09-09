@@ -33,8 +33,8 @@ extension DemoStoreMenu on DemoStore {
 
   void deleteCategory(int id) {
     if (menuItems.any((item) => item['categoryId'] == id)) {
-      throw const ApiException(
-        message: 'ลบไม่ได้ เพราะยังมีเมนูอยู่ในหมวดหมู่นี้',
+      throw ApiException(
+        message: 'menu_delete_category_has_items_error'.tr,
         statusCode: 409,
       );
     }
@@ -65,8 +65,10 @@ extension DemoStoreMenu on DemoStore {
 
   Map<String, dynamic> menuItem(int id) => menuItems.firstWhere(
     (row) => row['id'] == id,
-    orElse: () =>
-        throw const ApiException(message: 'ไม่พบเมนูนี้', statusCode: 404),
+    orElse: () => throw ApiException(
+      message: 'menu_item_not_found_error'.tr,
+      statusCode: 404,
+    ),
   );
 
   Map<String, dynamic> saveMenuItem(Map<String, dynamic> body, {int? id}) {

@@ -178,9 +178,7 @@ class MenuManagementController extends GetxController {
   Future<void> deleteCategory(Category category) async {
     final confirmed = await AppDialogs.confirm(
       title: 'menu_delete_category_title'.tr,
-      message: 'menu_delete_category_confirm'.trParams({
-        'name': category.name,
-      }),
+      message: 'menu_delete_category_confirm'.trParams({'name': category.name}),
       confirmLabel: 'common_delete'.tr,
       destructive: true,
     );

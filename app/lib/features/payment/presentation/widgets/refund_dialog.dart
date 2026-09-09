@@ -47,13 +47,14 @@ class _RefundDialogState extends State<RefundDialog> {
 
     if (amount <= 0 || amount > widget.maxAmount + 0.001) {
       setState(
-        () => _error =
-            'ยอดคืนต้องมากกว่า 0 และไม่เกิน ${Formatters.baht(widget.maxAmount)}',
+        () => _error = 'payment_refund_amount_invalid'.trParams({
+          'amount': Formatters.baht(widget.maxAmount),
+        }),
       );
       return;
     }
     if (reason.isEmpty) {
-      setState(() => _error = 'กรุณาระบุเหตุผลที่คืนเงิน');
+      setState(() => _error = 'payment_refund_reason_required'.tr);
       return;
     }
 
@@ -65,12 +66,16 @@ class _RefundDialogState extends State<RefundDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('คืนเงิน'),
+      title: Text('payment_refund_dialog_title'.tr),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('คืนได้สูงสุด ${Formatters.baht(widget.maxAmount)}'),
+          Text(
+            'payment_refund_max_amount_label'.trParams({
+              'amount': Formatters.baht(widget.maxAmount),
+            }),
+          ),
           const SizedBox(height: 12),
           TextField(
             controller: _amountController,
@@ -78,17 +83,17 @@ class _RefundDialogState extends State<RefundDialog> {
             inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
-            decoration: const InputDecoration(
-              labelText: 'ยอดที่คืน',
-              suffixText: 'บาท',
+            decoration: InputDecoration(
+              labelText: 'payment_refund_amount_label'.tr,
+              suffixText: 'common_baht'.tr,
             ),
           ),
           const SizedBox(height: 10),
           TextField(
             controller: _reasonController,
-            decoration: const InputDecoration(
-              labelText: 'เหตุผลที่คืนเงิน',
-              hintText: 'เช่น ลูกค้าคืนอาหาร / เก็บเงินผิด',
+            decoration: InputDecoration(
+              labelText: 'payment_refund_reason_label'.tr,
+              hintText: 'payment_refund_reason_hint'.tr,
             ),
           ),
           if (_error != null) ...[
@@ -103,9 +108,12 @@ class _RefundDialogState extends State<RefundDialog> {
       actions: [
         TextButton(
           onPressed: () => Get.back<void>(),
-          child: const Text('ยกเลิก'),
+          child: Text('common_cancel'.tr),
         ),
-        FilledButton(onPressed: _submit, child: const Text('ยืนยันคืนเงิน')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text('payment_confirm_refund_button'.tr),
+        ),
       ],
     );
   }

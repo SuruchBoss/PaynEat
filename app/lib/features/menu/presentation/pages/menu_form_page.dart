@@ -144,8 +144,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
                           )
                           .toList(growable: false),
                       onChanged: (value) => setState(() => _categoryId = value),
-                      validator: (value) =>
-                          value == null ? 'menu_form_category_required'.tr : null,
+                      validator: (value) => value == null
+                          ? 'menu_form_category_required'.tr
+                          : null,
                     ),
                   ),
                   const SizedBox(height: 14),

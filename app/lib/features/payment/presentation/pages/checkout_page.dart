@@ -199,7 +199,10 @@ class _PaidHistory extends GetView<CheckoutController> {
             children: [
               Text(
                 'payment_remaining_due_label'.tr,
-                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const Spacer(),
               Text(

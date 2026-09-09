@@ -151,14 +151,16 @@ class SplitBillController extends GetxController {
         setReceived(0);
 
         if (data.result.isFullyPaid) {
-          AppDialogs.success('ปิดบิลเรียบร้อย');
+          AppDialogs.success('payment_bill_closed_success'.tr);
           Get.offNamed<void>(
             AppRoutes.receipt,
             arguments: {'orderId': orderId},
           );
         } else {
           AppDialogs.success(
-            'รับชำระแล้ว คงเหลือ ${data.result.remaining.toStringAsFixed(2)} บาท',
+            'payment_partial_paid_success'.trParams({
+              'amount': data.result.remaining.toStringAsFixed(2),
+            }),
           );
         }
       },

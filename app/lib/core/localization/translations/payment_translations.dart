@@ -3,7 +3,8 @@ const Map<String, String> paymentTranslationsTh = {
   // checkout_page
   'payment_checkout_title': 'เก็บเงิน / ปิดบิล',
   'payment_order_not_found': 'ไม่พบออเดอร์',
-  'payment_no_shift_banner': 'ยังไม่ได้เปิดกะ ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
+  'payment_no_shift_banner':
+      'ยังไม่ได้เปิดกะ ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
   'payment_go_open_shift': 'ไปเปิดกะ',
   'payment_already_paid_section_title': 'ชำระมาแล้ว',
   'payment_remaining_due_label': 'คงเหลือต้องชำระ',
@@ -77,7 +78,8 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_error_shift_required': 'ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
   'payment_error_amount_exceeds_remaining':
       'ยอดชำระเกินยอดคงเหลือ (คงเหลือ @remaining บาท)',
-  'payment_error_received_less_than_amount': 'เงินที่รับมาต้องไม่น้อยกว่ายอดที่ชำระ',
+  'payment_error_received_less_than_amount':
+      'เงินที่รับมาต้องไม่น้อยกว่ายอดที่ชำระ',
   'payment_error_payment_not_found': 'ไม่พบรายการชำระเงินนี้',
   'payment_error_refund_exceeds_refundable':
       'คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด @amount บาท)',
@@ -87,7 +89,8 @@ const Map<String, String> paymentTranslationsEn = {
   // checkout_page
   'payment_checkout_title': 'Checkout / Close bill',
   'payment_order_not_found': 'Order not found',
-  'payment_no_shift_banner': 'No shift open yet. Open a shift before accepting payment.',
+  'payment_no_shift_banner':
+      'No shift open yet. Open a shift before accepting payment.',
   'payment_go_open_shift': 'Open shift',
   'payment_already_paid_section_title': 'Already paid',
   'payment_remaining_due_label': 'Remaining due',
@@ -147,7 +150,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_refund_max_amount_label': 'Maximum refundable @amount',
   'payment_refund_amount_label': 'Refund amount',
   'payment_refund_reason_label': 'Refund reason',
-  'payment_refund_reason_hint': 'e.g. customer returned food / charged incorrectly',
+  'payment_refund_reason_hint':
+      'e.g. customer returned food / charged incorrectly',
   'payment_confirm_refund_button': 'Confirm refund',
 
   // receipt_controller (snackbar)
@@ -160,7 +164,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_error_item_cancelled':
       '"@name" has been cancelled and cannot be selected for payment',
   'payment_error_order_cancelled': 'This order has been cancelled',
-  'payment_error_shift_required': 'You must open a shift before accepting payment',
+  'payment_error_shift_required':
+      'You must open a shift before accepting payment',
   'payment_error_amount_exceeds_remaining':
       'Payment amount exceeds the remaining balance (remaining @remaining THB)',
   'payment_error_received_less_than_amount':

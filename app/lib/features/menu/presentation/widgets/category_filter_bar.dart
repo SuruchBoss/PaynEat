@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../domain/entities/category.dart';
@@ -28,7 +29,7 @@ class CategoryFilterBar extends StatelessWidget {
         itemBuilder: (context, index) {
           if (index == 0) {
             return _CategoryChip(
-              label: 'ทั้งหมด',
+              label: 'common_all'.tr,
               selected: selectedId == null,
               onTap: () => onSelected(null),
             );

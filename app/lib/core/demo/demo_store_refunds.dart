@@ -19,8 +19,8 @@ extension DemoStoreRefunds on DemoStore {
   }) {
     final payment = payments.firstWhere(
       (row) => row['id'] == paymentId,
-      orElse: () => throw const ApiException(
-        message: 'ไม่พบรายการชำระเงินนี้',
+      orElse: () => throw ApiException(
+        message: 'payment_error_payment_not_found'.tr,
         statusCode: 404,
       ),
     );
@@ -30,8 +30,9 @@ extension DemoStoreRefunds on DemoStore {
         _refundedTotalByPayment(paymentId);
     if (amount > refundable + 0.001) {
       throw ApiException(
-        message:
-            'คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${refundable.toStringAsFixed(2)} บาท)',
+        message: 'payment_error_refund_exceeds_refundable'.trParams({
+          'amount': refundable.toStringAsFixed(2),
+        }),
         statusCode: 400,
       );
     }
