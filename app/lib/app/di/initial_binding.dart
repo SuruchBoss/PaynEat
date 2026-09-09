@@ -349,6 +349,10 @@ class InitialBinding extends Bindings {
       () => GetReceiptUseCase(Get.find<PaymentRepository>()),
       fenix: true,
     );
+    Get.lazyPut(
+      () => RefundPaymentUseCase(Get.find<PaymentRepository>()),
+      fenix: true,
+    );
 
     // shift
     Get.lazyPut(

@@ -96,6 +96,8 @@ class Receipt {
     required this.vatRate,
     required this.serviceChargeRate,
     required this.payments,
+    this.refunds = const [],
+    this.refundedTotal = 0,
     this.paidAt,
     this.changeTotal = 0,
   });
@@ -105,6 +107,31 @@ class Receipt {
   final double vatRate;
   final double serviceChargeRate;
   final List<Payment> payments;
+  final List<Refund> refunds;
+  final double refundedTotal;
   final String? paidAt;
   final double changeTotal;
+
+  bool get isRefunded => refundedTotal > 0;
+}
+
+/// คืนเงินหลังชำระเงินแล้ว — ผูกกับ payment ที่ระบุเสมอ (เต็มจำนวนหรือบางส่วนก็ได้)
+class Refund {
+  const Refund({
+    required this.id,
+    required this.paymentId,
+    required this.orderId,
+    required this.amount,
+    required this.reason,
+    this.refundedByName,
+    this.createdAt,
+  });
+
+  final int id;
+  final int paymentId;
+  final int orderId;
+  final double amount;
+  final String reason;
+  final String? refundedByName;
+  final String? createdAt;
 }

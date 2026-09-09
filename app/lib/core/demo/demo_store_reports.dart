@@ -25,7 +25,16 @@ extension DemoStoreReports on DemoStore {
       (total, order) => total + (order[key] as num).toDouble(),
     );
 
-    final netSales = sum('total');
+    final refundTotal = refunds
+        .where((refund) {
+          final day = (refund['createdAt'] as String).substring(0, 10);
+          return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
+        })
+        .fold<double>(
+          0,
+          (total, refund) => total + (refund['amount'] as num).toDouble(),
+        );
+    final netSales = sum('total') - refundTotal;
     final guests = paidOrders.fold<int>(
       0,
       (total, order) => total + (order['guestCount'] as int),
@@ -81,6 +90,7 @@ extension DemoStoreReports on DemoStore {
       'discount': sum('discountAmount'),
       'serviceCharge': sum('serviceCharge'),
       'vat': sum('vat'),
+      'refundTotal': refundTotal,
       'netSales': netSales,
       'averagePerOrder': paidOrders.isEmpty
           ? 0.0

@@ -17,4 +17,10 @@ abstract class PaymentRepository {
   Future<Result<SplitPreview>> getSplitPreview(int orderId, List<int> itemIds);
 
   Future<Result<({Receipt receipt, Order order})>> getReceipt(int orderId);
+
+  Future<Result<Refund>> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  });
 }

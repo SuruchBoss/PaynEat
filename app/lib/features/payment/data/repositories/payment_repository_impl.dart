@@ -46,4 +46,17 @@ class PaymentRepositoryImpl implements PaymentRepository {
         final response = await _remote.getReceipt(orderId);
         return (receipt: response.receipt, order: response.order as Order);
       });
+
+  @override
+  Future<Result<Refund>> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  }) => guard(
+    () async => await _remote.refund(
+      paymentId: paymentId,
+      amount: amount,
+      reason: reason,
+    ),
+  );
 }

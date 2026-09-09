@@ -368,10 +368,31 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
                 .cast<Map<String, dynamic>>()
                 .map(PaymentModel.fromJson)
                 .toList(growable: false),
+            refunds: (data['refunds'] as List)
+                .cast<Map<String, dynamic>>()
+                .map(RefundModel.fromJson)
+                .toList(growable: false),
+            refundedTotal: (data['refundedTotal'] as num).toDouble(),
           ),
           order: OrderModel.fromJson(data['order'] as Map<String, dynamic>),
         );
       });
+
+  @override
+  Future<RefundModel> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  }) => _delayed(
+    () => RefundModel.fromJson(
+      _store.refundPayment(
+        paymentId: paymentId,
+        amount: amount,
+        reason: reason,
+        refundedById: _auth.currentUserId ?? 0,
+      ),
+    ),
+  );
 }
 
 class DemoShiftDataSource implements ShiftRemoteDataSource {

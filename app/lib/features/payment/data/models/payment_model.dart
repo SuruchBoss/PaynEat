@@ -48,6 +48,28 @@ class PaymentSummaryModel extends PaymentSummary {
       );
 }
 
+class RefundModel extends Refund {
+  const RefundModel({
+    required super.id,
+    required super.paymentId,
+    required super.orderId,
+    required super.amount,
+    required super.reason,
+    super.refundedByName,
+    super.createdAt,
+  });
+
+  factory RefundModel.fromJson(Map<String, dynamic> json) => RefundModel(
+    id: (json['id'] as num?)?.toInt() ?? 0,
+    paymentId: (json['paymentId'] as num?)?.toInt() ?? 0,
+    orderId: (json['orderId'] as num?)?.toInt() ?? 0,
+    amount: (json['amount'] as num?)?.toDouble() ?? 0,
+    reason: json['reason'] as String? ?? '',
+    refundedByName: json['refundedByName'] as String?,
+    createdAt: json['createdAt'] as String?,
+  );
+}
+
 class SplitPreviewModel extends SplitPreview {
   const SplitPreviewModel({
     required super.orderId,

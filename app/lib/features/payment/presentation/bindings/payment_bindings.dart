@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/services/session_service.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../../shift/domain/usecases/shift_usecases.dart';
 import '../../domain/usecases/payment_usecases.dart';
@@ -24,7 +25,13 @@ class CheckoutBinding extends Bindings {
 class ReceiptBinding extends Bindings {
   @override
   void dependencies() {
-    Get.put(ReceiptController(getReceipt: Get.find<GetReceiptUseCase>()));
+    Get.put(
+      ReceiptController(
+        getReceipt: Get.find<GetReceiptUseCase>(),
+        refundPayment: Get.find<RefundPaymentUseCase>(),
+        session: Get.find<SessionService>(),
+      ),
+    );
   }
 }
 

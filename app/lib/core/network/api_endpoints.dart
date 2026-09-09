@@ -49,6 +49,7 @@ class ApiEndpoints {
   static String receipt(int orderId) => '/payments/order/$orderId/receipt';
   static String splitPreview(int orderId) =>
       '/payments/order/$orderId/split-preview';
+  static String refundPayment(int paymentId) => '/payments/$paymentId/refund';
 
   // Reports
   static const String dashboard = '/reports/dashboard';

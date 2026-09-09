@@ -254,6 +254,10 @@ extension DemoStorePayments on DemoStore {
       'payments': payments
           .where((row) => row['orderId'] == orderId)
           .toList(growable: false),
+      'refunds': refundsByOrder(orderId),
+      'refundedTotal': refundsByOrder(
+        orderId,
+      ).fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble()),
       'paidAt': order['closedAt'],
       'changeTotal': payments
           .where((row) => row['orderId'] == orderId)

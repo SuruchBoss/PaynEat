@@ -16,6 +16,11 @@ abstract class PaymentRemoteDataSource {
   Future<PaymentSummaryModel> getSummary(int orderId);
   Future<SplitPreviewModel> getSplitPreview(int orderId, List<int> itemIds);
   Future<({Receipt receipt, OrderModel order})> getReceipt(int orderId);
+  Future<RefundModel> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  });
 }
 
 class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
@@ -92,8 +97,26 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
             .whereType<Map<String, dynamic>>()
             .map(PaymentModel.fromJson)
             .toList(growable: false),
+        refunds: (data['refunds'] as List? ?? const [])
+            .whereType<Map<String, dynamic>>()
+            .map(RefundModel.fromJson)
+            .toList(growable: false),
+        refundedTotal: (data['refundedTotal'] as num?)?.toDouble() ?? 0,
       ),
       order: OrderModel.fromJson(data['order'] as Map<String, dynamic>),
     );
+  }
+
+  @override
+  Future<RefundModel> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  }) async {
+    final response = await _client.post(
+      ApiEndpoints.refundPayment(paymentId),
+      body: {'amount': amount, 'reason': reason},
+    );
+    return RefundModel.fromJson(response.asMap);
   }
 }
