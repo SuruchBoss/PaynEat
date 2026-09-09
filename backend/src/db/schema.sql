@@ -125,9 +125,26 @@ CREATE TABLE IF NOT EXISTS order_items (
 CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
 CREATE INDEX IF NOT EXISTS idx_order_items_status ON order_items(status);
 
+-- กะทำงานของแคชเชียร์ — ใช้กระทบยอดเงินสดตอนปิดกะ (ดู docs/tickets/01-shift-cash-reconciliation.md)
+CREATE TABLE IF NOT EXISTS shifts (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  status         TEXT    NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'closed')),
+  opened_by      INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  opened_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+  opening_cash   INTEGER NOT NULL CHECK (opening_cash >= 0),
+  closed_by      INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  closed_at      TEXT,
+  expected_cash  INTEGER,
+  counted_cash   INTEGER,
+  variance       INTEGER,
+  note           TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
+
 CREATE TABLE IF NOT EXISTS payments (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id      INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  shift_id      INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
   method        TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
   amount        INTEGER NOT NULL CHECK (amount >= 0),
   received      INTEGER NOT NULL DEFAULT 0,
@@ -137,6 +154,21 @@ CREATE TABLE IF NOT EXISTS payments (
   created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
+CREATE INDEX IF NOT EXISTS idx_payments_shift ON payments(shift_id);
+
+-- คืนเงินหลังชำระเงินแล้ว — แยกจาก payment เดิมเสมอเพื่อเก็บ audit trail
+-- (ดู docs/tickets/02-refund-flow.md)
+CREATE TABLE IF NOT EXISTS refunds (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  payment_id  INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  order_id    INTEGER NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+  amount      INTEGER NOT NULL CHECK (amount > 0),
+  reason      TEXT    NOT NULL,
+  refunded_by INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_refunds_payment ON refunds(payment_id);
+CREATE INDEX IF NOT EXISTS idx_refunds_order ON refunds(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_created ON payments(created_at);
 
 CREATE TABLE IF NOT EXISTS settings (

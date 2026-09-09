@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/services/offline_order_queue_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../auth/presentation/controllers/auth_controller.dart';
@@ -28,6 +29,8 @@ class HomePage extends GetView<HomeController> {
         appBar: AppBar(
           title: Text(controller.currentTitle),
           actions: const [
+            _OfflineQueueBadge(),
+            SizedBox(width: 4),
             _ConnectionDot(),
             SizedBox(width: 8),
             _UserChip(),
@@ -173,6 +176,100 @@ class _AppDrawer extends GetView<HomeController> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// ป้ายแจ้งจำนวนรายการ "สั่งเพิ่มเข้าออเดอร์เดิม" ที่ค้าง sync เพราะเน็ตหลุดตอนกดยืนยัน
+/// (ดู OfflineOrderQueueService / docs/DECISIONS.md) — ไม่แสดงอะไรเลยถ้าไม่มีรายการค้าง
+class _OfflineQueueBadge extends StatelessWidget {
+  const _OfflineQueueBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final queue = Get.find<OfflineOrderQueueService>();
+
+    return Obx(() {
+      final count = queue.pending.length;
+      if (count == 0) return const SizedBox.shrink();
+
+      return Tooltip(
+        message: 'มีรายการรอส่งเข้าระบบ $count รายการ (เน็ตหลุดตอนสั่งเพิ่ม)',
+        child: ActionChip(
+          avatar: const Icon(
+            Icons.cloud_off_rounded,
+            size: 16,
+            color: Colors.white,
+          ),
+          backgroundColor: AppColors.danger,
+          label: Text(
+            'รอซิงก์ $count',
+            style: const TextStyle(color: Colors.white, fontSize: 12.5),
+          ),
+          onPressed: () => _showPendingSheet(context, queue),
+        ),
+      );
+    });
+  }
+
+  void _showPendingSheet(BuildContext context, OfflineOrderQueueService queue) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Obx(
+          () => Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Padding(
+                padding: EdgeInsets.fromLTRB(16, 16, 16, 4),
+                child: Text(
+                  'รายการรอส่งเข้าระบบ',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Text(
+                  'เน็ตหลุดตอนสั่งเพิ่มเข้าออเดอร์ — บันทึกไว้ในเครื่องแล้ว จะส่งอัตโนมัติ'
+                  'เมื่อเน็ตกลับมา',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              ...queue.pending.map(
+                (entry) => ListTile(
+                  leading: const Icon(Icons.receipt_long_outlined),
+                  title: Text(entry.orderLabel),
+                  subtitle: Text(entry.summary),
+                  trailing: Text(
+                    TimeOfDay.fromDateTime(entry.queuedAt).format(context),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: FilledButton(
+                  onPressed: queue.isSyncing.value ? null : queue.syncNow,
+                  child: queue.isSyncing.value
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Text('ซิงก์ตอนนี้'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

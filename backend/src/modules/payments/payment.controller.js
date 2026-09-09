@@ -13,6 +13,9 @@ export const paymentController = {
   receipt: asyncHandler(async (req, res) =>
     ok(res, paymentService.receipt(req.validated.params.id)),
   ),
+  refund: asyncHandler(async (req, res) =>
+    created(res, paymentService.refund(req.validated.params.id, req.body, req.user)),
+  ),
 };
 
 export default paymentController;

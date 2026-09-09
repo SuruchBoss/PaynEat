@@ -23,6 +23,19 @@ export const reportRepository = {
       .get(start, end);
   },
 
+  refundTotal(from, to) {
+    const [start, end] = dateRange(from, to);
+    return getDb()
+      .prepare(
+        `
+        SELECT IFNULL(SUM(amount), 0) AS total
+          FROM refunds
+         WHERE date(created_at) BETWEEN date(?) AND date(?)
+      `,
+      )
+      .get(start, end).total;
+  },
+
   byPaymentMethod(from, to) {
     const [start, end] = dateRange(from, to);
     return getDb()

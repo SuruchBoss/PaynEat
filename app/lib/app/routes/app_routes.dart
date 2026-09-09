@@ -9,6 +9,7 @@ abstract class AppRoutes {
   static const String checkout = '/checkout';
   static const String splitBill = '/checkout/split-bill';
   static const String receipt = '/receipt';
+  static const String shift = '/shift';
 
   static const String menuForm = '/admin/menu/form';
   static const String staffForm = '/admin/staff/form';

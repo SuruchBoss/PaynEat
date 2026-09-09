@@ -10,6 +10,7 @@ export const reportService = {
 
     const summary = reportRepository.salesSummary(start, end);
     const orderCount = summary.order_count;
+    const refundTotal = reportRepository.refundTotal(start, end);
 
     return {
       range: { from: start, to: end },
@@ -19,7 +20,8 @@ export const reportService = {
       discount: toBaht(summary.discount),
       serviceCharge: toBaht(summary.service_charge),
       vat: toBaht(summary.vat),
-      netSales: toBaht(summary.total),
+      refundTotal: toBaht(refundTotal),
+      netSales: toBaht(summary.total - refundTotal),
       averagePerOrder: orderCount > 0 ? toBaht(Math.round(summary.total / orderCount)) : 0,
       averagePerGuest: summary.guests > 0 ? toBaht(Math.round(summary.total / summary.guests)) : 0,
       paymentMethods: reportRepository.byPaymentMethod(start, end).map((row) => ({

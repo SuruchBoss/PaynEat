@@ -160,6 +160,14 @@ class PaymentMethod {
   static String label(String method) => labels[method] ?? method;
 }
 
+/// สถานะกะทำงานของแคชเชียร์
+class ShiftStatus {
+  const ShiftStatus._();
+
+  static const String open = 'open';
+  static const String closed = 'closed';
+}
+
 /// ชนิดส่วนลด
 class DiscountType {
   const DiscountType._();
@@ -175,4 +183,6 @@ class StorageKeys {
 
   static const String token = 'auth_token';
   static const String user = 'auth_user';
+  static const String printerProfile = 'printer_profile';
+  static const String pendingOrderItems = 'pending_order_items';
 }

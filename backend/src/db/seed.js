@@ -219,6 +219,18 @@ export const seed = () => {
       );
       for (const table of TABLES) insertTable.run(table.name, table.zone, table.seats);
     }
+
+    // เปิดกะแรกให้พร้อมใช้งานทันที (ร้านจริงจะเปิด/ปิดกะเองทุกวันหลังจากนี้)
+    const shiftCount = db.prepare('SELECT COUNT(*) AS c FROM shifts').get().c;
+    if (shiftCount === 0) {
+      const cashier = db.prepare("SELECT id FROM users WHERE username = 'cashier'").get();
+      if (cashier) {
+        db.prepare('INSERT INTO shifts (opened_by, opening_cash) VALUES (?, ?)').run(
+          cashier.id,
+          toSatang(2000),
+        );
+      }
+    }
   });
 
   run();

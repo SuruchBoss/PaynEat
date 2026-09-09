@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/services/offline_order_queue_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../menu/domain/usecases/menu_usecases.dart';
 import '../../../menu/presentation/controllers/menu_controller.dart';
@@ -24,6 +25,7 @@ class OrderTakingBinding extends Bindings {
         addItems: Get.find<AddOrderItemsUseCase>(),
         sendToKitchen: Get.find<SendToKitchenUseCase>(),
         getSettings: Get.find<GetSettingsUseCase>(),
+        offlineQueue: Get.find<OfflineOrderQueueService>(),
       ),
     );
   }

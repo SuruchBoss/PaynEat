@@ -146,6 +146,14 @@ extension DemoStorePayments on DemoStore {
     String? reference,
     int? cashierId,
   }) {
+    final shift = _openShift;
+    if (shift == null) {
+      throw const ApiException(
+        message: 'ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
+        statusCode: 409,
+      );
+    }
+
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.cancelled) {
       throw const ApiException(
@@ -197,6 +205,7 @@ extension DemoStorePayments on DemoStore {
     final payment = {
       'id': _nextId(),
       'orderId': orderId,
+      'shiftId': shift['id'],
       'method': method,
       'amount': resolvedAmount,
       'received': actualReceived,
@@ -245,6 +254,10 @@ extension DemoStorePayments on DemoStore {
       'payments': payments
           .where((row) => row['orderId'] == orderId)
           .toList(growable: false),
+      'refunds': refundsByOrder(orderId),
+      'refundedTotal': refundsByOrder(
+        orderId,
+      ).fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble()),
       'paidAt': order['closedAt'],
       'changeTotal': payments
           .where((row) => row['orderId'] == orderId)

@@ -6,6 +6,7 @@ import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../controllers/printer_settings_controller.dart';
 import '../controllers/settings_controller.dart';
 
 /// ตั้งค่าร้าน (admin/manager)
@@ -115,6 +116,11 @@ class SettingsPage extends GetView<SettingsController> {
           const SizedBox(height: 12),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
+            child: const _PrinterSettingsCard(),
+          ),
+          const SizedBox(height: 12),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 620),
             child: AppCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,6 +137,115 @@ class SettingsPage extends GetView<SettingsController> {
         ],
       );
     });
+  }
+}
+
+/// ตั้งค่าเครื่องพิมพ์ใบเสร็จของเครื่องนี้ (ไม่ผูกกับร้าน — เก็บในเครื่องเท่านั้น)
+class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
+  const _PrinterSettingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SectionHeader(
+            title: 'เครื่องพิมพ์ใบเสร็จ',
+            subtitle:
+                'พิมพ์ผ่านเครื่องพิมพ์ความร้อนบนวง LAN/WiFi เดียวกัน (ยังไม่รองรับบนเว็บ)',
+          ),
+          const SizedBox(height: 16),
+          Obx(
+            () => SwitchListTile(
+              value: controller.enabled.value,
+              onChanged: (value) => controller.enabled.value = value,
+              title: const Text('เปิดใช้เครื่องพิมพ์นี้'),
+              subtitle: const Text('ปิดไว้ = ใช้ใบเสร็จบนจอเหมือนเดิม'),
+              contentPadding: EdgeInsets.zero,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextField(
+                  controller: controller.ipController,
+                  decoration: const InputDecoration(
+                    labelText: 'IP เครื่องพิมพ์',
+                    hintText: 'เช่น 192.168.1.50',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: controller.portController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  decoration: const InputDecoration(labelText: 'พอร์ต'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Obx(
+            () => SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 58, label: Text('58 มม.')),
+                ButtonSegment(value: 80, label: Text('80 มม.')),
+              ],
+              selected: {controller.paperWidthMm.value},
+              onSelectionChanged: (selection) =>
+                  controller.paperWidthMm.value = selection.first,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Obx(
+                  () => OutlinedButton(
+                    onPressed: controller.isTesting.value
+                        ? null
+                        : controller.testPrint,
+                    child: controller.isTesting.value
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('ทดสอบพิมพ์'),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Obx(
+                  () => FilledButton(
+                    onPressed: controller.isSaving.value
+                        ? null
+                        : controller.save,
+                    child: controller.isSaving.value
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('บันทึก'),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

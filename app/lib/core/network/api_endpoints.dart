@@ -49,6 +49,7 @@ class ApiEndpoints {
   static String receipt(int orderId) => '/payments/order/$orderId/receipt';
   static String splitPreview(int orderId) =>
       '/payments/order/$orderId/split-preview';
+  static String refundPayment(int paymentId) => '/payments/$paymentId/refund';
 
   // Reports
   static const String dashboard = '/reports/dashboard';
@@ -58,4 +59,9 @@ class ApiEndpoints {
 
   // Settings
   static const String settings = '/settings';
+
+  // Shifts
+  static const String shifts = '/shifts';
+  static const String currentShift = '/shifts/current';
+  static String closeShift(int id) => '/shifts/$id/close';
 }

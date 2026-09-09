@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/routes/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
@@ -61,6 +62,10 @@ class CheckoutPage extends GetView<CheckoutController> {
           ),
         );
 
+        final shiftBanner = controller.hasOpenShift.value
+            ? const <Widget>[]
+            : const <Widget>[_NoShiftBanner(), SizedBox(height: 12)];
+
         return Responsive.isWide(context)
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +73,10 @@ class CheckoutPage extends GetView<CheckoutController> {
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(16),
-                      child: billCard,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [...shiftBanner, billCard],
+                      ),
                     ),
                   ),
                   SizedBox(
@@ -83,12 +91,48 @@ class CheckoutPage extends GetView<CheckoutController> {
             : ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
+                  ...shiftBanner,
                   billCard,
                   const SizedBox(height: 12),
                   const _PaymentForm(),
                 ],
               );
       }),
+    );
+  }
+}
+
+class _NoShiftBanner extends GetView<CheckoutController> {
+  const _NoShiftBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.danger.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+          const SizedBox(width: 10),
+          const Expanded(
+            child: Text(
+              'ยังไม่ได้เปิดกะ ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              await Get.toNamed<void>(AppRoutes.shift);
+              controller.load();
+            },
+            child: const Text('ไปเปิดกะ'),
+          ),
+        ],
+      ),
     );
   }
 }

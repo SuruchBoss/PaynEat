@@ -17,6 +17,8 @@ import '../../features/report/data/models/report_model.dart';
 import '../../features/report/domain/entities/report.dart';
 import '../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../features/settings/domain/entities/store_settings.dart';
+import '../../features/shift/data/datasources/shift_remote_data_source.dart';
+import '../../features/shift/data/models/shift_model.dart';
 import '../../features/staff/data/datasources/staff_remote_data_source.dart';
 import '../constants/app_constants.dart';
 import 'demo_store.dart';
@@ -366,10 +368,74 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
                 .cast<Map<String, dynamic>>()
                 .map(PaymentModel.fromJson)
                 .toList(growable: false),
+            refunds: (data['refunds'] as List)
+                .cast<Map<String, dynamic>>()
+                .map(RefundModel.fromJson)
+                .toList(growable: false),
+            refundedTotal: (data['refundedTotal'] as num).toDouble(),
           ),
           order: OrderModel.fromJson(data['order'] as Map<String, dynamic>),
         );
       });
+
+  @override
+  Future<RefundModel> refund({
+    required int paymentId,
+    required double amount,
+    required String reason,
+  }) => _delayed(
+    () => RefundModel.fromJson(
+      _store.refundPayment(
+        paymentId: paymentId,
+        amount: amount,
+        reason: reason,
+        refundedById: _auth.currentUserId ?? 0,
+      ),
+    ),
+  );
+}
+
+class DemoShiftDataSource implements ShiftRemoteDataSource {
+  const DemoShiftDataSource(this._store, this._auth);
+
+  final DemoStore _store;
+  final DemoAuthDataSource _auth;
+
+  @override
+  Future<ShiftModel?> getCurrent() => _delayed(() {
+    final data = _store.currentShift();
+    return data == null ? null : ShiftModel.fromJson(data);
+  });
+
+  @override
+  Future<ShiftModel> open(double openingCash) => _delayed(
+    () => ShiftModel.fromJson(
+      _store.openShift(
+        openingCash: openingCash,
+        openedById: _auth.currentUserId ?? 0,
+      ),
+    ),
+  );
+
+  @override
+  Future<ShiftModel> close(
+    int id, {
+    required double countedCash,
+    String? note,
+  }) => _delayed(
+    () => ShiftModel.fromJson(
+      _store.closeShift(
+        id,
+        countedCash: countedCash,
+        note: note,
+        closedById: _auth.currentUserId ?? 0,
+      ),
+    ),
+  );
+
+  @override
+  Future<List<ShiftModel>> getHistory() =>
+      _delayed(() => _store.shiftHistory().map(ShiftModel.fromJson).toList());
 }
 
 class DemoReportDataSource implements ReportRemoteDataSource {

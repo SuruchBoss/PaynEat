@@ -84,3 +84,30 @@ class GetReceiptUseCase
   Future<Result<({Receipt receipt, Order order})>> call(int params) =>
       _repository.getReceipt(params);
 }
+
+class RefundParams {
+  const RefundParams({
+    required this.paymentId,
+    required this.amount,
+    required this.reason,
+  });
+
+  final int paymentId;
+  final double amount;
+  final String reason;
+}
+
+/// คืนเงินหลังชำระเงินแล้ว (เต็มจำนวน/บางส่วน) — จำกัดเฉพาะผู้จัดการขึ้นไปที่ชั้น UI
+/// ส่วนฝั่งเซิร์ฟเวอร์ก็ตรวจสิทธิ์ซ้ำอีกชั้นเสมอ
+class RefundPaymentUseCase implements UseCase<Refund, RefundParams> {
+  const RefundPaymentUseCase(this._repository);
+
+  final PaymentRepository _repository;
+
+  @override
+  Future<Result<Refund>> call(RefundParams params) => _repository.refund(
+    paymentId: params.paymentId,
+    amount: params.amount,
+    reason: params.reason,
+  );
+}

@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../order/domain/entities/order.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
+import '../../../shift/domain/usecases/shift_usecases.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/usecases/payment_usecases.dart';
 
@@ -15,16 +16,20 @@ class CheckoutController extends GetxController {
     required GetOrderUseCase getOrder,
     required GetPaymentSummaryUseCase getSummary,
     required PayOrderUseCase pay,
+    required GetCurrentShiftUseCase getCurrentShift,
   }) : _getOrder = getOrder,
        _getSummary = getSummary,
-       _pay = pay;
+       _pay = pay,
+       _getCurrentShift = getCurrentShift;
 
   final GetOrderUseCase _getOrder;
   final GetPaymentSummaryUseCase _getSummary;
   final PayOrderUseCase _pay;
+  final GetCurrentShiftUseCase _getCurrentShift;
 
   final Rxn<Order> order = Rxn<Order>();
   final Rxn<PaymentSummary> summary = Rxn<PaymentSummary>();
+  final RxBool hasOpenShift = true.obs;
   final RxBool isLoading = true.obs;
   final RxBool isPaying = false.obs;
   final RxnString errorMessage = RxnString();
@@ -68,6 +73,7 @@ class CheckoutController extends GetxController {
   }
 
   bool get canPay {
+    if (!hasOpenShift.value) return false;
     if (amount.value <= 0 || amount.value > remaining + 0.001) return false;
     if (isCash && received.value + 0.001 < amount.value) return false;
     return true;
@@ -76,6 +82,9 @@ class CheckoutController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     errorMessage.value = null;
+
+    final shiftResult = await _getCurrentShift();
+    hasOpenShift.value = shiftResult.dataOrNull != null;
 
     final results = await Future.wait([
       _getOrder(orderId),

@@ -27,6 +27,9 @@ dependencies:
 
   cupertino_icons: ^1.0.8
 
+  # สร้างคำสั่ง ESC/POS สำหรับพิมพ์ใบเสร็จจริงผ่านเครื่องพิมพ์ความร้อน (LAN/WiFi)
+  esc_pos_utils_plus: ^2.0.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

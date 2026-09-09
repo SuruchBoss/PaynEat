@@ -4,7 +4,9 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../domain/entities/payment.dart';
 import '../controllers/receipt_controller.dart';
+import '../widgets/refund_dialog.dart';
 
 /// ใบเสร็จ — จัดวางแบบสลิปจริงเพื่อให้พิมพ์ออกเครื่องพิมพ์ความร้อนได้เลย
 class ReceiptPage extends GetView<ReceiptController> {
@@ -16,6 +18,21 @@ class ReceiptPage extends GetView<ReceiptController> {
       appBar: AppBar(
         title: const Text('ใบเสร็จรับเงิน'),
         actions: [
+          Obx(
+            () => IconButton(
+              onPressed: controller.isPrinting.value
+                  ? null
+                  : controller.printReceipt,
+              icon: controller.isPrinting.value
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.print_rounded),
+              tooltip: 'พิมพ์ใบเสร็จ',
+            ),
+          ),
           IconButton(
             onPressed: () => Get.until((route) => route.isFirst),
             icon: const Icon(Icons.home_rounded),
@@ -192,15 +209,94 @@ class ReceiptPage extends GetView<ReceiptController> {
                     ),
                     const _DashedDivider(),
                     for (final payment in receipt.payments)
-                      _KeyValue(
-                        label: payment.methodLabel,
-                        value: Formatters.money(payment.amount),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Row(
+                          children: [
+                            Text(
+                              payment.methodLabel,
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              Formatters.money(payment.amount),
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (controller.canRefund &&
+                                controller.refundableAmount(payment) > 0) ...[
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: () => _showRefundDialog(
+                                  context,
+                                  controller,
+                                  payment,
+                                ),
+                                child: const Icon(
+                                  Icons.assignment_return_outlined,
+                                  size: 16,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     if (receipt.changeTotal > 0)
                       _KeyValue(
                         label: 'เงินทอน',
                         value: Formatters.money(receipt.changeTotal),
                       ),
+                    if (receipt.isRefunded) ...[
+                      const _DashedDivider(),
+                      const Text(
+                        'รายการคืนเงิน',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.danger,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      for (final refund in receipt.refunds)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  refund.reason,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '-${Formatters.money(refund.amount)}',
+                                style: const TextStyle(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.danger,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      const SizedBox(height: 4),
+                      _KeyValue(
+                        label: 'ยอดสุทธิหลังคืนเงิน',
+                        value: Formatters.money(
+                          order.total - receipt.refundedTotal,
+                        ),
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     const Center(
                       child: Text(
@@ -228,6 +324,21 @@ class ReceiptPage extends GetView<ReceiptController> {
           ),
         );
       }),
+    );
+  }
+
+  Future<void> _showRefundDialog(
+    BuildContext context,
+    ReceiptController controller,
+    Payment payment,
+  ) async {
+    final maxAmount = controller.refundableAmount(payment);
+    final result = await RefundDialog.show(maxAmount: maxAmount);
+    if (result == null) return;
+    await controller.submitRefund(
+      paymentId: payment.id,
+      amount: result.amount,
+      reason: result.reason,
     );
   }
 }

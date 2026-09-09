@@ -34,15 +34,24 @@ export const paymentRepository = {
       .get(orderId).total;
   },
 
-  create({ orderId, method, amount, received, changeAmount, reference, cashierId }) {
+  create({ orderId, shiftId, method, amount, received, changeAmount, reference, cashierId }) {
     const info = getDb()
       .prepare(
         `
-        INSERT INTO payments (order_id, method, amount, received, change_amount, reference, cashier_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO payments (order_id, shift_id, method, amount, received, change_amount, reference, cashier_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
-      .run(orderId, method, amount, received, changeAmount, reference ?? null, cashierId ?? null);
+      .run(
+        orderId,
+        shiftId,
+        method,
+        amount,
+        received,
+        changeAmount,
+        reference ?? null,
+        cashierId ?? null,
+      );
     return this.findById(info.lastInsertRowid);
   },
 };
