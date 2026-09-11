@@ -148,17 +148,18 @@ export const menuRepository = {
       .prepare(
         `
         UPDATE menu_items
-           SET category_id    = COALESCE(?, category_id),
-               name           = COALESCE(?, name),
-               name_en        = COALESCE(?, name_en),
-               description    = COALESCE(?, description),
-               price          = COALESCE(?, price),
-               image_url      = COALESCE(?, image_url),
-               is_available   = COALESCE(?, is_available),
-               is_recommended = COALESCE(?, is_recommended),
-               prep_minutes   = COALESCE(?, prep_minutes),
-               sort_order     = COALESCE(?, sort_order),
-               updated_at     = datetime('now')
+           SET category_id           = COALESCE(?, category_id),
+               name                  = COALESCE(?, name),
+               name_en               = COALESCE(?, name_en),
+               description           = COALESCE(?, description),
+               price                 = COALESCE(?, price),
+               image_url             = COALESCE(?, image_url),
+               is_available          = COALESCE(?, is_available),
+               is_recommended        = COALESCE(?, is_recommended),
+               prep_minutes          = COALESCE(?, prep_minutes),
+               sort_order            = COALESCE(?, sort_order),
+               auto_disabled_by_stock = COALESCE(?, auto_disabled_by_stock),
+               updated_at            = datetime('now')
          WHERE id = ?
       `,
       )
@@ -173,13 +174,82 @@ export const menuRepository = {
         payload.isRecommended === undefined ? null : Number(payload.isRecommended),
         payload.prepMinutes ?? null,
         payload.sortOrder ?? null,
+        payload.autoDisabledByStock === undefined ? null : Number(payload.autoDisabledByStock),
         id,
       );
     return this.findById(id);
   },
 
+  /** เปิด/ปิดขายเมนูจากระบบสต๊อกโดยตรง — ตั้งทั้ง is_available และ auto_disabled_by_stock
+   * เสมอ (ไม่ใช้ COALESCE) เพื่อแยกจากการแก้ไขมือผ่าน update()/setAvailability ปกติ */
+  setStockAvailability(id, isAvailable, autoDisabledByStock) {
+    getDb()
+      .prepare(
+        `
+        UPDATE menu_items
+           SET is_available           = ?,
+               auto_disabled_by_stock = ?,
+               updated_at             = datetime('now')
+         WHERE id = ?
+      `,
+      )
+      .run(isAvailable ? 1 : 0, autoDisabledByStock ? 1 : 0, id);
+    return this.findById(id);
+  },
+
   remove(id) {
     return getDb().prepare('DELETE FROM menu_items WHERE id = ?').run(id).changes > 0;
+  },
+
+  findIngredientLinks(menuItemId) {
+    return getDb()
+      .prepare(
+        `
+        SELECT mii.*, i.name AS ingredient_name, i.unit AS ingredient_unit
+          FROM menu_item_ingredients mii
+          JOIN ingredients i ON i.id = mii.ingredient_id
+         WHERE mii.menu_item_id = ?
+         ORDER BY mii.id
+      `,
+      )
+      .all(menuItemId);
+  },
+
+  /** ดึงวัตถุดิบที่ผูกไว้ของหลายเมนูพร้อมกัน เพื่อเลี่ยงปัญหา N+1 ตอน list */
+  findIngredientLinksForItems(menuItemIds) {
+    if (menuItemIds.length === 0) return new Map();
+    const placeholders = menuItemIds.map(() => '?').join(',');
+    const rows = getDb()
+      .prepare(
+        `
+        SELECT mii.*, i.name AS ingredient_name, i.unit AS ingredient_unit
+          FROM menu_item_ingredients mii
+          JOIN ingredients i ON i.id = mii.ingredient_id
+         WHERE mii.menu_item_id IN (${placeholders})
+         ORDER BY mii.id
+      `,
+      )
+      .all(...menuItemIds);
+
+    const grouped = new Map();
+    for (const row of rows) {
+      const list = grouped.get(row.menu_item_id) ?? [];
+      list.push(row);
+      grouped.set(row.menu_item_id, list);
+    }
+    return grouped;
+  },
+
+  removeIngredientLinks(menuItemId) {
+    getDb().prepare('DELETE FROM menu_item_ingredients WHERE menu_item_id = ?').run(menuItemId);
+  },
+
+  createIngredientLink(menuItemId, { ingredientId, qtyPerUnit }) {
+    getDb()
+      .prepare(
+        'INSERT INTO menu_item_ingredients (menu_item_id, ingredient_id, qty_per_unit) VALUES (?, ?, ?)',
+      )
+      .run(menuItemId, ingredientId, qtyPerUnit);
   },
 
   createOptionGroup(menuItemId, { name, minSelect, maxSelect, isRequired, sortOrder }) {

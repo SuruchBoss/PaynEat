@@ -223,6 +223,7 @@ class DemoSeed {
         recommended: true,
         description: 'ข้าวผัดหอมกระทะ กุ้งสดตัวโต',
         groups: _extra(101),
+        ingredients: [_ingredientUsage(1, 80), _ingredientUsage(3, 1)],
       ),
       _menu(
         2,
@@ -233,6 +234,7 @@ class DemoSeed {
         recommended: true,
         description: 'เผ็ดร้อนแบบต้นตำรับ ราดข้าวสวยร้อน ๆ',
         groups: [..._spicy(102), ..._extra(103)],
+        ingredients: [_ingredientUsage(2, 100), _ingredientUsage(3, 1)],
       ),
       _menu(
         3,
@@ -256,9 +258,23 @@ class DemoSeed {
         groups: _spicy(106),
       ),
       _menu(7, 3, 'แกงเขียวหวานไก่', 'Green Curry Chicken', 160),
-      _menu(8, 3, 'ปลาทับทิมนึ่งมะนาว', 'Steamed Fish with Lime', 320),
+      _menu(
+        8,
+        3,
+        'ปลาทับทิมนึ่งมะนาว',
+        'Steamed Fish with Lime',
+        320,
+        ingredients: [_ingredientUsage(6, 1)],
+      ),
       _menu(9, 3, 'ผัดผักรวมมิตร', 'Stir-fried Mixed Vegetables', 120),
-      _menu(10, 3, 'ไข่เจียวปู', 'Crab Omelette', 180),
+      _menu(
+        10,
+        3,
+        'ไข่เจียวปู',
+        'Crab Omelette',
+        180,
+        ingredients: [_ingredientUsage(4, 2), _ingredientUsage(5, 50)],
+      ),
       _menu(
         11,
         4,
@@ -323,6 +339,7 @@ class DemoSeed {
     bool recommended = false,
     String? description,
     List<Map<String, dynamic>> groups = const [],
+    List<Map<String, dynamic>> ingredients = const [],
   }) {
     final categoryName = categories().firstWhere(
       (c) => c['id'] == categoryId,
@@ -341,6 +358,72 @@ class DemoSeed {
       'prepMinutes': 10,
       'sortOrder': id,
       'optionGroups': groups,
+      'ingredients': ingredients,
+      // เก็บไว้ใช้ภายใน demo store เท่านั้น (ไม่ใช่ฟิลด์ที่ API จริงส่งกลับ) — ดู
+      // demo_store_ingredients.dart: แยก "ระบบปิดขายเพราะสต๊อกหมด" ออกจาก "พนักงานปิดขายเอง"
+      'autoDisabledByStock': false,
+    };
+  }
+
+  /// วัตถุดิบตัวอย่าง (ดู docs/tickets/06-inventory-stock.md) — หน่วยอิสระที่ร้านตั้งเอง ไม่ใช่เงิน
+  /// "ปลาทับทิม" ตั้งใจให้ currentStock ต่ำกว่า lowStockThreshold ตั้งแต่ seed เพื่อให้เห็นตัวอย่าง
+  /// การแจ้งเตือนของใกล้หมดได้ทันทีโดยไม่ต้องสั่งอาหารก่อน
+  static List<Map<String, dynamic>> ingredients() => [
+    {
+      'id': 1,
+      'name': 'กุ้งสด',
+      'unit': 'กรัม',
+      'currentStock': 3000.0,
+      'lowStockThreshold': 500.0,
+    },
+    {
+      'id': 2,
+      'name': 'หมูสับ',
+      'unit': 'กรัม',
+      'currentStock': 4000.0,
+      'lowStockThreshold': 800.0,
+    },
+    {
+      'id': 3,
+      'name': 'ข้าวสวย',
+      'unit': 'จาน',
+      'currentStock': 100.0,
+      'lowStockThreshold': 20.0,
+    },
+    {
+      'id': 4,
+      'name': 'ไข่ไก่',
+      'unit': 'ฟอง',
+      'currentStock': 60.0,
+      'lowStockThreshold': 12.0,
+    },
+    {
+      'id': 5,
+      'name': 'เนื้อปู',
+      'unit': 'กรัม',
+      'currentStock': 500.0,
+      'lowStockThreshold': 300.0,
+    },
+    {
+      'id': 6,
+      'name': 'ปลาทับทิม',
+      'unit': 'ตัว',
+      'currentStock': 3.0,
+      'lowStockThreshold': 5.0,
+    },
+  ];
+
+  /// ผูกเมนู → วัตถุดิบที่ใช้ + ปริมาณต่อ 1 ที่ (denormalize ชื่อ/หน่วยไว้ตรง ๆ เหมือน categoryName)
+  static Map<String, dynamic> _ingredientUsage(
+    int ingredientId,
+    double qtyPerUnit,
+  ) {
+    final ingredient = ingredients().firstWhere((i) => i['id'] == ingredientId);
+    return {
+      'ingredientId': ingredientId,
+      'ingredientName': ingredient['name'],
+      'unit': ingredient['unit'],
+      'qtyPerUnit': qtyPerUnit,
     };
   }
 

@@ -1,4 +1,5 @@
 import '../../../../core/localization/locale_service.dart';
+import '../../../ingredient/domain/entities/ingredient.dart';
 import 'menu_option.dart';
 
 /// เมนูอาหาร 1 รายการ
@@ -17,6 +18,7 @@ class MenuItem {
     this.prepMinutes = 10,
     this.sortOrder = 0,
     this.optionGroups = const [],
+    this.ingredients = const [],
   });
 
   final int id;
@@ -32,6 +34,10 @@ class MenuItem {
   final int prepMinutes;
   final int sortOrder;
   final List<MenuOptionGroup> optionGroups;
+
+  /// วัตถุดิบที่ผูกไว้ + ปริมาณที่ใช้ต่อ 1 ที่ — ระบบตัดสต๊อกอัตโนมัติเมื่อขาย
+  /// (ดู docs/tickets/06-inventory-stock.md)
+  final List<MenuItemIngredientUsage> ingredients;
 
   /// ชื่อที่จะแสดงตามภาษาปัจจุบัน — ถอยกลับไปใช้ [name] (ไทย) ถ้าไม่มี [nameEn]
   String get displayName =>

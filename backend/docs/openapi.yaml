@@ -22,6 +22,7 @@ tags:
   - name: Users
   - name: Categories
   - name: Menu
+  - name: Ingredients
   - name: Tables
   - name: Orders
   - name: Promotions
@@ -89,6 +90,14 @@ components:
         options:
           type: array
           items: { $ref: '#/components/schemas/MenuOption' }
+    MenuItemIngredient:
+      type: object
+      description: วัตถุดิบที่ผูกกับเมนูนี้ + ปริมาณที่ใช้ต่อ 1 ที่
+      properties:
+        ingredientId: { type: integer }
+        ingredientName: { type: string, example: กุ้งสด }
+        unit: { type: string, example: กรัม }
+        qtyPerUnit: { type: number, example: 80 }
     MenuItem:
       type: object
       properties:
@@ -106,6 +115,19 @@ components:
         optionGroups:
           type: array
           items: { $ref: '#/components/schemas/MenuOptionGroup' }
+        ingredients:
+          type: array
+          description: วัตถุดิบที่ผูกไว้ — ระบบตัดสต๊อกอัตโนมัติเมื่อขาย (ดู ticket 06)
+          items: { $ref: '#/components/schemas/MenuItemIngredient' }
+    Ingredient:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string, example: กุ้งสด }
+        unit: { type: string, example: กรัม, description: หน่วยนับอิสระที่ร้านตั้งเอง }
+        currentStock: { type: number, example: 3000 }
+        lowStockThreshold: { type: number, example: 500 }
+        isLowStock: { type: boolean, description: 'currentStock <= lowStockThreshold' }
     Table:
       type: object
       properties:
@@ -431,6 +453,79 @@ paths:
                 isAvailable: { type: boolean }
       responses:
         '200': { description: สำเร็จ }
+
+  /ingredients:
+    get:
+      tags: [Ingredients]
+      summary: รายการวัตถุดิบ
+      parameters:
+        - { in: query, name: lowStockOnly, schema: { type: string, enum: ['true', 'false'] } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Ingredient' }
+    post:
+      tags: [Ingredients]
+      summary: เพิ่มวัตถุดิบใหม่ (admin/manager)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Ingredient' }
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /ingredients/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Ingredients]
+      summary: รายละเอียดวัตถุดิบ
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Ingredients]
+      summary: แก้ชื่อ/หน่วยนับ/threshold (admin/manager) — แก้ currentStock ตรง ๆ ไม่ได้ ต้องผ่าน adjust-stock
+      responses:
+        '200': { description: สำเร็จ }
+    delete:
+      tags: [Ingredients]
+      summary: ลบวัตถุดิบ (admin/manager) — ลบไม่ได้ถ้ายังผูกกับเมนูอยู่
+      responses:
+        '204': { description: ลบแล้ว }
+        '409': { description: ยังถูกผูกกับเมนูอยู่ }
+  /ingredients/{id}/adjust-stock:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [Ingredients]
+      summary: ปรับสต๊อกมือ (รับของเข้า/ตัดของเสีย) (admin/manager) — sync สถานะเปิด/ปิดขายเมนูที่เกี่ยวข้องอัตโนมัติ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [delta]
+              properties:
+                delta: { type: number, example: 500, description: 'บวก = เติมสต๊อก, ลบ = หัก/ของเสีย ห้ามเป็น 0' }
+                note: { type: string, nullable: true }
+      responses:
+        '200': { description: สำเร็จ }
+        '422': { description: delta เป็น 0 }
 
   /tables:
     get:

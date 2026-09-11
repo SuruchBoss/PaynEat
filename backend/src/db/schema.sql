@@ -67,6 +67,34 @@ CREATE TABLE IF NOT EXISTS options (
 );
 CREATE INDEX IF NOT EXISTS idx_options_group ON options(group_id);
 
+-- วัตถุดิบ/สต๊อก (ดู docs/tickets/06-inventory-stock.md) — หน่วย (unit) เป็น string อิสระที่ร้าน
+-- ตั้งเอง เช่น "กก.", "ลิตร", "ชิ้น" ไม่มี unit conversion ข้ามหน่วย — ไม่ใช่เงินจึงเก็บเป็น REAL
+-- ตรง ๆ ไม่ผ่าน toSatang/toBaht เหมือนคอลัมน์เงินอื่นในระบบ (ดู docs/DECISIONS.md)
+CREATE TABLE IF NOT EXISTS ingredients (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  name                TEXT    NOT NULL,
+  unit                TEXT    NOT NULL,
+  current_stock       REAL    NOT NULL DEFAULT 0,
+  low_stock_threshold REAL    NOT NULL DEFAULT 0,
+  created_at          TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- ผูกเมนูกับวัตถุดิบที่ใช้ + ปริมาณที่ใช้ต่อ 1 ที่ (qty_per_unit) — เมนูหนึ่งผูกได้หลายวัตถุดิบ
+-- ON DELETE RESTRICT ที่ ingredient_id: ลบวัตถุดิบที่ยังผูกกับเมนูอยู่ไม่ได้ต้องเลิกผูกก่อน
+CREATE TABLE IF NOT EXISTS menu_item_ingredients (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  menu_item_id  INTEGER NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+  ingredient_id INTEGER NOT NULL REFERENCES ingredients(id) ON DELETE RESTRICT,
+  qty_per_unit  REAL    NOT NULL CHECK (qty_per_unit > 0),
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_menu_item_ingredients_unique
+  ON menu_item_ingredients(menu_item_id, ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_menu_item_ingredients_menu_item ON menu_item_ingredients(menu_item_id);
+CREATE INDEX IF NOT EXISTS idx_menu_item_ingredients_ingredient ON menu_item_ingredients(ingredient_id);
+
 CREATE TABLE IF NOT EXISTS dining_tables (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
   name       TEXT    NOT NULL UNIQUE,

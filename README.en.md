@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-352%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-383%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 352 automated tests.
+control and 383 automated tests.
 
 ---
 
@@ -260,8 +260,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 140 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 212 cases — domain / controller / widget
+cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 218 cases — domain / controller / widget
 ```
 
 ---
@@ -347,6 +347,11 @@ cd app && flutter test      # 212 cases — domain / controller / widget
   campaign start/end dates — auto-applies when eligible or lets customers redeem a discount code (one promotion
   per bill, max), shown clearly and separately from manual discounts on the bill, on-screen receipt, and printed
   receipt
+- **Ingredients/stock** — link a menu item to the ingredients it uses and the quantity per order directly from
+  the menu edit form; stock is deducted automatically when an order is sent to the kitchen (and restored
+  automatically when an item is cancelled/removed); a menu item is auto-marked sold out when any linked
+  ingredient runs out, and auto-re-enabled once restocked, with a low-stock alert screen (see
+  `docs/DECISIONS.md` #15)
 
 ### 🔐 System
 
@@ -650,11 +655,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 140 cases
-cd app && flutter test      # 212 cases
+cd backend && npm test      # 165 cases
+cd app && flutter test      # 218 cases
 ```
 
-**Backend (140 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -684,7 +689,16 @@ valid/invalid code → a pinned code isn't replaced by an auto promotion even if
 → deleting a promotion already used on an order doesn't affect that order (its name/code were already
 snapshotted).
 
-**Flutter (212 cases)** — split into 3 levels:
+`ingredients.test.js` (9 cases) tests ingredient CRUD, RBAC (waiters can't create/edit), validation, adjusting
+stock and seeing `isLowStock` flip correctly, the `lowStockOnly` filter, and refusing to delete an ingredient
+still linked to a menu item. `inventory-flow.test.js` (13 steps) walks the full path: order items → no
+deduction yet → send to kitchen deducts stock (repeat calls don't double-deduct) → adding items to an
+already-sent order deducts immediately → stock hits zero and the menu item auto-disables → ordering the
+disabled item elsewhere gets a 409 → cancelling the item restores stock and re-enables the menu automatically
+→ a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
+the whole order all restore stock correctly.
+
+**Flutter (218 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -692,7 +706,7 @@ snapshotted).
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 8 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 11 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow and the full stock-deduction / auto sold-out flow |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -750,7 +764,10 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   minimum spend, and campaign dates; auto-applies when eligible or accepts a customer-entered discount code
   (one promotion per bill, additive with a manual discount but capped at the subtotal), shown clearly across
   the bill/receipt/printed receipt (see the ✨ Features section)
-- [ ] **Ingredient stock tracking** — auto-deduct stock on sale
+- [x] **Ingredient stock tracking** — done: link a menu item to the ingredients it uses and the quantity per
+  order from the menu edit form; stock auto-deducts when sent to kitchen (auto-restored on cancel/removal); a
+  menu item auto-disables/re-enables based on ingredient stock, with a low-stock alert screen (see the ✨
+  Features section and `docs/DECISIONS.md` #15)
 - [ ] **Flutter integration tests** with `integration_test` against a real backend
 - [ ] **Tax invoice / e-Tax invoice** — required under Thai law for serious commercial use
 
