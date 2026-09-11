@@ -7,6 +7,7 @@ import '../../../../core/network/socket_client.dart';
 import '../../../../core/services/session_service.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/usecases/order_usecases.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// รายการออเดอร์ พร้อมตัวกรองสถานะ
 class OrderListController extends GetxController {
@@ -59,7 +60,7 @@ class OrderListController extends GetxController {
     errorMessage.value = null;
 
     final status = statusFilter.value;
-    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final today = AppClock.now().toIso8601String().substring(0, 10);
 
     final result = await _getOrders(
       OrderListFilter(

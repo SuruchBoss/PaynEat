@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'app_clock.dart';
 
 /// จัดรูปแบบจำนวนเงินและวันที่ให้ตรงกับที่คนไทยอ่านแล้วเข้าใจทันที
 class Formatters {
@@ -46,7 +47,7 @@ class Formatters {
   static String elapsed(String? value) {
     final date = parse(value);
     if (date == null) return '-';
-    final diff = DateTime.now().difference(date);
+    final diff = AppClock.now().difference(date);
     if (diff.inSeconds < 60) return 'common_time_just_now'.tr;
     if (diff.inMinutes < 60) {
       return 'common_time_minutes'.trParams({
@@ -65,6 +66,6 @@ class Formatters {
   static int elapsedMinutes(String? value) {
     final date = parse(value);
     if (date == null) return 0;
-    return DateTime.now().difference(date).inMinutes;
+    return AppClock.now().difference(date).inMinutes;
   }
 }

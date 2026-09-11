@@ -5,7 +5,7 @@ extension DemoStoreSeedHistory on DemoStore {
   /// สร้างยอดขายย้อนหลังไว้ให้รายงานและแดชบอร์ดมีข้อมูลให้ดูตั้งแต่เปิดแอป
   void _seedHistoricalSales() {
     final random = Random(20260907);
-    final now = DateTime.now();
+    final now = AppClock.now();
 
     for (var dayOffset = 6; dayOffset >= 0; dayOffset--) {
       final billCount = dayOffset == 0 ? 6 : 8 + random.nextInt(6);

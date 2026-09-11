@@ -1,4 +1,5 @@
 import 'order_item_payload.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// รายการอาหารที่ "สั่งเพิ่ม" เข้าออเดอร์เดิมไว้ตอนเน็ตหลุด แล้วรอส่งขึ้นเซิร์ฟเวอร์อัตโนมัติ
 /// เมื่อเน็ตกลับมา (ดู [OfflineOrderQueueService])
@@ -46,6 +47,6 @@ class PendingOrderItems {
         summary: json['summary'] as String? ?? '',
         queuedAt:
             DateTime.tryParse(json['queuedAt'] as String? ?? '') ??
-            DateTime.now(),
+            AppClock.now(),
       );
 }

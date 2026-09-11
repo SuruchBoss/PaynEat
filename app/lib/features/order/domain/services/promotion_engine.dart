@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// ตรรกะจับคู่โปรโมชันกับออเดอร์ — พอร์ตจาก backend/src/modules/orders/promotion.engine.js
 /// ใช้เฉพาะฝั่ง Demo Mode (เห็น backend จริงทำหน้าที่นี้แทนตอนต่อ API จริง) เพื่อให้ demo
@@ -102,7 +103,7 @@ class PromotionEngine {
     required List<Map<String, dynamic>> items,
     DateTime? now,
   }) {
-    final effectiveNow = now ?? DateTime.now();
+    final effectiveNow = now ?? AppClock.now();
     if (promotion['isActive'] != true) return null;
     if (!_isWithinValidity(promotion, effectiveNow)) return null;
 
@@ -169,7 +170,7 @@ class PromotionEngine {
     required List<Map<String, dynamic>> items,
     DateTime? now,
   }) {
-    final effectiveNow = now ?? DateTime.now();
+    final effectiveNow = now ?? AppClock.now();
     if (promotion['isActive'] != true) return 'promotion_error_inactive'.tr;
     if (!_isWithinValidity(promotion, effectiveNow)) {
       return 'promotion_error_expired'.tr;

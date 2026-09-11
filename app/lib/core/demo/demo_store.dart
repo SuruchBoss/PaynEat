@@ -7,6 +7,7 @@ import '../../features/order/domain/services/promotion_engine.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 import 'demo_seed.dart';
+import '../utils/app_clock.dart';
 
 part 'demo_store_auth.dart';
 part 'demo_store_menu.dart';
@@ -88,7 +89,7 @@ class DemoStore {
 
   int _nextId() => ++_idSequence;
 
-  String _now() => DateTime.now().toUtc().toIso8601String();
+  String _now() => AppClock.now().toUtc().toIso8601String();
 
   BillCalculator get _calculator => BillCalculator(
     vatRate: settings['vatRate'] as double,

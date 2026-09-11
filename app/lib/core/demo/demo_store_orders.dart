@@ -51,7 +51,7 @@ extension DemoStoreOrders on DemoStore {
     }
 
     final table = tableId == null ? null : _findTable(tableId);
-    final now = DateTime.now();
+    final now = AppClock.now();
     final code =
         'ORD-${now.year}'
         '${now.month.toString().padLeft(2, '0')}'

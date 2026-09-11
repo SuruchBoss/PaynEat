@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/domain/entities/user.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// เมนูนำทาง 1 ช่อง
 class HomeDestination {
@@ -46,7 +47,7 @@ class HomeController extends GetxController {
   User? get user => _session.currentUser;
 
   String get greeting {
-    final hour = DateTime.now().hour;
+    final hour = AppClock.now().hour;
     if (hour < 12) return 'home_greeting_morning'.tr;
     if (hour < 17) return 'home_greeting_afternoon'.tr;
     return 'home_greeting_evening'.tr;

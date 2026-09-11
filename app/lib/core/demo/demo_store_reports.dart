@@ -193,5 +193,5 @@ extension DemoStoreReports on DemoStore {
     };
   }
 
-  String _today() => DateTime.now().toIso8601String().substring(0, 10);
+  String _today() => AppClock.now().toIso8601String().substring(0, 10);
 }

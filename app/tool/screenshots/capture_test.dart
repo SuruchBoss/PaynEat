@@ -24,8 +24,12 @@ void main() {
 
   setUpAll(() async {
     await ScreenshotHarness.loadFonts();
+    // ต้องตรึงเวลาก่อน seed เสมอ ข้อมูลสาธิตประทับเวลาตอนถูกสร้างขึ้นมา
+    ScreenshotHarness.freezeClock();
     ids = ScreenshotHarness.seedScenario();
   });
+
+  tearDownAll(ScreenshotHarness.unfreezeClock);
 
   // ---------------------------------------------------------------------
   // มือถือ — พนักงานเสิร์ฟ
