@@ -46,7 +46,7 @@ class AppDialogs {
       title ?? 'common_success_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.success,
+      backgroundColor: AppColors.successInk,
       colorText: Colors.white,
       margin: const EdgeInsets.all(12),
       icon: const Icon(Icons.check_circle_rounded, color: Colors.white),

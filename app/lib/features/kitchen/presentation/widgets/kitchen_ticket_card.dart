@@ -190,7 +190,11 @@ class KitchenTicketCard extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: color,
+                      // ใช้เฉดเข้ม (ink) เป็นพื้นปุ่ม ไม่ใช่สีสดของสถานะ —
+                      // ป้ายปุ่มเป็นตัวหนังสือสีขาว ซึ่งบนสีสดคอนทราสต์ไม่ถึงเกณฑ์
+                      // (เหลือง "รอทำ" ได้แค่ 2.13:1) และจอครัวคือที่ที่อ่านยากที่สุด
+                      // ในร้านอยู่แล้ว ทั้งไอน้ำ แสงจ้า และระยะมองที่ไกลกว่าจอมือถือ
+                      backgroundColor: AppColors.itemStatusInk(item.status),
                       minimumSize: const Size(0, 56),
                     ),
                     onPressed: onAdvance,

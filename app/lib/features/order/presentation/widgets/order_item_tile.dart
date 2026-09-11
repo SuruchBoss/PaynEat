@@ -158,7 +158,7 @@ class OrderItemTile extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),
-                              backgroundColor: color,
+                              backgroundColor: AppColors.inkOf(color),
                               // ต้อง copyWith จาก labelLarge ของธีม ไม่ใช่สร้าง TextStyle
                               // เปล่า ๆ ขึ้นใหม่ — ไม่งั้น fontFamily จะหลุดไปใช้ค่า default
                               // ของแพลตฟอร์ม (ดูคำเตือนเดียวกันใน app_theme.dart)

@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 
 import '../../app/theme/app_colors.dart';
@@ -37,7 +38,11 @@ class ContrastService {
 
     // สีส่วนใหญ่ในแอปอ่านจาก AppColors ตรง ๆ ไม่ได้ผ่านธีม การเปลี่ยนธีมอย่างเดียว
     // จึงไม่พอ ต้องบังคับให้ทุกหน้าที่ค้างอยู่ใน stack วาดใหม่ด้วย
-    Get.forceAppUpdate();
+    //
+    // ต้องรอให้เฟรมปัจจุบันวาดจบก่อน — forceAppUpdate สั่ง reassemble ทั้งต้นไม้
+    // ถ้าเรียกตอนที่ยังอยู่กลางเฟรม (ซึ่งเป็นกรณีปกติ เพราะถูกเรียกจาก onPressed
+    // ของปุ่ม) จะชน assertion `schedulerPhase == idle` ของ Flutter แล้วแอปพัง
+    SchedulerBinding.instance.addPostFrameCallback((_) => Get.forceAppUpdate());
 
     if (Get.isRegistered<StorageService>()) {
       await Get.find<StorageService>().saveContrast(

@@ -376,7 +376,7 @@ class _PaymentForm extends GetView<CheckoutController> {
           Obx(
             () => FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.success,
+                backgroundColor: AppColors.successInk,
                 minimumSize: const Size(0, 52),
               ),
               onPressed: controller.canPay && !controller.isPaying.value

@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-398%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-407%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 398 automated tests.
+control and 407 automated tests.
 
 ---
 
@@ -267,7 +267,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 233 cases — domain / controller / widget
+cd app && flutter test      # 242 cases — domain / controller / widget
 ```
 
 ---
@@ -670,7 +670,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 165 cases
-cd app && flutter test      # 233 cases
+cd app && flutter test      # 242 cases
 ```
 
 **Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -712,7 +712,7 @@ disabled item elsewhere gets a 409 → cancelling the item restores stock and re
 → a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
 the whole order all restore stock correctly.
 
-**Flutter (233 cases)** — split into 3 levels:
+**Flutter (242 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -742,7 +742,8 @@ the whole order all restore stock correctly.
 | Widget | `widgets_test.dart` | Button taps and widget state |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
-| Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios — standard mode must pass AA (4.5:1), high-contrast mode must pass AAA (7:1) and be strictly darker on every token |
+| Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
+| Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is
