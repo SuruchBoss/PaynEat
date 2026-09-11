@@ -58,6 +58,10 @@ import '../../features/table/data/datasources/table_remote_data_source.dart';
 import '../../features/table/data/repositories/table_repository_impl.dart';
 import '../../features/table/domain/repositories/table_repository.dart';
 import '../../features/table/domain/usecases/table_usecases.dart';
+import '../../features/tax_invoice/data/datasources/tax_invoice_remote_data_source.dart';
+import '../../features/tax_invoice/data/repositories/tax_invoice_repository_impl.dart';
+import '../../features/tax_invoice/domain/repositories/tax_invoice_repository.dart';
+import '../../features/tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 import '../config/app_config.dart';
 
 /// ประกอบ dependency ของทั้งแอปไว้ที่เดียว (composition root)
@@ -157,6 +161,10 @@ class InitialBinding extends Bindings {
       () => ShiftRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<TaxInvoiceRemoteDataSource>(
+      () => TaxInvoiceRemoteDataSourceImpl(client),
+      fenix: true,
+    );
   }
 
   /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -194,6 +202,10 @@ class InitialBinding extends Bindings {
     );
     Get.put<ShiftRemoteDataSource>(
       DemoShiftDataSource(store, auth),
+      permanent: true,
+    );
+    Get.put<TaxInvoiceRemoteDataSource>(
+      DemoTaxInvoiceDataSource(store, auth),
       permanent: true,
     );
   }
@@ -244,6 +256,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<ShiftRepository>(
       () => ShiftRepositoryImpl(Get.find<ShiftRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<TaxInvoiceRepository>(
+      () => TaxInvoiceRepositoryImpl(Get.find<TaxInvoiceRemoteDataSource>()),
       fenix: true,
     );
   }
@@ -434,6 +450,20 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => RefundPaymentUseCase(Get.find<PaymentRepository>()),
+      fenix: true,
+    );
+
+    // tax invoice
+    Get.lazyPut(
+      () => GetTaxInvoiceUseCase(Get.find<TaxInvoiceRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => IssueTaxInvoiceUseCase(Get.find<TaxInvoiceRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => VoidTaxInvoiceUseCase(Get.find<TaxInvoiceRepository>()),
       fenix: true,
     );
 

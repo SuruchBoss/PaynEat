@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-411%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-431%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 411 automated tests.
+control and 431 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -245,10 +245,14 @@ The login page has one-tap buttons for each account — no need to type anything
 7. **Back to the waiter window** → the status updates immediately; tap **"Served"**
 8. **Tap "Checkout / Close Bill"** → try a split payment: pay 100 THB by QR first, then the rest in cash
    (the system tracks the remaining balance and calculates change)
-9. **You land on the receipt page** → go back to the table map; table A1 has already turned green again
-10. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
-    report, complete with the hourly chart and best sellers
-11. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
+9. **You land on the receipt page** → see a **"Request tax invoice"** button — choose abbreviated
+   (issued instantly) or full (enter the customer's name + address) → get a document with a
+   continuous running number (e.g. `INV69-000001`) right away
+10. **Go back to the table map** → table A1 has already turned green again
+11. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
+    report, complete with the hourly chart and payment-method breakdown (best sellers are on the
+    **Reports** page)
+12. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
     names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
 
 **Want to try the hidden business rules?**
@@ -264,14 +268,17 @@ The login page has one-tap buttons for each account — no need to type anything
   starting stock) → go back to order taking and "Steamed Fish with Lime" now shows "Sold Out" **on its own**,
   with nobody toggling it manually (automatic stock deduction — see `docs/DECISIONS.md` #15) — hit "Receive"
   to restock it and it re-enables itself the same way
+- Try requesting a tax invoice again for the same bill → rejected (only 1 active invoice per bill) —
+  log in as `manager` and tap **"Void this invoice"** on that same receipt page first, and you can
+  issue a fresh one for that bill again with a brand-new running number (see `docs/DECISIONS.md` #19)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 246 cases — domain / controller / widget
+cd backend && npm test      # 174 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 257 cases — domain / controller / widget
 ```
 
 ---
@@ -345,15 +352,20 @@ cd app && flutter test      # 246 cases — domain / controller / widget
   from Settings), with full Thai-character support — no printer configured? The on-screen receipt still
   works as normal (Bluetooth/USB and printing directly from a web browser aren't supported yet — see
   `docs/DECISIONS.md` #11)
+- **Issue a tax invoice** from the receipt page of any fully-paid bill — choose abbreviated (issued
+  instantly) or full (enter the customer's name + address), with a continuous, non-duplicate running
+  number in the legally required format — can't issue a second one for the same bill until the earlier
+  one is voided first (voiding requires manager role or above — see `docs/DECISIONS.md` #19)
 
 ### 🖥️ Admin (web)
 
-- **Dashboard** — today's sales, an hourly chart, best sellers, payment-method breakdown, and a live store
-  status counter
+- **Dashboard** — today's sales, an hourly chart, payment-method breakdown, and a live store status counter
+  (answers "how's the store doing right now" — historical data and best sellers live on the **Reports** page)
 - **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
-- **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode
+- **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
+  branch (for issuing tax invoices — optional if the store isn't VAT-registered)
 - **Receipt printer settings** — this device's IP/port/paper size, with a test-print button
 - **Conditional promotions/discounts** — create/edit/disable 3 promotion types (percent off, amount off,
   buy-one-get-one), with conditions for day/time window, eligible categories/menu items, minimum spend, and
@@ -673,11 +685,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 165 cases
-cd app && flutter test      # 246 cases
+cd backend && npm test      # 174 cases
+cd app && flutter test      # 257 cases
 ```
 
-**Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (174 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -716,7 +728,12 @@ disabled item elsewhere gets a 409 → cancelling the item restores stock and re
 → a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
 the whole order all restore stock correctly.
 
-**Flutter (246 cases)** — split into 3 levels:
+`tax-invoices.test.js` (9 cases) tests issuing abbreviated/full tax invoices, the running-number format
+(`INV<Buddhist year>-<6-digit sequence>`) staying sequential across multiple orders, rejecting a second
+invoice for the same bill / a bill that hasn't been paid yet / a store that hasn't set its tax ID, RBAC
+(kitchen staff can't issue one), and the void-then-reissue flow producing a fresh running number.
+
+**Flutter (257 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -724,7 +741,7 @@ the whole order all restore stock correctly.
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 11 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow and the full stock-deduction / auto sold-out flow |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 12 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, and the tax-invoice issue/void/reissue flow with running numbers |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -734,7 +751,7 @@ the whole order all restore stock correctly.
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |
 | Controller | `kitchen_controller_test.dart` | Grouping the kitchen queue by status, counting late items, moving status forward |
 | Controller | `checkout_controller_test.dart` | Change/remaining-balance calculation, the `canPay` condition, rounding up to the nearest hundred |
-| Controller | `receipt_controller_test.dart` | Loading a receipt by orderId, plus the `Payment.tendered` rule — a receipt shows the cash the customer handed over, not the amount applied to the bill (tendered − change = amount applied) |
+| Controller | `receipt_controller_test.dart` | Loading a receipt by orderId, the `Payment.tendered` rule (a receipt shows the cash the customer handed over, not the amount applied to the bill: tendered − change = amount applied), silently loading the tax invoice when none has been issued yet (404 isn't an error), and tax-invoice void permission (manager role or above) |
 | Controller | `settings_controller_test.dart` | Loading store settings into the correct form fields |
 | Controller | `staff_controller_test.dart` | Filtering staff by role, counting by role |
 | Controller | `order_detail_controller_test.dart` | Order management permissions, moving item status forward |
@@ -793,7 +810,12 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
   and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
 - [ ] **Flutter integration tests** with `integration_test` against a real backend
-- [ ] **Tax invoice / e-Tax invoice** — required under Thai law for serious commercial use
+- [x] **Tax invoice** — done: store tax ID/address/branch can be set from Settings; abbreviated/full tax
+  invoices can be issued from the receipt page of any fully-paid bill, with a continuous, non-duplicate
+  running number (`INV<Buddhist year>-<sequence>`, resetting every year); voiding a wrongly-issued invoice
+  and reissuing it is supported (see the ✨ Features section and `docs/DECISIONS.md` #19) — **e-Tax
+  invoice** (filing directly with the Revenue Department electronically) is **not done yet**, deliberately
+  deferred to a later phase
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -811,7 +833,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 18 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 19 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

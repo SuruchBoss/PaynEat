@@ -30,6 +30,7 @@ tags:
   - name: Shifts
   - name: Reports
   - name: Settings
+  - name: TaxInvoices
 
 components:
   securitySchemes:
@@ -128,6 +129,33 @@ components:
         currentStock: { type: number, example: 3000 }
         lowStockThreshold: { type: number, example: 500 }
         isLowStock: { type: boolean, description: 'currentStock <= lowStockThreshold' }
+    TaxInvoice:
+      type: object
+      description: ใบกำกับภาษี (ดู ticket 07) — snapshot ข้อมูลร้าน+ยอดเงิน ณ เวลาที่ออก
+      properties:
+        id: { type: integer }
+        orderId: { type: integer }
+        orderCode: { type: string, example: ORD-20260101-0001 }
+        runningNumber: { type: string, example: INV69-000001, description: 'รีเซ็ตทุกปี พ.ศ.' }
+        invoiceType: { type: string, enum: [abbreviated, full] }
+        customerName: { type: string, nullable: true }
+        customerAddress: { type: string, nullable: true }
+        customerTaxId: { type: string, nullable: true }
+        storeName: { type: string }
+        storeTaxId: { type: string }
+        storeAddress: { type: string }
+        storeBranch: { type: string, nullable: true }
+        subtotal: { type: number }
+        vat: { type: number }
+        total: { type: number }
+        issuedBy: { type: integer }
+        issuedByName: { type: string }
+        issuedAt: { type: string, format: date-time }
+        isVoid: { type: boolean }
+        voidedAt: { type: string, format: date-time, nullable: true }
+        voidReason: { type: string, nullable: true }
+        voidedBy: { type: integer, nullable: true }
+        voidedByName: { type: string, nullable: true }
     Table:
       type: object
       properties:
@@ -1033,11 +1061,74 @@ paths:
   /settings:
     get:
       tags: [Settings]
-      summary: ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน)
+      summary: ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี)
       responses:
         '200': { description: สำเร็จ }
     patch:
       tags: [Settings]
-      summary: แก้ไขค่าตั้งค่าร้าน (admin/manager)
+      summary: แก้ไขค่าตั้งค่าร้าน (admin/manager) — storeTaxId/storeAddress/storeBranch ต้องตั้งก่อนออกใบกำกับภาษีได้
       responses:
         '200': { description: สำเร็จ }
+
+  /tax-invoices/order/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+        description: order id
+    get:
+      tags: [TaxInvoices]
+      summary: ใบกำกับภาษีที่ยัง active อยู่ของออเดอร์นี้ (ถ้ามี)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/TaxInvoice' }
+        '404': { description: ยังไม่มีใบกำกับภาษีสำหรับออเดอร์นี้ }
+    post:
+      tags: [TaxInvoices]
+      summary: ออกใบกำกับภาษี (admin/manager/cashier/waiter) — ออเดอร์ต้องชำระเงินครบแล้วเท่านั้น
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [invoiceType]
+              properties:
+                invoiceType: { type: string, enum: [abbreviated, full] }
+                customerName: { type: string, description: บังคับถ้า invoiceType = full }
+                customerAddress: { type: string, description: บังคับถ้า invoiceType = full }
+                customerTaxId: { type: string, nullable: true, description: ไม่บังคับแม้เป็น full }
+      responses:
+        '201': { description: ออกสำเร็จ }
+        '400': { description: 'ยังไม่ได้ตั้งค่าเลขผู้เสียภาษี/ที่อยู่ร้าน หรือข้อมูลเต็มรูปไม่ครบ' }
+        '409': { description: ออเดอร์ยังไม่จ่ายครบ หรือมีใบกำกับภาษี active อยู่แล้ว }
+  /tax-invoices/order/{id}/void:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+        description: order id
+    post:
+      tags: [TaxInvoices]
+      summary: ยกเลิกใบกำกับภาษีที่ออกผิด (admin/manager เท่านั้น) — เลขที่รันไปแล้วจะไม่ถูกใช้ซ้ำ ออกใบใหม่แทนได้ทันที
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
+      responses:
+        '200': { description: ยกเลิกสำเร็จ }
+        '404': { description: ยังไม่มีใบกำกับภาษีที่ยกเลิกได้ }

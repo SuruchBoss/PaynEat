@@ -4,9 +4,14 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../tax_invoice/domain/entities/tax_invoice.dart';
+import '../../../tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/receipt_controller.dart';
 import '../widgets/refund_dialog.dart';
+import '../widgets/tax_invoice_document_dialog.dart';
+import '../widgets/tax_invoice_request_dialog.dart';
 
 /// ใบเสร็จ — จัดวางแบบสลิปจริงเพื่อให้พิมพ์ออกเครื่องพิมพ์ความร้อนได้เลย
 class ReceiptPage extends GetView<ReceiptController> {
@@ -316,6 +321,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                         ),
                       ),
                     ],
+                    if (order.status == OrderStatus.paid) ...[
+                      const _DashedDivider(),
+                      _TaxInvoiceSection(controller: controller),
+                    ],
                     const SizedBox(height: 18),
                     Center(
                       child: Text(
@@ -359,6 +368,125 @@ class ReceiptPage extends GetView<ReceiptController> {
       amount: result.amount,
       reason: result.reason,
     );
+  }
+}
+
+/// ส่วน "ขอใบกำกับภาษี" — โผล่เฉพาะออเดอร์ที่จ่ายครบแล้ว (ดู docs/tickets/07-tax-invoice.md)
+class _TaxInvoiceSection extends StatelessWidget {
+  const _TaxInvoiceSection({required this.controller});
+
+  final ReceiptController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoadingTaxInvoice.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+      }
+
+      final invoice = controller.taxInvoice.value;
+      if (invoice == null) {
+        return Obx(
+          () => OutlinedButton.icon(
+            onPressed: controller.isIssuingTaxInvoice.value
+                ? null
+                : () => _requestTaxInvoice(controller),
+            icon: const Icon(Icons.receipt_long_outlined, size: 18),
+            label: Text('tax_invoice_request_button'.tr),
+          ),
+        );
+      }
+
+      return InkWell(
+        onTap: () => _viewTaxInvoice(controller, invoice),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: invoice.isVoid
+                ? AppColors.danger.withValues(alpha: 0.08)
+                : AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.receipt_long_rounded,
+                size: 18,
+                color: invoice.isVoid ? AppColors.danger : AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      invoice.runningNumber,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      invoice.isVoid
+                          ? 'tax_invoice_voided_badge'.tr
+                          : 'tax_invoice_tap_to_view_hint'.tr,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: invoice.isVoid
+                            ? AppColors.danger
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.textDisabled,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Future<void> _requestTaxInvoice(ReceiptController controller) async {
+    final result = await TaxInvoiceRequestDialog.show();
+    if (result == null) return;
+    await controller.requestTaxInvoice(
+      IssueTaxInvoiceParams(
+        orderId: controller.orderId,
+        invoiceType: result.invoiceType,
+        customerName: result.customerName,
+        customerAddress: result.customerAddress,
+        customerTaxId: result.customerTaxId,
+      ),
+    );
+  }
+
+  Future<void> _viewTaxInvoice(
+    ReceiptController controller,
+    TaxInvoice invoice,
+  ) async {
+    final voidReason = await TaxInvoiceDocumentDialog.show(
+      invoice: invoice,
+      canVoid: controller.canVoidTaxInvoice,
+    );
+    if (voidReason != null) {
+      await controller.voidCurrentTaxInvoice(voidReason);
+    }
   }
 }
 

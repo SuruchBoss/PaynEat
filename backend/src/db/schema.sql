@@ -230,3 +230,35 @@ CREATE TABLE IF NOT EXISTS settings (
   value      TEXT NOT NULL,
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ใบกำกับภาษี (ดู docs/tickets/07-tax-invoice.md) — แยกจากใบเสร็จปกติ (payments/receipt) เพราะมี
+-- ข้อกำหนดตามกฎหมาย (ประมวลรัษฎากร มาตรา 86/4 เต็มรูป, มาตรา 86/6 อย่างย่อ) ที่ running number
+-- ต้องเรียงต่อเนื่องไม่ซ้ำ/ไม่ข้าม จึง snapshot ข้อมูลร้าน+ยอดเงิน ณ เวลาที่ออกไว้ตรงนี้เลย
+-- (เหมือน promotion_name_snapshot ดู docs/DECISIONS.md #14) ไม่อ้างอิงไปที่ settings/orders
+-- เพราะสองตารางนั้นแก้ไขได้ภายหลัง จะทำให้ใบกำกับภาษีเก่าแสดงข้อมูลผิดเพี้ยนไปจากตอนออกจริง
+CREATE TABLE IF NOT EXISTS tax_invoices (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id          INTEGER NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+  running_number    TEXT    NOT NULL UNIQUE,
+  invoice_type      TEXT    NOT NULL CHECK (invoice_type IN ('abbreviated', 'full')),
+  customer_name     TEXT,
+  customer_address  TEXT,
+  customer_tax_id   TEXT,
+  store_name        TEXT    NOT NULL,
+  store_tax_id      TEXT    NOT NULL,
+  store_address     TEXT    NOT NULL,
+  store_branch      TEXT,
+  subtotal          INTEGER NOT NULL,
+  vat               INTEGER NOT NULL,
+  total             INTEGER NOT NULL,
+  issued_by         INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  issued_at         TEXT    NOT NULL DEFAULT (datetime('now')),
+  voided_at         TEXT,
+  void_reason       TEXT,
+  voided_by         INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+-- ออกได้แค่ 1 ใบ "active" (ยังไม่ถูกยกเลิก) ต่อออเดอร์ ณ ขณะใดขณะหนึ่ง — ยกเลิกใบเดิมก่อนแล้วออกใหม่ได้
+-- แต่เลขที่รันไปแล้วจะไม่ถูกใช้ซ้ำแม้ใบนั้นจะถูกยกเลิก (ต้องรักษาลำดับเลขที่ให้ต่อเนื่องไม่มีช่องว่างที่อธิบายไม่ได้)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_tax_invoices_active_order
+  ON tax_invoices(order_id) WHERE voided_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_tax_invoices_order ON tax_invoices(order_id);

@@ -13,6 +13,9 @@ import 'package:payneat_pos/features/payment/domain/entities/payment.dart';
 import 'package:payneat_pos/features/payment/domain/repositories/payment_repository.dart';
 import 'package:payneat_pos/features/payment/domain/usecases/payment_usecases.dart';
 import 'package:payneat_pos/features/payment/presentation/controllers/receipt_controller.dart';
+import 'package:payneat_pos/features/tax_invoice/domain/entities/tax_invoice.dart';
+import 'package:payneat_pos/features/tax_invoice/domain/repositories/tax_invoice_repository.dart';
+import 'package:payneat_pos/features/tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 
 class _FakePaymentRepository implements PaymentRepository {
   Result<({Receipt receipt, Order order})> nextReceiptResult = Result.success((
@@ -24,6 +27,20 @@ class _FakePaymentRepository implements PaymentRepository {
   Future<Result<({Receipt receipt, Order order})>> getReceipt(
     int orderId,
   ) async => nextReceiptResult;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// ค่าเริ่มต้นเป็น 404 (ยังไม่เคยออกใบกำกับภาษี) เพราะ `load()` เรียก `loadTaxInvoice()`
+/// ต่อท้ายเสมอ — ต้องไม่ตกไปโดน AppDialogs.error ทั้งที่ไม่มี GetMaterialApp pump จริง
+class _FakeTaxInvoiceRepository implements TaxInvoiceRepository {
+  Result<TaxInvoice> nextGetResult = Result.failure(
+    const ServerFailure('ยังไม่มีใบกำกับภาษี', statusCode: 404),
+  );
+
+  @override
+  Future<Result<TaxInvoice>> getByOrder(int orderId) async => nextGetResult;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -59,11 +76,13 @@ User _user({int id = 1, String role = UserRole.waiter}) =>
 
 void main() {
   late _FakePaymentRepository repository;
+  late _FakeTaxInvoiceRepository taxInvoiceRepository;
   late SessionService session;
   late ReceiptController controller;
 
   setUp(() {
     repository = _FakePaymentRepository();
+    taxInvoiceRepository = _FakeTaxInvoiceRepository();
     session = SessionService(
       storage: StorageService.memory(),
       socket: SocketClient(),
@@ -74,6 +93,9 @@ void main() {
       session: session,
       printerSettings: PrinterSettingsService(storage: StorageService.memory()),
       printerService: ReceiptPrinterService(),
+      getTaxInvoice: GetTaxInvoiceUseCase(taxInvoiceRepository),
+      issueTaxInvoice: IssueTaxInvoiceUseCase(taxInvoiceRepository),
+      voidTaxInvoice: VoidTaxInvoiceUseCase(taxInvoiceRepository),
     );
   });
 
@@ -134,6 +156,36 @@ void main() {
           token: 't',
         );
         expect(controller.canRefund, isTrue);
+      },
+    );
+
+    test(
+      'load เติม taxInvoice เป็น null แบบเงียบๆ ถ้ายังไม่เคยออก (404 ไม่ใช่ error)',
+      () async {
+        controller.onInit();
+        await controller.load();
+
+        expect(controller.taxInvoice.value, isNull);
+        expect(controller.isLoadingTaxInvoice.value, isFalse);
+      },
+    );
+
+    test(
+      'canVoidTaxInvoice อ่านสิทธิ์จากผู้ใช้ปัจจุบันในเซสชัน (manager ขึ้นไปเท่านั้น)',
+      () {
+        expect(controller.canVoidTaxInvoice, isFalse);
+
+        session.start(
+          user: _user(id: 1, role: UserRole.cashier),
+          token: 't',
+        );
+        expect(controller.canVoidTaxInvoice, isFalse);
+
+        session.start(
+          user: _user(id: 2, role: UserRole.manager),
+          token: 't',
+        );
+        expect(controller.canVoidTaxInvoice, isTrue);
       },
     );
 

@@ -24,6 +24,8 @@ import '../../features/settings/domain/entities/store_settings.dart';
 import '../../features/shift/data/datasources/shift_remote_data_source.dart';
 import '../../features/shift/data/models/shift_model.dart';
 import '../../features/staff/data/datasources/staff_remote_data_source.dart';
+import '../../features/tax_invoice/data/datasources/tax_invoice_remote_data_source.dart';
+import '../../features/tax_invoice/data/models/tax_invoice_model.dart';
 import '../constants/app_constants.dart';
 import 'demo_store.dart';
 
@@ -488,6 +490,37 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
   );
 }
 
+class DemoTaxInvoiceDataSource implements TaxInvoiceRemoteDataSource {
+  DemoTaxInvoiceDataSource(this._store, this._auth);
+
+  final DemoStore _store;
+  final DemoAuthDataSource _auth;
+
+  @override
+  Future<TaxInvoiceModel> getByOrder(int orderId) => _delayed(
+    () => TaxInvoiceModel.fromJson(_store.taxInvoiceForOrder(orderId)),
+  );
+
+  @override
+  Future<TaxInvoiceModel> issue(int orderId, Map<String, dynamic> body) =>
+      _delayed(
+        () => TaxInvoiceModel.fromJson(
+          _store.issueTaxInvoice(
+            orderId,
+            body,
+            issuedById: _auth.currentUserId,
+          ),
+        ),
+      );
+
+  @override
+  Future<TaxInvoiceModel> voidInvoice(int orderId, String reason) => _delayed(
+    () => TaxInvoiceModel.fromJson(
+      _store.voidTaxInvoice(orderId, reason, voidedById: _auth.currentUserId),
+    ),
+  );
+}
+
 class DemoShiftDataSource implements ShiftRemoteDataSource {
   const DemoShiftDataSource(this._store, this._auth);
 
@@ -622,6 +655,9 @@ class DemoSettingsDataSource implements SettingsRemoteDataSource {
     vatRate: (json['vatRate'] as num).toDouble(),
     serviceChargeRate: (json['serviceChargeRate'] as num).toDouble(),
     vatIncluded: json['vatIncluded'] as bool,
+    storeTaxId: json['storeTaxId'] as String?,
+    storeAddress: json['storeAddress'] as String?,
+    storeBranch: json['storeBranch'] as String?,
   );
 
   @override
