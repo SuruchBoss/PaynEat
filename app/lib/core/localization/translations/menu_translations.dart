@@ -39,6 +39,14 @@ const Map<String, String> menuTranslationsTh = {
   'menu_form_add_group_button': 'เพิ่มกลุ่ม',
   'menu_form_no_option_groups': 'ยังไม่มีกลุ่มตัวเลือก',
   'menu_form_submit_edit': 'บันทึกการแก้ไข',
+  'menu_form_ingredients_section': 'วัตถุดิบที่ใช้',
+  'menu_form_ingredients_hint': 'ระบบจะตัดสต๊อกอัตโนมัติเมื่อขายเมนูนี้',
+  'menu_form_add_ingredient_button': 'เพิ่มวัตถุดิบ',
+  'menu_form_no_ingredients': 'ยังไม่ได้ผูกวัตถุดิบ',
+  'menu_form_no_more_ingredients': 'เลือกวัตถุดิบครบทุกตัวแล้ว',
+  'menu_form_ingredient_qty_summary': '@qty @unit / ที่',
+  'menu_form_ingredient_select_label': 'วัตถุดิบ',
+  'menu_form_ingredient_qty_label': 'ปริมาณต่อ 1 ที่',
 
   // Option group dialog
   'menu_option_required_badge': 'ต้องเลือก',
@@ -114,6 +122,15 @@ const Map<String, String> menuTranslationsEn = {
   'menu_form_add_group_button': 'Add group',
   'menu_form_no_option_groups': 'No option groups yet',
   'menu_form_submit_edit': 'Save changes',
+  'menu_form_ingredients_section': 'Ingredients used',
+  'menu_form_ingredients_hint':
+      'Stock is deducted automatically when this item is sold',
+  'menu_form_add_ingredient_button': 'Add ingredient',
+  'menu_form_no_ingredients': 'No ingredients linked yet',
+  'menu_form_no_more_ingredients': 'All ingredients are already linked',
+  'menu_form_ingredient_qty_summary': '@qty @unit / order',
+  'menu_form_ingredient_select_label': 'Ingredient',
+  'menu_form_ingredient_qty_label': 'Quantity per order',
 
   // Option group dialog
   'menu_option_required_badge': 'Required',

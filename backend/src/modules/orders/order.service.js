@@ -6,6 +6,7 @@ import { menuRepository } from '../menu/menu.repository.js';
 import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
 import { promotionRepository } from '../promotions/promotion.repository.js';
+import { ingredientService } from '../ingredients/ingredient.service.js';
 import { orderRepository } from './order.repository.js';
 import { calculateBill } from './order.calculator.js';
 import {
@@ -221,7 +222,15 @@ export const orderService = {
 
     const itemRows = items.map(buildItemRow);
     const run = getDb().transaction(() => {
-      for (const item of itemRows) orderRepository.addItem(order.id, item);
+      for (const item of itemRows) {
+        const created = orderRepository.addItem(order.id, item);
+        // ออเดอร์ที่ส่งครัวไปแล้ว รายการที่เพิ่มใหม่ถือว่า "ส่งครัว" ทันทีโดยไม่ต้องกดส่งซ้ำ
+        // (ดู docs/tickets/06-inventory-stock.md) จึงตัดสต๊อกทันทีตรงนี้ ไม่ต้องรอ sendToKitchen
+        if (order.status !== 'open') {
+          ingredientService.deductForOrderItem(created);
+          orderRepository.updateItem(created.id, { stockDeducted: true });
+        }
+      }
     });
     run();
 
@@ -243,11 +252,17 @@ export const orderService = {
     }
 
     const quantity = payload.quantity ?? item.quantity;
-    orderRepository.updateItem(itemId, {
-      quantity,
-      note: payload.note,
-      lineTotal: (item.unit_price + item.options_price) * quantity,
+    const run = getDb().transaction(() => {
+      orderRepository.updateItem(itemId, {
+        quantity,
+        note: payload.note,
+        lineTotal: (item.unit_price + item.options_price) * quantity,
+      });
+      if (item.stock_deducted) {
+        ingredientService.adjustForQuantityChange(item, item.quantity, quantity);
+      }
     });
+    run();
 
     const dto = buildDto(recalculate(order.id));
     emit(EVENTS.ORDER_UPDATED, dto);
@@ -264,7 +279,11 @@ export const orderService = {
       throw ApiError.conflict('ลบไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว กรุณาใช้การยกเลิกรายการแทน');
     }
 
-    orderRepository.removeItem(itemId);
+    const run = getDb().transaction(() => {
+      if (item.stock_deducted) ingredientService.restoreForOrderItem(item);
+      orderRepository.removeItem(itemId);
+    });
+    run();
     const dto = buildDto(recalculate(order.id));
     emit(EVENTS.ORDER_UPDATED, dto);
     return dto;
@@ -287,7 +306,13 @@ export const orderService = {
       throw ApiError.forbidden('ยกเลิกรายการที่ครัวทำแล้วต้องใช้สิทธิ์ผู้จัดการ');
     }
 
-    orderRepository.updateItem(itemId, { status });
+    const run = getDb().transaction(() => {
+      orderRepository.updateItem(itemId, { status });
+      if (status === 'cancelled' && item.stock_deducted) {
+        ingredientService.restoreForOrderItem(item);
+      }
+    });
+    run();
     recalculate(order.id);
 
     // ถ้าเสิร์ฟครบทุกรายการแล้ว ให้ออเดอร์ขึ้นสถานะ "เสิร์ฟครบ" อัตโนมัติ
@@ -318,7 +343,18 @@ export const orderService = {
     const items = orderRepository.findItems(order.id).filter((item) => item.status !== 'cancelled');
     if (items.length === 0) throw ApiError.badRequest('ออเดอร์ยังไม่มีรายการอาหาร');
 
-    if (order.status === 'open') orderRepository.updateStatus(order.id, 'in_kitchen');
+    const run = getDb().transaction(() => {
+      if (order.status === 'open') orderRepository.updateStatus(order.id, 'in_kitchen');
+      // ตัดสต๊อกเฉพาะรายการที่ยังไม่เคยตัด กัน sendToKitchen ที่ถูกเรียกซ้ำ (เช่น มีรายการเพิ่มมาใหม่)
+      // ไม่ตัดซ้ำรายการเดิมที่ตัดไปแล้วตั้งแต่รอบก่อน
+      for (const item of items) {
+        if (!item.stock_deducted) {
+          ingredientService.deductForOrderItem(item);
+          orderRepository.updateItem(item.id, { stockDeducted: true });
+        }
+      }
+    });
+    run();
 
     const dto = buildDto(orderRepository.findById(order.id));
     emit(EVENTS.KITCHEN_TICKET, dto, [ROOMS.KITCHEN]);
@@ -501,6 +537,12 @@ export const orderService = {
     if (order.status === 'cancelled') throw ApiError.conflict('ออเดอร์นี้ถูกยกเลิกไปแล้ว');
 
     const run = getDb().transaction(() => {
+      const items = orderRepository.findItems(order.id);
+      for (const item of items) {
+        if (item.status !== 'cancelled' && item.stock_deducted) {
+          ingredientService.restoreForOrderItem(item);
+        }
+      }
       for (const status of ['pending', 'cooking', 'ready']) {
         orderRepository.markItemsStatus(order.id, status, 'cancelled');
       }

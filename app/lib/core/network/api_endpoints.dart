@@ -21,6 +21,12 @@ class ApiEndpoints {
   static String menuItem(int id) => '/menu-items/$id';
   static String menuAvailability(int id) => '/menu-items/$id/availability';
 
+  // Ingredients
+  static const String ingredients = '/ingredients';
+  static String ingredient(int id) => '/ingredients/$id';
+  static String ingredientAdjustStock(int id) =>
+      '/ingredients/$id/adjust-stock';
+
   // Tables
   static const String tables = '/tables';
   static const String tableZones = '/tables/zones';

@@ -17,7 +17,14 @@ export const toOptionGroupDto = (row) => ({
   options: (row.options ?? []).map(toOptionDto),
 });
 
-export const toMenuItemDto = (row, optionGroups = []) => {
+export const toIngredientLinkDto = (row) => ({
+  ingredientId: row.ingredient_id,
+  ingredientName: row.ingredient_name,
+  unit: row.ingredient_unit,
+  qtyPerUnit: row.qty_per_unit,
+});
+
+export const toMenuItemDto = (row, optionGroups = [], ingredientLinks = []) => {
   if (!row) return null;
   return {
     id: row.id,
@@ -33,5 +40,6 @@ export const toMenuItemDto = (row, optionGroups = []) => {
     prepMinutes: row.prep_minutes,
     sortOrder: row.sort_order,
     optionGroups: optionGroups.map(toOptionGroupDto),
+    ingredients: ingredientLinks.map(toIngredientLinkDto),
   };
 };

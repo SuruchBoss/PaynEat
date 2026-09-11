@@ -14,6 +14,19 @@ const optionGroupSchema = z.object({
   options: z.array(optionSchema).min(1, 'กลุ่มตัวเลือกต้องมีอย่างน้อย 1 ตัวเลือก'),
 });
 
+const ingredientLinkSchema = z.object({
+  ingredientId: z.number().int().positive(),
+  qtyPerUnit: z.number().positive(),
+});
+
+const ingredientLinksSchema = z
+  .array(ingredientLinkSchema)
+  .optional()
+  .refine(
+    (links) => !links || new Set(links.map((link) => link.ingredientId)).size === links.length,
+    { message: 'เลือกวัตถุดิบซ้ำกันในเมนูเดียวไม่ได้' },
+  );
+
 export const createMenuItemSchema = z.object({
   categoryId: z.number().int().positive(),
   name: z.string().min(1, 'กรุณากรอกชื่อเมนู').max(120),
@@ -26,6 +39,7 @@ export const createMenuItemSchema = z.object({
   prepMinutes: z.number().int().min(0).max(240).optional(),
   sortOrder: z.number().int().min(0).optional(),
   optionGroups: z.array(optionGroupSchema).optional(),
+  ingredients: ingredientLinksSchema,
 });
 
 export const updateMenuItemSchema = createMenuItemSchema.partial();

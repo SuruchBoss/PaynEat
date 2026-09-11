@@ -10,6 +10,7 @@ import 'demo_seed.dart';
 
 part 'demo_store_auth.dart';
 part 'demo_store_menu.dart';
+part 'demo_store_ingredients.dart';
 part 'demo_store_tables.dart';
 part 'demo_store_orders.dart';
 part 'demo_store_payments.dart';
@@ -45,6 +46,7 @@ class DemoStore {
   late List<Map<String, dynamic>> users;
   late List<Map<String, dynamic>> categories;
   late List<Map<String, dynamic>> menuItems;
+  late List<Map<String, dynamic>> ingredients;
   late List<Map<String, dynamic>> tables;
   late Map<String, dynamic> settings;
 
@@ -70,6 +72,7 @@ class DemoStore {
     users = DemoSeed.users();
     categories = DemoSeed.categories();
     menuItems = DemoSeed.menuItems();
+    ingredients = DemoSeed.ingredients();
     tables = DemoSeed.tables();
     settings = DemoSeed.settings();
     orders.clear();

@@ -17,6 +17,10 @@ import '../../features/auth/domain/usecases/get_profile_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
+import '../../features/ingredient/data/repositories/ingredient_repository_impl.dart';
+import '../../features/ingredient/domain/repositories/ingredient_repository.dart';
+import '../../features/ingredient/domain/usecases/ingredient_usecases.dart';
 import '../../features/menu/data/datasources/menu_remote_data_source.dart';
 import '../../features/menu/data/repositories/menu_repository_impl.dart';
 import '../../features/menu/domain/repositories/menu_repository.dart';
@@ -117,6 +121,10 @@ class InitialBinding extends Bindings {
       () => MenuRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<IngredientRemoteDataSource>(
+      () => IngredientRemoteDataSourceImpl(client),
+      fenix: true,
+    );
     Get.lazyPut<TableRemoteDataSource>(
       () => TableRemoteDataSourceImpl(client),
       fenix: true,
@@ -158,6 +166,10 @@ class InitialBinding extends Bindings {
 
     Get.put<AuthRemoteDataSource>(auth, permanent: true);
     Get.put<MenuRemoteDataSource>(DemoMenuDataSource(store), permanent: true);
+    Get.put<IngredientRemoteDataSource>(
+      DemoIngredientDataSource(store),
+      permanent: true,
+    );
     Get.put<TableRemoteDataSource>(DemoTableDataSource(store), permanent: true);
     Get.put<OrderRemoteDataSource>(
       DemoOrderDataSource(store, auth),
@@ -196,6 +208,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<MenuRepository>(
       () => MenuRepositoryImpl(Get.find<MenuRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<IngredientRepository>(
+      () => IngredientRepositoryImpl(Get.find<IngredientRemoteDataSource>()),
       fenix: true,
     );
     Get.lazyPut<TableRepository>(
@@ -276,6 +292,24 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => DeleteCategoryUseCase(Get.find<MenuRepository>()),
+      fenix: true,
+    );
+
+    // ingredient
+    Get.lazyPut(
+      () => GetIngredientsUseCase(Get.find<IngredientRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => SaveIngredientUseCase(Get.find<IngredientRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => AdjustStockUseCase(Get.find<IngredientRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => DeleteIngredientUseCase(Get.find<IngredientRepository>()),
       fenix: true,
     );
 

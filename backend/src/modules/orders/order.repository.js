@@ -153,20 +153,28 @@ export const orderRepository = {
     return this.findItemById(info.lastInsertRowid);
   },
 
-  updateItem(itemId, { quantity, note, lineTotal, status }) {
+  updateItem(itemId, { quantity, note, lineTotal, status, stockDeducted }) {
     getDb()
       .prepare(
         `
         UPDATE order_items
-           SET quantity   = COALESCE(?, quantity),
-               note       = COALESCE(?, note),
-               line_total = COALESCE(?, line_total),
-               status     = COALESCE(?, status),
-               updated_at = datetime('now')
+           SET quantity       = COALESCE(?, quantity),
+               note           = COALESCE(?, note),
+               line_total     = COALESCE(?, line_total),
+               status         = COALESCE(?, status),
+               stock_deducted = COALESCE(?, stock_deducted),
+               updated_at     = datetime('now')
          WHERE id = ?
       `,
       )
-      .run(quantity ?? null, note ?? null, lineTotal ?? null, status ?? null, itemId);
+      .run(
+        quantity ?? null,
+        note ?? null,
+        lineTotal ?? null,
+        status ?? null,
+        stockDeducted === undefined ? null : Number(stockDeducted),
+        itemId,
+      );
     return this.findItemById(itemId);
   },
 

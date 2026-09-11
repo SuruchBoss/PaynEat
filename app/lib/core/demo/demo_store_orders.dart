@@ -107,6 +107,9 @@ extension DemoStoreOrders on DemoStore {
     List<Map<String, dynamic>> inputs,
   ) {
     final items = order['items'] as List;
+    // ถ้าออเดอร์ถูกส่งครัวไปแล้ว รายการที่เพิ่งสั่งเพิ่มต้องตัดสต๊อกทันที
+    // (ไม่ต้องรอกดส่งครัวซ้ำ) — ดู docs/tickets/06-inventory-stock.md
+    final alreadySentToKitchen = order['status'] != OrderStatus.open;
 
     for (final input in inputs) {
       final menu = menuItem(input['menuItemId'] as int);
@@ -142,7 +145,7 @@ extension DemoStoreOrders on DemoStore {
       final unitPrice = (menu['price'] as num).toDouble();
       final quantity = input['quantity'] as int;
 
-      items.add({
+      final item = {
         'id': _nextId(),
         'orderId': order['id'],
         'menuItemId': menu['id'],
@@ -155,13 +158,19 @@ extension DemoStoreOrders on DemoStore {
         'lineTotal': (unitPrice + optionsPrice) * quantity,
         'note': input['note'],
         'status': OrderItemStatus.pending,
+        'stockDeducted': false,
         'isPaid': false,
         'createdAt': _now(),
         'updatedAt': _now(),
         'orderCode': order['code'],
         'tableName': order['tableName'],
         'orderType': order['type'],
-      });
+      };
+      items.add(item);
+      if (alreadySentToKitchen) {
+        deductForOrderItem(item);
+        item['stockDeducted'] = true;
+      }
     }
   }
 
@@ -183,11 +192,15 @@ extension DemoStoreOrders on DemoStore {
     }
 
     if (quantity != null) {
+      final oldQuantity = item['quantity'] as int;
       item['quantity'] = quantity;
       item['lineTotal'] =
           ((item['unitPrice'] as num) + (item['optionsPrice'] as num))
               .toDouble() *
           quantity;
+      if (item['stockDeducted'] == true) {
+        adjustIngredientsForQuantityChange(item, oldQuantity, quantity);
+      }
     }
     if (note != null) item['note'] = note;
 
@@ -204,6 +217,10 @@ extension DemoStoreOrders on DemoStore {
         message: 'order_error_item_locked_remove'.tr,
         statusCode: 409,
       );
+    }
+
+    if (item['stockDeducted'] == true) {
+      restoreForOrderItem(item);
     }
 
     (order['items'] as List).removeWhere((row) => row['id'] == itemId);
@@ -247,6 +264,10 @@ extension DemoStoreOrders on DemoStore {
       );
     }
 
+    if (status == OrderItemStatus.cancelled && item['stockDeducted'] == true) {
+      restoreForOrderItem(item);
+    }
+
     item['status'] = status;
     item['updatedAt'] = _now();
 
@@ -266,9 +287,10 @@ extension DemoStoreOrders on DemoStore {
     final order = findOrder(orderId);
     _assertMutable(order);
 
-    final active = (order['items'] as List).where(
-      (row) => row['status'] != OrderItemStatus.cancelled,
-    );
+    final active = (order['items'] as List)
+        .where((row) => row['status'] != OrderItemStatus.cancelled)
+        .cast<Map<String, dynamic>>()
+        .toList();
     if (active.isEmpty) {
       throw ApiException(message: 'order_error_no_items'.tr, statusCode: 400);
     }
@@ -276,6 +298,15 @@ extension DemoStoreOrders on DemoStore {
     if (order['status'] == OrderStatus.open) {
       order['status'] = OrderStatus.inKitchen;
     }
+
+    // ตัดสต๊อกให้ทุกรายการที่ยังไม่เคยตัด (idempotent — กดส่งครัวซ้ำไม่ตัดซ้ำ)
+    for (final item in active) {
+      if (item['stockDeducted'] != true) {
+        deductForOrderItem(item);
+        item['stockDeducted'] = true;
+      }
+    }
+
     return _recalculate(order);
   }
 
@@ -361,6 +392,15 @@ extension DemoStoreOrders on DemoStore {
         message: 'order_error_already_paid_cannot_cancel'.tr,
         statusCode: 409,
       );
+    }
+
+    // ยกเลิกทั้งบิล คืนสต๊อกให้ทุกรายการที่เคยตัดไปแล้วและยังไม่ถูกยกเลิก
+    // (รวมรายการที่เสิร์ฟไปแล้วด้วย — mirror ของ order.service.js#cancel)
+    for (final item in (order['items'] as List).cast<Map<String, dynamic>>()) {
+      if (item['status'] != OrderItemStatus.cancelled &&
+          item['stockDeducted'] == true) {
+        restoreForOrderItem(item);
+      }
     }
 
     for (final item in (order['items'] as List)) {

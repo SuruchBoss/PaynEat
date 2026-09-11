@@ -1,5 +1,7 @@
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/models/user_model.dart';
+import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
+import '../../features/ingredient/data/models/ingredient_model.dart';
 import '../../features/menu/data/datasources/menu_remote_data_source.dart';
 import '../../features/menu/data/models/category_model.dart';
 import '../../features/menu/data/models/menu_item_model.dart';
@@ -138,6 +140,44 @@ class DemoMenuDataSource implements MenuRemoteDataSource {
   @override
   Future<void> deleteMenuItem(int id) =>
       _delayed(() => _store.deleteMenuItem(id));
+}
+
+class DemoIngredientDataSource implements IngredientRemoteDataSource {
+  const DemoIngredientDataSource(this._store);
+
+  final DemoStore _store;
+
+  @override
+  Future<List<IngredientModel>> getIngredients({bool lowStockOnly = false}) =>
+      _delayed(
+        () => _store
+            .ingredientList(lowStockOnly: lowStockOnly)
+            .map(IngredientModel.fromJson)
+            .toList(growable: false),
+      );
+
+  @override
+  Future<IngredientModel> getIngredient(int id) =>
+      _delayed(() => IngredientModel.fromJson(_store.ingredient(id)));
+
+  @override
+  Future<IngredientModel> createIngredient(Map<String, dynamic> body) =>
+      _delayed(() => IngredientModel.fromJson(_store.saveIngredient(body)));
+
+  @override
+  Future<IngredientModel> updateIngredient(int id, Map<String, dynamic> body) =>
+      _delayed(
+        () => IngredientModel.fromJson(_store.saveIngredient(body, id: id)),
+      );
+
+  @override
+  Future<IngredientModel> adjustStock(int id, double delta) => _delayed(
+    () => IngredientModel.fromJson(_store.adjustIngredientStock(id, delta)),
+  );
+
+  @override
+  Future<void> deleteIngredient(int id) =>
+      _delayed(() => _store.deleteIngredient(id));
 }
 
 class DemoTableDataSource implements TableRemoteDataSource {

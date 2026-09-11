@@ -419,4 +419,239 @@ void main() {
       },
     );
   });
+
+  group('DemoStore ingredients — ตัดสต๊อกอัตโนมัติเมื่อขาย (ticket 06)', () {
+    test(
+      'CRUD พื้นฐาน + isLowStock คำนวณจาก currentStock/lowStockThreshold',
+      () {
+        final ingredient = store.saveIngredient({
+          'name': 'กุ้งทดสอบ',
+          'unit': 'กรัม',
+          'currentStock': 100.0,
+          'lowStockThreshold': 20.0,
+        });
+        expect(ingredient['isLowStock'], false);
+
+        final updated = store.saveIngredient({
+          'name': 'กุ้งทดสอบ (แก้ไข)',
+          'unit': 'กรัม',
+          'lowStockThreshold': 150.0,
+        }, id: ingredient['id'] as int);
+        expect(updated['name'], 'กุ้งทดสอบ (แก้ไข)');
+        // currentStock (100) <= lowStockThreshold ใหม่ (150) → ใกล้หมด
+        expect(updated['isLowStock'], true);
+      },
+    );
+
+    test('adjustIngredientStock ปรับสต๊อกได้ และปฏิเสธ delta = 0', () {
+      final ingredient = store.saveIngredient({
+        'name': 'ข้าวทดสอบ',
+        'unit': 'กก.',
+        'currentStock': 10.0,
+        'lowStockThreshold': 2.0,
+      });
+      final increased = store.adjustIngredientStock(ingredient['id'] as int, 5);
+      expect(increased['currentStock'], 15.0);
+
+      final decreased = store.adjustIngredientStock(
+        ingredient['id'] as int,
+        -20,
+      );
+      expect(decreased['currentStock'], -5.0);
+      expect(decreased['isLowStock'], true);
+
+      expect(
+        () => store.adjustIngredientStock(ingredient['id'] as int, 0),
+        throwsException,
+      );
+    });
+
+    test('ลบวัตถุดิบที่ผูกกับเมนูอยู่ไม่ได้ ต้องเลิกผูกก่อน', () {
+      final ingredient = store.saveIngredient({
+        'name': 'หมูทดสอบ-ลบ',
+        'unit': 'กรัม',
+        'currentStock': 100.0,
+        'lowStockThreshold': 20.0,
+      });
+      final category = store.categories.first;
+      final menuItem = store.saveMenuItem({
+        'name': 'เมนูทดสอบ-ผูกวัตถุดิบ',
+        'categoryId': category['id'],
+        'price': 10.0,
+        'ingredients': [
+          {'ingredientId': ingredient['id'], 'qtyPerUnit': 10},
+        ],
+      });
+
+      expect(
+        () => store.deleteIngredient(ingredient['id'] as int),
+        throwsException,
+      );
+
+      store.saveMenuItem({
+        'categoryId': category['id'],
+        'ingredients': <Map<String, dynamic>>[],
+      }, id: menuItem['id'] as int);
+      store.deleteIngredient(ingredient['id'] as int);
+      expect(
+        store.ingredients.any((row) => row['id'] == ingredient['id']),
+        false,
+      );
+    });
+
+    test('เลือกวัตถุดิบซ้ำกันในเมนูเดียวไม่ได้', () {
+      final ingredient = store.saveIngredient({
+        'name': 'ไข่ทดสอบ',
+        'unit': 'ฟอง',
+        'currentStock': 50.0,
+        'lowStockThreshold': 10.0,
+      });
+      final category = store.categories.first;
+
+      expect(
+        () => store.saveMenuItem({
+          'name': 'เมนูทดสอบ-ซ้ำ',
+          'categoryId': category['id'],
+          'price': 10.0,
+          'ingredients': [
+            {'ingredientId': ingredient['id'], 'qtyPerUnit': 1},
+            {'ingredientId': ingredient['id'], 'qtyPerUnit': 2},
+          ],
+        }),
+        throwsException,
+      );
+    });
+
+    test('ผูกวัตถุดิบที่ไม่มีอยู่จริงไม่ได้', () {
+      final category = store.categories.first;
+      expect(
+        () => store.saveMenuItem({
+          'name': 'เมนูทดสอบ-ไม่มีวัตถุดิบ',
+          'categoryId': category['id'],
+          'price': 10.0,
+          'ingredients': [
+            {'ingredientId': 999999, 'qtyPerUnit': 1},
+          ],
+        }),
+        throwsException,
+      );
+    });
+
+    test(
+      'flow: สั่ง → ส่งครัว → ตัดสต๊อก → หมด → ปิดขายอัตโนมัติ → ยกเลิก/ปรับ/ลบ → คืนสต๊อก → เปิดขายกลับ',
+      () {
+        final ingredient = store.saveIngredient({
+          'name': 'วัตถุดิบทดสอบ-flow',
+          'unit': 'ชิ้น',
+          'currentStock': 3.0,
+          'lowStockThreshold': 1.0,
+        });
+        final ingredientId = ingredient['id'] as int;
+        final category = store.categories.first;
+        final menuItem = store.saveMenuItem({
+          'name': 'เมนูทดสอบ-flow',
+          'categoryId': category['id'],
+          'price': 50.0,
+          'ingredients': [
+            {'ingredientId': ingredientId, 'qtyPerUnit': 1},
+          ],
+        });
+        final menuItemId = menuItem['id'] as int;
+        final table = store.tableList().firstWhere(
+          (t) => t['status'] == 'available',
+        );
+
+        // 1) สั่ง 2 ที่ — ยังไม่ตัดสต๊อกจนกว่าจะส่งครัว
+        final order = store.createOrder(
+          type: 'dine_in',
+          tableId: table['id'] as int,
+          guestCount: 2,
+          items: [
+            {'menuItemId': menuItemId, 'quantity': 2, 'optionIds': []},
+          ],
+        );
+        expect(store.ingredient(ingredientId)['currentStock'], 3.0);
+
+        // 2) ส่งครัว → ตัดสต๊อก 2 ชิ้น เหลือ 1 (ยังพอขายได้)
+        store.sendToKitchen(order['id'] as int);
+        expect(store.ingredient(ingredientId)['currentStock'], 1.0);
+        expect(store.menuItem(menuItemId)['isAvailable'], true);
+
+        // 3) ส่งครัวซ้ำไม่ตัดซ้ำ (idempotent)
+        store.sendToKitchen(order['id'] as int);
+        expect(store.ingredient(ingredientId)['currentStock'], 1.0);
+
+        // 4) เพิ่มรายการเข้าออเดอร์ที่ส่งครัวไปแล้ว → ตัดทันที จนสต๊อกหมด
+        store.addItems(order['id'] as int, [
+          {'menuItemId': menuItemId, 'quantity': 1, 'optionIds': []},
+        ]);
+        expect(store.ingredient(ingredientId)['currentStock'], 0.0);
+        expect(store.menuItem(menuItemId)['isAvailable'], false);
+        expect(store.menuItem(menuItemId)['autoDisabledByStock'], true);
+
+        // 5) สั่งเมนูที่ปิดขายอยู่ในออเดอร์ใหม่ต้องถูกปฏิเสธ
+        final table2 = store.tableList().firstWhere(
+          (t) => t['status'] == 'available' && t['id'] != table['id'],
+        );
+        expect(
+          () => store.createOrder(
+            type: 'dine_in',
+            tableId: table2['id'] as int,
+            guestCount: 1,
+            items: [
+              {'menuItemId': menuItemId, 'quantity': 1, 'optionIds': []},
+            ],
+          ),
+          throwsException,
+        );
+
+        // 6) ยกเลิกรายการที่เพิ่งเพิ่ม (ยัง pending) → คืนสต๊อก → เปิดขายกลับอัตโนมัติ
+        final justAddedItem =
+            (store.findOrder(order['id'] as int)['items'] as List)
+                .cast<Map<String, dynamic>>()
+                .firstWhere((item) => item['quantity'] == 1);
+        store.updateItemStatus(
+          order['id'] as int,
+          justAddedItem['id'] as int,
+          'cancelled',
+        );
+        expect(store.ingredient(ingredientId)['currentStock'], 1.0);
+        expect(store.menuItem(menuItemId)['isAvailable'], true);
+        expect(store.menuItem(menuItemId)['autoDisabledByStock'], false);
+
+        // 7) ปรับสต๊อกด้วยมือให้เป็น 0 ก็ปิดขายอัตโนมัติเหมือนกัน
+        store.adjustIngredientStock(ingredientId, -1);
+        expect(store.ingredient(ingredientId)['currentStock'], 0.0);
+        expect(store.menuItem(menuItemId)['isAvailable'], false);
+
+        // 8) เติมสต๊อกกลับก็เปิดขายอัตโนมัติ
+        store.adjustIngredientStock(ingredientId, 5);
+        expect(store.ingredient(ingredientId)['currentStock'], 5.0);
+        expect(store.menuItem(menuItemId)['isAvailable'], true);
+
+        // 9) แก้จำนวนรายการที่ตัดสต๊อกไปแล้ว (2 → 4) ต้องปรับตามส่วนต่างเท่านั้น
+        final firstItem = (store.findOrder(order['id'] as int)['items'] as List)
+            .cast<Map<String, dynamic>>()
+            .firstWhere((item) => item['status'] == 'pending');
+        store.updateItem(
+          order['id'] as int,
+          firstItem['id'] as int,
+          quantity: 4,
+        );
+        expect(store.ingredient(ingredientId)['currentStock'], 3.0);
+
+        // 10) ลบรายการที่ตัดสต๊อกไปแล้ว (qty 4) → คืนสต๊อกเต็มจำนวน
+        store.removeItem(order['id'] as int, firstItem['id'] as int);
+        expect(store.ingredient(ingredientId)['currentStock'], 7.0);
+
+        // 11) เพิ่มรายการใหม่แล้วยกเลิกทั้งบิล → คืนสต๊อกให้ทุกรายการที่ตัดไปแล้ว
+        store.addItems(order['id'] as int, [
+          {'menuItemId': menuItemId, 'quantity': 2, 'optionIds': []},
+        ]);
+        expect(store.ingredient(ingredientId)['currentStock'], 5.0);
+        store.cancelOrder(order['id'] as int, 'ทดสอบยกเลิกทั้งบิล');
+        expect(store.ingredient(ingredientId)['currentStock'], 7.0);
+      },
+    );
+  });
 }
