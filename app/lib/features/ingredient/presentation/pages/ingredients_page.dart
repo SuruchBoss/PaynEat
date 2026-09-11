@@ -130,10 +130,10 @@ class _IngredientRow extends GetView<IngredientsController> {
                         ),
                         child: Text(
                           'ingredient_low_stock_badge'.tr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.warning,
+                            color: AppColors.warningInk,
                           ),
                         ),
                       ),
@@ -175,7 +175,7 @@ class _IngredientRow extends GetView<IngredientsController> {
           IconButton(
             onPressed: () => controller.delete(ingredient),
             icon: const Icon(Icons.delete_outline_rounded, size: 19),
-            color: AppColors.danger,
+            color: AppColors.dangerInk,
             tooltip: 'common_delete'.tr,
           ),
         ],

@@ -166,10 +166,10 @@ class KitchenTicketCard extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.campaign_rounded,
                           size: 15,
-                          color: AppColors.warning,
+                          color: AppColors.warningInk,
                         ),
                         const SizedBox(width: 6),
                         Expanded(

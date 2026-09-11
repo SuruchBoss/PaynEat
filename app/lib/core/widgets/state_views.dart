@@ -101,10 +101,10 @@ class ErrorView extends StatelessWidget {
                 color: AppColors.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.wifi_off_rounded,
                 size: 32,
-                color: AppColors.danger,
+                color: AppColors.dangerInk,
               ),
             ),
             const SizedBox(height: 16),

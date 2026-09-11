@@ -174,10 +174,7 @@ class _TableGrid extends StatelessWidget {
                   ),
                   title: Text(TableStatus.label(status)),
                   trailing: table.status == status
-                      ? const Icon(
-                          Icons.check_rounded,
-                          color: AppColors.primary,
-                        )
+                      ? Icon(Icons.check_rounded, color: AppColors.brandInk)
                       : null,
                   onTap: () {
                     Get.back<void>();

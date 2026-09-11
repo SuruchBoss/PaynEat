@@ -99,7 +99,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                     child: ListTile(
                       leading: Icon(
                         Icons.cancel_outlined,
-                        color: AppColors.danger,
+                        color: AppColors.dangerInk,
                       ),
                       title: Text(
                         'order_menu_cancel_order'.tr,
@@ -447,9 +447,9 @@ class _BillCard extends GetView<OrderDetailController> {
               ),
               child: Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
-                    color: AppColors.success,
+                    color: AppColors.successInk,
                     size: 18,
                   ),
                   const SizedBox(width: 8),

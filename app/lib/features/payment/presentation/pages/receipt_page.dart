@@ -72,10 +72,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                     Center(
                       child: Column(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.restaurant_menu_rounded,
                             size: 30,
-                            color: AppColors.primary,
+                            color: AppColors.brandInk,
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -256,10 +256,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                                   controller,
                                   payment,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.assignment_return_outlined,
                                   size: 16,
-                                  color: AppColors.danger,
+                                  color: AppColors.dangerInk,
                                 ),
                               ),
                             ],

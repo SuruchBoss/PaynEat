@@ -175,7 +175,7 @@ class _KitchenHeader extends GetView<KitchenController> {
       child: Obx(
         () => Row(
           children: [
-            const Icon(Icons.soup_kitchen_rounded, color: AppColors.primary),
+            Icon(Icons.soup_kitchen_rounded, color: AppColors.brandInk),
             const SizedBox(width: 8),
             Text(
               'kitchen_header_title'.tr,
@@ -213,10 +213,10 @@ class _KitchenHeader extends GetView<KitchenController> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.local_fire_department_rounded,
                       size: 14,
-                      color: AppColors.danger,
+                      color: AppColors.dangerInk,
                     ),
                     const SizedBox(width: 4),
                     Text(
@@ -262,6 +262,9 @@ class _KitchenColumn extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // หัวคอลัมน์วางตัวหนังสือบนพื้น tint ของสีตัวเอง สีสดจึงอ่านไม่ออก
+        // ("รอทำ" สีเหลืองได้แค่ 1.94:1) ใช้เฉดเข้มกับตัวหนังสือ ส่วนจุดกลม
+        // ยังใช้สีสดได้เพราะเป็นของตกแต่ง ไม่ใช่ข้อมูลที่ต้องอ่าน
         Container(
           margin: const EdgeInsets.fromLTRB(12, 12, 12, 8),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
@@ -281,7 +284,7 @@ class _KitchenColumn extends StatelessWidget {
                 title,
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
-                  color: color,
+                  color: AppColors.inkOf(color),
                   fontSize: 14,
                 ),
               ),
@@ -290,7 +293,7 @@ class _KitchenColumn extends StatelessWidget {
                 '${items.length}',
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
-                  color: color,
+                  color: AppColors.inkOf(color),
                   fontSize: 15,
                 ),
               ),

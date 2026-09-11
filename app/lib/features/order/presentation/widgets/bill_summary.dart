@@ -30,7 +30,7 @@ class BillSummary extends StatelessWidget {
                   })
                 : 'order_discount_label'.tr,
             -order.discountAmount,
-            color: AppColors.success,
+            color: AppColors.successInk,
           ),
         if (order.hasPromotion)
           _row(
@@ -38,7 +38,7 @@ class BillSummary extends StatelessWidget {
               'name': order.promotionName ?? '',
             }),
             -order.promotionDiscountAmount,
-            color: AppColors.success,
+            color: AppColors.successInk,
           ),
         _row('order_service_charge_label'.tr, order.serviceCharge),
         _row('order_vat_label'.tr, order.vat),
@@ -70,6 +70,8 @@ class BillSummary extends StatelessWidget {
     );
   }
 
+  /// [color] ถูกใช้เป็น "สีตัวหนังสือ" ทั้งฝั่งป้ายและฝั่งตัวเลข ผู้เรียกจึงต้อง
+  /// ส่งเฉด ink มาเสมอ ไม่ใช่สีสด ไม่งั้นคอนทราสต์ไม่ถึงเกณฑ์ (เขียวสด 3.07:1)
   Widget _row(String label, double value, {Color? color}) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 3),
     child: Row(

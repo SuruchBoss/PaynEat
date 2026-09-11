@@ -210,9 +210,9 @@ class _LoginFormPanel extends GetView<AuthController> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline_rounded,
-                            color: AppColors.danger,
+                            color: AppColors.dangerInk,
                             size: 18,
                           ),
                           const SizedBox(width: 10),
@@ -294,14 +294,14 @@ class _DemoModeBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.science_rounded, size: 18, color: AppColors.info),
+          Icon(Icons.science_rounded, size: 18, color: AppColors.infoInk),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               'auth_demo_mode_banner'.tr,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
-                color: AppColors.info,
+                color: AppColors.infoInk,
                 height: 1.4,
               ),
             ),

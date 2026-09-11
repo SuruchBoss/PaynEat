@@ -119,7 +119,7 @@ class _NoShiftBanner extends GetView<CheckoutController> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
+          Icon(Icons.warning_amber_rounded, color: AppColors.dangerInk),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -165,10 +165,10 @@ class _PaidHistory extends GetView<CheckoutController> {
             padding: const EdgeInsets.symmetric(vertical: 3),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   size: 15,
-                  color: AppColors.success,
+                  color: AppColors.successInk,
                 ),
                 const SizedBox(width: 8),
                 Text(

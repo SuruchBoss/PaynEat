@@ -54,10 +54,10 @@ class _CartHeader extends GetView<CartController> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.receipt_long_rounded,
                 size: 18,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
               ),
               const SizedBox(width: 8),
               Expanded(
@@ -215,10 +215,10 @@ class _CartLineTile extends GetView<CartController> {
                         padding: const EdgeInsets.only(top: 3),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.edit_note_rounded,
                               size: 13,
-                              color: AppColors.warning,
+                              color: AppColors.warningInk,
                             ),
                             const SizedBox(width: 3),
                             Expanded(

@@ -146,7 +146,7 @@ class ProfilePage extends GetView<AuthController> {
             child: OutlinedButton.icon(
               onPressed: controller.signOut,
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.danger,
+                foregroundColor: AppColors.dangerInk,
                 side: const BorderSide(color: AppColors.danger),
               ),
               icon: const Icon(Icons.logout_rounded, size: 18),

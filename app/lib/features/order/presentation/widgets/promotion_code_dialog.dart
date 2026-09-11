@@ -103,7 +103,7 @@ class _PromotionCodeDialogState extends State<PromotionCodeDialog> {
                 Get.back(result: const PromotionDialogResult.remove()),
             child: Text(
               'promotion_dialog_remove_button'.tr,
-              style: const TextStyle(color: AppColors.danger),
+              style: TextStyle(color: AppColors.dangerInk),
             ),
           ),
         TextButton(
@@ -177,10 +177,10 @@ class _PromotionRow extends StatelessWidget {
           if (promotion.discountAmountIfApplied > 0)
             Text(
               '-${Formatters.money(promotion.discountAmountIfApplied)}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
-                color: AppColors.success,
+                color: AppColors.successInk,
               ),
             ),
         ],

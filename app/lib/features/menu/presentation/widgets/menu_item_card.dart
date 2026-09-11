@@ -100,10 +100,10 @@ class MenuItemCard extends StatelessWidget {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.star_rounded,
                                   size: 12,
-                                  color: AppColors.warning,
+                                  color: AppColors.warningInk,
                                 ),
                                 const SizedBox(width: 3),
                                 Text(

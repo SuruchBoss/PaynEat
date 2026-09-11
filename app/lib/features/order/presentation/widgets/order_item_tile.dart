@@ -102,10 +102,10 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 3),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.edit_note_rounded,
                             size: 13,
-                            color: AppColors.warning,
+                            color: AppColors.warningInk,
                           ),
                           const SizedBox(width: 3),
                           Expanded(

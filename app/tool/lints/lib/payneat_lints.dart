@@ -9,6 +9,7 @@ class _PaynEatLints extends PluginBase {
   List<LintRule> getLintRules(CustomLintConfigs configs) => const [
     TextStyleNeedsFontFamily(),
     UseAppClockNotDateTimeNow(),
+    UseInkColorForForeground(),
   ];
 }
 
@@ -216,5 +217,112 @@ class UseAppClockNotDateTimeNow extends DartLintRule {
   static bool _isTestFile(String path) {
     final normalized = path.replaceAll('\\', '/');
     return normalized.contains('/test/') || normalized.endsWith('_test.dart');
+  }
+}
+
+/// ดักการเอา "สีสด" ของพาเลตต์ไปใช้เป็นสีตัวหนังสือ/ไอคอน แทนที่จะใช้เฉด `*Ink`
+///
+/// ทำไมต้องมีกฎนี้ — บั๊กนี้เกิดซ้ำสามรอบในโปรเจกต์นี้ และทุกรอบหลุดสายตาไปได้
+/// เพราะ "ดูแล้วก็อ่านออกอยู่" บนจอสะอาดในร่ม แต่วัดจริงแล้วไม่ผ่านเกณฑ์:
+///
+/// | รอบ | จุดที่พัง | คอนทราสต์ |
+/// |---|---|---|
+/// | 1 | ตัวเลขเงินและป้ายสถานะ | ส้ม 2.8:1 |
+/// | 2 | ชิปตัวกรองที่ถูกเลือกทั้งแอป | เหลือง 2.1:1 |
+/// | 3 | ปุ่มเดินสถานะจอครัว หัวคอลัมน์ครัว และไอคอนใน StatCard | เหลือง 1.9:1 |
+///
+/// สีสดในพาเลตต์ออกแบบมาเป็น "พื้น/จุด/ขอบ" ซึ่งสว่างเกินกว่าจะเป็นตัวหนังสือ
+/// บนพื้นสว่างได้ ชุด `*Ink` คือเฉดเข้มของสีเดียวกันที่ตรวจแล้วว่าผ่านเกณฑ์
+/// บนทุกพื้นที่ถูกใช้จริง ไม่ใช่แค่บนพื้นขาว
+///
+/// อีกเหตุผลหนึ่ง: สีสดเป็น `const` ไม่เปลี่ยนตามโหมดคอนทราสต์สูง ส่วน `*Ink`
+/// เป็น getter ที่เข้มขึ้นตามโหมด ถ้าใช้สีสดเป็นตัวหนังสือ โหมดคอนทราสต์สูง
+/// จะไม่มีผลกับจุดนั้นเลย
+///
+/// ```dart
+/// // ❌ กฎจะเตือน
+/// Text('ช้า', style: TextStyle(color: AppColors.warning))
+/// Icon(Icons.timer, color: AppColors.primary)
+///
+/// // ✅ ผ่าน
+/// Text('ช้า', style: TextStyle(color: AppColors.warningInk))
+/// Icon(Icons.timer, color: AppColors.brandInk)
+/// Icon(Icons.timer, color: AppColors.inkOf(statusColor))  // สีมาจากตัวแปร
+///
+/// // ✅ ผ่าน — เป็นพื้น/จุด/ขอบ ไม่ใช่ตัวหนังสือ จึงใช้สีสดได้ถูกต้องแล้ว
+/// BoxDecoration(color: AppColors.warning, shape: BoxShape.circle)
+/// ```
+class UseInkColorForForeground extends DartLintRule {
+  const UseInkColorForForeground() : super(code: _code);
+
+  static const _code = LintCode(
+    name: 'use_ink_color_for_foreground',
+    problemMessage:
+        'สีสดในพาเลตต์ออกแบบมาเป็นพื้น/จุด/ขอบ ไม่ใช่ตัวหนังสือ — '
+        'เอามาเป็นสีตัวหนังสือหรือไอคอนแล้วคอนทราสต์ไม่ถึงเกณฑ์ WCAG '
+        'และไม่เข้มขึ้นตามโหมดคอนทราสต์สูงด้วย เพราะเป็น const',
+    correctionMessage:
+        'ใช้เฉด *Ink ของสีเดียวกัน (เช่น warningInk แทน warning) '
+        'หรือ AppColors.inkOf(...) ถ้าสีมาจากตัวแปร',
+  );
+
+  /// สีสดที่ห้ามเอาไปเป็นตัวหนังสือ/ไอคอน
+  ///
+  /// `purple` ตัวเดียวที่ผ่านเกณฑ์ตัวหนังสือได้เองโดยไม่ต้องแปลง แต่ยังดักไว้
+  /// เพื่อให้กฎอ่านง่ายและได้สีที่เข้มขึ้นตามโหมดคอนทราสต์สูงไปด้วย
+  static const _vivid = {
+    'primary',
+    'secondary',
+    'success',
+    'warning',
+    'danger',
+    'info',
+    'purple',
+  };
+
+  /// ชื่อพารามิเตอร์ที่หมายถึง "สีของสิ่งที่ต้องอ่าน"
+  static const _foregroundSlots = {'color', 'foregroundColor', 'iconColor'};
+
+  @override
+  void run(
+    CustomLintResolver resolver,
+    ErrorReporter reporter,
+    CustomLintContext context,
+  ) {
+    // ไฟล์ที่นิยามพาเลตต์เองต้องอ้างถึงสีสดตรง ๆ อยู่แล้ว
+    if (resolver.path.replaceAll('\\', '/').endsWith('/app_colors.dart')) {
+      return;
+    }
+
+    context.registry.addPrefixedIdentifier((node) {
+      if (node.prefix.name != 'AppColors') return;
+      if (!_vivid.contains(node.identifier.name)) return;
+
+      final slot = node.parent;
+      if (slot is! NamedExpression) return;
+      if (!_foregroundSlots.contains(slot.name.label.name)) return;
+      if (!_isForegroundContext(slot)) return;
+
+      reporter.atNode(node, _code);
+    });
+  }
+
+  /// สีนี้ถูกส่งเข้า TextStyle หรือ Icon หรือไม่
+  ///
+  /// จงใจดูเฉพาะสองตัวนี้ ไม่ดัก `color:` ทุกที่ เพราะ `BoxDecoration(color:)`
+  /// กับ `Container(color:)` คือ "พื้น" ซึ่งใช้สีสดได้ถูกต้องแล้ว
+  /// ถ้าดักกว้างกว่านี้จะได้ false positive เป็นสิบจุดแล้วคนจะปิดกฎทิ้ง
+  static bool _isForegroundContext(NamedExpression argument) {
+    final invocation = argument.parent?.parent;
+    if (invocation is InstanceCreationExpression) {
+      final name = invocation.constructorName.type.name2.lexeme;
+      return name == 'TextStyle' || name == 'Icon' || name == 'ImageIcon';
+    }
+    if (invocation is MethodInvocation) {
+      // ปุ่มทุกชนิด: FilledButton.styleFrom(foregroundColor: ...)
+      return invocation.methodName.name == 'styleFrom' &&
+          argument.name.label.name != 'color';
+    }
+    return false;
   }
 }

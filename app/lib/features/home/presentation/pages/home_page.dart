@@ -102,7 +102,7 @@ class _NavigationRailSection extends GetView<HomeController> {
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: Icon(
                 Icons.restaurant_menu_rounded,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
                 size: extended ? 30 : 26,
               ),
             ),
@@ -138,7 +138,7 @@ class _BottomNav extends GetView<HomeController> {
               icon: Icon(destination.icon),
               selectedIcon: Icon(
                 destination.selectedIcon,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
               ),
               label: destination.label.tr,
             ),
@@ -162,9 +162,9 @@ class _AppDrawer extends GetView<HomeController> {
           padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.restaurant_menu_rounded,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
                 size: 26,
               ),
               const SizedBox(width: 10),
@@ -400,10 +400,10 @@ class _UserChip extends GetView<HomeController> {
           child: ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(
+            leading: Icon(
               Icons.logout_rounded,
               size: 19,
-              color: AppColors.danger,
+              color: AppColors.dangerInk,
             ),
             title: Text(
               'home_logout_menu_item'.tr,

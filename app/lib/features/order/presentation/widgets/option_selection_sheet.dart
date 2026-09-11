@@ -298,10 +298,10 @@ class _OptionChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (selected) ...[
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   size: 15,
-                  color: AppColors.primary,
+                  color: AppColors.brandInk,
                 ),
                 const SizedBox(width: 6),
               ],

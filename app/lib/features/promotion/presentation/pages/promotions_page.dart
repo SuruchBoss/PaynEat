@@ -111,10 +111,10 @@ class _PromotionRow extends GetView<PromotionsController> {
                         ),
                         child: Text(
                           promotion.code!,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.warning,
+                            color: AppColors.warningInk,
                           ),
                         ),
                       ),
@@ -147,7 +147,7 @@ class _PromotionRow extends GetView<PromotionsController> {
           IconButton(
             onPressed: () => controller.delete(promotion),
             icon: const Icon(Icons.delete_outline_rounded, size: 19),
-            color: AppColors.danger,
+            color: AppColors.dangerInk,
             tooltip: 'common_delete'.tr,
           ),
         ],

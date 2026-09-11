@@ -75,7 +75,7 @@ class DemoAccountPicker extends GetView<AuthController> {
                     avatar: Icon(
                       account.icon,
                       size: 16,
-                      color: AppColors.primary,
+                      color: AppColors.brandInk,
                     ),
                     label: Text(account.label),
                     backgroundColor: AppColors.surface,

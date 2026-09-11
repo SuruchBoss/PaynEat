@@ -213,10 +213,10 @@ class _MenuRow extends GetView<MenuManagementController> {
                     ),
                     if (item.isRecommended) ...[
                       const SizedBox(width: 6),
-                      const Icon(
+                      Icon(
                         Icons.star_rounded,
                         size: 15,
-                        color: AppColors.warning,
+                        color: AppColors.warningInk,
                       ),
                     ],
                   ],
@@ -246,7 +246,7 @@ class _MenuRow extends GetView<MenuManagementController> {
           IconButton(
             onPressed: () => controller.delete(item),
             icon: const Icon(Icons.delete_outline_rounded, size: 19),
-            color: AppColors.danger,
+            color: AppColors.dangerInk,
             tooltip: 'common_delete'.tr,
           ),
         ],
@@ -316,7 +316,7 @@ class _CategorySheet extends GetView<MenuManagementController> {
                           Icons.delete_outline_rounded,
                           size: 18,
                         ),
-                        color: AppColors.danger,
+                        color: AppColors.dangerInk,
                       ),
                     ],
                   ),

@@ -42,7 +42,9 @@ class StatCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: Icon(icon, size: 18, color: color),
+                // ไอคอนวางบนพื้น tint ของสีตัวเอง สีสดจึงจมหายไป
+                // (ส้ม 2.50:1 เหลือง 1.94:1) ต้องใช้เฉดเข้มเสมอ
+                child: Icon(icon, size: 18, color: AppColors.inkOf(color)),
               ),
               const SizedBox(width: 10),
               Expanded(

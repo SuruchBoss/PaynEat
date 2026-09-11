@@ -248,7 +248,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                                   TextButton(
                                     onPressed: _removeImage,
                                     style: TextButton.styleFrom(
-                                      foregroundColor: AppColors.danger,
+                                      foregroundColor: AppColors.dangerInk,
                                     ),
                                     child: Text('menu_form_photo_remove'.tr),
                                   ),
@@ -564,7 +564,7 @@ class _OptionGroupRow extends StatelessWidget {
                 onPressed: onRemove,
                 icon: const Icon(Icons.close_rounded, size: 17),
                 visualDensity: VisualDensity.compact,
-                color: AppColors.danger,
+                color: AppColors.dangerInk,
               ),
             ],
           ),
@@ -724,9 +724,9 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                   ),
                   IconButton(
                     onPressed: _addOption,
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.add_circle_rounded,
-                      color: AppColors.primary,
+                      color: AppColors.brandInk,
                     ),
                   ),
                 ],
@@ -817,7 +817,7 @@ class _IngredientLinkRow extends StatelessWidget {
             onPressed: onRemove,
             icon: const Icon(Icons.close_rounded, size: 17),
             visualDensity: VisualDensity.compact,
-            color: AppColors.danger,
+            color: AppColors.dangerInk,
           ),
         ],
       ),
