@@ -29,6 +29,10 @@ import '../../features/payment/data/datasources/payment_remote_data_source.dart'
 import '../../features/payment/data/repositories/payment_repository_impl.dart';
 import '../../features/payment/domain/repositories/payment_repository.dart';
 import '../../features/payment/domain/usecases/payment_usecases.dart';
+import '../../features/promotion/data/datasources/promotion_remote_data_source.dart';
+import '../../features/promotion/data/repositories/promotion_repository_impl.dart';
+import '../../features/promotion/domain/repositories/promotion_repository.dart';
+import '../../features/promotion/domain/usecases/promotion_usecases.dart';
 import '../../features/report/data/datasources/report_remote_data_source.dart';
 import '../../features/report/data/repositories/report_repository_impl.dart';
 import '../../features/report/domain/repositories/report_repository.dart';
@@ -125,6 +129,10 @@ class InitialBinding extends Bindings {
       () => PaymentRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<PromotionRemoteDataSource>(
+      () => PromotionRemoteDataSourceImpl(client),
+      fenix: true,
+    );
     Get.lazyPut<ReportRemoteDataSource>(
       () => ReportRemoteDataSourceImpl(client),
       fenix: true,
@@ -157,6 +165,10 @@ class InitialBinding extends Bindings {
     );
     Get.put<PaymentRemoteDataSource>(
       DemoPaymentDataSource(store, auth),
+      permanent: true,
+    );
+    Get.put<PromotionRemoteDataSource>(
+      DemoPromotionDataSource(store),
       permanent: true,
     );
     Get.put<ReportRemoteDataSource>(
@@ -196,6 +208,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<PaymentRepository>(
       () => PaymentRepositoryImpl(Get.find<PaymentRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<PromotionRepository>(
+      () => PromotionRepositoryImpl(Get.find<PromotionRemoteDataSource>()),
       fenix: true,
     );
     Get.lazyPut<ReportRepository>(
@@ -352,6 +368,18 @@ class InitialBinding extends Bindings {
       () => GetKitchenQueueUseCase(Get.find<OrderRepository>()),
       fenix: true,
     );
+    Get.lazyPut(
+      () => RedeemPromotionCodeUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => RemovePromotionUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetEligiblePromotionsUseCase(Get.find<OrderRepository>()),
+      fenix: true,
+    );
 
     // payment
     Get.lazyPut(
@@ -449,6 +477,24 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => UpdateSettingsUseCase(Get.find<SettingsRepository>()),
+      fenix: true,
+    );
+
+    // promotion
+    Get.lazyPut(
+      () => GetPromotionsUseCase(Get.find<PromotionRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => SavePromotionUseCase(Get.find<PromotionRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => SetPromotionActiveUseCase(Get.find<PromotionRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => DeletePromotionUseCase(Get.find<PromotionRepository>()),
       fenix: true,
     );
   }

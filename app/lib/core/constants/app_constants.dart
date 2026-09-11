@@ -179,6 +179,25 @@ class DiscountType {
   static const String percent = 'percent';
 }
 
+/// ชนิดโปรโมชัน
+class PromotionType {
+  const PromotionType._();
+
+  static const String percent = 'percent';
+  static const String amount = 'amount';
+  static const String bogo = 'bogo';
+
+  static const List<String> all = [percent, amount, bogo];
+
+  static const Map<String, String> _keys = {
+    percent: 'promotion_type_percent',
+    amount: 'promotion_type_amount',
+    bogo: 'promotion_type_bogo',
+  };
+
+  static String label(String type) => (_keys[type] ?? type).tr;
+}
+
 /// คีย์ที่ใช้เก็บข้อมูลใน local storage
 class StorageKeys {
   const StorageKeys._();

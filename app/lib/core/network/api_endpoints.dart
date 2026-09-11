@@ -42,6 +42,14 @@ class ApiEndpoints {
   static String cancelOrder(int id) => '/orders/$id/cancel';
   static String moveOrderTable(int id) => '/orders/$id/move-table';
   static String mergeOrder(int id) => '/orders/$id/merge';
+  static String orderPromotionRedeem(int id) => '/orders/$id/promotion/redeem';
+  static String orderPromotion(int id) => '/orders/$id/promotion';
+  static String orderEligiblePromotions(int id) =>
+      '/orders/$id/eligible-promotions';
+
+  // Promotions
+  static const String promotions = '/promotions';
+  static String promotion(int id) => '/promotions/$id';
 
   // Payments
   static const String payments = '/payments';

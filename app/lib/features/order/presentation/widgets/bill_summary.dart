@@ -32,6 +32,14 @@ class BillSummary extends StatelessWidget {
             -order.discountAmount,
             color: AppColors.success,
           ),
+        if (order.hasPromotion)
+          _row(
+            'promotion_summary_label'.trParams({
+              'name': order.promotionName ?? '',
+            }),
+            -order.promotionDiscountAmount,
+            color: AppColors.success,
+          ),
         _row('order_service_charge_label'.tr, order.serviceCharge),
         _row('order_vat_label'.tr, order.vat),
         Padding(

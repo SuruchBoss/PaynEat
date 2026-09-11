@@ -88,6 +88,9 @@ void main() {
       cancelOrder: CancelOrderUseCase(repository),
       moveOrderTable: MoveOrderTableUseCase(repository),
       mergeOrders: MergeOrdersUseCase(repository),
+      redeemPromotionCode: RedeemPromotionCodeUseCase(repository),
+      removePromotion: RemovePromotionUseCase(repository),
+      getEligiblePromotions: GetEligiblePromotionsUseCase(repository),
       session: session,
     );
   });

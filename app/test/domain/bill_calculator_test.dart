@@ -44,6 +44,34 @@ void main() {
       expect(bill.total, 0);
     });
 
+    test('ส่วนลดโปรโมชันหักก่อนคิด service charge และ VAT เหมือนส่วนลดมือ', () {
+      final bill = calculator.fromSubtotal(150, promotionDiscountAmount: 50);
+
+      expect(bill.discount, 0);
+      expect(bill.promotionDiscount, 50);
+      expect(bill.serviceCharge, 10);
+      expect(bill.total, 117.70);
+    });
+
+    test('ส่วนลดมือ + ส่วนลดโปรโมชันรวมกันได้ แต่ต้องไม่เกินยอดรวมทั้งคู่', () {
+      final bill = calculator.fromSubtotal(
+        150,
+        discountAmount: 120,
+        promotionDiscountAmount: 50,
+      );
+
+      expect(bill.discount, 120);
+      expect(bill.promotionDiscount, 30); // เหลือให้หักได้แค่ 150-120=30
+      expect(bill.total, 0);
+    });
+
+    test('ส่วนลดโปรโมชันต้องไม่เกินยอดรวมเช่นเดียวกับส่วนลดมือ', () {
+      final bill = calculator.fromSubtotal(150, promotionDiscountAmount: 9999);
+
+      expect(bill.promotionDiscount, 150);
+      expect(bill.total, 0);
+    });
+
     test('โหมดราคารวม VAT แล้วจะถอด VAT ออกมาแสดงแทนการบวกเพิ่ม', () {
       const inclusive = BillCalculator(
         vatRate: 0.07,

@@ -79,6 +79,25 @@ CREATE TABLE IF NOT EXISTS dining_tables (
   updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- โปรโมชัน/ส่วนลดแบบมีเงื่อนไข (ดู docs/tickets/05-promotion-engine.md)
+-- conditions_json: {daysOfWeek:[0-6], startTime:"HH:mm", endTime:"HH:mm",
+--                    categoryIds:[...], menuItemIds:[...], minSubtotal: สตางค์}
+-- ไม่ระบุ categoryIds/menuItemIds เลย = ใช้ได้กับทั้งบิล
+CREATE TABLE IF NOT EXISTS promotions (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  name            TEXT    NOT NULL,
+  type            TEXT    NOT NULL CHECK (type IN ('percent', 'amount', 'bogo')),
+  value           INTEGER NOT NULL DEFAULT 0,
+  code            TEXT    UNIQUE,
+  conditions_json TEXT    NOT NULL DEFAULT '{}',
+  is_active       INTEGER NOT NULL DEFAULT 1,
+  valid_from      TEXT,
+  valid_to        TEXT,
+  created_at      TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active);
+
 CREATE TABLE IF NOT EXISTS orders (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
   code              TEXT    NOT NULL UNIQUE,
@@ -93,6 +112,11 @@ CREATE TABLE IF NOT EXISTS orders (
   discount_type     TEXT    NOT NULL DEFAULT 'none' CHECK (discount_type IN ('none', 'amount', 'percent')),
   discount_value    INTEGER NOT NULL DEFAULT 0,
   discount_amount   INTEGER NOT NULL DEFAULT 0,
+  -- ส่วนลดจากโปรโมชัน — แยกจากส่วนลดมือข้างบน คำนวณรวมกันแต่ไม่เกิน subtotal (ดู order.calculator.js)
+  promotion_id              INTEGER REFERENCES promotions(id) ON DELETE SET NULL,
+  promotion_name_snapshot   TEXT,
+  promotion_code_snapshot   TEXT,
+  promotion_discount_amount INTEGER NOT NULL DEFAULT 0,
   service_charge    INTEGER NOT NULL DEFAULT 0,
   vat               INTEGER NOT NULL DEFAULT 0,
   total             INTEGER NOT NULL DEFAULT 0,

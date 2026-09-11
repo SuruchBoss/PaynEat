@@ -236,11 +236,14 @@ class ScreenshotHarness {
       reference: 'PROMPTPAY-4471',
       cashierId: 6,
     );
+    final cashAmount = double.parse((total - 100).toStringAsFixed(2));
     store.pay(
       orderId: paidId,
       method: 'cash',
-      amount: double.parse((total - 100).toStringAsFixed(2)),
-      received: 200,
+      amount: cashAmount,
+      // ให้เงินเกินไว้เสมอ 20 บาท เพื่อให้มีเงินทอนในใบเสร็จตัวอย่าง
+      // ไม่ล็อกเป็นค่าคงที่ เพราะยอดบิลจริงเปลี่ยนได้ตามราคาเมนู/ตัวเลือกที่ปรับ
+      received: cashAmount + 20,
       cashierId: 6,
     );
 

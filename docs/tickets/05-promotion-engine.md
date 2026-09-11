@@ -24,11 +24,11 @@ cashier กดลดมือทุกครั้ง เสี่ยง error/�
   ทำอยู่ (ดู `docs/DECISIONS.md` เรื่อง dual bill-calculator)
 
 ## Acceptance Criteria
-- [ ] Admin/manager สร้าง/แก้ไข/ปิดใช้งานโปรโมชันได้ (เงื่อนไขเวลา/เมนู/ยอดขั้นต่ำ)
-- [ ] ระบบ apply โปรโมชันที่เข้าเงื่อนไขให้อัตโนมัติตอนคำนวณบิล หรือรับโค้ดส่วนลดได้
-- [ ] ผลการคำนวณ (subtotal/discount/service charge/VAT/total) ตรงกันระหว่าง backend กับ
+- [x] Admin/manager สร้าง/แก้ไข/ปิดใช้งานโปรโมชันได้ (เงื่อนไขเวลา/เมนู/ยอดขั้นต่ำ)
+- [x] ระบบ apply โปรโมชันที่เข้าเงื่อนไขให้อัตโนมัติตอนคำนวณบิล หรือรับโค้ดส่วนลดได้
+- [x] ผลการคำนวณ (subtotal/discount/service charge/VAT/total) ตรงกันระหว่าง backend กับ
   frontend เหมือนเดิม มี test คุม
-- [ ] Order ที่ใช้โปรโมชันแสดงชัดเจนในใบเสร็จ/รายงาน
+- [x] Order ที่ใช้โปรโมชันแสดงชัดเจนในใบเสร็จ/รายงาน
 
 ## ไฟล์ที่เกี่ยวข้อง
 - `backend/src/modules/orders/order.calculator.js`

@@ -1,5 +1,6 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../../promotion/data/models/promotion_model.dart';
 import '../../domain/entities/order_item_payload.dart';
 import '../models/order_model.dart';
 
@@ -36,6 +37,9 @@ abstract class OrderRemoteDataSource {
   Future<OrderModel> moveTable(int orderId, int tableId);
   Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId);
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses});
+  Future<OrderModel> redeemPromotionCode(int orderId, String code);
+  Future<OrderModel> removePromotion(int orderId);
+  Future<List<EligiblePromotionModel>> getEligiblePromotions(int orderId);
 }
 
 class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
@@ -205,5 +209,32 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       },
     );
     return result.asList.map(OrderItemModel.fromJson).toList(growable: false);
+  }
+
+  @override
+  Future<OrderModel> redeemPromotionCode(int orderId, String code) async {
+    final result = await _client.post(
+      ApiEndpoints.orderPromotionRedeem(orderId),
+      body: {'code': code},
+    );
+    return OrderModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<OrderModel> removePromotion(int orderId) async {
+    final result = await _client.delete(ApiEndpoints.orderPromotion(orderId));
+    return OrderModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<List<EligiblePromotionModel>> getEligiblePromotions(
+    int orderId,
+  ) async {
+    final result = await _client.get(
+      ApiEndpoints.orderEligiblePromotions(orderId),
+    );
+    return result.asList
+        .map(EligiblePromotionModel.fromJson)
+        .toList(growable: false);
   }
 }

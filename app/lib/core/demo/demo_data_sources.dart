@@ -6,6 +6,8 @@ import '../../features/menu/data/models/menu_item_model.dart';
 import '../../features/menu/domain/entities/menu_item_payload.dart';
 import '../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../features/order/domain/entities/order_item_payload.dart';
+import '../../features/promotion/data/datasources/promotion_remote_data_source.dart';
+import '../../features/promotion/data/models/promotion_model.dart';
 import '../../features/table/data/datasources/table_remote_data_source.dart';
 import '../../features/table/data/models/dining_table_model.dart';
 import '../../features/order/data/models/order_model.dart';
@@ -304,6 +306,57 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
             .map(OrderItemModel.fromJson)
             .toList(growable: false),
       );
+
+  @override
+  Future<OrderModel> redeemPromotionCode(int orderId, String code) => _delayed(
+    () => OrderModel.fromJson(_store.redeemPromotionCode(orderId, code)),
+  );
+
+  @override
+  Future<OrderModel> removePromotion(int orderId) =>
+      _delayed(() => OrderModel.fromJson(_store.removePromotion(orderId)));
+
+  @override
+  Future<List<EligiblePromotionModel>> getEligiblePromotions(int orderId) =>
+      _delayed(
+        () => _store
+            .eligiblePromotions(orderId)
+            .map(EligiblePromotionModel.fromJson)
+            .toList(growable: false),
+      );
+}
+
+class DemoPromotionDataSource implements PromotionRemoteDataSource {
+  const DemoPromotionDataSource(this._store);
+
+  final DemoStore _store;
+
+  @override
+  Future<List<PromotionModel>> getPromotions({bool activeOnly = false}) =>
+      _delayed(
+        () => _store
+            .promotionList(activeOnly: activeOnly)
+            .map(PromotionModel.fromJson)
+            .toList(growable: false),
+      );
+
+  @override
+  Future<PromotionModel> getPromotion(int id) =>
+      _delayed(() => PromotionModel.fromJson(_store.promotion(id)));
+
+  @override
+  Future<PromotionModel> createPromotion(Map<String, dynamic> body) =>
+      _delayed(() => PromotionModel.fromJson(_store.savePromotion(body)));
+
+  @override
+  Future<PromotionModel> updatePromotion(int id, Map<String, dynamic> body) =>
+      _delayed(
+        () => PromotionModel.fromJson(_store.savePromotion(body, id: id)),
+      );
+
+  @override
+  Future<void> deletePromotion(int id) =>
+      _delayed(() => _store.deletePromotion(id));
 }
 
 class DemoPaymentDataSource implements PaymentRemoteDataSource {
