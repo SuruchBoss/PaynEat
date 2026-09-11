@@ -244,6 +244,8 @@ The login page has one-tap buttons for each account — no need to type anything
 9. **You land on the receipt page** → go back to the table map; table A1 has already turned green again
 10. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
     report, complete with the hourly chart and best sellers
+11. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
+    names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
 
 **Want to try the hidden business rules?**
 
@@ -254,6 +256,10 @@ The login page has one-tap buttons for each account — no need to type anything
   returns 403)
 - Log in as `admin` → **Menu Management** → toggle a menu item off, then go back to order taking — it shows
   "Sold Out" and can't be tapped
+- Log in as `admin` → **Ingredients/Stock** → adjust "ปลาทับทิม" → pick "Deduct" and enter 3 (its exact
+  starting stock) → go back to order taking and "Steamed Fish with Lime" now shows "Sold Out" **on its own**,
+  with nobody toggling it manually (automatic stock deduction — see `docs/DECISIONS.md` #15) — hit "Receive"
+  to restock it and it re-enables itself the same way
 
 ---
 
