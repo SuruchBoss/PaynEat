@@ -1,3 +1,5 @@
+// PaynEat POS — original project by SuruchBoss (https://github.com/SuruchBoss/PaynEat)
+// Licensed under Apache License 2.0 — see LICENSE and NOTICE at repo root
 import http from 'node:http';
 import { env } from './config/env.js';
 import { createApp } from './app.js';

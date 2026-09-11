@@ -14,7 +14,7 @@
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
   <img alt="Tests" src="https://img.shields.io/badge/tests-383%20passing-2F9E44">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
 **English TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
@@ -22,6 +22,10 @@ a Flutter client (mobile / tablet / web from one codebase, structured with Clean
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
 control and 383 automated tests.
+
+> 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
+> ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
+> [LinkedIn](https://www.linkedin.com/in/suruchboss)
 
 ---
 
@@ -764,4 +768,11 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 ## 📄 License
 
-[MIT](LICENSE) — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย
+[Apache License 2.0](LICENSE) — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย เงื่อนไขเดียวคือถ้า
+แจกจ่าย/ต่อยอดต่อ ให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ด้วยตามที่ Apache License กำหนด (Section 4(d))
+
+## 👤 ผู้สร้าง
+
+โปรเจกต์นี้สร้างและดูแลโดย **[SuruchBoss](https://github.com/SuruchBoss)**
+([LinkedIn](https://www.linkedin.com/in/suruchboss)) — ถ้าสนใจพูดคุย จ้างงาน หรือติดต่อเรื่อง
+โปรเจกต์นี้ ทักมาได้เลย
