@@ -242,11 +242,14 @@ class ScreenshotHarness {
       reference: 'PROMPTPAY-4471',
       cashierId: 6,
     );
+    // ยอดที่เหลือหลังจ่าย QR ไปแล้ว 100 — ลูกค้าจ่ายสดพอดี
+    // (เดิมใส่ received: 200 ตายตัว ซึ่งน้อยกว่ายอดคงเหลือจริง demo store เลยปฏิเสธ)
+    final cashDue = double.parse((total - 100).toStringAsFixed(2));
     store.pay(
       orderId: paidId,
       method: 'cash',
-      amount: double.parse((total - 100).toStringAsFixed(2)),
-      received: 200,
+      amount: cashDue,
+      received: cashDue,
       cashierId: 6,
     );
 

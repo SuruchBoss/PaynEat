@@ -1,3 +1,8 @@
+// ไฟล์นี้ถูกเลือกใช้เฉพาะตอน build เป็นเว็บผ่าน conditional import
+// (ดู menu_form_page.dart) จึงจงใจใช้ dart:html ตรงนี้ได้ — แพลตฟอร์มอื่นคอมไพล์
+// menu_image_picker_stub.dart แทน ไม่ได้แตะไฟล์นี้เลย
+// ignore_for_file: avoid_web_libraries_in_flutter, deprecated_member_use
+
 import 'dart:async';
 import 'dart:html' as html;
 

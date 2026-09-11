@@ -284,8 +284,11 @@ void main() {
       await ScreenshotHarness.capture(tester, 'web-24-reports');
     });
 
+    // ลำดับเมนูของแอดมิน: ภาพรวม(0) ผังโต๊ะ(1) ออเดอร์(2) ครัว(3) จัดการเมนู(4)
+    // พนักงาน(5) รายงาน(6) กะ(7) ตั้งค่า(8) — ดู home_binding.dart
+    // (เดิมใช้ index 7 ซึ่งตอนนี้กลายเป็นหน้า "กะ" ไปแล้วหลังเพิ่มฟีเจอร์เปิด-ปิดกะ)
     testWidgets('25 ตั้งค่าร้าน', (tester) async {
-      await openAdminTab(tester, 7);
+      await openAdminTab(tester, 8);
       await ScreenshotHarness.capture(tester, 'web-25-settings');
     });
   });

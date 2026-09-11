@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/config/app_config.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/socket_client.dart';
 import '../../../../core/services/session_service.dart';
@@ -58,7 +59,7 @@ class KitchenController extends GetxController {
     //    ยังเดินอยู่ ทำให้ดูเหมือนทุกอย่างปกติ
     _elapsedTimer = Timer.periodic(const Duration(seconds: 30), (_) {
       tick.value++;
-      if (!_session.socket.connected.value) load(showLoader: false);
+      if (isOffline.value) load(showLoader: false);
     });
   }
 
@@ -72,8 +73,10 @@ class KitchenController extends GetxController {
     super.onClose();
   }
 
-  void _syncConnectionState() =>
-      isOffline.value = !_session.socket.connected.value;
+  /// โหมดสาธิตตั้งใจทำงานโดยไม่มีเซิร์ฟเวอร์ การไม่มี socket จึงเป็นเรื่องปกติ
+  /// ไม่ใช่ความผิดปกติที่ต้องเตือน — ถ้าไม่กันไว้ แถบแดงจะขึ้นค้างตลอดทั้งที่ทุกอย่างใช้ได้
+  void _syncConnectionState() => isOffline.value =
+      !AppConfig.demoMode && !_session.socket.connected.value;
 
   List<OrderItem> byStatus(String status) =>
       queue.where((item) => item.status == status).toList(growable: false);

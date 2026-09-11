@@ -128,9 +128,9 @@ class ProfilePage extends GetView<AuthController> {
           // ตัวสลับภาษาเคยอยู่แต่ในหน้าตั้งค่าซึ่งเป็นสิทธิ์ของแอดมิน แปลว่าพนักงานเสิร์ฟ
           // ครัว และแคชเชียร์ไม่มีทางเปลี่ยนภาษาได้เลยทั้งที่แอปรองรับสองภาษา
           // หน้านี้เป็นหน้าเดียวที่ทุกบทบาทเข้าถึงได้ จึงเป็นที่ที่ควรอยู่
-          const ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: 560),
-            child: _LanguageCard(),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: const _LanguageCard(),
           ),
           const SizedBox(height: 12),
           ConstrainedBox(

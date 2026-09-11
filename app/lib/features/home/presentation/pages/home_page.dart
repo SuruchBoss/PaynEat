@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/services/offline_order_queue_service.dart';
@@ -80,12 +81,17 @@ class _NavigationRailSection extends GetView<HomeController> {
             // ใส่ทั้งพื้น indicator และสีไอคอน/ตัวอักษรให้ชัดขึ้น
             indicatorColor: AppColors.primarySoft,
             selectedIconTheme: const IconThemeData(color: AppColors.brandInk),
+            // NavigationRail ใช้ TextStyle สองตัวนี้ "แทนที่" สไตล์เดิมทั้งก้อน ไม่ได้ merge
+            // จึงต้องระบุ fontFamily เองด้วย ไม่งั้นฟอนต์หลุดไปใช้ค่า default ของแพลตฟอร์ม
+            // แล้วอักษรไทยจะกลายเป็นกล่องสี่เหลี่ยม (บั๊กเดียวกับที่เคยเจอในปุ่มเดินสถานะ)
             selectedLabelTextStyle: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: AppColors.brandInk,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
             unselectedLabelTextStyle: const TextStyle(
+              fontFamily: AppTheme.fontFamily,
               color: AppColors.textSecondary,
               fontSize: 13,
             ),
@@ -310,14 +316,17 @@ class _ConnectionDot extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: session.socket.connected,
       builder: (context, connected, _) {
-        if (connected) {
+        // โหมดสาธิตไม่มีเซิร์ฟเวอร์โดยตั้งใจ จึงไม่ควรขึ้นป้ายเตือนสีแดงค้างไว้
+        if (connected || AppConfig.demoMode) {
           return Tooltip(
-            message: 'home_connection_online_tooltip'.tr,
+            message: connected
+                ? 'home_connection_online_tooltip'.tr
+                : 'home_connection_offline_tooltip'.tr,
             child: Container(
               width: 9,
               height: 9,
-              decoration: const BoxDecoration(
-                color: AppColors.success,
+              decoration: BoxDecoration(
+                color: connected ? AppColors.success : AppColors.textDisabled,
                 shape: BoxShape.circle,
               ),
             ),
