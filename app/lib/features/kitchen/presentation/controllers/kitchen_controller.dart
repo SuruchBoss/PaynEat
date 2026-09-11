@@ -75,8 +75,8 @@ class KitchenController extends GetxController {
 
   /// โหมดสาธิตตั้งใจทำงานโดยไม่มีเซิร์ฟเวอร์ การไม่มี socket จึงเป็นเรื่องปกติ
   /// ไม่ใช่ความผิดปกติที่ต้องเตือน — ถ้าไม่กันไว้ แถบแดงจะขึ้นค้างตลอดทั้งที่ทุกอย่างใช้ได้
-  void _syncConnectionState() => isOffline.value =
-      !AppConfig.demoMode && !_session.socket.connected.value;
+  void _syncConnectionState() =>
+      isOffline.value = !AppConfig.demoMode && !_session.socket.connected.value;
 
   List<OrderItem> byStatus(String status) =>
       queue.where((item) => item.status == status).toList(growable: false);

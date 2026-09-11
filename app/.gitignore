@@ -33,3 +33,6 @@ ios/Flutter/ephemeral/
 
 # ภาพหน้าจอที่สร้างจาก golden test (สร้างใหม่ได้)
 tool/screenshots/images/
+
+# บันทึกของ custom_lint ตอนรันในเครื่อง
+custom_lint.log

@@ -9,6 +9,26 @@
 # packages, and plugins designed to encourage good coding practices.
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  # กฎเฉพาะของโปรเจกต์ — โค้ดอยู่ที่ tool/lints พร้อมเหตุผลว่าแต่ละกฎกันอะไร
+  # ขึ้นเส้นหยักใน IDE ให้เห็นตั้งแต่ตอนพิมพ์ และรันซ้ำใน CI ด้วย `dart run custom_lint`
+  plugins:
+    - custom_lint
+  errors:
+    # Dart รุ่นใหม่เตือนว่าระบบ plugin แบบเดิมกำลังจะเลิกใช้ แต่ custom_lint ยังไม่รองรับ
+    # ระบบใหม่ ปิดเสียงไว้ก่อนเพื่อไม่ให้ `flutter analyze` แดงทั้งที่ยังไม่มีทางเลือกอื่น
+    # ถ้าวันไหน custom_lint ออกเวอร์ชันที่รองรับแล้ว ให้ลบบรรทัดนี้ทิ้งแล้วย้ายไปใช้ของใหม่
+    analysis_options_deprecated_plugins: ignore
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    # tool/lints เป็นแพ็กเกจแยกที่มี pubspec และชุด dependency ของตัวเอง
+    # (พึ่ง analyzer โดยตรง คนละเวอร์ชันกับที่แอปใช้) ถ้าให้ analyzer ของแอปมาวิเคราะห์ด้วย
+    # จะได้ผลที่ไม่ตรงความจริง — เวลาแก้กฎให้รัน `dart analyze` ในโฟลเดอร์นั้นแทน
+    - tool/lints/**
+
 linter:
   # The lint rules applied to this project can be customized in the
   # section below to disable rules from the `package:flutter_lints/flutter.yaml`

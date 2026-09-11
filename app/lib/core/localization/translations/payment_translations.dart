@@ -12,7 +12,8 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_amount_this_round_label': 'ยอดที่รับชำระรอบนี้',
   'payment_amount_this_round_helper': 'แก้ได้ถ้าลูกค้าขอจ่ายบางส่วน',
   'payment_received_label': 'รับเงินมา',
-  'payment_received_helper': 'ใส่จำนวนเงินที่ลูกค้ายื่นให้ ระบบจะคิดเงินทอนให้เอง',
+  'payment_received_helper':
+      'ใส่จำนวนเงินที่ลูกค้ายื่นให้ ระบบจะคิดเงินทอนให้เอง',
   'payment_exact_amount_label': 'พอดี',
   'payment_change_due_label': 'เงินทอน',
   'payment_reference_label': 'เลขอ้างอิง (ถ้ามี)',
@@ -100,7 +101,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_amount_this_round_label': 'Amount to collect this round',
   'payment_amount_this_round_helper': 'Change this only for a partial payment',
   'payment_received_label': 'Amount received',
-  'payment_received_helper': 'Enter the cash handed over — change is calculated for you',
+  'payment_received_helper':
+      'Enter the cash handed over — change is calculated for you',
   'payment_exact_amount_label': 'Exact',
   'payment_change_due_label': 'Change due',
   'payment_reference_label': 'Reference number (optional)',

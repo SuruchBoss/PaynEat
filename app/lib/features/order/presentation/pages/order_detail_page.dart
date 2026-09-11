@@ -301,7 +301,10 @@ class _OrderHeader extends StatelessWidget {
                 'order_cancelled_reason_prefix'.trParams({
                   'reason': order.cancelledReason!,
                 }),
-                style: const TextStyle(color: AppColors.dangerInk, fontSize: 13),
+                style: const TextStyle(
+                  color: AppColors.dangerInk,
+                  fontSize: 13,
+                ),
               ),
             ),
           ],

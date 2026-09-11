@@ -39,6 +39,12 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
 
+  # กฎ lint เฉพาะของโปรเจกต์ (ดู tool/lints) — รันด้วย `dart run custom_lint`
+  # และขึ้นเส้นหยักใน IDE ให้เห็นตั้งแต่ตอนพิมพ์
+  custom_lint: ^0.8.1
+  payneat_lints:
+    path: tool/lints
+
 flutter:
   uses-material-design: true
 

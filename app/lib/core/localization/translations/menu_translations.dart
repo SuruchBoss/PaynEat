@@ -109,10 +109,12 @@ const Map<String, String> menuTranslationsEn = {
   'menu_form_photo_pick': 'Choose photo',
   'menu_form_photo_change': 'Change photo',
   'menu_form_photo_remove': 'Remove photo',
-  'menu_form_photo_hint': 'Images are resized automatically — a photo is optional',
+  'menu_form_photo_hint':
+      'Images are resized automatically — a photo is optional',
   'menu_form_photo_source_camera': 'Take a photo',
   'menu_form_photo_source_gallery': 'Choose from library',
-  'menu_form_photo_too_large': 'That image is still too large after resizing — please pick another',
+  'menu_form_photo_too_large':
+      'That image is still too large after resizing — please pick another',
   'menu_form_photo_pick_failed': 'Could not pick that image, please try again',
   'menu_form_name_label': 'Menu name *',
   'menu_form_name_required': 'Please enter a menu name',
