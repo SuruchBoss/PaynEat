@@ -164,7 +164,11 @@ class ReceiptTicketBuilder {
 
     for (final payment in receipt.payments) {
       bytes.addAll(
-        _line(generator, payment.methodLabel, Formatters.money(payment.amount)),
+        _line(
+          generator,
+          payment.methodLabel,
+          Formatters.money(payment.tendered),
+        ),
       );
     }
     if (receipt.changeTotal > 0) {

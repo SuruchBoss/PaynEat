@@ -185,4 +185,64 @@ void main() {
       },
     );
   });
+
+  group('Payment.tendered — ใบเสร็จโชว์เงินที่ลูกค้ายื่นมา', () {
+    // ใบเสร็จกระทบยอดกันเองด้วยบรรทัดเงินทอน: ยื่นมา − ทอน = ยอดที่ตัดเข้าบิล
+    // ถ้าโชว์ amount คู่กับเงินทอน ลูกค้าบวกแล้วจะไม่ตรงกับเงินที่ยื่นให้จริง
+
+    test('เงินสดยื่นมาเกินยอด → โชว์เงินที่ยื่นมา ไม่ใช่ยอดที่ตัดเข้าบิล', () {
+      const payment = Payment(
+        id: 1,
+        orderId: 1,
+        method: PaymentMethod.cash,
+        amount: 207.20,
+        received: 227.20,
+        change: 20,
+      );
+      expect(payment.tendered, 227.20);
+      // กระทบยอดได้ลงตัว
+      expect(payment.tendered - payment.change, closeTo(payment.amount, 0.001));
+    });
+
+    test('เงินสดยื่นมาพอดี → ไม่มีเงินทอน โชว์ยอดเดิม', () {
+      const payment = Payment(
+        id: 1,
+        orderId: 1,
+        method: PaymentMethod.cash,
+        amount: 207.20,
+        received: 207.20,
+      );
+      expect(payment.tendered, 207.20);
+    });
+
+    test('QR/บัตร/โอน ไม่มีการทอน → โชว์ยอดที่ตัดเข้าบิลตามเดิม', () {
+      for (final method in [
+        PaymentMethod.qr,
+        PaymentMethod.card,
+        PaymentMethod.transfer,
+      ]) {
+        final payment = Payment(
+          id: 1,
+          orderId: 1,
+          method: method,
+          amount: 100,
+          received: 100,
+        );
+        expect(payment.tendered, 100, reason: method);
+      }
+    });
+
+    test(
+      'ข้อมูลเก่าที่ยังไม่มีช่อง received (ได้ 0) → ถอยไปใช้ยอดที่ตัดเข้าบิล',
+      () {
+        const payment = Payment(
+          id: 1,
+          orderId: 1,
+          method: PaymentMethod.cash,
+          amount: 100,
+        );
+        expect(payment.tendered, 100);
+      },
+    );
+  });
 }

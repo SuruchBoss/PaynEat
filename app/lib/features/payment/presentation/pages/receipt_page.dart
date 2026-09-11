@@ -241,7 +241,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                             ),
                             const Spacer(),
                             Text(
-                              Formatters.money(payment.amount),
+                              Formatters.money(payment.tendered),
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
