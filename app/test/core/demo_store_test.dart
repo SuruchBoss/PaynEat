@@ -199,6 +199,210 @@ void main() {
     },
   );
 
+  group('DemoStore promotions — auto apply / โค้ด / ลบ / eligible list', () {
+    Map<String, dynamic> openOrder() {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 2,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 2, 'optionIds': []},
+        ],
+      );
+    }
+
+    // โปรโมชันถูกประเมินใหม่ตอน _recalculate() เท่านั้น (ตอนแก้ไขออเดอร์) ไม่ใช่ตอนอ่านเฉย ๆ
+    // เหมือนกับฝั่ง backend เทสต์นี้เลยต้อง "แตะ" ออเดอร์เบา ๆ เพื่อบังคับคำนวณใหม่
+    Map<String, dynamic> touch(int orderId) =>
+        store.applyDiscount(orderId, 'none', 0);
+
+    test(
+      'สร้างโปรโมชัน auto (ไม่ใช้โค้ด) แล้ว apply ให้ออเดอร์ที่เข้าเงื่อนไขทันที',
+      () {
+        final promotion = store.savePromotion({
+          'name': 'ลด 10%',
+          'type': 'percent',
+          'value': 10.0,
+          'conditions': const {},
+          'isActive': true,
+        });
+
+        final order = openOrder();
+        final subtotal = (order['subtotal'] as num).toDouble();
+
+        expect(order['promotionId'], promotion['id']);
+        expect(order['promotionDiscountAmount'], subtotal * 0.1);
+      },
+    );
+
+    test('ลบโปรโมชัน auto ที่ยังเข้าเงื่อนไขอยู่ ระบบใส่กลับให้ทันที', () {
+      final promotion = store.savePromotion({
+        'name': 'ลด 10%',
+        'type': 'percent',
+        'value': 10.0,
+        'conditions': const {},
+        'isActive': true,
+      });
+      final order = openOrder();
+
+      final removed = store.removePromotion(order['id'] as int);
+      expect(removed['promotionId'], promotion['id']);
+    });
+
+    test('ปิดใช้งานโปรโมชัน auto แล้วออเดอร์ต้องไม่มีโปรโมชันอีกต่อไป', () {
+      final promotion = store.savePromotion({
+        'name': 'ลด 10%',
+        'type': 'percent',
+        'value': 10.0,
+        'conditions': const {},
+        'isActive': true,
+      });
+      final order = openOrder();
+
+      store.savePromotion({'isActive': false}, id: promotion['id'] as int);
+      final result = touch(order['id'] as int);
+
+      expect(result['promotionId'], isNull);
+      expect(result['promotionDiscountAmount'], 0.0);
+    });
+
+    test('สร้างโปรโมชันแบบใช้โค้ดซ้ำต้องถูกปฏิเสธ', () {
+      store.savePromotion({
+        'name': 'ลด 20 บาท',
+        'type': 'amount',
+        'value': 20.0,
+        'code': 'save20',
+        'conditions': const {},
+        'isActive': true,
+      });
+
+      expect(
+        () => store.savePromotion({
+          'name': 'ลด 20 บาท (ซ้ำ)',
+          'type': 'amount',
+          'value': 20.0,
+          'code': 'SAVE20',
+          'conditions': const {},
+          'isActive': true,
+        }),
+        throwsException,
+      );
+    });
+
+    test('กรอกโค้ดที่ไม่มีอยู่จริงถูกปฏิเสธ', () {
+      final order = openOrder();
+      expect(
+        () => store.redeemPromotionCode(order['id'] as int, 'NOTREAL'),
+        throwsException,
+      );
+    });
+
+    test(
+      'กรอกโค้ดที่ถูกต้อง apply ทันที และยึดโค้ดไว้แม้ auto ให้ส่วนลดมากกว่า',
+      () {
+        final auto = store.savePromotion({
+          'name': 'ลด 10% ทั้งบิล',
+          'type': 'percent',
+          'value': 10.0,
+          'conditions': const {},
+          'isActive': true,
+        });
+        store.savePromotion({
+          'name': 'ลด 20 บาท',
+          'type': 'amount',
+          'value': 20.0,
+          'code': 'save20',
+          'conditions': const {},
+          'isActive': true,
+        });
+
+        final order = openOrder();
+        final redeemed = store.redeemPromotionCode(
+          order['id'] as int,
+          'save20',
+        );
+        expect(redeemed['promotionCode'], 'SAVE20');
+        expect(redeemed['promotionDiscountAmount'], 20.0);
+
+        // auto (10%) ให้ส่วนลดมากกว่า 20 บาทแน่นอนที่ subtotal นี้ แต่ต้องยึดโค้ดที่กรอกไว้เป็นหลัก
+        final afterTouch = touch(order['id'] as int);
+        expect(afterTouch['promotionId'], redeemed['promotionId']);
+        expect(afterTouch['promotionCode'], 'SAVE20');
+        expect(auto['code'], isNull);
+      },
+    );
+
+    test('ลบโปรโมชัน (โค้ด) ออก → กลับไปใช้ auto ที่ยังเข้าเงื่อนไขแทน', () {
+      final auto = store.savePromotion({
+        'name': 'ลด 10% ทั้งบิล',
+        'type': 'percent',
+        'value': 10.0,
+        'conditions': const {},
+        'isActive': true,
+      });
+      store.savePromotion({
+        'name': 'ลด 20 บาท',
+        'type': 'amount',
+        'value': 20.0,
+        'code': 'save20',
+        'conditions': const {},
+        'isActive': true,
+      });
+      final order = openOrder();
+      store.redeemPromotionCode(order['id'] as int, 'save20');
+
+      final result = store.removePromotion(order['id'] as int);
+      expect(result['promotionId'], auto['id']);
+      expect(result['promotionCode'], isNull);
+    });
+
+    test(
+      'eligiblePromotions คืนเฉพาะรายการที่เข้าเงื่อนไขหรือกำลังใช้งานอยู่',
+      () {
+        final promotion = store.savePromotion({
+          'name': 'ลด 10%',
+          'type': 'percent',
+          'value': 10.0,
+          'conditions': const {},
+          'isActive': true,
+        });
+        final order = openOrder();
+
+        final eligible = store.eligiblePromotions(order['id'] as int);
+        final entry = eligible.firstWhere(
+          (row) => row['promotionId'] == promotion['id'],
+        );
+        expect(entry['isEligibleNow'], isTrue);
+        expect(entry['isCurrentlyApplied'], isTrue);
+        expect(entry['requiresCode'], isFalse);
+      },
+    );
+
+    test(
+      'ลบโปรโมชันที่เคยใช้ในออเดอร์แล้วไม่กระทบออเดอร์เก่า (snapshot ไว้แล้ว)',
+      () {
+        final promotion = store.savePromotion({
+          'name': 'ลด 10%',
+          'type': 'percent',
+          'value': 10.0,
+          'conditions': const {},
+          'isActive': true,
+        });
+        final order = openOrder();
+        expect(order['promotionId'], promotion['id']);
+
+        store.deletePromotion(promotion['id'] as int);
+
+        final stillThere = store.findOrder(order['id'] as int);
+        expect(stillThere['promotionName'], 'ลด 10%');
+      },
+    );
+  });
+
   group('DemoStore reports — มีข้อมูลจาก seed history ตั้งแต่สร้างขึ้นมา', () {
     test(
       'dashboard และ salesSummary มีข้อมูลให้ดูทันทีไม่ต้องรอสร้างออเดอร์ใหม่',

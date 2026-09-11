@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-292%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-352%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 292 automated tests.
+control and 352 automated tests.
 
 ---
 
@@ -322,6 +322,10 @@ cd app && flutter test      # 184 เคส — domain / controller / widget
 - **จัดการพนักงาน** เพิ่มบัญชี เปลี่ยนบทบาท ปิดการใช้งาน
 - **ตั้งค่าร้าน** ชื่อร้าน, VAT, Service Charge, โหมดราคารวม VAT
 - **ตั้งค่าเครื่องพิมพ์ใบเสร็จ** IP/พอร์ต/ขนาดกระดาษของเครื่องนี้ พร้อมปุ่มทดสอบพิมพ์
+- **โปรโมชัน/ส่วนลดแบบมีเงื่อนไข** สร้าง/แก้ไข/ปิดใช้งานโปรโมชันได้ 3 แบบ (ลดเปอร์เซ็นต์, ลดจำนวนเงิน,
+  ซื้อ 1 แถม 1) ตั้งเงื่อนไขได้ทั้งวัน/ช่วงเวลา, หมวดหมู่/เมนูที่ร่วมรายการ, ยอดขั้นต่ำ และวันที่เริ่ม-สิ้นสุด
+  แคมเปญ — ระบบ apply ให้อัตโนมัติเมื่อเข้าเงื่อนไข หรือลูกค้ากรอกโค้ดส่วนลดเองก็ได้ (สูงสุด 1 โปรโมชัน
+  ต่อบิล) แสดงชัดเจนแยกจากส่วนลดมือทั้งในบิล ใบเสร็จ และใบเสร็จที่พิมพ์จริง
 
 ### 🔐 ระบบ
 
@@ -613,11 +617,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 108 เคส
-cd app && flutter test      # 184 เคส
+cd backend && npm test      # 140 เคส
+cd app && flutter test      # 212 เคส
 ```
 
-**Backend (108 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (140 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -633,19 +637,27 @@ cd app && flutter test      # 184 เคส
 คอลัมน์ ไม่ใช่ string literal ทำให้ search พังทันทีที่มีเมนูที่ไม่มี `nameEn` — แก้เป็นเครื่องหมาย
 คำพูดเดี่ยวแล้ว)
 
+`promotion-engine.test.js` (16 เคส) เทสต์ตรรกะจับคู่โปรโมชันล้วน ๆ (percent/amount/bogo, เงื่อนไข
+วัน/เวลา/ยอดขั้นต่ำ/เมนู-หมวดหมู่, `findBestAutoPromotion`, `describeIneligibility`) และ
+`promotion-flow.test.js` (13 เคส) ไล่เส้นทางเต็มผ่าน HTTP: สร้างโปรโมชัน auto → apply ให้ออเดอร์เดิม
+อัตโนมัติ → ลบแล้วระบบใส่กลับให้เพราะยังเข้าเงื่อนไข → ปิดใช้งานแล้วหาย → กรอกโค้ดที่ถูกต้อง/ผิด →
+โค้ดที่ผูกไว้ไม่ถูกแทนที่ด้วย auto แม้ให้ส่วนลดน้อยกว่า → ลบโปรโมชันที่เคยใช้ไม่กระทบออเดอร์เก่า
+(snapshot ชื่อ/โค้ดไว้แล้ว)
+
 `order-move-merge-split.test.js` (7 เคสใหม่) ครอบคลุมฟีเจอร์ย้ายโต๊ะ/รวมบิล/แยกบิลรายการอาหาร:
 ย้ายโต๊ะสำเร็จ + ปฏิเสธถ้าโต๊ะปลายทางไม่ว่าง, รวมบิลสำเร็จ (ยอดรวมถูกต้อง ต้นทางถูกยกเลิกและ
 คืนโต๊ะ) + ปฏิเสธการรวมกับตัวเอง, พรีวิวยอดแยกบิลตามสัดส่วน, จ่ายทีละรายการจนครบปิดบิล,
 ปฏิเสธการเลือกรายการที่จ่ายไปแล้วซ้ำ
 
-**Flutter (184 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (212 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
-| Domain | `bill_calculator_test.dart` | กฎคิดเงินทุกกรณี รวมส่วนลดและโหมดรวม VAT |
+| Domain | `bill_calculator_test.dart` | กฎคิดเงินทุกกรณี รวมส่วนลด ส่วนลดโปรโมชัน (รวมกันได้แต่ไม่เกินยอดรวม) และโหมดรวม VAT |
+| Domain | `promotion_engine_test.dart` | พอร์ตเทสต์ตรรกะจับคู่โปรโมชันจาก backend มาที่ Dart (percent/amount/bogo, เงื่อนไขต่าง ๆ, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | การรวมรายการซ้ำในตะกร้า |
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
-| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 7 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก |
+| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 8 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list เต็มรูปแบบ |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม |
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
@@ -697,11 +709,13 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
   conflict ต่ำสุด) เก็บคิวไว้ในเครื่องแล้ว sync อัตโนมัติเมื่อเน็ตกลับมา — เปิดออเดอร์ใหม่/
   ชำระเงิน/เปิดปิดกะ ฯลฯ ยังต้องออนไลน์เสมอตามที่ตั้งใจ (ดูขอบเขตเต็มใน
   [`docs/DECISIONS.md`](docs/DECISIONS.md) #13)
+- [x] **โปรโมชัน/ส่วนลดแบบมีเงื่อนไข** (happy hour, โค้ดส่วนลด, ซื้อ 1 แถม 1) — ทำแล้ว: admin/manager
+  สร้าง/แก้ไข/ปิดใช้งานโปรโมชันได้ 3 แบบ ตั้งเงื่อนไขวัน/เวลา/เมนู-หมวดหมู่/ยอดขั้นต่ำ/วันที่แคมเปญ
+  apply อัตโนมัติเมื่อเข้าเงื่อนไขหรือรับโค้ดส่วนลดจากลูกค้า (สูงสุด 1 โปรโมชันต่อบิล รวมกับส่วนลดมือ
+  ได้แต่ไม่เกินยอดรวม) แสดงแยกชัดเจนในบิล/ใบเสร็จ/ใบเสร็จพิมพ์จริง (ดูหัวข้อ ✨ ฟีเจอร์)
 - [ ] **สต๊อกวัตถุดิบ** ตัดสต๊อกอัตโนมัติเมื่อขาย
 - [ ] **เทสต์ integration ฝั่ง Flutter** ด้วย `integration_test` ยิงกับ backend จริง
 - [ ] **ใบกำกับภาษี / e-Tax invoice** — ตามกฎหมายไทย ถ้าจะขายเป็นสินค้าจริงจัง
-- [ ] **โปรโมชัน/ส่วนลดแบบมีเงื่อนไข** (happy hour, โค้ดส่วนลด, ซื้อ 1 แถม 1) — ตอนนี้มีแค่
-  ส่วนลดกดเองหน้างาน ไม่มีระบบตั้งเงื่อนไขล่วงหน้า
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 

@@ -9,6 +9,7 @@ import {
   updateItemStatusSchema,
   updateOrderSchema,
   discountSchema,
+  redeemPromotionSchema,
   cancelOrderSchema,
   moveTableSchema,
   mergeOrderSchema,
@@ -78,6 +79,23 @@ router.post(
   authorize('admin', 'manager', 'cashier'),
   validate({ params: idParamSchema, body: discountSchema }),
   orderController.applyDiscount,
+);
+router.post(
+  '/:id/promotion/redeem',
+  authorize('admin', 'manager', 'cashier', 'waiter'),
+  validate({ params: idParamSchema, body: redeemPromotionSchema }),
+  orderController.redeemPromotion,
+);
+router.delete(
+  '/:id/promotion',
+  authorize('admin', 'manager', 'cashier', 'waiter'),
+  validate({ params: idParamSchema }),
+  orderController.removePromotion,
+);
+router.get(
+  '/:id/eligible-promotions',
+  validate({ params: idParamSchema }),
+  orderController.eligiblePromotions,
 );
 router.post(
   '/:id/cancel',

@@ -82,8 +82,19 @@ export const orderRepository = {
       .get(tableId);
   },
 
+  /** category_id มาจาก menu_items ปัจจุบัน (ไม่ใช่ snapshot) — ใช้ตอนจับคู่เงื่อนไขโปรโมชันตามหมวดหมู่ */
   findItems(orderId) {
-    return getDb().prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id').all(orderId);
+    return getDb()
+      .prepare(
+        `
+        SELECT oi.*, m.category_id AS category_id
+          FROM order_items oi
+          LEFT JOIN menu_items m ON m.id = oi.menu_item_id
+         WHERE oi.order_id = ?
+         ORDER BY oi.id
+      `,
+      )
+      .all(orderId);
   },
 
   findItemsByStatuses(statuses) {
@@ -176,14 +187,18 @@ export const orderRepository = {
       .prepare(
         `
         UPDATE orders
-           SET subtotal        = ?,
-               discount_type   = ?,
-               discount_value  = ?,
-               discount_amount = ?,
-               service_charge  = ?,
-               vat             = ?,
-               total           = ?,
-               updated_at      = datetime('now')
+           SET subtotal                  = ?,
+               discount_type             = ?,
+               discount_value            = ?,
+               discount_amount           = ?,
+               promotion_id              = ?,
+               promotion_name_snapshot   = ?,
+               promotion_code_snapshot   = ?,
+               promotion_discount_amount = ?,
+               service_charge            = ?,
+               vat                       = ?,
+               total                     = ?,
+               updated_at                = datetime('now')
          WHERE id = ?
       `,
       )
@@ -192,6 +207,10 @@ export const orderRepository = {
         totals.discountType,
         totals.discountValue,
         totals.discountAmount,
+        totals.promotionId ?? null,
+        totals.promotionName ?? null,
+        totals.promotionCode ?? null,
+        totals.promotionDiscountAmount ?? 0,
         totals.serviceCharge,
         totals.vat,
         totals.total,

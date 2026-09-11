@@ -9,6 +9,7 @@ import 'translations/menu_translations.dart';
 import 'translations/order_translations.dart';
 import 'translations/payment_translations.dart';
 import 'translations/printing_translations.dart';
+import 'translations/promotion_translations.dart';
 import 'translations/report_translations.dart';
 import 'translations/settings_translations.dart';
 import 'translations/shift_translations.dart';
@@ -40,6 +41,7 @@ class AppTranslations extends Translations {
       ...orderTranslationsTh,
       ...paymentTranslationsTh,
       ...printingTranslationsTh,
+      ...promotionTranslationsTh,
       ...reportTranslationsTh,
       ...settingsTranslationsTh,
       ...shiftTranslationsTh,
@@ -56,6 +58,7 @@ class AppTranslations extends Translations {
       ...orderTranslationsEn,
       ...paymentTranslationsEn,
       ...printingTranslationsEn,
+      ...promotionTranslationsEn,
       ...reportTranslationsEn,
       ...settingsTranslationsEn,
       ...shiftTranslationsEn,
