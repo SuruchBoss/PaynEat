@@ -16,7 +16,7 @@
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
   <img alt="Tests" src="https://img.shields.io/badge/tests-383%20passing-2F9E44">
-  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
+  <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
 **TL;DR** — A full restaurant point-of-sale system built to demonstrate end-to-end product engineering:
@@ -24,6 +24,10 @@ a Flutter client (mobile / tablet / web from one codebase, structured with Clean
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
 control and 383 automated tests.
+
+> 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
+> welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
+> [LinkedIn](https://www.linkedin.com/in/suruchboss)
 
 ---
 
@@ -812,4 +816,11 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 ## 📄 License
 
-[MIT](LICENSE) — use it, modify it, or build on top of it freely
+[Apache License 2.0](LICENSE) — use it, modify it, or build on top of it freely. The only condition is that if
+you redistribute or build on it, you keep the [`NOTICE`](NOTICE) file, as required by the License (Section 4(d)).
+
+## 👤 Author
+
+Built and maintained by **[SuruchBoss](https://github.com/SuruchBoss)**
+([LinkedIn](https://www.linkedin.com/in/suruchboss)) — feel free to reach out to discuss the project,
+collaboration, or work opportunities.

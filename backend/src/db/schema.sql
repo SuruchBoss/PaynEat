@@ -1,5 +1,7 @@
 -- =============================================================
 -- PaynEat POS — Database schema (SQLite)
+-- Original project by SuruchBoss — https://github.com/SuruchBoss/PaynEat
+-- Licensed under Apache License 2.0 — see LICENSE and NOTICE at repo root
 -- หมายเหตุ: จำนวนเงินทุกคอลัมน์เก็บเป็น "สตางค์" (integer)
 --          เช่น 120.50 บาท = 12050 เพื่อเลี่ยงปัญหา floating point
 -- =============================================================
