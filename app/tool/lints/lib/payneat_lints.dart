@@ -8,6 +8,7 @@ class _PaynEatLints extends PluginBase {
   @override
   List<LintRule> getLintRules(CustomLintConfigs configs) => const [
     TextStyleNeedsFontFamily(),
+    UseAppClockNotDateTimeNow(),
   ];
 }
 
@@ -140,5 +141,80 @@ class TextStyleNeedsFontFamily extends DartLintRule {
       MethodInvocation() => invocation.methodName.name,
       _ => null,
     };
+  }
+}
+
+/// ดัก `DateTime.now()` / `DateTime.timestamp()` ที่เรียกตรง ๆ แทนที่จะผ่าน `AppClock`
+///
+/// ทำไมต้องมีกฎนี้ — ภาพหน้าจอในเอกสารถูกถ่ายด้วย golden test แล้วคอมมิตลง git
+/// ถ้าโค้ดที่ผลลัพธ์บนจอขึ้นกับเวลาปัจจุบันเรียก `DateTime.now()` ตรง ๆ ภาพที่ถ่าย
+/// ซ้ำจะได้ไฟล์ไม่เหมือนเดิมทุกครั้ง (เวลาบนการ์ดออเดอร์เลื่อนไปเรื่อย ๆ) กลายเป็น
+/// diff ปลอมที่แยกไม่ออกว่าอันไหนคือการเปลี่ยนแปลงจริงของ UI
+///
+/// เคยเกิดจริงแล้วสองชั้น: ครั้งแรกภาพ 4-6 ภาพดิ้นทุกรอบที่ถ่าย พอไล่แก้ในแอปจนหมด
+/// ก็ยังเหลือจอครัวดิ้นอยู่ เพราะตัวสคริปต์ถ่ายภาพเองยัง backdate ตั๋วด้วยนาฬิกาจริง
+/// ขณะที่ "ตอนนี้" ถูกตรึงไว้แล้ว ตั๋วทุกใบเลยขึ้น "11 ชม. 56 นาที" เหมือนกันหมด
+/// จนแถบเตือนของช้าสีแดงไม่มีความหมาย — บั๊กที่มองด้วยตาไม่เห็นว่าผิด
+///
+/// เขียนแบบที่ถูกต้อง:
+///
+/// ```dart
+/// final now = AppClock.now();
+/// ```
+///
+/// ถ้าจุดนั้นต้องใช้นาฬิกาจริงจริง ๆ (เช่นออก id ที่ต้องไม่ซ้ำ ซึ่งถ้าเวลาถูกตรึง
+/// จะได้ค่าเดียวกันหมด) ให้ปิดกฎเป็นบรรทัด ๆ ไปพร้อมเขียนเหตุผลกำกับ:
+///
+/// ```dart
+/// // ignore: use_app_clock_not_date_time_now
+/// id: '${DateTime.now().microsecondsSinceEpoch}',
+/// ```
+class UseAppClockNotDateTimeNow extends DartLintRule {
+  const UseAppClockNotDateTimeNow() : super(code: _code);
+
+  static const _code = LintCode(
+    name: 'use_app_clock_not_date_time_now',
+    problemMessage:
+        'เรียก DateTime.now() ตรง ๆ ทำให้ตรึงเวลาตอนถ่ายภาพหน้าจอ/เขียนเทสต์ไม่ได้ '
+        'ภาพที่ถ่ายซ้ำจะได้ไฟล์ไม่เหมือนเดิมทุกครั้ง กลายเป็น diff ปลอมใน git',
+    correctionMessage:
+        'ใช้ AppClock.now() แทน — ถ้าจำเป็นต้องใช้นาฬิกาจริง '
+        '(เช่นออก id ที่ต้องไม่ซ้ำ) ให้ใส่ // ignore: use_app_clock_not_date_time_now '
+        'พร้อมเหตุผลกำกับ',
+  );
+
+  /// ตัวสร้างของ DateTime ที่อ่านค่านาฬิกา ณ ตอนนั้น
+  /// `timestamp()` คือฝาแฝดแบบ UTC ของ `now()` จึงมีปัญหาเดียวกันเป๊ะ
+  static const _clockConstructors = {'now', 'timestamp'};
+
+  @override
+  void run(
+    CustomLintResolver resolver,
+    ErrorReporter reporter,
+    CustomLintContext context,
+  ) {
+    // ไฟล์ที่นิยาม AppClock เองต้องเรียกนาฬิกาจริง ไม่งั้นก็ไม่มีอะไรให้ห่อ
+    if (_isAppClockItself(resolver.path)) return;
+
+    // เทสต์สร้างเวลาสมมติจากนาฬิกาจริงได้ตามปกติ (เช่น "เมื่อ 20 นาทีที่แล้ว")
+    // ผลลัพธ์ไม่ได้ถูกคอมมิตเป็นไฟล์ภาพ จึงไม่มีปัญหา diff ปลอม
+    // กฎนี้เล็งไปที่โค้ดแอปกับสคริปต์ถ่ายภาพเป็นหลัก
+    if (_isTestFile(resolver.path)) return;
+
+    context.registry.addInstanceCreationExpression((node) {
+      final constructor = node.constructorName;
+      if (constructor.type.name2.lexeme != 'DateTime') return;
+      if (!_clockConstructors.contains(constructor.name?.name)) return;
+
+      reporter.atNode(node, _code);
+    });
+  }
+
+  static bool _isAppClockItself(String path) =>
+      path.replaceAll('\\', '/').endsWith('/lib/core/utils/app_clock.dart');
+
+  static bool _isTestFile(String path) {
+    final normalized = path.replaceAll('\\', '/');
+    return normalized.contains('/test/') || normalized.endsWith('_test.dart');
   }
 }

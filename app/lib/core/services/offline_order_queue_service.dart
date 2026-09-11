@@ -66,6 +66,7 @@ class OfflineOrderQueueService extends GetxService {
       PendingOrderItems(
         // id ต้องไม่ซ้ำ จึงใช้นาฬิกาจริงเสมอ — ถ้าใช้ AppClock ที่ตรึงเวลาไว้
         // ตอนถ่ายภาพ/เทสต์ ทุกรายการที่เข้าคิวจะได้ id เดียวกันหมด
+        // ignore: use_app_clock_not_date_time_now
         id: '${DateTime.now().microsecondsSinceEpoch}',
         orderId: orderId,
         orderLabel: orderLabel,

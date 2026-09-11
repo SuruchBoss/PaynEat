@@ -11,6 +11,7 @@ import '../../../menu/domain/usecases/menu_usecases.dart';
 import '../../domain/entities/promotion.dart';
 import '../../domain/usecases/promotion_usecases.dart';
 import '../controllers/promotions_controller.dart';
+import '../../../../core/utils/app_clock.dart';
 
 const List<String> _dayLabels = [
   'promotion_day_sun',
@@ -489,7 +490,7 @@ class _DatePickerField extends StatelessWidget {
       onTap: () async {
         final picked = await showDatePicker(
           context: context,
-          initialDate: value ?? DateTime.now(),
+          initialDate: value ?? AppClock.now(),
           firstDate: DateTime(2020),
           lastDate: DateTime(2100),
         );

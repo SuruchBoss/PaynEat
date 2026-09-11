@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../controllers/report_controller.dart';
 import '../widgets/stat_card.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// รายงานยอดขายย้อนหลัง เลือกช่วงเวลาได้
 class ReportsPage extends GetView<ReportController> {
@@ -271,7 +272,7 @@ class ReportsPage extends GetView<ReportController> {
     final picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
+      lastDate: AppClock.now(),
       initialDateRange: DateTimeRange(
         start: controller.from,
         end: controller.to,
