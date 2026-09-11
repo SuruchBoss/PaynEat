@@ -122,6 +122,36 @@ const MENU_OPTIONS = {
   น้ำมะนาวโซดา: ['sweet', 'ice'],
 };
 
+// วัตถุดิบตัวอย่าง (ดู docs/tickets/06-inventory-stock.md) — หน่วยอิสระที่ร้านตั้งเอง ไม่ใช่เงิน
+// "ปลาทับทิม" ตั้งใจให้ current_stock ต่ำกว่า low_stock_threshold ตั้งแต่ seed เพื่อให้เห็นตัวอย่าง
+// การแจ้งเตือนของใกล้หมดได้ทันทีโดยไม่ต้องสั่งอาหารก่อน
+// prettier-ignore
+const INGREDIENTS = [
+  { name: 'กุ้งสด', unit: 'กรัม', currentStock: 3000, lowStockThreshold: 500 },
+  { name: 'หมูสับ', unit: 'กรัม', currentStock: 4000, lowStockThreshold: 800 },
+  { name: 'ข้าวสวย', unit: 'จาน', currentStock: 100, lowStockThreshold: 20 },
+  { name: 'ไข่ไก่', unit: 'ฟอง', currentStock: 60, lowStockThreshold: 12 },
+  { name: 'เนื้อปู', unit: 'กรัม', currentStock: 500, lowStockThreshold: 300 },
+  { name: 'ปลาทับทิม', unit: 'ตัว', currentStock: 3, lowStockThreshold: 5 },
+];
+
+// เมนู → วัตถุดิบที่ใช้ + ปริมาณต่อ 1 ที่ (ผูกไว้แค่บางเมนูเป็นตัวอย่าง ไม่ใช่ทุกเมนู)
+const MENU_ITEM_INGREDIENTS = {
+  ข้าวผัดกุ้ง: [
+    { ingredient: 'กุ้งสด', qtyPerUnit: 80 },
+    { ingredient: 'ข้าวสวย', qtyPerUnit: 1 },
+  ],
+  ผัดกะเพราหมูสับ: [
+    { ingredient: 'หมูสับ', qtyPerUnit: 100 },
+    { ingredient: 'ข้าวสวย', qtyPerUnit: 1 },
+  ],
+  ปลาทับทิมนึ่งมะนาว: [{ ingredient: 'ปลาทับทิม', qtyPerUnit: 1 }],
+  ไข่เจียวปู: [
+    { ingredient: 'ไข่ไก่', qtyPerUnit: 2 },
+    { ingredient: 'เนื้อปู', qtyPerUnit: 50 },
+  ],
+};
+
 // prettier-ignore
 const TABLES = [
   ...Array.from({ length: 8 }, (_, i) => ({ name: `A${i + 1}`, zone: 'โซนในร้าน', seats: i < 4 ? 2 : 4 })),
@@ -176,6 +206,7 @@ export const seed = () => {
         INSERT INTO options (group_id, name, price_delta, is_default, sort_order) VALUES (?, ?, ?, ?, ?)
       `);
 
+      const menuItemIdByName = new Map();
       MENU.forEach((item, index) => {
         const result = insertMenu.run(
           categoryIdByName.get(item.cat),
@@ -188,6 +219,7 @@ export const seed = () => {
           index,
         );
         const menuItemId = result.lastInsertRowid;
+        menuItemIdByName.set(item.name, menuItemId);
 
         (MENU_OPTIONS[item.name] ?? []).forEach((templateKey, groupIndex) => {
           const template = OPTION_TEMPLATES[templateKey];
@@ -210,6 +242,40 @@ export const seed = () => {
           });
         });
       });
+
+      const ingredientCount = db.prepare('SELECT COUNT(*) AS c FROM ingredients').get().c;
+      if (ingredientCount === 0) {
+        const insertIngredient = db.prepare(`
+          INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const ingredient of INGREDIENTS) {
+          insertIngredient.run(
+            ingredient.name,
+            ingredient.unit,
+            ingredient.currentStock,
+            ingredient.lowStockThreshold,
+          );
+        }
+
+        const ingredientIdByName = new Map(
+          db
+            .prepare('SELECT id, name FROM ingredients')
+            .all()
+            .map((row) => [row.name, row.id]),
+        );
+        const insertLink = db.prepare(`
+          INSERT INTO menu_item_ingredients (menu_item_id, ingredient_id, qty_per_unit)
+          VALUES (?, ?, ?)
+        `);
+        for (const [menuItemName, links] of Object.entries(MENU_ITEM_INGREDIENTS)) {
+          const menuItemId = menuItemIdByName.get(menuItemName);
+          if (!menuItemId) continue;
+          for (const link of links) {
+            insertLink.run(menuItemId, ingredientIdByName.get(link.ingredient), link.qtyPerUnit);
+          }
+        }
+      }
     }
 
     const tableCount = db.prepare('SELECT COUNT(*) AS c FROM dining_tables').get().c;

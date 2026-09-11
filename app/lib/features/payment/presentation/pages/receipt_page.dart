@@ -174,6 +174,14 @@ class ReceiptPage extends GetView<ReceiptController> {
                         label: 'payment_discount_label'.tr,
                         value: '-${Formatters.money(order.discountAmount)}',
                       ),
+                    if (order.hasPromotion)
+                      _KeyValue(
+                        label: 'promotion_summary_label'.trParams({
+                          'name': order.promotionName ?? '',
+                        }),
+                        value:
+                            '-${Formatters.money(order.promotionDiscountAmount)}',
+                      ),
                     _KeyValue(
                       label: 'payment_service_charge_rate_label'.trParams({
                         'rate': (receipt.serviceChargeRate * 100)

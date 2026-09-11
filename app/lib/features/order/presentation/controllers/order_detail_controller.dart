@@ -7,6 +7,7 @@ import '../../../../core/network/socket_client.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/usecases/result.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../../promotion/domain/entities/promotion.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_item.dart';
 import '../../domain/usecases/order_usecases.dart';
@@ -23,6 +24,9 @@ class OrderDetailController extends GetxController {
     required CancelOrderUseCase cancelOrder,
     required MoveOrderTableUseCase moveOrderTable,
     required MergeOrdersUseCase mergeOrders,
+    required RedeemPromotionCodeUseCase redeemPromotionCode,
+    required RemovePromotionUseCase removePromotion,
+    required GetEligiblePromotionsUseCase getEligiblePromotions,
     required SessionService session,
   }) : _getOrder = getOrder,
        _sendToKitchen = sendToKitchen,
@@ -33,6 +37,9 @@ class OrderDetailController extends GetxController {
        _cancelOrder = cancelOrder,
        _moveOrderTable = moveOrderTable,
        _mergeOrders = mergeOrders,
+       _redeemPromotionCode = redeemPromotionCode,
+       _removePromotion = removePromotion,
+       _getEligiblePromotions = getEligiblePromotions,
        _session = session;
 
   final GetOrderUseCase _getOrder;
@@ -44,6 +51,9 @@ class OrderDetailController extends GetxController {
   final CancelOrderUseCase _cancelOrder;
   final MoveOrderTableUseCase _moveOrderTable;
   final MergeOrdersUseCase _mergeOrders;
+  final RedeemPromotionCodeUseCase _redeemPromotionCode;
+  final RemovePromotionUseCase _removePromotion;
+  final GetEligiblePromotionsUseCase _getEligiblePromotions;
   final SessionService _session;
 
   final Rxn<Order> order = Rxn<Order>();
@@ -191,6 +201,27 @@ class OrderDetailController extends GetxController {
       ),
       successMessage: 'order_move_table_success'.tr,
     );
+  }
+
+  Future<void> redeemPromotionCode(String code) async {
+    await _run(
+      () => _redeemPromotionCode(
+        RedeemPromotionCodeParams(orderId: orderId, code: code),
+      ),
+      successMessage: 'promotion_redeem_success'.tr,
+    );
+  }
+
+  Future<void> removePromotion() async {
+    await _run(
+      () => _removePromotion(orderId),
+      successMessage: 'promotion_removed_success'.tr,
+    );
+  }
+
+  Future<List<EligiblePromotion>> loadEligiblePromotions() async {
+    final result = await _getEligiblePromotions(orderId);
+    return result.dataOrNull ?? const [];
   }
 
   Future<void> mergeInto(int sourceOrderId) async {

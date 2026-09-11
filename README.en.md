@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-292%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-383%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 292 automated tests.
+control and 383 automated tests.
 
 ---
 
@@ -244,6 +244,8 @@ The login page has one-tap buttons for each account — no need to type anything
 9. **You land on the receipt page** → go back to the table map; table A1 has already turned green again
 10. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
     report, complete with the hourly chart and best sellers
+11. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
+    names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
 
 **Want to try the hidden business rules?**
 
@@ -254,14 +256,18 @@ The login page has one-tap buttons for each account — no need to type anything
   returns 403)
 - Log in as `admin` → **Menu Management** → toggle a menu item off, then go back to order taking — it shows
   "Sold Out" and can't be tapped
+- Log in as `admin` → **Ingredients/Stock** → adjust "ปลาทับทิม" → pick "Deduct" and enter 3 (its exact
+  starting stock) → go back to order taking and "Steamed Fish with Lime" now shows "Sold Out" **on its own**,
+  with nobody toggling it manually (automatic stock deduction — see `docs/DECISIONS.md` #15) — hit "Receive"
+  to restock it and it re-enables itself the same way
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 108 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 184 cases — domain / controller / widget
+cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 218 cases — domain / controller / widget
 ```
 
 ---
@@ -342,6 +348,16 @@ cd app && flutter test      # 184 cases — domain / controller / widget
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode
 - **Receipt printer settings** — this device's IP/port/paper size, with a test-print button
+- **Conditional promotions/discounts** — create/edit/disable 3 promotion types (percent off, amount off,
+  buy-one-get-one), with conditions for day/time window, eligible categories/menu items, minimum spend, and
+  campaign start/end dates — auto-applies when eligible or lets customers redeem a discount code (one promotion
+  per bill, max), shown clearly and separately from manual discounts on the bill, on-screen receipt, and printed
+  receipt
+- **Ingredients/stock** — link a menu item to the ingredients it uses and the quantity per order directly from
+  the menu edit form; stock is deducted automatically when an order is sent to the kitchen (and restored
+  automatically when an item is cancelled/removed); a menu item is auto-marked sold out when any linked
+  ingredient runs out, and auto-re-enabled once restocked, with a low-stock alert screen (see
+  `docs/DECISIONS.md` #15)
 
 ### 🔐 System
 
@@ -645,11 +661,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 108 cases
-cd app && flutter test      # 184 cases
+cd backend && npm test      # 165 cases
+cd app && flutter test      # 218 cases
 ```
 
-**Backend (108 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -671,14 +687,32 @@ menu item had no `nameEn` — fixed by switching to single quotes).
 order cancelled and its table freed) + rejection of merging an order with itself, proportional split-bill
 previews, paying item-by-item until the bill closes, and rejecting an item that's already been paid for.
 
-**Flutter (184 cases)** — split into 3 levels:
+`promotion-engine.test.js` (16 cases) tests the pure promotion-matching logic (percent/amount/bogo, day/time/
+minimum-spend/menu-category conditions, `findBestAutoPromotion`, `describeIneligibility`), and
+`promotion-flow.test.js` (13 cases) walks the full HTTP path: create an auto promotion → it auto-applies to an
+existing order → removing it brings it back because it's still eligible → disabling it clears it → redeem a
+valid/invalid code → a pinned code isn't replaced by an auto promotion even if the auto one would discount more
+→ deleting a promotion already used on an order doesn't affect that order (its name/code were already
+snapshotted).
+
+`ingredients.test.js` (9 cases) tests ingredient CRUD, RBAC (waiters can't create/edit), validation, adjusting
+stock and seeing `isLowStock` flip correctly, the `lowStockOnly` filter, and refusing to delete an ingredient
+still linked to a menu item. `inventory-flow.test.js` (13 steps) walks the full path: order items → no
+deduction yet → send to kitchen deducts stock (repeat calls don't double-deduct) → adding items to an
+already-sent order deducts immediately → stock hits zero and the menu item auto-disables → ordering the
+disabled item elsewhere gets a 409 → cancelling the item restores stock and re-enables the menu automatically
+→ a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
+the whole order all restore stock correctly.
+
+**Flutter (218 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
-| Domain | `bill_calculator_test.dart` | Every billing rule, including discounts and VAT-inclusive mode |
+| Domain | `bill_calculator_test.dart` | Every billing rule, including manual discounts, promotion discounts (additive but capped at the subtotal), and VAT-inclusive mode |
+| Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 7 files, still works correctly across domains |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 11 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow and the full stock-deduction / auto sold-out flow |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -731,11 +765,17 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   lowest-conflict-risk action); items are queued on-device and synced automatically once the connection is
   back — opening a new order, taking payment, opening/closing a shift, etc. still always require being
   online, by design (full scope in [`docs/DECISIONS.md`](docs/DECISIONS.md) #13)
-- [ ] **Ingredient stock tracking** — auto-deduct stock on sale
+- [x] **Conditional promotions/discounts** (happy hour, discount codes, buy-one-get-one) — done: admin/manager
+  can create/edit/disable 3 promotion types with conditions for day/time, eligible categories/menu items,
+  minimum spend, and campaign dates; auto-applies when eligible or accepts a customer-entered discount code
+  (one promotion per bill, additive with a manual discount but capped at the subtotal), shown clearly across
+  the bill/receipt/printed receipt (see the ✨ Features section)
+- [x] **Ingredient stock tracking** — done: link a menu item to the ingredients it uses and the quantity per
+  order from the menu edit form; stock auto-deducts when sent to kitchen (auto-restored on cancel/removal); a
+  menu item auto-disables/re-enables based on ingredient stock, with a low-stock alert screen (see the ✨
+  Features section and `docs/DECISIONS.md` #15)
 - [ ] **Flutter integration tests** with `integration_test` against a real backend
 - [ ] **Tax invoice / e-Tax invoice** — required under Thai law for serious commercial use
-- [ ] **Conditional promotions/discounts** (happy hour, discount codes, buy-one-get-one) — right now
-  discounts are only applied manually per bill; there's no system for setting up rules in advance
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

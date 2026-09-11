@@ -111,6 +111,17 @@ class ReceiptTicketBuilder {
         ),
       );
     }
+    if (order.hasPromotion) {
+      bytes.addAll(
+        _line(
+          generator,
+          'promotion_summary_label'.trParams({
+            'name': order.promotionName ?? '',
+          }),
+          '-${Formatters.money(order.promotionDiscountAmount)}',
+        ),
+      );
+    }
     bytes.addAll(
       _line(
         generator,

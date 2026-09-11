@@ -1,31 +1,37 @@
 import { percentOf } from '../../core/money.js';
 
+/** ยอดรวมอาหารของรายการที่ยังไม่ถูกยกเลิก — ใช้ทั้งใน calculateBill และตอนประเมินโปรโมชัน */
+export const sumActiveSubtotal = (items) =>
+  items
+    .filter((item) => item.status !== 'cancelled')
+    .reduce((acc, item) => acc + Number(item.line_total ?? item.lineTotal ?? 0), 0);
+
 /**
  * คำนวณยอดบิล — ฟังก์ชันบริสุทธิ์ (pure) เพื่อให้เทสต์ได้ง่ายและใช้ซ้ำได้ทั้ง preview/บันทึกจริง
  * ทุกค่าเป็น "สตางค์" (integer)
  *
  * ลำดับการคำนวณตามธรรมเนียมร้านอาหารไทย:
  *   1) ยอดรวมอาหาร (subtotal)
- *   2) หักส่วนลด
+ *   2) หักส่วนลด (ส่วนลดมือ + ส่วนลดจากโปรโมชัน รวมกันแต่ไม่เกิน subtotal)
  *   3) บวก Service Charge จากยอดหลังหักส่วนลด
  *   4) บวก VAT จาก (ยอดหลังหักส่วนลด + Service Charge)
  *
  * ถ้า vatIncluded = true จะถือว่าราคาที่ตั้งไว้รวม VAT แล้ว
  * ระบบจะแยกส่วน VAT ออกมาแสดงเท่านั้น ไม่บวกเพิ่ม
+ *
+ * promotionDiscountAmount ถูกประเมินไว้ล่วงหน้าโดย promotion.engine.js (แยกจากไฟล์นี้
+ * เพราะการจับคู่เงื่อนไขโปรโมชันไม่ใช่ตรรกะคิดเงิน) ฟังก์ชันนี้แค่นำมารวมกับส่วนลดมือ
  */
 export const calculateBill = ({
   items = [],
   discountType = 'none',
   discountValue = 0,
+  promotionDiscountAmount = 0,
   vatRate = 0.07,
   serviceChargeRate = 0.1,
   vatIncluded = false,
 }) => {
-  const activeItems = items.filter((item) => item.status !== 'cancelled');
-  const subtotal = activeItems.reduce(
-    (acc, item) => acc + Number(item.line_total ?? item.lineTotal ?? 0),
-    0,
-  );
+  const subtotal = sumActiveSubtotal(items);
 
   let discountAmount = 0;
   if (discountType === 'amount') {
@@ -35,7 +41,14 @@ export const calculateBill = ({
     discountAmount = Math.min(Math.round((subtotal * percent) / 10000), subtotal);
   }
 
-  const afterDiscount = subtotal - discountAmount;
+  // ส่วนลดโปรโมชันรวมกับส่วนลดมือได้ แต่รวมกันแล้วต้องไม่เกิน subtotal
+  const remainingAfterManualDiscount = Math.max(subtotal - discountAmount, 0);
+  const promotionAmount = Math.min(
+    Math.max(Number(promotionDiscountAmount) || 0, 0),
+    remainingAfterManualDiscount,
+  );
+
+  const afterDiscount = subtotal - discountAmount - promotionAmount;
   const serviceCharge = percentOf(afterDiscount, serviceChargeRate);
 
   let vat;
@@ -55,6 +68,7 @@ export const calculateBill = ({
     discountType,
     discountValue: Number(discountValue) || 0,
     discountAmount,
+    promotionDiscountAmount: promotionAmount,
     serviceCharge,
     vat,
     total,
@@ -74,6 +88,7 @@ export const calculateItemsShare = ({
   selectedIds = [],
   discountType = 'none',
   discountValue = 0,
+  promotionDiscountAmount = 0,
   vatRate = 0.07,
   serviceChargeRate = 0.1,
   vatIncluded = false,
@@ -86,6 +101,7 @@ export const calculateItemsShare = ({
     items: active,
     discountType,
     discountValue,
+    promotionDiscountAmount,
     vatRate,
     serviceChargeRate,
     vatIncluded,
@@ -97,7 +113,9 @@ export const calculateItemsShare = ({
   );
   const share = full.subtotal > 0 ? selectedSubtotal / full.subtotal : 0;
 
-  const discountAmount = Math.round(full.discountAmount * share);
+  // ส่วนแบ่งนี้รวมส่วนลดมือ + โปรโมชันไว้ในตัวเลขเดียว (discountAmount) เพราะฝั่งแยกบิล
+  // สนใจแค่ "ยอดที่คนนี้ต้องจ่าย" ไม่ต้องแยกที่มาของส่วนลดเหมือนใบเสร็จเต็มบิล
+  const discountAmount = Math.round((full.discountAmount + full.promotionDiscountAmount) * share);
   const serviceCharge = Math.round(full.serviceCharge * share);
   const vat = Math.round(full.vat * share);
   const total = selectedSubtotal - discountAmount + serviceCharge + vat;

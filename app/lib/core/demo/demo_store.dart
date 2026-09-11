@@ -3,15 +3,18 @@ import 'dart:math';
 import 'package:get/get.dart';
 
 import '../../features/order/domain/services/bill_calculator.dart';
+import '../../features/order/domain/services/promotion_engine.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 import 'demo_seed.dart';
 
 part 'demo_store_auth.dart';
 part 'demo_store_menu.dart';
+part 'demo_store_ingredients.dart';
 part 'demo_store_tables.dart';
 part 'demo_store_orders.dart';
 part 'demo_store_payments.dart';
+part 'demo_store_promotions.dart';
 part 'demo_store_refunds.dart';
 part 'demo_store_shifts.dart';
 part 'demo_store_reports.dart';
@@ -43,6 +46,7 @@ class DemoStore {
   late List<Map<String, dynamic>> users;
   late List<Map<String, dynamic>> categories;
   late List<Map<String, dynamic>> menuItems;
+  late List<Map<String, dynamic>> ingredients;
   late List<Map<String, dynamic>> tables;
   late Map<String, dynamic> settings;
 
@@ -50,6 +54,7 @@ class DemoStore {
   final List<Map<String, dynamic>> payments = [];
   final List<Map<String, dynamic>> refunds = [];
   final List<Map<String, dynamic>> shifts = [];
+  final List<Map<String, dynamic>> promotions = [];
 
   /// ผู้ใช้แคชเชียร์ที่ seed ไว้ให้ — ใช้เปิดกะแรกอัตโนมัติเหมือนวันแรกที่ร้านเปิดใช้ระบบ
   static const int _defaultCashierId = 6;
@@ -67,12 +72,14 @@ class DemoStore {
     users = DemoSeed.users();
     categories = DemoSeed.categories();
     menuItems = DemoSeed.menuItems();
+    ingredients = DemoSeed.ingredients();
     tables = DemoSeed.tables();
     settings = DemoSeed.settings();
     orders.clear();
     payments.clear();
     refunds.clear();
     shifts.clear();
+    promotions.clear();
     _orderSequence = 0;
     _idSequence = 1000;
     _seedHistoricalSales();

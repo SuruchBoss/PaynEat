@@ -17,6 +17,7 @@ import '../widgets/bill_summary.dart';
 import '../widgets/discount_dialog.dart';
 import '../widgets/order_item_tile.dart';
 import '../widgets/order_picker_dialog.dart';
+import '../widgets/promotion_code_dialog.dart';
 import '../widgets/table_picker_dialog.dart';
 
 /// หน้ารายละเอียดออเดอร์ — ดูรายการ เดินสถานะ ให้ส่วนลด และไปหน้าชำระเงิน
@@ -44,6 +45,15 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                     child: ListTile(
                       leading: const Icon(Icons.percent_rounded),
                       title: Text('order_menu_discount'.tr),
+                      dense: true,
+                    ),
+                  ),
+                if (order.isActive)
+                  PopupMenuItem(
+                    value: 'promotion',
+                    child: ListTile(
+                      leading: const Icon(Icons.local_offer_outlined),
+                      title: Text('promotion_dialog_title'.tr),
                       dense: true,
                     ),
                   ),
@@ -161,6 +171,8 @@ class OrderDetailPage extends GetView<OrderDetailController> {
             value: result.value,
           );
         }
+      case 'promotion':
+        await _openPromotionDialog(order);
       case 'receipt':
         await controller.openReceipt();
       case 'moveTable':
@@ -198,6 +210,20 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     final sourceOrderId = await OrderPickerDialog.show(orders);
     if (sourceOrderId != null) {
       await controller.mergeInto(sourceOrderId);
+    }
+  }
+
+  Future<void> _openPromotionDialog(Order order) async {
+    final eligible = await controller.loadEligiblePromotions();
+    final result = await PromotionCodeDialog.show(
+      eligible: eligible,
+      currentPromotionCode: order.promotionCode,
+    );
+    if (result == null) return;
+    if (result.isRemove) {
+      await controller.removePromotion();
+    } else if (result.code != null) {
+      await controller.redeemPromotionCode(result.code!);
     }
   }
 

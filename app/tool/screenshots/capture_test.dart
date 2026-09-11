@@ -235,10 +235,25 @@ void main() {
   // เว็บ — ผู้ดูแลระบบ
   // ---------------------------------------------------------------------
   group('เว็บผู้ดูแลระบบ', () {
-    Future<void> openAdminTab(WidgetTester tester, int index) async {
+    /// เปิดเมนูแอดมินด้วย "ชื่อ label" ไม่ใช่เลข index — index ของทุกหน้าขยับ
+    /// ทุกครั้งที่มีการเพิ่มเมนูใหม่ใน `HomeBinding.destinationsForRole` แล้ว
+    /// ภาพที่ได้ก็จะเป็นคนละหน้าโดยไม่มีอะไรฟ้อง (เคยพลาดมาแล้ว 2 รอบ
+    /// ตอนเพิ่มหน้า "กะ" และตอนเพิ่ม "วัตถุดิบ/โปรโมชัน")
+    Future<void> openAdminTab(WidgetTester tester, String label) async {
       await ScreenshotHarness.launchApp(tester, ScreenshotHarness.desktop);
       await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
-      Get.find<HomeController>().changeTab(index);
+      final controller = Get.find<HomeController>();
+      final index = controller.destinations.indexWhere(
+        (destination) => destination.label == label,
+      );
+      expect(
+        index,
+        isNonNegative,
+        reason:
+            'ไม่พบเมนู "$label" ในเมนูของแอดมิน — '
+            'ดู HomeBinding.destinationsForRole ว่า label เปลี่ยนไปหรือเปล่า',
+      );
+      controller.changeTab(index);
       await ScreenshotHarness.settle(tester);
     }
 
@@ -248,47 +263,44 @@ void main() {
     });
 
     testWidgets('18 แดชบอร์ด', (tester) async {
-      await openAdminTab(tester, 0);
+      await openAdminTab(tester, 'home_nav_dashboard');
       await ScreenshotHarness.capture(tester, 'web-18-dashboard');
     });
 
     testWidgets('19 ผังโต๊ะ', (tester) async {
-      await openAdminTab(tester, 1);
+      await openAdminTab(tester, 'home_nav_tables');
       await ScreenshotHarness.capture(tester, 'web-19-tables');
     });
 
     testWidgets('20 รายการออเดอร์', (tester) async {
-      await openAdminTab(tester, 2);
+      await openAdminTab(tester, 'home_nav_orders');
       await ScreenshotHarness.capture(tester, 'web-20-orders');
     });
 
     testWidgets('21 จัดการเมนู', (tester) async {
-      await openAdminTab(tester, 4);
+      await openAdminTab(tester, 'home_nav_menu');
       await ScreenshotHarness.capture(tester, 'web-21-menu-management');
     });
 
     testWidgets('22 ฟอร์มเพิ่ม/แก้ไขเมนู', (tester) async {
-      await openAdminTab(tester, 4);
+      await openAdminTab(tester, 'home_nav_menu');
       await tester.tap(find.byIcon(Icons.edit_outlined).first);
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'web-22-menu-form');
     });
 
     testWidgets('23 จัดการพนักงาน', (tester) async {
-      await openAdminTab(tester, 5);
+      await openAdminTab(tester, 'home_nav_staff');
       await ScreenshotHarness.capture(tester, 'web-23-staff');
     });
 
     testWidgets('24 รายงานยอดขาย', (tester) async {
-      await openAdminTab(tester, 6);
+      await openAdminTab(tester, 'home_nav_reports');
       await ScreenshotHarness.capture(tester, 'web-24-reports');
     });
 
-    // ลำดับเมนูของแอดมิน: ภาพรวม(0) ผังโต๊ะ(1) ออเดอร์(2) ครัว(3) จัดการเมนู(4)
-    // พนักงาน(5) รายงาน(6) กะ(7) ตั้งค่า(8) — ดู home_binding.dart
-    // (เดิมใช้ index 7 ซึ่งตอนนี้กลายเป็นหน้า "กะ" ไปแล้วหลังเพิ่มฟีเจอร์เปิด-ปิดกะ)
     testWidgets('25 ตั้งค่าร้าน', (tester) async {
-      await openAdminTab(tester, 8);
+      await openAdminTab(tester, 'home_nav_settings');
       await ScreenshotHarness.capture(tester, 'web-25-settings');
     });
   });

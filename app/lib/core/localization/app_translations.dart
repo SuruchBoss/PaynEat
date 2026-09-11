@@ -4,11 +4,13 @@ import 'package:get/get.dart';
 import 'translations/auth_translations.dart';
 import 'translations/common_translations.dart';
 import 'translations/home_translations.dart';
+import 'translations/ingredient_translations.dart';
 import 'translations/kitchen_translations.dart';
 import 'translations/menu_translations.dart';
 import 'translations/order_translations.dart';
 import 'translations/payment_translations.dart';
 import 'translations/printing_translations.dart';
+import 'translations/promotion_translations.dart';
 import 'translations/report_translations.dart';
 import 'translations/settings_translations.dart';
 import 'translations/shift_translations.dart';
@@ -35,11 +37,13 @@ class AppTranslations extends Translations {
       ...statusTranslationsTh,
       ...authTranslationsTh,
       ...homeTranslationsTh,
+      ...ingredientTranslationsTh,
       ...kitchenTranslationsTh,
       ...menuTranslationsTh,
       ...orderTranslationsTh,
       ...paymentTranslationsTh,
       ...printingTranslationsTh,
+      ...promotionTranslationsTh,
       ...reportTranslationsTh,
       ...settingsTranslationsTh,
       ...shiftTranslationsTh,
@@ -51,11 +55,13 @@ class AppTranslations extends Translations {
       ...statusTranslationsEn,
       ...authTranslationsEn,
       ...homeTranslationsEn,
+      ...ingredientTranslationsEn,
       ...kitchenTranslationsEn,
       ...menuTranslationsEn,
       ...orderTranslationsEn,
       ...paymentTranslationsEn,
       ...printingTranslationsEn,
+      ...promotionTranslationsEn,
       ...reportTranslationsEn,
       ...settingsTranslationsEn,
       ...shiftTranslationsEn,

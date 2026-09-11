@@ -21,6 +21,12 @@ class ApiEndpoints {
   static String menuItem(int id) => '/menu-items/$id';
   static String menuAvailability(int id) => '/menu-items/$id/availability';
 
+  // Ingredients
+  static const String ingredients = '/ingredients';
+  static String ingredient(int id) => '/ingredients/$id';
+  static String ingredientAdjustStock(int id) =>
+      '/ingredients/$id/adjust-stock';
+
   // Tables
   static const String tables = '/tables';
   static const String tableZones = '/tables/zones';
@@ -42,6 +48,14 @@ class ApiEndpoints {
   static String cancelOrder(int id) => '/orders/$id/cancel';
   static String moveOrderTable(int id) => '/orders/$id/move-table';
   static String mergeOrder(int id) => '/orders/$id/merge';
+  static String orderPromotionRedeem(int id) => '/orders/$id/promotion/redeem';
+  static String orderPromotion(int id) => '/orders/$id/promotion';
+  static String orderEligiblePromotions(int id) =>
+      '/orders/$id/eligible-promotions';
+
+  // Promotions
+  static const String promotions = '/promotions';
+  static String promotion(int id) => '/promotions/$id';
 
   // Payments
   static const String payments = '/payments';

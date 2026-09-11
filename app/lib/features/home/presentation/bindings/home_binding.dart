@@ -6,6 +6,9 @@ import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/presentation/pages/profile_page.dart';
+import '../../../ingredient/domain/usecases/ingredient_usecases.dart';
+import '../../../ingredient/presentation/controllers/ingredients_controller.dart';
+import '../../../ingredient/presentation/pages/ingredients_page.dart';
 import '../../../kitchen/presentation/controllers/kitchen_controller.dart';
 import '../../../kitchen/presentation/pages/kitchen_page.dart';
 import '../../../menu/domain/usecases/menu_usecases.dart';
@@ -14,6 +17,9 @@ import '../../../menu/presentation/pages/menu_management_page.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../../order/presentation/controllers/order_list_controller.dart';
 import '../../../order/presentation/pages/orders_page.dart';
+import '../../../promotion/domain/usecases/promotion_usecases.dart';
+import '../../../promotion/presentation/controllers/promotions_controller.dart';
+import '../../../promotion/presentation/pages/promotions_page.dart';
 import '../../../report/domain/usecases/report_usecases.dart';
 import '../../../report/presentation/controllers/dashboard_controller.dart';
 import '../../../report/presentation/controllers/report_controller.dart';
@@ -102,6 +108,24 @@ class HomeBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
+      () => PromotionsController(
+        getPromotions: Get.find<GetPromotionsUseCase>(),
+        savePromotion: Get.find<SavePromotionUseCase>(),
+        setPromotionActive: Get.find<SetPromotionActiveUseCase>(),
+        deletePromotion: Get.find<DeletePromotionUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => IngredientsController(
+        getIngredients: Get.find<GetIngredientsUseCase>(),
+        saveIngredient: Get.find<SaveIngredientUseCase>(),
+        adjustStock: Get.find<AdjustStockUseCase>(),
+        deleteIngredient: Get.find<DeleteIngredientUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
       () => StaffController(
         getStaff: Get.find<GetStaffUseCase>(),
         createStaff: Get.find<CreateStaffUseCase>(),
@@ -162,6 +186,18 @@ class HomeBinding extends Bindings {
       selectedIcon: Icons.restaurant_menu_rounded,
       page: MenuManagementPage(),
     );
+    const promotions = HomeDestination(
+      label: 'home_nav_promotions',
+      icon: Icons.local_offer_outlined,
+      selectedIcon: Icons.local_offer_rounded,
+      page: PromotionsPage(),
+    );
+    const ingredients = HomeDestination(
+      label: 'home_nav_ingredients',
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2_rounded,
+      page: IngredientsPage(),
+    );
     const staff = HomeDestination(
       label: 'home_nav_staff',
       icon: Icons.people_outline_rounded,
@@ -200,6 +236,8 @@ class HomeBinding extends Bindings {
         orders,
         kitchen,
         menu,
+        ingredients,
+        promotions,
         staff,
         reports,
         shift,
