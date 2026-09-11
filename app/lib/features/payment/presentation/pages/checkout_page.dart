@@ -248,18 +248,22 @@ class _PaymentForm extends GetView<CheckoutController> {
                         _iconFor(method),
                         size: 16,
                         color: selected
-                            ? Colors.white
+                            ? AppColors.onColor(
+                                AppColors.fillOf(AppColors.primary),
+                              )
                             : AppColors.textSecondary,
                       ),
                       label: Text(PaymentMethod.label(method)),
                       selected: selected,
                       showCheckmark: false,
                       onSelected: (_) => controller.selectMethod(method),
-                      selectedColor: AppColors.brandInk,
+                      selectedColor: AppColors.fillOf(AppColors.primary),
                       backgroundColor: AppColors.surfaceAlt,
                       labelStyle: TextStyle(
                         color: selected
-                            ? Colors.white
+                            ? AppColors.onColor(
+                                AppColors.fillOf(AppColors.primary),
+                              )
                             : AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -376,7 +380,10 @@ class _PaymentForm extends GetView<CheckoutController> {
           Obx(
             () => FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.successInk,
+                backgroundColor: AppColors.fillOf(AppColors.success),
+                foregroundColor: AppColors.onColor(
+                  AppColors.fillOf(AppColors.success),
+                ),
                 minimumSize: const Size(0, 52),
               ),
               onPressed: controller.canPay && !controller.isPaying.value

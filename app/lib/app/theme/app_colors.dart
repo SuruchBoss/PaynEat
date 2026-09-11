@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
@@ -111,6 +113,41 @@ class AppColors {
       ? const Color(0xFF104A80) // 8.02:1
       : const Color(0xFF1764AC); // 5.42:1
 
+  /// สีพื้นของ "ปุ่ม/ชิปที่ถูกเลือก" ตามโหมดที่ใช้อยู่
+  ///
+  /// โหมดปกติใช้สีสดเต็มที่ เพราะจอครัวกับผังโต๊ะอาศัยความสดของสีในการกวาดสายตา
+  /// หาของที่ต้องทำจากระยะไกล ส่วนโหมดคอนทราสต์สูงเปลี่ยนเป็นเฉดเข้มเพื่อดัน
+  /// คอนทราสต์กับป้ายให้ถึง AAA ซึ่งสีสดทำไม่ได้ทุกตัว (เขียวได้แค่ 4.91:1)
+  static Color fillOf(Color base) => isHighContrast ? inkOf(base) : base;
+
+  /// สีตัวหนังสือ/ไอคอนที่อ่านออกบนพื้นสีที่ให้มา
+  ///
+  /// เลือก "เข้ม" หรือ "ขาว" ตามตัวที่คอนทราสต์ดีกว่า แทนที่จะฮาร์ดโค้ดสีขาวไว้
+  /// ทุกที่ — สีขาวบนเหลืองอำพันได้แค่ 2.13:1 แต่ตัวหนังสือสีเข้มบนสีเดียวกัน
+  /// ได้ถึง 7.93:1 ขณะที่สีน้ำเงินกับม่วงกลับกลายเป็นสีขาวที่อ่านง่ายกว่า
+  /// เกณฑ์จึงต้องคำนวณจากสีจริง ไม่ใช่จำว่าสีไหนใช้อะไร
+  static Color onColor(Color background) =>
+      _contrastWith(textPrimary, background) >=
+          _contrastWith(surface, background)
+      ? textPrimary
+      : surface;
+
+  /// อัตราส่วนคอนทราสต์ตามสูตร WCAG 2.1
+  static double _contrastWith(Color a, Color b) {
+    final la = _relativeLuminance(a);
+    final lb = _relativeLuminance(b);
+    return ((la > lb ? la : lb) + 0.05) / ((la < lb ? la : lb) + 0.05);
+  }
+
+  static double _relativeLuminance(Color color) {
+    double channel(double value) => value <= 0.03928
+        ? value / 12.92
+        : math.pow((value + 0.055) / 1.055, 2.4) as double;
+    return 0.2126 * channel(color.r) +
+        0.7152 * channel(color.g) +
+        0.0722 * channel(color.b);
+  }
+
   /// แปลงสีพื้นให้เป็นเฉด "หมึก" ที่อ่านออกบนพื้นสว่าง
   ///
   /// มีไว้ให้ widget กลางอย่าง [StatusChip] ที่รับสีมาจากผู้เรียกแล้วเอาไปวาดเป็นตัวหนังสือ
@@ -123,6 +160,10 @@ class AppColors {
     secondary => secondaryInk,
     danger => dangerInk,
     purple => purpleInk,
+    // เดิมไม่มีบรรทัดนี้เพราะ infoInk เคยเท่ากับ info เป๊ะ ๆ (เขียนไปก็ไม่มีผล)
+    // พอ infoInk แยกเป็นเฉดของตัวเองแล้ว การลืมบรรทัดนี้ทำให้ inkOf(info)
+    // คืนสีเดิมกลับไปเงียบ ๆ — ชิป/ปุ่มสีน้ำเงินจึงไม่เข้มขึ้นตามโหมดคอนทราสต์สูงเลย
+    info => infoInk,
     _ => color,
   };
 

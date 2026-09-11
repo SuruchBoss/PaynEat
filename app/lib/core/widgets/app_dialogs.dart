@@ -46,10 +46,13 @@ class AppDialogs {
       title ?? 'common_success_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.successInk,
-      colorText: Colors.white,
+      backgroundColor: AppColors.fillOf(AppColors.success),
+      colorText: AppColors.onColor(AppColors.fillOf(AppColors.success)),
       margin: const EdgeInsets.all(12),
-      icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
+      icon: Icon(
+        Icons.check_circle_rounded,
+        color: AppColors.onColor(AppColors.fillOf(AppColors.success)),
+      ),
       duration: const Duration(seconds: 2),
     );
   }
@@ -59,10 +62,13 @@ class AppDialogs {
       title ?? 'common_error_title'.tr,
       message,
       snackPosition: SnackPosition.TOP,
-      backgroundColor: AppColors.danger,
-      colorText: Colors.white,
+      backgroundColor: AppColors.fillOf(AppColors.danger),
+      colorText: AppColors.onColor(AppColors.fillOf(AppColors.danger)),
       margin: const EdgeInsets.all(12),
-      icon: const Icon(Icons.error_rounded, color: Colors.white),
+      icon: Icon(
+        Icons.error_rounded,
+        color: AppColors.onColor(AppColors.fillOf(AppColors.danger)),
+      ),
       duration: const Duration(seconds: 3),
     );
   }

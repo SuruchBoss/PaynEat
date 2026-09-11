@@ -430,7 +430,10 @@ class _BillCard extends GetView<OrderDetailController> {
             if (controller.canCollectPayment)
               FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.successInk,
+                  backgroundColor: AppColors.fillOf(AppColors.success),
+                  foregroundColor: AppColors.onColor(
+                    AppColors.fillOf(AppColors.success),
+                  ),
                 ),
                 onPressed: controller.goToCheckout,
                 icon: const Icon(Icons.point_of_sale_rounded, size: 18),

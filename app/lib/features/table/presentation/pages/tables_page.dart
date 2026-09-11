@@ -314,10 +314,12 @@ class _FilterChipItem extends StatelessWidget {
         selected: selected,
         onSelected: (_) => onTap(),
         showCheckmark: false,
-        selectedColor: AppColors.brandInk,
+        selectedColor: AppColors.fillOf(AppColors.primary),
         backgroundColor: AppColors.surfaceAlt,
         labelStyle: TextStyle(
-          color: selected ? Colors.white : AppColors.textSecondary,
+          color: selected
+              ? AppColors.onColor(AppColors.fillOf(AppColors.primary))
+              : AppColors.textSecondary,
           fontWeight: FontWeight.w600,
           fontSize: 13,
         ),

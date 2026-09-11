@@ -183,6 +183,65 @@ void main() {
       }
     });
 
+    test('onColor ต้องให้ป้ายที่อ่านออก (4.5:1) บนทุกสีที่เอาไปเป็นพื้น', () {
+      for (final mode in AppContrast.values) {
+        AppColors.contrast = mode;
+        final fills = <String, Color>{
+          'primary': AppColors.primary,
+          'secondary': AppColors.secondary,
+          'success': AppColors.success,
+          'warning': AppColors.warning,
+          'danger': AppColors.danger,
+          'info': AppColors.info,
+          'purple': AppColors.purple,
+          'textSecondary': AppColors.textSecondary,
+        };
+        fills.forEach((name, base) {
+          final fill = AppColors.fillOf(base);
+          expect(
+            _contrast(AppColors.onColor(fill), fill),
+            greaterThanOrEqualTo(4.5),
+            reason: 'ป้ายบนพื้น $name อ่านไม่ออกในโหมด $mode',
+          );
+        });
+      }
+    });
+
+    test('onColor เลือกป้ายเข้มบนสีสว่าง และป้ายขาวบนสีทึบ', () {
+      AppColors.contrast = AppContrast.standard;
+      // เหลืองอำพันสว่างมาก ป้ายสีขาวได้แค่ 2.13:1 ต้องเลือกป้ายเข้ม
+      expect(AppColors.onColor(AppColors.warning), AppColors.textPrimary);
+      // ม่วงทึบ ป้ายเข้มได้แค่ 3.05:1 ต้องเลือกป้ายขาว
+      expect(AppColors.onColor(AppColors.purple), AppColors.surface);
+    });
+
+    test('fillOf คงสีสดในโหมดปกติ และเปลี่ยนเป็นเฉดเข้มในโหมดคอนทราสต์สูง', () {
+      AppColors.contrast = AppContrast.standard;
+      expect(AppColors.fillOf(AppColors.warning), AppColors.warning);
+
+      AppColors.contrast = AppContrast.high;
+      expect(AppColors.fillOf(AppColors.warning), AppColors.warningInk);
+      expect(AppColors.fillOf(AppColors.warning), isNot(AppColors.warning));
+    });
+
+    test('โหมดคอนทราสต์สูง — คู่พื้น/ป้ายของปุ่มต้องถึง AAA (7:1)', () {
+      AppColors.contrast = AppContrast.high;
+      for (final base in [
+        AppColors.primary,
+        AppColors.success,
+        AppColors.warning,
+        AppColors.danger,
+        AppColors.info,
+        AppColors.purple,
+      ]) {
+        final fill = AppColors.fillOf(base);
+        expect(
+          _contrast(AppColors.onColor(fill), fill),
+          greaterThanOrEqualTo(7.0),
+        );
+      }
+    });
+
     test('inkOf คืนเฉดของโหมดที่ใช้อยู่ ไม่ค้างเป็นของโหมดแรกที่เรียก', () {
       AppColors.contrast = AppContrast.standard;
       final standard = AppColors.inkOf(AppColors.primary);

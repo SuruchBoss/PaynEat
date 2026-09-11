@@ -206,12 +206,14 @@ class _RoleChip extends StatelessWidget {
       selected: selected,
       showCheckmark: false,
       onSelected: (_) => onTap(),
-      // ใช้เฉดเข้ม (ink) เป็นพื้นชิปที่ถูกเลือก ไม่ใช่สีสดของบทบาท
-      // เพราะตัวหนังสือสีขาวบนสีสดคอนทราสต์ไม่ถึงเกณฑ์ (สีครัว 2.13:1)
-      selectedColor: AppColors.inkOf(color),
+      // คงพื้นสีสดของบทบาทไว้ แล้วให้ onColor เลือกสีป้ายเอง — สีครัว (เหลือง)
+      // ได้ป้ายสีเข้ม 7.93:1 ส่วนสีแอดมิน (ม่วง) ได้ป้ายสีขาว 5.55:1
+      selectedColor: AppColors.fillOf(color),
       backgroundColor: AppColors.surfaceAlt,
       labelStyle: TextStyle(
-        color: selected ? Colors.white : AppColors.textSecondary,
+        color: selected
+            ? AppColors.onColor(AppColors.fillOf(color))
+            : AppColors.textSecondary,
         fontWeight: FontWeight.w600,
         fontSize: 13,
       ),
