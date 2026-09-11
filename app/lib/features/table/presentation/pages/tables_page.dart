@@ -207,16 +207,18 @@ class _TableSummaryBar extends StatelessWidget {
           children: [
             Row(
               children: [
+                // ดึงสีจาก tableStatus() จุดเดียวกับที่การ์ดโต๊ะใช้ ไม่ระบุสีตรง ๆ ซ้ำอีกที่
+                // ไม่งั้นแถบสรุปด้านบนจะเพี้ยนจากผังโต๊ะด้านล่างทันทีที่สีสถานะถูกแก้
                 _CounterPill(
                   label: 'table_available_count_label'.tr,
                   value: '${controller.availableCount}',
-                  color: AppColors.success,
+                  color: AppColors.tableStatus(TableStatus.available),
                 ),
                 const SizedBox(width: 10),
                 _CounterPill(
                   label: 'table_occupied_count_label'.tr,
                   value: '${controller.occupiedCount}',
-                  color: AppColors.primary,
+                  color: AppColors.tableStatus(TableStatus.occupied),
                 ),
                 const Spacer(),
                 IconButton(
