@@ -45,7 +45,7 @@ class ReportsPage extends GetView<ReportController> {
                             onSelected: (_) => entry.key == ReportRange.custom
                                 ? _pickCustomRange(context)
                                 : controller.selectRange(entry.key),
-                            selectedColor: AppColors.primary,
+                            selectedColor: AppColors.brandInk,
                             backgroundColor: AppColors.surfaceAlt,
                             labelStyle: TextStyle(
                               color: selected

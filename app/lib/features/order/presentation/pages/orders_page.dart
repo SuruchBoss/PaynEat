@@ -39,7 +39,7 @@ class OrdersPage extends GetView<OrderListController> {
                     selected: selected,
                     showCheckmark: false,
                     onSelected: (_) => controller.setFilter(filter.value),
-                    selectedColor: AppColors.primary,
+                    selectedColor: AppColors.brandInk,
                     backgroundColor: AppColors.surfaceAlt,
                     labelStyle: TextStyle(
                       color: selected ? Colors.white : AppColors.textSecondary,

@@ -145,6 +145,21 @@ class CheckoutController extends GetxController {
     return (target / 100).ceil() * 100;
   }
 
+  /// ปุ่ม "ปัดขึ้นหลักร้อย" ที่ควรโชว์จริง — null เมื่อยอดลงตัวหลักร้อยอยู่แล้ว
+  /// (ปัดขึ้นแล้วได้เท่าเดิม จึงไม่มีอะไรให้เสนอ)
+  double? get roundUpShortcut {
+    final suggestion = roundedUpSuggestion;
+    return suggestion > remaining ? suggestion : null;
+  }
+
+  /// ปุ่มธนบัตรที่ควรโชว์ — ต้องมากกว่ายอดที่จ่ายรอบนี้ และต้องไม่ซ้ำกับปุ่มปัดขึ้นหลักร้อย
+  ///
+  /// ยอด 476.69 ทำให้ปัดขึ้นหลักร้อยได้ 500 พอดี ซึ่งไปซ้ำกับปุ่มธนบัตร 500
+  /// แคชเชียร์จะเห็นปุ่ม "500" สองปุ่มติดกันที่ทำงานเหมือนกันเป๊ะ
+  List<double> get cashShortcuts => quickCashOptions
+      .where((value) => value > amount.value && value != roundUpShortcut)
+      .toList(growable: false);
+
   Future<void> submit() async {
     if (!canPay) return;
 

@@ -226,6 +226,49 @@ void main() {
     });
 
     test(
+      'ยอดที่ปัดขึ้นแล้วตรงกับปุ่มธนบัตรพอดี → ตัดปุ่มธนบัตรที่ซ้ำออก',
+      () async {
+        // 476.69 ปัดขึ้นหลักร้อยได้ 500 ซึ่งไปซ้ำกับปุ่มธนบัตร 500
+        // ถ้าไม่กรอง แคชเชียร์จะเห็นปุ่ม "500" สองปุ่มติดกันที่ทำงานเหมือนกันเป๊ะ
+        orderRepository.nextOrderResult = Result.success(_order(total: 476.69));
+        paymentRepository.nextSummaryResult = Result.success(
+          _summary(total: 476.69, paid: 0),
+        );
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.roundUpShortcut, 500);
+        expect(controller.cashShortcuts, [1000]);
+      },
+    );
+
+    test('ยอดที่ปัดขึ้นแล้วไม่ซ้ำ → ปุ่มธนบัตรยังอยู่ครบ', () async {
+      orderRepository.nextOrderResult = Result.success(_order(total: 176.55));
+      paymentRepository.nextSummaryResult = Result.success(
+        _summary(total: 176.55, paid: 0),
+      );
+      controller.onInit();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.roundUpShortcut, 200);
+      expect(controller.cashShortcuts, [500, 1000]);
+    });
+
+    test('ยอดลงตัวหลักร้อยอยู่แล้ว → ไม่เสนอปุ่มปัดขึ้น', () async {
+      orderRepository.nextOrderResult = Result.success(_order(total: 500));
+      paymentRepository.nextSummaryResult = Result.success(
+        _summary(total: 500, paid: 0),
+      );
+      controller.onInit();
+      await Future<void>.delayed(Duration.zero);
+
+      // ปัดขึ้นแล้วได้ 500 เท่าเดิม จึงไม่มีอะไรให้เสนอ
+      expect(controller.roundUpShortcut, isNull);
+      // ปุ่มธนบัตรต้องมากกว่ายอดจริง ๆ 500 จึงไม่เข้าเงื่อนไข
+      expect(controller.cashShortcuts, [1000]);
+    });
+
+    test(
       'submit เมื่อ canPay เป็นเท็จ → คืนทันทีโดยไม่เรียก pay use case',
       () async {
         controller.onInit();

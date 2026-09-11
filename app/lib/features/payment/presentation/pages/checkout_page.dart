@@ -255,7 +255,7 @@ class _PaymentForm extends GetView<CheckoutController> {
                       selected: selected,
                       showCheckmark: false,
                       onSelected: (_) => controller.selectMethod(method),
-                      selectedColor: AppColors.primary,
+                      selectedColor: AppColors.brandInk,
                       backgroundColor: AppColors.surfaceAlt,
                       labelStyle: TextStyle(
                         color: selected
@@ -316,27 +316,21 @@ class _PaymentForm extends GetView<CheckoutController> {
                             onPressed: () =>
                                 controller.setReceived(controller.amount.value),
                           ),
-                          if (controller.roundedUpSuggestion >
-                              controller.remaining)
+                          if (controller.roundUpShortcut != null)
                             ActionChip(
                               label: Text(
-                                Formatters.compact(
-                                  controller.roundedUpSuggestion,
-                                ),
+                                Formatters.compact(controller.roundUpShortcut!),
                               ),
                               onPressed: () => controller.setReceived(
-                                controller.roundedUpSuggestion,
+                                controller.roundUpShortcut!,
                               ),
                             ),
-                          ...CheckoutController.quickCashOptions
-                              .where((value) => value > controller.amount.value)
-                              .map(
-                                (value) => ActionChip(
-                                  label: Text(Formatters.compact(value)),
-                                  onPressed: () =>
-                                      controller.setReceived(value),
-                                ),
-                              ),
+                          ...controller.cashShortcuts.map(
+                            (value) => ActionChip(
+                              label: Text(Formatters.compact(value)),
+                              onPressed: () => controller.setReceived(value),
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 14),

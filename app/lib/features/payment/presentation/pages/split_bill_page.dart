@@ -215,7 +215,7 @@ class _PaymentForm extends GetView<SplitBillController> {
                       selected: selected,
                       showCheckmark: false,
                       onSelected: (_) => controller.selectMethod(method),
-                      selectedColor: AppColors.primary,
+                      selectedColor: AppColors.brandInk,
                       backgroundColor: AppColors.surfaceAlt,
                       labelStyle: TextStyle(
                         color: selected
