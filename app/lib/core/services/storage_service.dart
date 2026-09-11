@@ -98,4 +98,9 @@ class StorageService {
 
   Future<void> saveLocale(String languageCode) =>
       _write(StorageKeys.locale, languageCode);
+
+  String? get contrast => _read(StorageKeys.contrast);
+
+  Future<void> saveContrast(String value) =>
+      _write(StorageKeys.contrast, value);
 }

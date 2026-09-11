@@ -134,7 +134,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
                             widget.item.description!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
                               color: AppColors.textSecondary,
                             ),
@@ -170,7 +170,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                       if (group.isRequired)
                         Text(
                           'order_option_required'.tr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             color: AppColors.dangerInk,
                           ),
@@ -180,7 +180,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                           'order_option_max_select'.trParams({
                             'count': '${group.maxSelect}',
                           }),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             color: AppColors.textSecondary,
                           ),
@@ -317,7 +317,7 @@ class _OptionChip extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   '+${Formatters.money(priceDelta)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

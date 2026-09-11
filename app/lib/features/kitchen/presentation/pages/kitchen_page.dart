@@ -192,7 +192,7 @@ class _KitchenHeader extends GetView<KitchenController> {
                 'kitchen_queue_count'.trParams({
                   'count': controller.queue.length.toString(),
                 }),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
                   color: AppColors.brandInk,
@@ -223,7 +223,7 @@ class _KitchenHeader extends GetView<KitchenController> {
                       'kitchen_late_count'.trParams({
                         'count': controller.lateCount.toString(),
                       }),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.dangerInk,
@@ -320,7 +320,7 @@ class _TicketList extends GetView<KitchenController> {
       return Center(
         child: Text(
           emptyMessage,
-          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+          style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
       );
     }

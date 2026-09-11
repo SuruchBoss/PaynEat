@@ -55,7 +55,7 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
                 const Expanded(child: _MenuSection()),
                 Container(
                   width: 380,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     color: AppColors.surface,
                     border: Border(left: BorderSide(color: AppColors.border)),
                   ),

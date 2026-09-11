@@ -80,17 +80,17 @@ class _NavigationRailSection extends GetView<HomeController> {
             // เมนูที่เลือกอยู่เดิมเป็นพื้นสีส้มจาง ๆ ซึ่งแทบแยกไม่ออกจากพื้นขาว
             // ใส่ทั้งพื้น indicator และสีไอคอน/ตัวอักษรให้ชัดขึ้น
             indicatorColor: AppColors.primarySoft,
-            selectedIconTheme: const IconThemeData(color: AppColors.brandInk),
+            selectedIconTheme: IconThemeData(color: AppColors.brandInk),
             // NavigationRail ใช้ TextStyle สองตัวนี้ "แทนที่" สไตล์เดิมทั้งก้อน ไม่ได้ merge
             // จึงต้องระบุ fontFamily เองด้วย ไม่งั้นฟอนต์หลุดไปใช้ค่า default ของแพลตฟอร์ม
             // แล้วอักษรไทยจะกลายเป็นกล่องสี่เหลี่ยม (บั๊กเดียวกับที่เคยเจอในปุ่มเดินสถานะ)
-            selectedLabelTextStyle: const TextStyle(
+            selectedLabelTextStyle: TextStyle(
               fontFamily: AppTheme.fontFamily,
               color: AppColors.brandInk,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
-            unselectedLabelTextStyle: const TextStyle(
+            unselectedLabelTextStyle: TextStyle(
               fontFamily: AppTheme.fontFamily,
               color: AppColors.textSecondary,
               fontSize: 13,
@@ -180,7 +180,7 @@ class _AppDrawer extends GetView<HomeController> {
                   ),
                   Text(
                     controller.user?.roleLabel ?? '',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -260,7 +260,7 @@ class _OfflineQueueBadge extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Text(
                   'home_offline_queue_sheet_subtitle'.tr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,
                   ),
@@ -407,7 +407,7 @@ class _UserChip extends GetView<HomeController> {
             ),
             title: Text(
               'home_logout_menu_item'.tr,
-              style: const TextStyle(color: AppColors.dangerInk),
+              style: TextStyle(color: AppColors.dangerInk),
             ),
           ),
         ),
@@ -417,7 +417,7 @@ class _UserChip extends GetView<HomeController> {
         backgroundColor: AppColors.primarySoft,
         child: Text(
           user.initials,
-          style: const TextStyle(
+          style: TextStyle(
             color: AppColors.brandInk,
             fontWeight: FontWeight.w800,
             fontSize: 13,

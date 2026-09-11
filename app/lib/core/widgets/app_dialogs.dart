@@ -25,7 +25,7 @@ class AppDialogs {
             onPressed: () => Get.back(result: false),
             child: Text(
               cancelLabel,
-              style: const TextStyle(color: AppColors.textSecondary),
+              style: TextStyle(color: AppColors.textSecondary),
             ),
           ),
           FilledButton(

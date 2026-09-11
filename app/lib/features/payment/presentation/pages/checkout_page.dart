@@ -50,7 +50,7 @@ class CheckoutPage extends GetView<CheckoutController> {
                   const Spacer(),
                   Text(
                     order.code,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textSecondary,
                     ),
@@ -173,7 +173,7 @@ class _PaidHistory extends GetView<CheckoutController> {
                 const SizedBox(width: 8),
                 Text(
                   payment.methodLabel,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textSecondary,
                   ),
@@ -208,7 +208,7 @@ class _PaidHistory extends GetView<CheckoutController> {
               const Spacer(),
               Text(
                 Formatters.baht(summary.remaining),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
                   color: AppColors.warningInk,

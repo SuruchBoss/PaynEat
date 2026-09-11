@@ -156,7 +156,7 @@ class _OrderTile extends StatelessWidget {
                         'count': order.totalQuantity.toString(),
                         'time': Formatters.time(order.createdAt),
                       }),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -172,10 +172,7 @@ class _OrderTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textDisabled,
-              ),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textDisabled),
             ],
           ),
         ),

@@ -7,6 +7,7 @@ import '../../../../core/localization/locale_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../controllers/auth_controller.dart';
+import '../../../../core/services/contrast_service.dart';
 
 /// โปรไฟล์ผู้ใช้ปัจจุบัน + สถานะการเชื่อมต่อเรียลไทม์ + ปุ่มออกจากระบบ
 class ProfilePage extends GetView<AuthController> {
@@ -33,7 +34,7 @@ class ProfilePage extends GetView<AuthController> {
                     backgroundColor: AppColors.primarySoft,
                     child: Text(
                       user.initials,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
                         color: AppColors.brandInk,
@@ -60,7 +61,7 @@ class ProfilePage extends GetView<AuthController> {
                     ),
                     child: Text(
                       user.roleLabel,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.brandInk,
@@ -70,7 +71,7 @@ class ProfilePage extends GetView<AuthController> {
                   const SizedBox(height: 6),
                   Text(
                     '@${user.username}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppColors.textSecondary,
                     ),
@@ -115,7 +116,7 @@ class ProfilePage extends GetView<AuthController> {
                   const SizedBox(height: 8),
                   Text(
                     AppConfig.baseUrl,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),
@@ -131,6 +132,13 @@ class ProfilePage extends GetView<AuthController> {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
             child: const _LanguageCard(),
+          ),
+          const SizedBox(height: 12),
+          // โหมดคอนทราสต์สูงต้องอยู่ที่นี่ด้วยเหตุผลเดียวกับตัวสลับภาษา — คนที่ต้องใช้
+          // จริงคือพนักงานครัวกับพนักงานเสิร์ฟ ซึ่งเข้าหน้าตั้งค่าของแอดมินไม่ได้
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: const _ContrastCard(),
           ),
           const SizedBox(height: 12),
           ConstrainedBox(
@@ -188,6 +196,51 @@ class _LanguageCardState extends State<_LanguageCard> {
                     ? const Locale('en', 'US')
                     : const Locale('th', 'TH'),
               );
+              if (mounted) setState(() {});
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// การ์ดเลือกระดับคอนทราสต์ — สำหรับจอที่ต้องอ่านกลางแดดหรือในครัว
+class _ContrastCard extends StatefulWidget {
+  const _ContrastCard();
+
+  @override
+  State<_ContrastCard> createState() => _ContrastCardState();
+}
+
+class _ContrastCardState extends State<_ContrastCard> {
+  @override
+  Widget build(BuildContext context) {
+    final isHigh = ContrastService.isHigh;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionHeader(
+            title: 'settings_contrast_title'.tr,
+            subtitle: 'settings_contrast_subtitle'.tr,
+          ),
+          const SizedBox(height: 12),
+          SegmentedButton<bool>(
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text('settings_contrast_standard'.tr),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('settings_contrast_high'.tr),
+              ),
+            ],
+            selected: {isHigh},
+            onSelectionChanged: (selection) async {
+              await ContrastService.change(selection.first);
               if (mounted) setState(() {});
             },
           ),

@@ -113,14 +113,14 @@ class _DiscountDialogState extends State<DiscountDialog> {
             ),
             child: Text(
               'order_discount_remove_button'.tr,
-              style: const TextStyle(color: AppColors.dangerInk),
+              style: TextStyle(color: AppColors.dangerInk),
             ),
           ),
         TextButton(
           onPressed: () => Get.back<void>(),
           child: Text(
             'common_close'.tr,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
         FilledButton(

@@ -334,10 +334,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13.5, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Flexible(

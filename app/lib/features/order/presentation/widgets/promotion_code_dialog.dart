@@ -66,7 +66,7 @@ class _PromotionCodeDialogState extends State<PromotionCodeDialog> {
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 child: Text(
                   'promotion_dialog_none_available'.tr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),

@@ -48,6 +48,11 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_language_subtitle': 'เปลี่ยนภาษาที่แสดงในแอปทันที',
   'settings_language_th': 'ไทย',
   'settings_language_en': 'English',
+  'settings_contrast_title': 'ความคมชัดของหน้าจอ',
+  'settings_contrast_subtitle':
+      'เลือก "สูง" ถ้าจอโดนแดด อยู่ในครัว หรือมองเห็นตัวหนังสือไม่ชัด',
+  'settings_contrast_standard': 'ปกติ',
+  'settings_contrast_high': 'สูง',
 };
 
 const Map<String, String> settingsTranslationsEn = {
@@ -100,4 +105,9 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_language_subtitle': 'Changes the app language immediately',
   'settings_language_th': 'ไทย',
   'settings_language_en': 'English',
+  'settings_contrast_title': 'Screen contrast',
+  'settings_contrast_subtitle':
+      'Pick "High" for screens in sunlight or in the kitchen, or if text is hard to read',
+  'settings_contrast_standard': 'Standard',
+  'settings_contrast_high': 'High',
 };

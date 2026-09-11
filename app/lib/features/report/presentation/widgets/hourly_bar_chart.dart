@@ -89,7 +89,7 @@ class HourlyBarChart extends StatelessWidget {
                                   if (total > 0)
                                     Text(
                                       Formatters.compact(total),
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 8.5,
                                         color: AppColors.textSecondary,
                                       ),
@@ -139,7 +139,7 @@ class HourlyBarChart extends StatelessWidget {
                     child: Text(
                       hour % 3 == 0 ? '$hour' : '',
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 9.5,
                         color: AppColors.textSecondary,
                       ),

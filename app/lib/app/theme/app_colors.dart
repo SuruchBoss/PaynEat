@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../core/constants/app_constants.dart';
 
+/// ระดับคอนทราสต์ของแอป
+///
+/// [high] ไม่ใช่ "ธีมที่สอง" แต่เป็นพาเลตต์เดิมที่เข้มขึ้น — โครงสีและความหมายของทุกสี
+/// เหมือนเดิมเป๊ะ (ส้ม = แบรนด์, เหลือง = มีลูกค้า, แดง = อันตราย) เปลี่ยนแค่ความเข้ม
+/// ของตัวหนังสือ/ขอบ/หมึก ให้ยังอ่านออกกลางแดดจ้าและบนจอครัวที่มีไอน้ำกับรอยนิ้วมือ
+enum AppContrast { standard, high }
+
 /// พาเลตต์สีของแอป — คุมโทน "ร้านอาหาร" ให้อบอุ่นแต่ยังอ่านง่ายบนจอสว่างจ้าในร้าน
 class AppColors {
   const AppColors._();
+
+  /// ระดับคอนทราสต์ที่ใช้อยู่ — ตั้งผ่าน [ContrastService] เท่านั้น
+  ///
+  /// เป็น static เพราะทั้งแอปเรียก `AppColors.x` ตรง ๆ 396 จุดใน 43 ไฟล์
+  /// การส่งผ่าน BuildContext ทุกจุดจะเป็นการรื้อที่ไม่คุ้มกับสิ่งที่ได้
+  static AppContrast contrast = AppContrast.standard;
+
+  static bool get isHighContrast => contrast == AppContrast.high;
 
   static const Color primary = Color(0xFFFF6B2C);
   static const Color primaryDark = Color(0xFFE2551A);
@@ -15,15 +30,26 @@ class AppColors {
 
   static const Color background = Color(0xFFF6F7F9);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceAlt = Color(0xFFF0F2F5);
+  static Color get surfaceAlt =>
+      isHighContrast ? const Color(0xFFE2E6EA) : const Color(0xFFF0F2F5);
 
-  static const Color textPrimary = Color(0xFF1A1D21);
-  static const Color textSecondary = Color(0xFF6B7280);
+  static Color get textPrimary =>
+      isHighContrast ? const Color(0xFF000000) : const Color(0xFF1A1D21);
+  static Color get textSecondary =>
+      isHighContrast ? const Color(0xFF2B3238) : const Color(0xFF6B7280);
 
   /// สงวนไว้ให้ "ปุ่ม/ช่องกรอกที่ถูกปิดใช้งาน" และ placeholder เท่านั้น
-  /// คอนทราสต์แค่ 2.5:1 จึงห้ามใช้กับข้อความที่ผู้ใช้ต้องอ่านจริง (ใช้ textSecondary แทน)
-  static const Color textDisabled = Color(0xFF9CA3AF);
-  static const Color border = Color(0xFFE5E7EB);
+  /// โหมดปกติคอนทราสต์แค่ 2.54:1 จึงห้ามใช้กับข้อความที่ผู้ใช้ต้องอ่านจริง
+  /// (ใช้ textSecondary แทน) — โหมดคอนทราสต์สูงดันขึ้นเป็น 6.70:1 เพื่อให้ placeholder
+  /// ยังอ่านออกกลางแดด แต่ยังดูจางกว่าข้อความปกติอย่างชัดเจน
+  static Color get textDisabled =>
+      isHighContrast ? const Color(0xFF545D66) : const Color(0xFF9CA3AF);
+
+  /// โหมดปกติขอบจางมาก (1.24:1) ตั้งใจให้การ์ดดูลอย ๆ ไม่รก
+  /// โหมดคอนทราสต์สูงดันเป็น 4.10:1 ให้ผ่านเกณฑ์องค์ประกอบที่ไม่ใช่ตัวหนังสือ (3:1)
+  /// เพราะกลางแดดจ้าขอบจาง ๆ หายไปเลย จนแยกไม่ออกว่าการ์ดไหนจบตรงไหน
+  static Color get border =>
+      isHighContrast ? const Color(0xFF767E89) : const Color(0xFFE5E7EB);
 
   static const Color success = Color(0xFF2F9E44);
   static const Color warning = Color(0xFFF59F00);
@@ -39,13 +65,35 @@ class AppColors {
   //
   // สำคัญกับแอปนี้เป็นพิเศษ เพราะถูกใช้ในครัวที่มีไอน้ำ กลางแดดริมหน้าต่าง
   // และบนจอที่มีรอยนิ้วมือ — สภาพพวกนี้กินคอนทราสต์ไปอีกชั้นหนึ่ง
-  static const Color brandInk = Color(0xFFC2410C); // 5.18:1 — ราคา / ยอดเงิน
-  static const Color warningInk = Color(0xFFB45309); // 5.02:1
-  static const Color successInk = Color(0xFF247532); // 5.73:1
-  static const Color secondaryInk = Color(0xFF0B7A5A); // 5.32:1 — เงินทอน
-  static const Color dangerInk = Color(0xFFC92A2A); // 5.46:1
-  static const Color purpleInk = Color(0xFF5B34D1); // 7.35:1
-  static const Color infoInk = info; // 5.02:1 อยู่แล้ว ไม่ต้องเข้มเพิ่ม
+  // ตัวเลขท้ายบรรทัดคือคอนทราสต์บนพื้นขาว — โหมดปกติ / โหมดคอนทราสต์สูง
+  // โหมดคอนทราสต์สูงดันทุกตัวให้ถึง AAA (7:1) ไม่ใช่แค่ AA (4.5:1)
+  static Color get brandInk => isHighContrast
+      ? const Color(0xFF9A3412) // 7.31:1
+      : const Color(0xFFC2410C); // 5.18:1 — ราคา / ยอดเงิน
+
+  static Color get warningInk => isHighContrast
+      ? const Color(0xFF8A4008) // 7.45:1
+      : const Color(0xFFB45309); // 5.02:1
+
+  static Color get successInk => isHighContrast
+      ? const Color(0xFF1A5A26) // 8.29:1
+      : const Color(0xFF247532); // 5.73:1
+
+  static Color get secondaryInk => isHighContrast
+      ? const Color(0xFF075E46) // 7.78:1
+      : const Color(0xFF0B7A5A); // 5.32:1 — เงินทอน
+
+  static Color get dangerInk => isHighContrast
+      ? const Color(0xFFA31D1D) // 7.63:1
+      : const Color(0xFFC92A2A); // 5.46:1
+
+  static Color get purpleInk => isHighContrast
+      ? const Color(0xFF4526A8) // 10.02:1
+      : const Color(0xFF5B34D1); // 7.35:1
+
+  static Color get infoInk => isHighContrast
+      ? const Color(0xFF12548F) // 7.81:1
+      : info; // 5.02:1 อยู่แล้ว ไม่ต้องเข้มเพิ่ม
 
   /// แปลงสีพื้นให้เป็นเฉด "หมึก" ที่อ่านออกบนพื้นสว่าง
   ///

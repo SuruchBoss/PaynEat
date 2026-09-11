@@ -127,7 +127,7 @@ class _PromotionRow extends GetView<PromotionsController> {
                       ? promotion.typeLabel
                       : '${promotion.typeLabel} · ${Formatters.money(promotion.value)}'
                             '${promotion.type == 'percent' ? '%' : ''}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

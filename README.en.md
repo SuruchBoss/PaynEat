@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-390%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-398%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 390 automated tests.
+control and 398 automated tests.
 
 ---
 
@@ -267,7 +267,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 225 cases — domain / controller / widget
+cd app && flutter test      # 233 cases — domain / controller / widget
 ```
 
 ---
@@ -370,6 +370,11 @@ cd app && flutter test      # 225 cases — domain / controller / widget
 - **Pending-sync badge** — if the connection drops while adding items to an order, an AppBar badge shows how
   many items are queued; they're sent automatically once the connection is back, with no extra tap required
   (see the detailed scope in `docs/DECISIONS.md` #13)
+- **High-contrast mode**, toggled from the **Profile** page so every role can reach it — for screens
+  in direct sunlight, kitchen screens fogged by steam, and fingerprint-covered tablets. Every text
+  token moves from AA (4.5:1) to AAA (7:1) and card borders from 1.24:1 to 4.10:1. The hues and
+  their meanings never change; only the depth does. Remembered per device, not per account
+  (see `docs/DECISIONS.md` #18)
 
 ---
 
@@ -665,7 +670,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 165 cases
-cd app && flutter test      # 225 cases
+cd app && flutter test      # 233 cases
 ```
 
 **Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -707,7 +712,7 @@ disabled item elsewhere gets a 409 → cancelling the item restores stock and re
 → a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
 the whole order all restore stock correctly.
 
-**Flutter (225 cases)** — split into 3 levels:
+**Flutter (233 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -737,6 +742,7 @@ the whole order all restore stock correctly.
 | Widget | `widgets_test.dart` | Button taps and widget state |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
+| Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios — standard mode must pass AA (4.5:1), high-contrast mode must pass AAA (7:1) and be strictly darker on every token |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is
@@ -778,6 +784,9 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   order from the menu edit form; stock auto-deducts when sent to kitchen (auto-restored on cancel/removal); a
   menu item auto-disables/re-enables based on ingredient stock, with a low-stock alert screen (see the ✨
   Features section and `docs/DECISIONS.md` #15)
+- [x] **High-contrast mode** — done: toggled from the **Profile** page (reachable by every role,
+  not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
+  and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
 - [ ] **Flutter integration tests** with `integration_test` against a real backend
 - [ ] **Tax invoice / e-Tax invoice** — required under Thai law for serious commercial use
 
@@ -797,7 +806,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 17 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 18 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

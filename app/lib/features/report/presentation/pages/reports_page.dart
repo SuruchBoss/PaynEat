@@ -64,7 +64,7 @@ class ReportsPage extends GetView<ReportController> {
                   controller.fromLabel == controller.toLabel
                       ? controller.fromLabel
                       : '${controller.fromLabel} - ${controller.toLabel}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,
                   ),
@@ -161,7 +161,7 @@ class ReportsPage extends GetView<ReportController> {
                           child: Center(
                             child: Text(
                               'report_no_data_for_range'.tr,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
                               ),
@@ -178,7 +178,7 @@ class ReportsPage extends GetView<ReportController> {
                               backgroundColor: AppColors.surfaceAlt,
                               child: Text(
                                 '${entry.key + 1}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.textSecondary,
@@ -218,7 +218,7 @@ class ReportsPage extends GetView<ReportController> {
                           child: Center(
                             child: Text(
                               'report_no_data_for_range'.tr,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.textSecondary,
                                 fontSize: 13,
                               ),
@@ -241,7 +241,7 @@ class ReportsPage extends GetView<ReportController> {
                                   'report_quantity_plates'.trParams({
                                     'count': category.quantity.toString(),
                                   }),
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
                                   ),
@@ -304,7 +304,7 @@ class _DailySalesList extends GetView<ReportController> {
                     width: 74,
                     child: Text(
                       item.day.substring(5),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.textSecondary,
                       ),

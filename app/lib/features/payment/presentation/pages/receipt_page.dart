@@ -88,7 +88,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                           const SizedBox(height: 2),
                           Text(
                             'payment_receipt_subtitle'.tr,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11.5,
                               color: AppColors.textSecondary,
                             ),
@@ -148,7 +148,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                                   if (item.options.isNotEmpty)
                                     Text(
                                       item.optionsSummary,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: AppColors.textSecondary,
                                       ),
@@ -217,7 +217,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                           const Spacer(),
                           Text(
                             Formatters.baht(order.total),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
                               color: AppColors.brandInk,
@@ -234,7 +234,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                           children: [
                             Text(
                               payment.methodLabel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.textSecondary,
                               ),
@@ -275,7 +275,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                       const _DashedDivider(),
                       Text(
                         'payment_refund_list_title'.tr,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
                           color: AppColors.dangerInk,
@@ -291,7 +291,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                               Expanded(
                                 child: Text(
                                   refund.reason,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
                                   ),
@@ -299,7 +299,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                               ),
                               Text(
                                 '-${Formatters.money(refund.amount)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,
                                   color: AppColors.dangerInk,
@@ -320,7 +320,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                     Center(
                       child: Text(
                         'payment_thank_you_message'.tr,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
                         ),
@@ -330,7 +330,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                     Center(
                       child: Text(
                         'payment_powered_by'.tr,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 10.5,
                           color: AppColors.textSecondary,
                         ),
@@ -376,10 +376,7 @@ class _KeyValue extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(
@@ -407,7 +404,7 @@ class _DashedDivider extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(
               dashCount,
-              (_) => const SizedBox(
+              (_) => SizedBox(
                 width: 4,
                 height: 1,
                 child: DecoratedBox(

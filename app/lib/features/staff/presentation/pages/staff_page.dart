@@ -285,7 +285,7 @@ class _StaffRow extends GetView<StaffController> {
                 const SizedBox(height: 2),
                 Text(
                   '@${user.username}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -331,7 +331,7 @@ class _StaffRow extends GetView<StaffController> {
                 value: 'delete',
                 child: Text(
                   'staff_delete_account'.tr,
-                  style: const TextStyle(color: AppColors.dangerInk),
+                  style: TextStyle(color: AppColors.dangerInk),
                 ),
               ),
             ],

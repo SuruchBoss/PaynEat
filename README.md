@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-390%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-398%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 390 automated tests.
+control and 398 automated tests.
 
 ---
 
@@ -256,7 +256,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 165 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 225 เคส — domain / controller / widget
+cd app && flutter test      # 233 เคส — domain / controller / widget
 ```
 
 ---
@@ -346,6 +346,10 @@ cd app && flutter test      # 225 เคส — domain / controller / widget
 - ไฟสถานะการเชื่อมต่อเรียลไทม์ ให้พนักงานรู้ทันทีถ้าเน็ตหลุด
 - **แจ้งจำนวนรายการรอ sync** เมื่อเน็ตหลุดตอนสั่งอาหารเพิ่ม (badge บน AppBar) ส่งขึ้นระบบให้
   อัตโนมัติเมื่อเน็ตกลับมา โดยไม่ต้องกดอะไรเพิ่ม (ดูขอบเขตแบบละเอียดใน `docs/DECISIONS.md` #13)
+- **โหมดคอนทราสต์สูง** สลับได้ที่หน้า **บัญชี** (ทุกบทบาทเข้าถึงได้) สำหรับจอที่โดนแดด จอในครัว
+  ที่มีไอน้ำ และแท็บเล็ตที่มีรอยนิ้วมือ — ตัวหนังสือทุกตัวขยับจากเกณฑ์ AA (4.5:1) เป็น AAA (7:1)
+  ขอบการ์ดจาก 1.24:1 เป็น 4.10:1 โครงสีและความหมายของสีไม่เปลี่ยน จำค่าไว้กับเครื่อง
+  ไม่ใช่กับบัญชีผู้ใช้ (ดู `docs/DECISIONS.md` #18)
 
 ---
 
@@ -630,7 +634,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 165 เคส
-cd app && flutter test      # 225 เคส
+cd app && flutter test      # 233 เคส
 ```
 
 **Backend (165 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -668,7 +672,7 @@ cd app && flutter test      # 225 เคส
 อัตโนมัติ → สั่งเมนูที่ปิดขายอยู่โดน 409 → ยกเลิกรายการคืนสต๊อกเปิดขายกลับอัตโนมัติ → ปรับสต๊อกมือก็
 sync เมนูเหมือนกัน → แก้จำนวน/ลบรายการ/ยกเลิกทั้งบิลคืนสต๊อกถูกต้องครบทุกเคส
 
-**Flutter (225 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (233 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -688,6 +692,7 @@ sync เมนูเหมือนกัน → แก้จำนวน/ลบ
 | Controller | `checkout_controller_test.dart` | คำนวณเงินทอน/ยอดคงเหลือ, เงื่อนไข `canPay`, ปัดยอดขึ้นหลักร้อย |
 | Controller | `receipt_controller_test.dart` | โหลดใบเสร็จจาก orderId และกฎ `Payment.tendered` — ใบเสร็จต้องโชว์เงินที่ลูกค้ายื่นมา ไม่ใช่ยอดที่ตัดเข้าบิล (ยื่นมา − ทอน = ยอดที่ตัดเข้าบิล) |
 | Controller | `settings_controller_test.dart` | โหลดค่าตั้งค่าร้านเข้าช่องกรอกให้ตรงกัน |
+| Controller | `checkout_controller_test.dart` | (เพิ่ม) ปุ่มลัดเงินสดต้องไม่ซ้ำกับปุ่มปัดขึ้นหลักร้อย |
 | Controller | `staff_controller_test.dart` | กรองพนักงานตามบทบาท, นับจำนวนแยกตามบทบาท |
 | Controller | `order_detail_controller_test.dart` | สิทธิ์จัดการออเดอร์, เดินสถานะรายการอาหาร |
 | Controller | `dashboard_controller_test.dart` | โหลดสรุปยอดขายวันนี้ + ตัวนับสด |
@@ -698,6 +703,7 @@ sync เมนูเหมือนกัน → แก้จำนวน/ลบ
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget |
 | Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
 | Core | `app_clock_test.dart` | `AppClock` ตรึง/คืนนาฬิกาได้ถูกต้อง — กันเวลาที่ตรึงไว้รั่วข้ามเทสต์ |
+| Core | `app_colors_contrast_test.dart` | คำนวณคอนทราสต์ตามสูตร WCAG จริง — โหมดปกติต้องผ่าน AA (4.5:1) โหมดคอนทราสต์สูงต้องผ่าน AAA (7:1) และต้องเข้มกว่าเดิมทุกตัว |
 
 > เมธอดที่แตะการนำทาง (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) ไม่ได้ครอบคลุมในเทสต์ระดับ
 > unit นี้ — ต้องมี `GetMaterialApp` ที่ pump จริง จึงทดสอบเฉพาะตรรกะ/state ที่ไม่พึ่งการนำทาง
@@ -736,6 +742,9 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 - [x] **สต๊อกวัตถุดิบ** — ทำแล้ว: ผูกเมนูกับวัตถุดิบ+ปริมาณต่อ 1 ที่ได้จากฟอร์มเมนู ตัดสต๊อกอัตโนมัติ
   ตอนส่งครัว (คืนสต๊อกอัตโนมัติเมื่อยกเลิก/ลบรายการ) เมนูที่วัตถุดิบหมดปิด-เปิดขายอัตโนมัติ พร้อมหน้าจอ
   แจ้งเตือนวัตถุดิบใกล้หมด (ดูหัวข้อ ✨ ฟีเจอร์ และ `docs/DECISIONS.md` #15)
+- [x] **โหมดคอนทราสต์สูง** — ทำแล้ว: สลับได้ที่หน้า **บัญชี** (ทุกบทบาทเข้าถึงได้ ไม่ใช่แค่แอดมิน)
+  จำค่าไว้กับเครื่อง ตัวหนังสือทุกตัวขยับจากเกณฑ์ AA (4.5:1) เป็น AAA (7:1) และขอบการ์ดจาก
+  1.24:1 เป็น 4.10:1 ให้ยังอ่านออกกลางแดดและบนจอครัว (ดู `docs/DECISIONS.md` #18)
 - [ ] **เทสต์ integration ฝั่ง Flutter** ด้วย `integration_test` ยิงกับ backend จริง
 - [ ] **ใบกำกับภาษี / e-Tax invoice** — ตามกฎหมายไทย ถ้าจะขายเป็นสินค้าจริงจัง
 
@@ -754,7 +763,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 17 ข้อ พร้อมข้อเสียที่ยอมรับ
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 18 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../core/localization/app_translations.dart';
+import '../core/services/contrast_service.dart';
 import '../core/services/storage_service.dart';
 import 'config/app_config.dart';
 import 'di/initial_binding.dart';
@@ -22,6 +23,9 @@ class PaynEatApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ต้องคืนค่าคอนทราสต์ก่อนสร้างธีม ไม่งั้นเฟรมแรกจะวาดด้วยโหมดปกติแล้วค่อยกระพริบ
+    ContrastService.restore();
+
     return GetMaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,

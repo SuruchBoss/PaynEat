@@ -90,7 +90,7 @@ class _TableGrid extends StatelessWidget {
                       'table_count_in_zone'.trParams({
                         'count': entry.value.length.toString(),
                       }),
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
@@ -156,7 +156,7 @@ class _TableGrid extends StatelessWidget {
                     const Spacer(),
                     Text(
                       '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
                       ),

@@ -91,7 +91,7 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         item.optionsSummary,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                         ),
@@ -111,7 +111,7 @@ class OrderItemTile extends StatelessWidget {
                           Expanded(
                             child: Text(
                               item.note!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.warningInk,
                                 fontStyle: FontStyle.italic,

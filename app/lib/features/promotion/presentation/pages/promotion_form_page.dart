@@ -350,7 +350,7 @@ class _PromotionFormPageState extends State<PromotionFormPage> {
                   const SizedBox(height: 4),
                   Text(
                     'promotion_form_eligibility_hint'.tr,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
                       color: AppColors.textSecondary,
                     ),

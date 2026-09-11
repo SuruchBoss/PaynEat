@@ -149,7 +149,7 @@ class _IngredientRow extends GetView<IngredientsController> {
                       1,
                     ),
                   }),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

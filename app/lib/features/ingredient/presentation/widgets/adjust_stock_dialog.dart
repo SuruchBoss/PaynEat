@@ -56,10 +56,7 @@ class _AdjustStockDialogState extends State<AdjustStockDialog> {
               'stock': ingredient.currentStock.toStringAsFixed(1),
               'unit': ingredient.unit,
             }),
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           SegmentedButton<bool>(
@@ -98,7 +95,7 @@ class _AdjustStockDialogState extends State<AdjustStockDialog> {
           onPressed: () => Get.back<void>(),
           child: Text(
             'common_close'.tr,
-            style: const TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: AppColors.textSecondary),
           ),
         ),
         FilledButton(

@@ -156,7 +156,7 @@ class MenuItemCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 Formatters.baht(item.price),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.brandInk,
@@ -166,7 +166,7 @@ class MenuItemCard extends StatelessWidget {
                             if (trailing != null)
                               trailing!
                             else if (item.hasOptions)
-                              const Icon(
+                              Icon(
                                 Icons.tune_rounded,
                                 size: 15,
                                 color: AppColors.textDisabled,

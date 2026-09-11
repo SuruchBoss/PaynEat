@@ -207,4 +207,5 @@ class StorageKeys {
   static const String printerProfile = 'printer_profile';
   static const String pendingOrderItems = 'pending_order_items';
   static const String locale = 'app_locale';
+  static const String contrast = 'app_contrast';
 }

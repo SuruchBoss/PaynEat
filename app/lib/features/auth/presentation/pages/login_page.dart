@@ -154,7 +154,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                 const SizedBox(height: 6),
                 Text(
                   'auth_login_subtitle'.tr,
-                  style: const TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 28),
 
@@ -219,7 +219,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                           Expanded(
                             child: Text(
                               message,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: AppColors.dangerInk,
                                 fontSize: 13.5,
                               ),
@@ -264,7 +264,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                         : 'auth_login_footer_connected'.trParams({
                             'url': AppConfig.baseUrl,
                           }),
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 11.5,
                     ),

@@ -232,7 +232,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   'report_no_payments_yet'.tr,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
@@ -262,7 +262,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
                     'report_bill_count'.trParams({
                       'count': entry.value.count.toString(),
                     }),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
                     ),

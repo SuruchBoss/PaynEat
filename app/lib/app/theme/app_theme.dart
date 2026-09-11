@@ -69,10 +69,10 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
       ),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 1,
@@ -109,7 +109,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 48),
           foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
@@ -162,7 +162,9 @@ class AppTheme {
         borderSide: BorderSide(color: color, width: width),
       );
 
-  static const TextTheme _textTheme = TextTheme(
+  /// ต้องเป็น getter ไม่ใช่ field — ไม่งั้นสีจะถูกคำนวณครั้งเดียวตอนคลาสถูกโหลด
+  /// แล้วค้างเป็นสีของโหมดแรกที่เปิด พอสลับโหมดคอนทราสต์ตัวหนังสือจะไม่เปลี่ยนตาม
+  static TextTheme get _textTheme => TextTheme(
     headlineMedium: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.w800,

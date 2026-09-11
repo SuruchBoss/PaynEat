@@ -60,7 +60,7 @@ class SplitBillPage extends GetView<SplitBillController> {
                   const SizedBox(height: 4),
                   Text(
                     'payment_split_bill_instructions'.tr,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textSecondary,
                     ),

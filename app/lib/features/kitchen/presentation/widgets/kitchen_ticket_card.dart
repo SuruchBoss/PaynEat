@@ -175,7 +175,7 @@ class KitchenTicketCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             item.note!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppColors.warningInk,

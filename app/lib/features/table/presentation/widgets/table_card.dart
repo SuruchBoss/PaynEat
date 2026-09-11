@@ -77,7 +77,7 @@ class TableCard extends StatelessWidget {
               const SizedBox(height: 2),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.people_outline_rounded,
                     size: 13,
                     color: AppColors.textDisabled,
@@ -87,7 +87,7 @@ class TableCard extends StatelessWidget {
                     'table_seat_count'.trParams({
                       'count': table.seats.toString(),
                     }),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
                       color: AppColors.textSecondary,
                     ),
@@ -107,7 +107,7 @@ class TableCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${order.code.split('-').last} · ${Formatters.elapsed(order.createdAt)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10.5,
                     color: AppColors.textSecondary,
                   ),

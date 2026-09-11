@@ -51,7 +51,7 @@ class DemoAccountPicker extends GetView<AuthController> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.bolt_rounded,
                 size: 16,
                 color: AppColors.textSecondary,
@@ -79,7 +79,7 @@ class DemoAccountPicker extends GetView<AuthController> {
                     ),
                     label: Text(account.label),
                     backgroundColor: AppColors.surface,
-                    side: const BorderSide(color: AppColors.border),
+                    side: BorderSide(color: AppColors.border),
                     onPressed: () => controller.fillDemoAccount(
                       account.username,
                       account.password,

@@ -103,7 +103,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                       ),
                       title: Text(
                         'order_menu_cancel_order'.tr,
-                        style: const TextStyle(color: AppColors.dangerInk),
+                        style: TextStyle(color: AppColors.dangerInk),
                       ),
                       dense: true,
                     ),
@@ -327,10 +327,7 @@ class _OrderHeader extends StatelessWidget {
                 'order_cancelled_reason_prefix'.trParams({
                   'reason': order.cancelledReason!,
                 }),
-                style: const TextStyle(
-                  color: AppColors.dangerInk,
-                  fontSize: 13,
-                ),
+                style: TextStyle(color: AppColors.dangerInk, fontSize: 13),
               ),
             ),
           ],
@@ -355,10 +352,7 @@ class _MetaText extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           text,
-          style: const TextStyle(
-            fontSize: 12.5,
-            color: AppColors.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
         ),
       ],
     );
@@ -464,7 +458,7 @@ class _BillCard extends GetView<OrderDetailController> {
                       'order_paid_at_summary'.trParams({
                         'datetime': Formatters.dateTime(order.closedAt),
                       }),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         color: AppColors.successInk,
                       ),

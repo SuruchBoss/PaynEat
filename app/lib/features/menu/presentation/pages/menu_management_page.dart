@@ -61,7 +61,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                         'menu_total_count'.trParams({
                           'count': '${controller.items.length}',
                         }),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12.5,
                           color: AppColors.textSecondary,
                         ),
@@ -81,7 +81,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                             'menu_unavailable_count'.trParams({
                               'count': '${controller.unavailableCount}',
                             }),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11.5,
                               color: AppColors.dangerInk,
                               fontWeight: FontWeight.w700,
@@ -225,7 +225,7 @@ class _MenuRow extends GetView<MenuManagementController> {
                 Text(
                   '${item.categoryName ?? '-'} · ${Formatters.baht(item.price)}'
                   '${item.hasOptions ? ' · ${'menu_option_groups_count'.trParams({'count': '${item.optionGroups.length}'})}' : ''}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

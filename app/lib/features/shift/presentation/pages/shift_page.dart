@@ -61,10 +61,7 @@ class _OpenShiftForm extends GetView<ShiftController> {
           const SizedBox(height: 4),
           Text(
             'shift_open_new_subtitle'.tr,
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -156,10 +153,7 @@ class _OpenShiftCard extends GetView<ShiftController> {
           const SizedBox(height: 4),
           Text(
             'shift_close_subtitle'.tr,
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
           TextField(
@@ -299,10 +293,7 @@ class _InfoRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13.5, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(

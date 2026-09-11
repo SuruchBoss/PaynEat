@@ -105,7 +105,7 @@ class _CartHeader extends GetView<CartController> {
                       onTap: () => controller.setOrderType(OrderType.delivery),
                     ),
                   ] else ...[
-                    const Icon(
+                    Icon(
                       Icons.people_outline_rounded,
                       size: 16,
                       color: AppColors.textSecondary,
@@ -204,7 +204,7 @@ class _CartLineTile extends GetView<CartController> {
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           line.optionsSummary,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             color: AppColors.textSecondary,
                           ),
@@ -224,7 +224,7 @@ class _CartLineTile extends GetView<CartController> {
                             Expanded(
                               child: Text(
                                 line.note!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11.5,
                                   color: AppColors.warningInk,
                                   fontStyle: FontStyle.italic,
@@ -282,7 +282,7 @@ class _CartFooter extends GetView<CartController> {
 
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.surface,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
@@ -320,7 +320,7 @@ class _CartFooter extends GetView<CartController> {
                 const Spacer(),
                 Text(
                   Formatters.baht(preview.total),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
                     color: AppColors.brandInk,
@@ -389,10 +389,7 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(Formatters.money(value), style: const TextStyle(fontSize: 13)),

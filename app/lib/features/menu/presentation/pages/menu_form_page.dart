@@ -204,7 +204,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                             placeholder: Container(
                               color: AppColors.surfaceAlt,
                               alignment: Alignment.center,
-                              child: const Icon(
+                              child: Icon(
                                 Icons.image_outlined,
                                 color: AppColors.textDisabled,
                                 size: 28,
@@ -257,7 +257,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                             const SizedBox(height: 4),
                             Text(
                               'menu_form_photo_hint'.tr,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 11.5,
                                 color: AppColors.textSecondary,
                               ),
@@ -398,7 +398,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                       child: Center(
                         child: Text(
                           'menu_form_no_option_groups'.tr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 13,
                           ),
@@ -448,7 +448,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                       child: Center(
                         child: Text(
                           'menu_form_no_ingredients'.tr,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textDisabled,
                             fontSize: 13,
                           ),
@@ -554,7 +554,7 @@ class _OptionGroupRow extends StatelessWidget {
                     : 'menu_option_max_select_badge'.trParams({
                         'count': '${group.maxSelect}',
                       }),
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
                   color: AppColors.textSecondary,
                 ),
@@ -811,10 +811,7 @@ class _IngredientLinkRow extends StatelessWidget {
               ),
               'unit': link.unit ?? '',
             }),
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           IconButton(
             onPressed: onRemove,
