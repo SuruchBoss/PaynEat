@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -10,9 +11,7 @@ import '../../domain/entities/menu_item_payload.dart';
 import '../../domain/entities/menu_item.dart';
 import '../../domain/entities/menu_option.dart';
 import '../controllers/menu_management_controller.dart';
-import '../widgets/menu_image_picker_stub.dart'
-    if (dart.library.html) '../widgets/menu_image_picker_web.dart'
-    as image_picker;
+import '../widgets/menu_image_picker.dart';
 import '../widgets/menu_item_thumbnail.dart';
 
 /// ฟอร์มเพิ่ม/แก้ไขเมนู พร้อมตัวจัดการกลุ่มตัวเลือก
@@ -73,8 +72,14 @@ class _MenuFormPageState extends State<MenuFormPage> {
   }
 
   Future<void> _pickImage() async {
+    // เว็บมีแค่ช่องทางเดียว (file input ของเบราว์เซอร์) จึงไม่ต้องถามก่อน
+    // ส่วนมือถือ/แท็บเล็ตถามก่อนว่าจะถ่ายใหม่หรือเลือกจากคลัง — ในร้านจริง
+    // การเดินไปถ่ายจานที่เพิ่งทำเสร็จเป็นวิธีที่เร็วที่สุด
+    final source = kIsWeb ? ImageSource.gallery : await _askImageSource();
+    if (source == null) return;
+
     try {
-      final picked = await image_picker.pickMenuImage();
+      final picked = await pickMenuImage(source);
       if (picked == null) return;
       if (picked.sizeBytes > _maxImageBytes) {
         AppDialogs.error('menu_form_photo_too_large'.tr);
@@ -85,6 +90,33 @@ class _MenuFormPageState extends State<MenuFormPage> {
       AppDialogs.error('menu_form_photo_pick_failed'.tr);
     }
   }
+
+  Future<ImageSource?> _askImageSource() => Get.bottomSheet<ImageSource>(
+    SafeArea(
+      child: Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_rounded),
+              title: Text('menu_form_photo_source_camera'.tr),
+              onTap: () => Get.back(result: ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_rounded),
+              title: Text('menu_form_photo_source_gallery'.tr),
+              onTap: () => Get.back(result: ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 
   void _removeImage() => setState(() => _imageUrl = '');
 
@@ -176,49 +208,42 @@ class _MenuFormPageState extends State<MenuFormPage> {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            if (kIsWeb) ...[
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 6,
-                                children: [
-                                  OutlinedButton.icon(
-                                    onPressed: _pickImage,
-                                    icon: const Icon(
-                                      Icons.upload_rounded,
-                                      size: 17,
-                                    ),
-                                    label: Text(
-                                      _hasImage
-                                          ? 'menu_form_photo_change'.tr
-                                          : 'menu_form_photo_pick'.tr,
-                                    ),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 6,
+                              children: [
+                                OutlinedButton.icon(
+                                  onPressed: _pickImage,
+                                  icon: Icon(
+                                    kIsWeb
+                                        ? Icons.upload_rounded
+                                        : Icons.add_a_photo_rounded,
+                                    size: 17,
                                   ),
-                                  if (_hasImage)
-                                    TextButton(
-                                      onPressed: _removeImage,
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: AppColors.danger,
-                                      ),
-                                      child: Text('menu_form_photo_remove'.tr),
+                                  label: Text(
+                                    _hasImage
+                                        ? 'menu_form_photo_change'.tr
+                                        : 'menu_form_photo_pick'.tr,
+                                  ),
+                                ),
+                                if (_hasImage)
+                                  TextButton(
+                                    onPressed: _removeImage,
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: AppColors.danger,
                                     ),
-                                ],
+                                    child: Text('menu_form_photo_remove'.tr),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'menu_form_photo_hint'.tr,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: AppColors.textSecondary,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'menu_form_photo_hint'.tr,
-                                style: const TextStyle(
-                                  fontSize: 11.5,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
-                            ] else
-                              Text(
-                                'menu_form_photo_web_only'.tr,
-                                style: const TextStyle(
-                                  fontSize: 12.5,
-                                  color: AppColors.textSecondary,
-                                ),
-                              ),
+                            ),
                           ],
                         ),
                       ),

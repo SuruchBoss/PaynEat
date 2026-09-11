@@ -30,6 +30,10 @@ dependencies:
   # สร้างคำสั่ง ESC/POS สำหรับพิมพ์ใบเสร็จจริงผ่านเครื่องพิมพ์ความร้อน (LAN/WiFi)
   esc_pos_utils_plus: ^2.0.4
 
+  # เลือกรูปเมนูจากกล้อง/คลังภาพ — รองรับทั้ง Android, iOS และเว็บในตัวเดียว
+  # และย่อรูปให้ตั้งแต่ตอนเลือก (รูปจากกล้องมือถือใหญ่เกินกว่าจะเก็บเป็น data URL ดิบ ๆ)
+  image_picker: ^1.2.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
