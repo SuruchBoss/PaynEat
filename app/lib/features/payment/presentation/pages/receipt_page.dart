@@ -62,7 +62,7 @@ class ReceiptPage extends GetView<ReceiptController> {
               child: Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.border),
                 ),
@@ -212,7 +212,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
+                              color: AppColors.brandInk,
                             ),
                           ),
                         ],
@@ -270,7 +270,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                         style: const TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.danger,
+                          color: AppColors.dangerInk,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -294,7 +294,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                                 style: const TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.danger,
+                                  color: AppColors.dangerInk,
                                 ),
                               ),
                             ],
@@ -324,7 +324,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                         'payment_powered_by'.tr,
                         style: const TextStyle(
                           fontSize: 10.5,
-                          color: AppColors.textDisabled,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),

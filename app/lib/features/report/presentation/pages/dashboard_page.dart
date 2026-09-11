@@ -11,7 +11,8 @@ import '../controllers/dashboard_controller.dart';
 import '../widgets/hourly_bar_chart.dart';
 import '../widgets/stat_card.dart';
 
-/// แดชบอร์ดผู้จัดการ — ยอดขายวันนี้ ช่วงเวลาขายดี เมนูขายดี และสถานะร้านแบบเรียลไทม์
+/// แดชบอร์ดผู้จัดการ — สถานะร้าน ณ ตอนนี้: ยอดขายวันนี้ ช่วงเวลาขายดี และช่องทางชำระเงิน
+/// (เมนูขายดีและการเทียบย้อนหลังอยู่ที่หน้ารายงาน เพื่อไม่ให้สองหน้าทำงานทับกัน)
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({super.key});
 
@@ -105,22 +106,10 @@ class DashboardPage extends GetView<DashboardController> {
               ),
             ),
             const SizedBox(height: 16),
-            Responsive.isWide(context)
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _TopItemsCard(items: data.topItems)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _PaymentBreakdownCard(summary: today)),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      _TopItemsCard(items: data.topItems),
-                      const SizedBox(height: 12),
-                      _PaymentBreakdownCard(summary: today),
-                    ],
-                  ),
+            // "เมนูขายดี" ย้ายไปอยู่ที่หน้ารายงานที่เดียว — หน้าภาพรวมทำหน้าที่บอก
+            // "สถานะร้าน ณ ตอนนี้" ส่วนหน้ารายงานไว้ดูย้อนหลังและเทียบช่วงเวลา
+            // ก่อนหน้านี้ทั้งสองหน้าแสดงชุดข้อมูลเดียวกันเมื่อเลือกช่วง "วันนี้"
+            _PaymentBreakdownCard(summary: today),
           ],
         ),
       );
@@ -221,111 +210,10 @@ class _LiveItem extends StatelessWidget {
   }
 }
 
-class _TopItemsCard extends StatelessWidget {
-  const _TopItemsCard({required this.items});
-
-  final List<TopItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeader(title: 'report_top_items_today_title'.tr),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Text(
-                  'report_no_sales_today'.tr,
-                  style: const TextStyle(
-                    color: AppColors.textDisabled,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            )
-          else
-            for (final entry in items.asMap().entries)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: entry.key == 0
-                            ? AppColors.warning.withValues(alpha: 0.16)
-                            : AppColors.surfaceAlt,
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Text(
-                        '${entry.key + 1}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: entry.key == 0
-                              ? AppColors.warning
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        entry.value.name,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      'report_quantity_plates'.trParams({
-                        'count': entry.value.quantity.toString(),
-                      }),
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 74,
-                      child: Text(
-                        Formatters.baht(entry.value.revenue),
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PaymentBreakdownCard extends StatelessWidget {
   const _PaymentBreakdownCard({required this.summary});
 
   final SalesSummary summary;
-
-  static const List<Color> _colors = [
-    AppColors.success,
-    AppColors.info,
-    AppColors.purple,
-    AppColors.warning,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -345,7 +233,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
                 child: Text(
                   'report_no_payments_yet'.tr,
                   style: const TextStyle(
-                    color: AppColors.textDisabled,
+                    color: AppColors.textSecondary,
                     fontSize: 13,
                   ),
                 ),
@@ -356,10 +244,10 @@ class _PaymentBreakdownCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 9,
-                    height: 9,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
-                      color: _colors[entry.key % _colors.length],
+                      color: AppColors.paymentMethod(entry.value.method),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -376,7 +264,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
                     }),
                     style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.textDisabled,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -397,7 +285,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
                   minHeight: 5,
                   backgroundColor: AppColors.surfaceAlt,
                   valueColor: AlwaysStoppedAnimation(
-                    _colors[entry.key % _colors.length],
+                    AppColors.paymentMethod(entry.value.method),
                   ),
                 ),
               ),

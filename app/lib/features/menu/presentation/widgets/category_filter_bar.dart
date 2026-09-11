@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/widgets/horizontal_fade.dart';
 import '../../domain/entities/category.dart';
 
 /// แถบเลือกหมวดหมู่แนวนอน
@@ -20,27 +21,30 @@ class CategoryFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: categories.length + 1,
-        separatorBuilder: (_, _) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          if (index == 0) {
+      height: 44,
+      child: HorizontalFade(
+        builder: (context, scrollController) => ListView.separated(
+          controller: scrollController,
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: categories.length + 1,
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _CategoryChip(
+                label: 'common_all'.tr,
+                selected: selectedId == null,
+                onTap: () => onSelected(null),
+              );
+            }
+            final category = categories[index - 1];
             return _CategoryChip(
-              label: 'common_all'.tr,
-              selected: selectedId == null,
-              onTap: () => onSelected(null),
+              label: '${category.icon ?? ''} ${category.displayName}'.trim(),
+              selected: selectedId == category.id,
+              onTap: () => onSelected(category.id),
             );
-          }
-          final category = categories[index - 1];
-          return _CategoryChip(
-            label: '${category.icon ?? ''} ${category.displayName}'.trim(),
-            selected: selectedId == category.id,
-            onTap: () => onSelected(category.id),
-          );
-        },
+          },
+        ),
       ),
     );
   }

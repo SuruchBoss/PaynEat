@@ -151,14 +151,14 @@ class _TypeToggle extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 36),
+          minimumSize: const Size(0, 44),
           padding: EdgeInsets.zero,
           backgroundColor: selected ? AppColors.primarySoft : null,
           side: BorderSide(
             color: selected ? AppColors.primary : AppColors.border,
           ),
           foregroundColor: selected
-              ? AppColors.primary
+              ? AppColors.brandInk
               : AppColors.textSecondary,
         ),
         child: Text(label, style: const TextStyle(fontSize: 13)),
@@ -226,7 +226,7 @@ class _CartLineTile extends GetView<CartController> {
                                 line.note!,
                                 style: const TextStyle(
                                   fontSize: 11.5,
-                                  color: AppColors.warning,
+                                  color: AppColors.warningInk,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -241,7 +241,7 @@ class _CartLineTile extends GetView<CartController> {
                 onPressed: () => controller.removeAt(index),
                 icon: const Icon(Icons.close_rounded, size: 16),
                 visualDensity: VisualDensity.compact,
-                color: AppColors.textDisabled,
+                color: AppColors.textSecondary,
                 tooltip: 'order_remove_item'.tr,
               ),
             ],
@@ -283,7 +283,7 @@ class _CartFooter extends GetView<CartController> {
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Column(
@@ -323,7 +323,7 @@ class _CartFooter extends GetView<CartController> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.primary,
+                    color: AppColors.brandInk,
                   ),
                 ),
               ],
@@ -341,7 +341,7 @@ class _CartFooter extends GetView<CartController> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       )
                     : const Icon(Icons.soup_kitchen_rounded, size: 18),

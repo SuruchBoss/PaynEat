@@ -34,7 +34,7 @@ class StaffPage extends GetView<StaffController> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.surface,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Obx(
               () => Wrap(
@@ -229,7 +229,7 @@ class _StaffRow extends GetView<StaffController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
@@ -329,7 +329,7 @@ class _StaffRow extends GetView<StaffController> {
                 value: 'delete',
                 child: Text(
                   'staff_delete_account'.tr,
-                  style: const TextStyle(color: AppColors.danger),
+                  style: const TextStyle(color: AppColors.dangerInk),
                 ),
               ),
             ],

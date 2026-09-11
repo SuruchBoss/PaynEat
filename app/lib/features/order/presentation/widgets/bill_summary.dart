@@ -53,7 +53,7 @@ class BillSummary extends StatelessWidget {
               style: TextStyle(
                 fontSize: dense ? 20 : 24,
                 fontWeight: FontWeight.w900,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
               ),
             ),
           ],

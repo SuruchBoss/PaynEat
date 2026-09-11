@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
@@ -210,7 +211,7 @@ class _PaidHistory extends GetView<CheckoutController> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w900,
-                  color: AppColors.warning,
+                  color: AppColors.warningInk,
                 ),
               ),
             ],
@@ -277,6 +278,7 @@ class _PaymentForm extends GetView<CheckoutController> {
             onChanged: controller.onAmountChanged,
             decoration: InputDecoration(
               labelText: 'payment_amount_this_round_label'.tr,
+              helperText: 'payment_amount_this_round_helper'.tr,
               suffixText: 'common_baht'.tr,
             ),
           ),
@@ -295,8 +297,13 @@ class _PaymentForm extends GetView<CheckoutController> {
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                         ],
                         onChanged: controller.onReceivedChanged,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
                         decoration: InputDecoration(
                           labelText: 'payment_received_label'.tr,
+                          helperText: 'payment_received_helper'.tr,
                           suffixText: 'common_baht'.tr,
                         ),
                       ),
@@ -351,10 +358,8 @@ class _PaymentForm extends GetView<CheckoutController> {
                             const Spacer(),
                             Text(
                               Formatters.baht(controller.change),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.secondary,
+                              style: AppTheme.moneyLarge.copyWith(
+                                color: AppColors.secondaryInk,
                               ),
                             ),
                           ],
@@ -389,7 +394,7 @@ class _PaymentForm extends GetView<CheckoutController> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     )
                   : const Icon(Icons.check_circle_rounded),

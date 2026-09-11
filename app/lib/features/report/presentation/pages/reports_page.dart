@@ -25,7 +25,7 @@ class ReportsPage extends GetView<ReportController> {
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AppColors.surface,
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
           child: Obx(
             () => Row(
@@ -161,7 +161,7 @@ class ReportsPage extends GetView<ReportController> {
                             child: Text(
                               'report_no_data_for_range'.tr,
                               style: const TextStyle(
-                                color: AppColors.textDisabled,
+                                color: AppColors.textSecondary,
                                 fontSize: 13,
                               ),
                             ),
@@ -218,7 +218,7 @@ class ReportsPage extends GetView<ReportController> {
                             child: Text(
                               'report_no_data_for_range'.tr,
                               style: const TextStyle(
-                                color: AppColors.textDisabled,
+                                color: AppColors.textSecondary,
                                 fontSize: 13,
                               ),
                             ),
@@ -242,7 +242,7 @@ class ReportsPage extends GetView<ReportController> {
                                   }),
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    color: AppColors.textDisabled,
+                                    color: AppColors.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(width: 14),

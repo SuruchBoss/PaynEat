@@ -21,7 +21,7 @@ import 'package:payneat_pos/features/auth/domain/usecases/login_usecase.dart';
 class ScreenshotHarness {
   const ScreenshotHarness._();
 
-  static const String fontDir = 'tool/fonts';
+  static const String fontDir = 'assets/fonts';
 
   /// ขนาดหน้าจอมาตรฐานที่ใช้ถ่ายภาพ
   static const Size phone = Size(390, 844); // iPhone 14
@@ -31,7 +31,11 @@ class ScreenshotHarness {
   /// โหลดฟอนต์จริงเข้าไปใน test binding
   ///
   /// ถ้าไม่โหลด flutter_test จะวาดตัวอักษรเป็นกล่องดำ (ฟอนต์ Ahem)
-  /// ลงทะเบียน Noto Sans Thai เป็นชื่อ 'Roboto' เพื่อให้กลายเป็นฟอนต์เริ่มต้นของทั้งแอป
+  ///
+  /// ลงทะเบียนสองชื่อ:
+  /// - `NotoSansThai` คือชื่อที่ธีมของแอปเรียกใช้จริง (ดู `AppTheme.fontFamily`)
+  /// - `Roboto` เผื่อ widget ของ Material ที่สร้าง TextStyle เองโดยไม่ผ่านธีม
+  ///   จะได้ไม่หล่นไปโดนฟอนต์ Ahem แล้วกลายเป็นกล่องสี่เหลี่ยมในภาพ
   static Future<void> loadFonts() async {
     Future<void> load(String family, List<String> paths) async {
       final loader = FontLoader(family);
@@ -44,12 +48,14 @@ class ScreenshotHarness {
       await loader.load();
     }
 
-    await load('Roboto', [
+    const thaiFaces = [
       '$fontDir/NotoSansThai-400.ttf',
       '$fontDir/NotoSansThai-500.ttf',
       '$fontDir/NotoSansThai-700.ttf',
       '$fontDir/NotoSansThai-800.ttf',
-    ]);
+    ];
+    await load('NotoSansThai', thaiFaces);
+    await load('Roboto', thaiFaces);
 
     const materialIcons =
         '/opt/fl/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';

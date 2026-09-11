@@ -56,7 +56,7 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
                 Container(
                   width: 380,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     border: Border(left: BorderSide(color: AppColors.border)),
                   ),
                   child: const CartPanel(),
@@ -75,7 +75,7 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
       Container(
         height: MediaQuery.sizeOf(context).height * 0.85,
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
         ),
         clipBehavior: Clip.antiAlias,

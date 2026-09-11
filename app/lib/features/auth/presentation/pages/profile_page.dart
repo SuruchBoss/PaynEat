@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/localization/locale_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../controllers/auth_controller.dart';
@@ -35,7 +36,7 @@ class ProfilePage extends GetView<AuthController> {
                       style: const TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w900,
-                        color: AppColors.primary,
+                        color: AppColors.brandInk,
                       ),
                     ),
                   ),
@@ -62,7 +63,7 @@ class ProfilePage extends GetView<AuthController> {
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
+                        color: AppColors.brandInk,
                       ),
                     ),
                   ),
@@ -116,12 +117,20 @@ class ProfilePage extends GetView<AuthController> {
                     AppConfig.baseUrl,
                     style: const TextStyle(
                       fontSize: 12,
-                      color: AppColors.textDisabled,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+          const SizedBox(height: 12),
+          // ตัวสลับภาษาเคยอยู่แต่ในหน้าตั้งค่าซึ่งเป็นสิทธิ์ของแอดมิน แปลว่าพนักงานเสิร์ฟ
+          // ครัว และแคชเชียร์ไม่มีทางเปลี่ยนภาษาได้เลยทั้งที่แอปรองรับสองภาษา
+          // หน้านี้เป็นหน้าเดียวที่ทุกบทบาทเข้าถึงได้ จึงเป็นที่ที่ควรอยู่
+          const ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 560),
+            child: _LanguageCard(),
           ),
           const SizedBox(height: 12),
           ConstrainedBox(
@@ -139,5 +148,51 @@ class ProfilePage extends GetView<AuthController> {
         ],
       );
     });
+  }
+}
+
+/// การ์ดเลือกภาษา — ใช้ SegmentedButton ชุดเดียวกับหน้าตั้งค่า
+class _LanguageCard extends StatefulWidget {
+  const _LanguageCard();
+
+  @override
+  State<_LanguageCard> createState() => _LanguageCardState();
+}
+
+class _LanguageCardState extends State<_LanguageCard> {
+  @override
+  Widget build(BuildContext context) {
+    final isEnglish = LocaleService.isEnglish;
+
+    return AppCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SectionHeader(title: 'settings_language_title'.tr),
+          const SizedBox(height: 12),
+          SegmentedButton<bool>(
+            segments: [
+              ButtonSegment(
+                value: false,
+                label: Text('settings_language_th'.tr),
+              ),
+              ButtonSegment(
+                value: true,
+                label: Text('settings_language_en'.tr),
+              ),
+            ],
+            selected: {isEnglish},
+            onSelectionChanged: (selection) async {
+              await LocaleService.change(
+                selection.first
+                    ? const Locale('en', 'US')
+                    : const Locale('th', 'TH'),
+              );
+              if (mounted) setState(() {});
+            },
+          ),
+        ],
+      ),
+    );
   }
 }

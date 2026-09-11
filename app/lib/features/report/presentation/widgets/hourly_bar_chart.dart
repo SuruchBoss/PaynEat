@@ -91,7 +91,7 @@ class HourlyBarChart extends StatelessWidget {
                                       Formatters.compact(total),
                                       style: const TextStyle(
                                         fontSize: 8.5,
-                                        color: AppColors.textDisabled,
+                                        color: AppColors.textSecondary,
                                       ),
                                     ),
                                   const SizedBox(height: 3),
@@ -141,7 +141,7 @@ class HourlyBarChart extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 9.5,
-                        color: AppColors.textDisabled,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),

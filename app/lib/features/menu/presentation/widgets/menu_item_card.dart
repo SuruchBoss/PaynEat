@@ -43,7 +43,7 @@ class MenuItemCard extends StatelessWidget {
     return Opacity(
       opacity: disabled ? 0.55 : 1,
       child: Material(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: InkWell(
           onTap: disabled ? null : onTap,
@@ -94,7 +94,7 @@ class MenuItemCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.surface,
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
@@ -159,7 +159,7 @@ class MenuItemCard extends StatelessWidget {
                                 style: const TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
+                                  color: AppColors.brandInk,
                                 ),
                               ),
                             ),

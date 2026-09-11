@@ -18,6 +18,7 @@ class KitchenPage extends GetView<KitchenController> {
     return Column(
       children: [
         const _KitchenHeader(),
+        const _OfflineBanner(),
         Expanded(
           child: Obx(() {
             if (controller.isLoading.value && controller.queue.isEmpty) {
@@ -118,13 +119,58 @@ class KitchenPage extends GetView<KitchenController> {
   }
 }
 
+/// แถบเตือนตอนขาดการเชื่อมต่อเรียลไทม์
+///
+/// จอครัวมักถูกตั้งทิ้งไว้โดยไม่มีคนคอยดูแล ถ้าเน็ตหลุดแล้วไม่บอกอะไรเลย
+/// ครัวจะเข้าใจว่าไม่มีออเดอร์เข้า ทั้งที่จริงคือตั๋วส่งมาไม่ถึง
+class _OfflineBanner extends GetView<KitchenController> {
+  const _OfflineBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (!controller.isOffline.value) return const SizedBox.shrink();
+
+      return Container(
+        width: double.infinity,
+        color: AppColors.danger,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: Colors.white, size: 18),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'kitchen_offline_banner'.tr,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: controller.load,
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 40),
+              ),
+              child: Text('common_retry'.tr),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
 class _KitchenHeader extends GetView<KitchenController> {
   const _KitchenHeader();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.surface,
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       child: Obx(
         () => Row(
@@ -149,7 +195,7 @@ class _KitchenHeader extends GetView<KitchenController> {
                 style: const TextStyle(
                   fontSize: 12.5,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.primary,
+                  color: AppColors.brandInk,
                 ),
               ),
             ),
@@ -180,7 +226,7 @@ class _KitchenHeader extends GetView<KitchenController> {
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.danger,
+                        color: AppColors.dangerInk,
                       ),
                     ),
                   ],
@@ -274,7 +320,7 @@ class _TicketList extends GetView<KitchenController> {
       return Center(
         child: Text(
           emptyMessage,
-          style: const TextStyle(color: AppColors.textDisabled, fontSize: 13),
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
         ),
       );
     }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/horizontal_fade.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/dining_table.dart';
 import '../controllers/table_controller.dart';
@@ -90,7 +91,7 @@ class _TableGrid extends StatelessWidget {
                         'count': entry.value.length.toString(),
                       }),
                       style: const TextStyle(
-                        color: AppColors.textDisabled,
+                        color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -134,7 +135,7 @@ class _TableGrid extends StatelessWidget {
       SafeArea(
         child: Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -202,7 +203,7 @@ class _TableSummaryBar extends StatelessWidget {
     return Obx(
       () => Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        color: Colors.white,
+        color: AppColors.surface,
         child: Column(
           children: [
             Row(
@@ -230,22 +231,25 @@ class _TableSummaryBar extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 34,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _FilterChipItem(
-                    label: 'table_all_zones_filter'.tr,
-                    selected: controller.selectedZone.value == null,
-                    onTap: () => controller.filterByZone(null),
-                  ),
-                  for (final zone in controller.zones)
+              height: 44,
+              child: HorizontalFade(
+                builder: (context, scrollController) => ListView(
+                  controller: scrollController,
+                  scrollDirection: Axis.horizontal,
+                  children: [
                     _FilterChipItem(
-                      label: zone,
-                      selected: controller.selectedZone.value == zone,
-                      onTap: () => controller.filterByZone(zone),
+                      label: 'table_all_zones_filter'.tr,
+                      selected: controller.selectedZone.value == null,
+                      onTap: () => controller.filterByZone(null),
                     ),
-                ],
+                    for (final zone in controller.zones)
+                      _FilterChipItem(
+                        label: zone,
+                        selected: controller.selectedZone.value == zone,
+                        onTap: () => controller.filterByZone(zone),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],

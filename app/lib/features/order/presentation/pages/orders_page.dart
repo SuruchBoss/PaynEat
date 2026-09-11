@@ -17,7 +17,7 @@ class OrdersPage extends GetView<OrderListController> {
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AppColors.surface,
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: SizedBox(
             height: 34,
@@ -98,7 +98,7 @@ class _OrderTile extends StatelessWidget {
     final color = AppColors.orderStatus(order.status);
 
     return Material(
-      color: Colors.white,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,

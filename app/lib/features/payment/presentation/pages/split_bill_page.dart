@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -91,7 +92,7 @@ class SplitBillPage extends GetView<SplitBillController> {
                               }),
                         style: TextStyle(
                           color: item.isPaid
-                              ? AppColors.success
+                              ? AppColors.successInk
                               : AppColors.textSecondary,
                         ),
                       ),
@@ -177,7 +178,7 @@ class _AmountRow extends StatelessWidget {
             style: TextStyle(
               fontSize: bold ? 18 : 13.5,
               fontWeight: bold ? FontWeight.w900 : FontWeight.w600,
-              color: bold ? AppColors.primary : null,
+              color: bold ? AppColors.brandInk : null,
             ),
           ),
         ],
@@ -277,10 +278,8 @@ class _PaymentForm extends GetView<SplitBillController> {
                             const Spacer(),
                             Text(
                               Formatters.baht(controller.change),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.secondary,
+                              style: AppTheme.moneyLarge.copyWith(
+                                color: AppColors.secondaryInk,
                               ),
                             ),
                           ],
@@ -306,7 +305,7 @@ class _PaymentForm extends GetView<SplitBillController> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     )
                   : const Icon(Icons.check_circle_rounded),

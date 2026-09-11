@@ -29,7 +29,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.surface,
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Column(
               children: [
@@ -83,7 +83,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
                             }),
                             style: const TextStyle(
                               fontSize: 11.5,
-                              color: AppColors.danger,
+                              color: AppColors.dangerInk,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -141,7 +141,7 @@ class MenuManagementPage extends GetView<MenuManagementController> {
           maxHeight: MediaQuery.sizeOf(context).height * 0.7,
         ),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: const _CategorySheet(),
@@ -162,7 +162,7 @@ class _MenuRow extends GetView<MenuManagementController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
@@ -186,8 +186,8 @@ class _MenuRow extends GetView<MenuManagementController> {
                       fontSize: 18,
                       fontWeight: FontWeight.w900,
                       color: item.isAvailable
-                          ? AppColors.primary
-                          : AppColors.textDisabled,
+                          ? AppColors.brandInk
+                          : AppColors.textSecondary,
                     ),
                   ),
                 ),

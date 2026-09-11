@@ -208,7 +208,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                                 'menu_form_photo_hint'.tr,
                                 style: const TextStyle(
                                   fontSize: 11.5,
-                                  color: AppColors.textDisabled,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ] else
@@ -216,7 +216,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                                 'menu_form_photo_web_only'.tr,
                                 style: const TextStyle(
                                   fontSize: 12.5,
-                                  color: AppColors.textDisabled,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                           ],
@@ -356,7 +356,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                         child: Text(
                           'menu_form_no_option_groups'.tr,
                           style: const TextStyle(
-                            color: AppColors.textDisabled,
+                            color: AppColors.textSecondary,
                             fontSize: 13,
                           ),
                         ),
@@ -382,7 +382,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                         height: 18,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       )
                     : Text(
@@ -467,7 +467,7 @@ class _OptionGroupRow extends StatelessWidget {
                           : option.name,
                       style: const TextStyle(fontSize: 12),
                     ),
-                    backgroundColor: Colors.white,
+                    backgroundColor: AppColors.surface,
                     visualDensity: VisualDensity.compact,
                   ),
                 )

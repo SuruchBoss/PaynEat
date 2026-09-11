@@ -29,6 +29,7 @@ const Map<String, String> homeTranslationsTh = {
   // Realtime connection status
   'home_connection_online_tooltip': 'เชื่อมต่อเรียลไทม์อยู่',
   'home_connection_offline_tooltip': 'ไม่ได้เชื่อมต่อเรียลไทม์',
+  'home_connection_offline_badge': 'ออฟไลน์',
 
   // User menu
   'home_logout_menu_item': 'ออกจากระบบ',
@@ -68,6 +69,7 @@ const Map<String, String> homeTranslationsEn = {
   // Realtime connection status
   'home_connection_online_tooltip': 'Connected in real time',
   'home_connection_offline_tooltip': 'Not connected in real time',
+  'home_connection_offline_badge': 'Offline',
 
   // User menu
   'home_logout_menu_item': 'Log out',

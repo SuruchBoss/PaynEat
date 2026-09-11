@@ -22,11 +22,14 @@ class TableCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // แยกสองบทบาท: color ใช้ทำพื้น/ขอบ/จุดสถานะ ส่วน ink ใช้กับตัวหนังสือ
+    // (ยอดค้างกับชื่อสถานะ เป็นสองอย่างที่พนักงานต้องอ่านจากระยะห่างและกลางแดด)
     final color = AppColors.tableStatus(table.status);
+    final ink = AppColors.tableStatusInk(table.status);
     final order = table.currentOrder;
 
     return Material(
-      color: Colors.white,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(AppTheme.radiusLg),
       child: InkWell(
         onTap: onTap,
@@ -86,7 +89,7 @@ class TableCard extends StatelessWidget {
                     }),
                     style: const TextStyle(
                       fontSize: 11.5,
-                      color: AppColors.textDisabled,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -98,7 +101,7 @@ class TableCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w800,
-                    color: color,
+                    color: ink,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -106,7 +109,7 @@ class TableCard extends StatelessWidget {
                   '${order.code.split('-').last} · ${Formatters.elapsed(order.createdAt)}',
                   style: const TextStyle(
                     fontSize: 10.5,
-                    color: AppColors.textDisabled,
+                    color: AppColors.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -116,7 +119,7 @@ class TableCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
-                    color: color,
+                    color: ink,
                   ),
                 ),
             ],

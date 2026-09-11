@@ -104,7 +104,7 @@ class SettingsPage extends GetView<SettingsController> {
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Colors.white,
+                                color: AppColors.surface,
                               ),
                             )
                           : Text('settings_save_button'.tr),
@@ -305,7 +305,7 @@ class _PrinterSettingsCard extends GetView<PrinterSettingsController> {
                             height: 18,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: AppColors.surface,
                             ),
                           )
                         : Text('common_save'.tr),

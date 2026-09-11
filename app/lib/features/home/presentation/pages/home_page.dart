@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/services/offline_order_queue_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/utils/responsive.dart';
@@ -74,7 +75,20 @@ class _NavigationRailSection extends GetView<HomeController> {
           child: NavigationRail(
             extended: extended,
             minExtendedWidth: 210,
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.surface,
+            // เมนูที่เลือกอยู่เดิมเป็นพื้นสีส้มจาง ๆ ซึ่งแทบแยกไม่ออกจากพื้นขาว
+            // ใส่ทั้งพื้น indicator และสีไอคอน/ตัวอักษรให้ชัดขึ้น
+            indicatorColor: AppColors.primarySoft,
+            selectedIconTheme: const IconThemeData(color: AppColors.brandInk),
+            selectedLabelTextStyle: const TextStyle(
+              color: AppColors.brandInk,
+              fontWeight: FontWeight.w700,
+              fontSize: 13,
+            ),
+            unselectedLabelTextStyle: const TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 13,
+            ),
             selectedIndex: controller.currentIndex.value,
             onDestinationSelected: controller.changeTab,
             labelType: extended ? null : NavigationRailLabelType.all,
@@ -109,7 +123,7 @@ class _BottomNav extends GetView<HomeController> {
       selectedIndex: controller.currentIndex.value,
       onDestinationSelected: controller.changeTab,
       height: 64,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       indicatorColor: AppColors.primarySoft,
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       destinations: controller.destinations
@@ -267,7 +281,7 @@ class _OfflineQueueBadge extends StatelessWidget {
                           height: 18,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: Colors.white,
+                            color: AppColors.surface,
                           ),
                         )
                       : Text('home_sync_now_button'.tr),
@@ -282,6 +296,10 @@ class _OfflineQueueBadge extends StatelessWidget {
 }
 
 /// ไฟบอกสถานะการเชื่อมต่อ socket — ให้พนักงานรู้ทันทีถ้าเน็ตหลุด
+///
+/// ตอนเชื่อมต่อปกติเป็นแค่จุดเล็ก ๆ ไม่รบกวนสายตา แต่ตอนหลุดจะกลายเป็นป้ายมีข้อความ
+/// เพราะบนมือถือ/แท็บเล็ตไม่มี hover ให้เห็น tooltip — ถ้าสื่อด้วยสีของจุด 9px อย่างเดียว
+/// พนักงานจะไม่มีวันสังเกตเห็นตอนที่จำเป็นที่สุด
 class _ConnectionDot extends StatelessWidget {
   const _ConnectionDot();
 
@@ -291,19 +309,51 @@ class _ConnectionDot extends StatelessWidget {
 
     return ValueListenableBuilder<bool>(
       valueListenable: session.socket.connected,
-      builder: (context, connected, _) => Tooltip(
-        message: connected
-            ? 'home_connection_online_tooltip'.tr
-            : 'home_connection_offline_tooltip'.tr,
-        child: Container(
-          width: 9,
-          height: 9,
-          decoration: BoxDecoration(
-            color: connected ? AppColors.success : AppColors.textDisabled,
-            shape: BoxShape.circle,
+      builder: (context, connected, _) {
+        if (connected) {
+          return Tooltip(
+            message: 'home_connection_online_tooltip'.tr,
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: const BoxDecoration(
+                color: AppColors.success,
+                shape: BoxShape.circle,
+              ),
+            ),
+          );
+        }
+
+        return Tooltip(
+          message: 'home_connection_offline_tooltip'.tr,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppColors.danger,
+              borderRadius: BorderRadius.circular(AppTheme.radiusSm),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  size: 14,
+                  color: Colors.white,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'home_connection_offline_badge'.tr,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -348,7 +398,7 @@ class _UserChip extends GetView<HomeController> {
             ),
             title: Text(
               'home_logout_menu_item'.tr,
-              style: const TextStyle(color: AppColors.danger),
+              style: const TextStyle(color: AppColors.dangerInk),
             ),
           ),
         ),
@@ -359,7 +409,7 @@ class _UserChip extends GetView<HomeController> {
         child: Text(
           user.initials,
           style: const TextStyle(
-            color: AppColors.primary,
+            color: AppColors.brandInk,
             fontWeight: FontWeight.w800,
             fontSize: 13,
           ),

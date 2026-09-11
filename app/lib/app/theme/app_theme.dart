@@ -7,6 +7,19 @@ import 'app_colors.dart';
 class AppTheme {
   const AppTheme._();
 
+  /// ฟอนต์หลักของแอป — ต้องตรงกับชื่อ family ใน `pubspec.yaml`
+  /// เครื่องมือถ่ายภาพหน้าจอ (`tool/screenshots`) ก็ลงทะเบียนฟอนต์ด้วยชื่อนี้
+  /// ภาพในเอกสารจึงตรงกับที่ผู้ใช้เห็นจริง
+  static const String fontFamily = 'NotoSansThai';
+
+  /// ตัวเลขเงินก้อนใหญ่ที่ต้องอ่านให้ถูกในครั้งเดียว (เงินทอน / ยอดสุทธิ)
+  /// รวมไว้ที่เดียวเพราะก่อนหน้านี้หน้าเก็บเงินกับหน้าแยกบิลใช้คนละขนาด (22 กับ 20)
+  /// สีปล่อยให้ผู้เรียกกำหนดเอง แล้วแต่ว่าเป็นยอดรับหรือยอดทอน
+  static const TextStyle moneyLarge = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+  );
+
   static const double radiusSm = 8;
   static const double radiusMd = 12;
   static const double radiusLg = 16;
@@ -32,6 +45,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       splashFactory: InkSparkle.splashFactory,
       visualDensity: VisualDensity.standard,
+      // ตั้งที่ ThemeData ชั้นนี้จุดเดียว ทุก TextStyle ที่ copyWith ต่อจาก textTheme
+      // จะได้ฟอนต์นี้ไปด้วยอัตโนมัติ (ดูฟอนต์ที่ฝังไว้ใน pubspec.yaml)
+      fontFamily: fontFamily,
       textTheme: _textTheme,
     );
 

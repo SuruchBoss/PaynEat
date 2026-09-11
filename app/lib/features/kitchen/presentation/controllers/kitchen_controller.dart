@@ -33,6 +33,9 @@ class KitchenController extends GetxController {
   final RxnString errorMessage = RxnString();
   final RxInt tick = 0.obs;
 
+  /// จอครัวขาดการเชื่อมต่อเรียลไทม์อยู่หรือไม่ — ใช้ขึ้นแถบเตือนบนหน้าจอ
+  final RxBool isOffline = false.obs;
+
   /// นาทีที่ถือว่า "ช้า" แล้วต้องเน้นสีให้ครัวเห็น
   static const int lateThresholdMinutes = 15;
 
@@ -44,20 +47,33 @@ class KitchenController extends GetxController {
     super.onInit();
     load();
     _listenToRealtimeUpdates();
-    _elapsedTimer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => tick.value++,
-    );
+
+    _syncConnectionState();
+    _session.socket.connected.addListener(_syncConnectionState);
+
+    // ตัวจับเวลานี้ทำสองหน้าที่:
+    // 1. เดินตัวเลข "รอมาแล้วกี่นาที" บนตั๋ว
+    // 2. เป็น polling สำรองตอน socket หลุด — จอครัวเป็นจอเดียวที่ไม่มีคนคอยกดรีเฟรช
+    //    ถ้าพึ่ง socket อย่างเดียว เน็ตสะดุดทีเดียวตั๋วจะหยุดเข้าเงียบ ๆ ทั้งที่ตัวเลขนาที
+    //    ยังเดินอยู่ ทำให้ดูเหมือนทุกอย่างปกติ
+    _elapsedTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      tick.value++;
+      if (!_session.socket.connected.value) load(showLoader: false);
+    });
   }
 
   @override
   void onClose() {
     _elapsedTimer?.cancel();
+    _session.socket.connected.removeListener(_syncConnectionState);
     for (final unsubscribe in _unsubscribers) {
       unsubscribe();
     }
     super.onClose();
   }
+
+  void _syncConnectionState() =>
+      isOffline.value = !_session.socket.connected.value;
 
   List<OrderItem> byStatus(String status) =>
       queue.where((item) => item.status == status).toList(growable: false);

@@ -33,7 +33,7 @@ class OrderItemTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
@@ -113,7 +113,7 @@ class OrderItemTile extends StatelessWidget {
                               item.note!,
                               style: const TextStyle(
                                 fontSize: 12,
-                                color: AppColors.warning,
+                                color: AppColors.warningInk,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -139,7 +139,7 @@ class OrderItemTile extends StatelessWidget {
                               size: 18,
                             ),
                             visualDensity: VisualDensity.compact,
-                            color: AppColors.textDisabled,
+                            color: AppColors.textSecondary,
                             tooltip: 'order_remove_item'.tr,
                           ),
                         if (onCancel != null && !item.isEditable)
@@ -147,14 +147,14 @@ class OrderItemTile extends StatelessWidget {
                             onPressed: onCancel,
                             icon: const Icon(Icons.block_rounded, size: 17),
                             visualDensity: VisualDensity.compact,
-                            color: AppColors.textDisabled,
+                            color: AppColors.textSecondary,
                             tooltip: 'order_cancel_item'.tr,
                           ),
                         if (onAdvance != null && item.nextActionLabel != null)
                           FilledButton(
                             onPressed: onAdvance,
                             style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 32),
+                              minimumSize: const Size(0, 48),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),

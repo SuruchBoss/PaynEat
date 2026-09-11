@@ -113,7 +113,7 @@ class _DiscountDialogState extends State<DiscountDialog> {
             ),
             child: Text(
               'order_discount_remove_button'.tr,
-              style: const TextStyle(color: AppColors.danger),
+              style: const TextStyle(color: AppColors.dangerInk),
             ),
           ),
         TextButton(

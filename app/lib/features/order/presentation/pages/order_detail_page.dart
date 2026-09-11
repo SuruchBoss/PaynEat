@@ -93,7 +93,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
                       ),
                       title: Text(
                         'order_menu_cancel_order'.tr,
-                        style: const TextStyle(color: AppColors.danger),
+                        style: const TextStyle(color: AppColors.dangerInk),
                       ),
                       dense: true,
                     ),
@@ -243,7 +243,7 @@ class _OrderHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      color: Colors.white,
+      color: AppColors.surface,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -301,7 +301,7 @@ class _OrderHeader extends StatelessWidget {
                 'order_cancelled_reason_prefix'.trParams({
                   'reason': order.cancelledReason!,
                 }),
-                style: const TextStyle(color: AppColors.danger, fontSize: 13),
+                style: const TextStyle(color: AppColors.dangerInk, fontSize: 13),
               ),
             ),
           ],
@@ -437,7 +437,7 @@ class _BillCard extends GetView<OrderDetailController> {
                       }),
                       style: const TextStyle(
                         fontSize: 12.5,
-                        color: AppColors.success,
+                        color: AppColors.successInk,
                       ),
                     ),
                   ),

@@ -23,11 +23,16 @@ class KitchenTicketCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = AppColors.itemStatus(item.status);
     final accent = isLate ? AppColors.danger : color;
+    // จอครัวอ่านจากระยะไกลในที่ที่มีไอน้ำและแสงจ้า ตัวหนังสือบนหัวตั๋ว
+    // (ชื่อโต๊ะ + เวลารอ) จึงต้องใช้เฉดเข้ม ไม่ใช้สีสดแบบเดียวกับเส้นขอบ
+    final accentInk = isLate
+        ? AppColors.dangerInk
+        : AppColors.itemStatusInk(item.status);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: accent.withValues(alpha: 0.4),
@@ -48,7 +53,7 @@ class KitchenTicketCard extends StatelessWidget {
                       ? Icons.table_restaurant_rounded
                       : Icons.takeout_dining_rounded,
                   size: 15,
-                  color: accent,
+                  color: accentInk,
                 ),
                 const SizedBox(width: 6),
                 Text(
@@ -60,7 +65,7 @@ class KitchenTicketCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,
-                    color: accent,
+                    color: accentInk,
                   ),
                 ),
                 const Spacer(),
@@ -69,7 +74,7 @@ class KitchenTicketCard extends StatelessWidget {
                       ? Icons.local_fire_department_rounded
                       : Icons.schedule_rounded,
                   size: 14,
-                  color: accent,
+                  color: accentInk,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -77,7 +82,7 @@ class KitchenTicketCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: accent,
+                    color: accentInk,
                   ),
                 ),
               ],
@@ -173,7 +178,7 @@ class KitchenTicketCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.warning,
+                              color: AppColors.warningInk,
                             ),
                           ),
                         ),
@@ -186,7 +191,7 @@ class KitchenTicketCard extends StatelessWidget {
                   child: FilledButton(
                     style: FilledButton.styleFrom(
                       backgroundColor: color,
-                      minimumSize: const Size(0, 42),
+                      minimumSize: const Size(0, 56),
                     ),
                     onPressed: onAdvance,
                     child: Text(item.nextActionLabel ?? '-'),

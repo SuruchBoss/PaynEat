@@ -5,6 +5,8 @@ const Map<String, String> kitchenTranslationsTh = {
   'kitchen_late_count': 'ช้า @count',
   'kitchen_refresh_tooltip': 'รีเฟรช',
   'kitchen_loading_queue': 'กำลังโหลดคิวครัว...',
+  'kitchen_offline_banner':
+      'ขาดการเชื่อมต่อ — ตั๋วใหม่อาจยังไม่ขึ้น ระบบกำลังลองดึงข้อมูลเองทุก 30 วินาที',
   'kitchen_empty_queue_message':
       'ยังไม่มีออเดอร์เข้าครัว\nรายการใหม่จะเด้งขึ้นมาเองทันที',
   'kitchen_column_count_label': '@title (@count)',
@@ -18,6 +20,8 @@ const Map<String, String> kitchenTranslationsEn = {
   'kitchen_late_count': 'Late @count',
   'kitchen_refresh_tooltip': 'Refresh',
   'kitchen_loading_queue': 'Loading kitchen queue...',
+  'kitchen_offline_banner':
+      'Disconnected — new tickets may not appear. Retrying every 30 seconds.',
   'kitchen_empty_queue_message':
       'No orders in the kitchen yet\nNew tickets will pop up automatically',
   'kitchen_column_count_label': '@title (@count)',

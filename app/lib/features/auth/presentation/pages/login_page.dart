@@ -220,7 +220,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                             child: Text(
                               message,
                               style: const TextStyle(
-                                color: AppColors.danger,
+                                color: AppColors.dangerInk,
                                 fontSize: 13.5,
                               ),
                             ),
@@ -242,7 +242,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2.4,
-                              color: Colors.white,
+                              color: AppColors.surface,
                             ),
                           )
                         : Text('auth_login_title'.tr),
@@ -265,7 +265,7 @@ class _LoginFormPanel extends GetView<AuthController> {
                             'url': AppConfig.baseUrl,
                           }),
                     style: const TextStyle(
-                      color: AppColors.textDisabled,
+                      color: AppColors.textSecondary,
                       fontSize: 11.5,
                     ),
                   ),

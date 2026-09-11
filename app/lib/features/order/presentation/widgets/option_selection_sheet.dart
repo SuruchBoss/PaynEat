@@ -99,7 +99,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       child: Column(
@@ -172,7 +172,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                           'order_option_required'.tr,
                           style: const TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.danger,
+                            color: AppColors.dangerInk,
                           ),
                         )
                       else
@@ -182,7 +182,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                           }),
                           style: const TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.textDisabled,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                     ],
@@ -310,7 +310,7 @@ class _OptionChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                  color: selected ? AppColors.brandInk : AppColors.textPrimary,
                 ),
               ),
               if (priceDelta > 0) ...[

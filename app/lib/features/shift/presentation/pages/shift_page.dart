@@ -91,7 +91,7 @@ class _OpenShiftForm extends GetView<ShiftController> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     )
                   : const Icon(Icons.lock_open_rounded),
@@ -194,7 +194,7 @@ class _OpenShiftCard extends GetView<ShiftController> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     )
                   : const Icon(Icons.lock_rounded),
