@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-383%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-390%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-yellow.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 383 automated tests.
+control and 390 automated tests.
 
 ---
 
@@ -267,7 +267,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 165 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 218 cases — domain / controller / widget
+cd app && flutter test      # 225 cases — domain / controller / widget
 ```
 
 ---
@@ -333,6 +333,9 @@ cd app && flutter test      # 218 cases — domain / controller / widget
 - **Refunds** after a payment has gone through (full or partial), always with a required reason (audit
   trail) — refunded amounts are automatically subtracted from net sales in reports (manager role or above)
 - Change calculation with shortcut buttons (exact / round up to the nearest hundred / 100 / 500 / 1000)
+- **Receipts reconcile the way a Thai receipt should** — each payment line shows the cash the
+  customer handed over, not the amount applied to the bill, so tendered − change equals the bill
+  total exactly, both on screen and on the printed receipt (see `docs/DECISIONS.md` #16)
 - Discounts in both flat-amount and percentage, with 5/10/15/20% shortcut buttons
 - **Prints a real receipt** on a thermal printer over ESC/POS via LAN/Wi-Fi (configure IP/port/paper size
   from Settings), with full Thai-character support — no printer configured? The on-screen receipt still
@@ -662,7 +665,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 165 cases
-cd app && flutter test      # 218 cases
+cd app && flutter test      # 225 cases
 ```
 
 **Backend (165 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -704,7 +707,7 @@ disabled item elsewhere gets a 409 → cancelling the item restores stock and re
 → a manual stock adjustment syncs availability the same way → changing quantity/removing an item/cancelling
 the whole order all restore stock correctly.
 
-**Flutter (218 cases)** — split into 3 levels:
+**Flutter (225 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -722,7 +725,7 @@ the whole order all restore stock correctly.
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |
 | Controller | `kitchen_controller_test.dart` | Grouping the kitchen queue by status, counting late items, moving status forward |
 | Controller | `checkout_controller_test.dart` | Change/remaining-balance calculation, the `canPay` condition, rounding up to the nearest hundred |
-| Controller | `receipt_controller_test.dart` | Loading a receipt by orderId |
+| Controller | `receipt_controller_test.dart` | Loading a receipt by orderId, plus the `Payment.tendered` rule — a receipt shows the cash the customer handed over, not the amount applied to the bill (tendered − change = amount applied) |
 | Controller | `settings_controller_test.dart` | Loading store settings into the correct form fields |
 | Controller | `staff_controller_test.dart` | Filtering staff by role, counting by role |
 | Controller | `order_detail_controller_test.dart` | Order management permissions, moving item status forward |
@@ -733,6 +736,7 @@ the whole order all restore stock correctly.
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
 | Widget | `widgets_test.dart` | Button taps and widget state |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
+| Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is
@@ -793,7 +797,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 13 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 17 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use
