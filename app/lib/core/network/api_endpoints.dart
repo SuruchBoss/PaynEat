@@ -78,4 +78,9 @@ class ApiEndpoints {
   static const String shifts = '/shifts';
   static const String currentShift = '/shifts/current';
   static String closeShift(int id) => '/shifts/$id/close';
+
+  // Tax invoices
+  static String taxInvoice(int orderId) => '/tax-invoices/order/$orderId';
+  static String taxInvoiceVoid(int orderId) =>
+      '/tax-invoices/order/$orderId/void';
 }

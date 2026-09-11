@@ -92,6 +92,37 @@ class SettingsPage extends GetView<SettingsController> {
                       contentPadding: EdgeInsets.zero,
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  SectionHeader(
+                    title: 'settings_tax_invoice_title'.tr,
+                    subtitle: 'settings_tax_invoice_subtitle'.tr,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller.storeTaxIdController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: InputDecoration(
+                      labelText: 'settings_store_tax_id_label'.tr,
+                      hintText: 'settings_store_tax_id_hint'.tr,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: controller.storeAddressController,
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText: 'settings_store_address_label'.tr,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: controller.storeBranchController,
+                    decoration: InputDecoration(
+                      labelText: 'settings_store_branch_label'.tr,
+                      hintText: 'settings_store_branch_hint'.tr,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Obx(
                     () => FilledButton(

@@ -6,6 +6,9 @@ class StoreSettings {
     required this.vatRate,
     required this.serviceChargeRate,
     required this.vatIncluded,
+    this.storeTaxId,
+    this.storeAddress,
+    this.storeBranch,
   });
 
   final String storeName;
@@ -13,6 +16,12 @@ class StoreSettings {
   final double vatRate;
   final double serviceChargeRate;
   final bool vatIncluded;
+
+  /// ข้อมูลร้านสำหรับออกใบกำกับภาษี (ดู docs/tickets/07-tax-invoice.md) — เป็น null ได้
+  /// จนกว่าร้านจะตั้งค่าเอง (ร้านที่ไม่ได้จด VAT ไม่จำเป็นต้องมี)
+  final String? storeTaxId;
+  final String? storeAddress;
+  final String? storeBranch;
 
   double get vatPercent => vatRate * 100;
   double get serviceChargePercent => serviceChargeRate * 100;

@@ -152,6 +152,15 @@ const MENU_ITEM_INGREDIENTS = {
   ],
 };
 
+// ข้อมูลผู้เสียภาษีของร้านตัวอย่าง (ดู docs/tickets/07-tax-invoice.md) — ไม่มี default จาก .env
+// เหมือนค่าตั้งค่าอื่น เพราะร้านจริงที่ไม่ได้จด VAT ไม่ควรมีเลขผู้เสียภาษีปลอมขึ้นมาเอง จึง seed
+// ไว้ตรงนี้เฉพาะโหมดเดโมเพื่อให้ลองออกใบกำกับภาษีได้ทันทีโดยไม่ต้องตั้งค่าเองก่อน
+const STORE_TAX_INFO = {
+  store_tax_id: '0105558000012',
+  store_address: '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
+  store_branch: 'สำนักงานใหญ่',
+};
+
 // prettier-ignore
 const TABLES = [
   ...Array.from({ length: 8 }, (_, i) => ({ name: `A${i + 1}`, zone: 'โซนในร้าน', seats: i < 4 ? 2 : 4 })),
@@ -284,6 +293,14 @@ export const seed = () => {
         'INSERT INTO dining_tables (name, zone, seats) VALUES (?, ?, ?)',
       );
       for (const table of TABLES) insertTable.run(table.name, table.zone, table.seats);
+    }
+
+    const hasStoreTaxId = db.prepare("SELECT 1 FROM settings WHERE key = 'store_tax_id'").get();
+    if (!hasStoreTaxId) {
+      const upsertSetting = db.prepare(
+        'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING',
+      );
+      for (const [key, value] of Object.entries(STORE_TAX_INFO)) upsertSetting.run(key, value);
     }
 
     // เปิดกะแรกให้พร้อมใช้งานทันที (ร้านจริงจะเปิด/ปิดกะเองทุกวันหลังจากนี้)

@@ -198,6 +198,14 @@ class PromotionType {
   static String label(String type) => (_keys[type] ?? type).tr;
 }
 
+/// ประเภทใบกำกับภาษี — ดู docs/tickets/07-tax-invoice.md
+class TaxInvoiceType {
+  const TaxInvoiceType._();
+
+  static const String abbreviated = 'abbreviated';
+  static const String full = 'full';
+}
+
 /// คีย์ที่ใช้เก็บข้อมูลใน local storage
 class StorageKeys {
   const StorageKeys._();

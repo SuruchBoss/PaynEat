@@ -15,6 +15,15 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_service_charge_range_error': 'Service Charge ต้องอยู่ระหว่าง 0-100',
   'settings_saved_success': 'บันทึกการตั้งค่าแล้ว',
 
+  'settings_tax_invoice_title': 'ข้อมูลสำหรับออกใบกำกับภาษี',
+  'settings_tax_invoice_subtitle':
+      'ต้องตั้งค่าเลขผู้เสียภาษีและที่อยู่ร้านก่อน จึงจะออกใบกำกับภาษีได้',
+  'settings_store_tax_id_label': 'เลขประจำตัวผู้เสียภาษี',
+  'settings_store_tax_id_hint': '13 หลัก',
+  'settings_store_address_label': 'ที่อยู่ร้าน',
+  'settings_store_branch_label': 'สาขา',
+  'settings_store_branch_hint': 'เช่น สำนักงานใหญ่, สาขาที่ 001',
+
   'settings_printer_title': 'เครื่องพิมพ์ใบเสร็จ',
   'settings_printer_subtitle':
       'พิมพ์ผ่านเครื่องพิมพ์ความร้อนบนวง LAN/WiFi เดียวกัน (ยังไม่รองรับบนเว็บ)',
@@ -65,6 +74,15 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_vat_range_error': 'VAT must be between 0-100',
   'settings_service_charge_range_error': 'Service Charge must be between 0-100',
   'settings_saved_success': 'Settings saved',
+
+  'settings_tax_invoice_title': 'Tax Invoice Info',
+  'settings_tax_invoice_subtitle':
+      'Set the store tax ID and address first — required before issuing a tax invoice',
+  'settings_store_tax_id_label': 'Tax ID',
+  'settings_store_tax_id_hint': '13 digits',
+  'settings_store_address_label': 'Store address',
+  'settings_store_branch_label': 'Branch',
+  'settings_store_branch_hint': 'e.g. Head Office, Branch 001',
 
   'settings_printer_title': 'Receipt Printer',
   'settings_printer_subtitle':

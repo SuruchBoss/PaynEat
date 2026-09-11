@@ -48,6 +48,9 @@ class _FakeSettingsRepository implements SettingsRepository {
     double? vatRate,
     double? serviceChargeRate,
     bool? vatIncluded,
+    String? storeTaxId,
+    String? storeAddress,
+    String? storeBranch,
   }) async => get();
 }
 

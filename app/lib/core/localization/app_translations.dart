@@ -17,6 +17,7 @@ import 'translations/shift_translations.dart';
 import 'translations/staff_translations.dart';
 import 'translations/status_translations.dart';
 import 'translations/table_translations.dart';
+import 'translations/tax_invoice_translations.dart';
 
 /// รวมคำแปลทั้งแอป — ไทย (ค่าเริ่มต้น) และอังกฤษ
 ///
@@ -49,6 +50,7 @@ class AppTranslations extends Translations {
       ...shiftTranslationsTh,
       ...staffTranslationsTh,
       ...tableTranslationsTh,
+      ...taxInvoiceTranslationsTh,
     },
     'en_US': {
       ...commonTranslationsEn,
@@ -67,6 +69,7 @@ class AppTranslations extends Translations {
       ...shiftTranslationsEn,
       ...staffTranslationsEn,
       ...tableTranslationsEn,
+      ...taxInvoiceTranslationsEn,
     },
   };
 }

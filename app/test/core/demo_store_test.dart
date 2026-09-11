@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
+import 'package:payneat_pos/core/errors/exceptions.dart';
 
 /// เทสต์ตรงต่อ DemoStore เอง (ไม่ผ่าน data source/repository) เพื่อยืนยันว่าเมธอด
 /// ที่ถูกแยกออกไปหลายไฟล์ตามโดเมนด้วย part/part of (auth, menu, tables, orders,
@@ -653,5 +655,185 @@ void main() {
         expect(store.ingredient(ingredientId)['currentStock'], 7.0);
       },
     );
+  });
+
+  group('DemoStore tax invoices — ใบกำกับภาษี (ticket 07)', () {
+    // จ่ายเงินเต็มจำนวนให้ออเดอร์ใหม่ 1 ใบ (mirror ของ payments group ด้านบน)
+    // เพื่อให้ issueTaxInvoice ผ่านเงื่อนไข "จ่ายครบแล้วเท่านั้น"
+    Map<String, dynamic> paidOrder() {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      final order = store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 2,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+      final total = (order['total'] as num).toDouble();
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+        cashierId: 6,
+      );
+      return store.findOrder(order['id'] as int);
+    }
+
+    test(
+      'ออกใบกำกับภาษีอย่างย่อสำเร็จ — เลขที่รันตรงรูปแบบ INV<ปี พ.ศ. 2 หลัก>-<เลขรัน 6 หลัก>',
+      () {
+        final order = paidOrder();
+        final invoice = store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.abbreviated,
+        });
+
+        final buddhistYear = DateTime.now().year + 543;
+        final yy = buddhistYear.toString().substring(
+          buddhistYear.toString().length - 2,
+        );
+        expect(invoice['runningNumber'], matches(RegExp('^INV$yy-\\d{6}\$')));
+        expect(invoice['invoiceType'], TaxInvoiceType.abbreviated);
+        expect(invoice['isVoid'], false);
+      },
+    );
+
+    test('ใบกำกับภาษีเต็มรูปต้องระบุชื่อและที่อยู่ลูกค้า ไม่งั้นถูกปฏิเสธ', () {
+      final order = paidOrder();
+      expect(
+        () => store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.full,
+        }),
+        throwsException,
+      );
+
+      final invoice = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.full,
+        'customerName': 'บริษัท ทดสอบ จำกัด',
+        'customerAddress': '123 ถนนทดสอบ',
+      });
+      expect(invoice['customerName'], 'บริษัท ทดสอบ จำกัด');
+      // เลขผู้เสียภาษีลูกค้าไม่บังคับแม้เต็มรูป (ดู docs/tickets/07-tax-invoice.md)
+      expect(invoice['customerTaxId'], isNull);
+    });
+
+    test('ออกซ้ำให้ออเดอร์เดียวกันไม่ได้ถ้ายังไม่ยกเลิกใบเดิม', () {
+      final order = paidOrder();
+      store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+
+      expect(
+        () => store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.abbreviated,
+        }),
+        throwsException,
+      );
+    });
+
+    test('ออกใบกำกับภาษีให้ออเดอร์ที่ยังไม่จ่ายเงินไม่ได้', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      final order = store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+
+      expect(
+        () => store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.abbreviated,
+        }),
+        throwsException,
+      );
+    });
+
+    test('เลขที่รันเรียงต่อเนื่องไม่ซ้ำข้ามหลายออเดอร์', () {
+      final order1 = paidOrder();
+      final order2 = paidOrder();
+      final invoice1 = store.issueTaxInvoice(order1['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+      final invoice2 = store.issueTaxInvoice(order2['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+
+      expect(invoice1['runningNumber'], isNot(invoice2['runningNumber']));
+      final seq1 = int.parse(
+        (invoice1['runningNumber'] as String).split('-').last,
+      );
+      final seq2 = int.parse(
+        (invoice2['runningNumber'] as String).split('-').last,
+      );
+      expect(seq2, seq1 + 1);
+    });
+
+    test('taxInvoiceForOrder โยน 404 ก่อนออก แล้วคืนใบล่าสุดหลังออกสำเร็จ', () {
+      final order = paidOrder();
+      expect(
+        () => store.taxInvoiceForOrder(order['id'] as int),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404),
+        ),
+      );
+
+      final issued = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+      expect(store.taxInvoiceForOrder(order['id'] as int)['id'], issued['id']);
+    });
+
+    test('ยกเลิกใบแล้วออกใหม่ได้ด้วยเลขที่รันใหม่ ไม่ใช้เลขเดิมซ้ำ', () {
+      final order = paidOrder();
+      final first = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+
+      final voided = store.voidTaxInvoice(
+        order['id'] as int,
+        'ออกผิดประเภท',
+        voidedById: 2,
+      );
+      expect(voided['isVoid'], true);
+      expect(voided['voidReason'], 'ออกผิดประเภท');
+      expect(voided['voidedByName'], isNotNull);
+
+      final second = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+      expect(second['runningNumber'], isNot(first['runningNumber']));
+      expect(store.taxInvoiceForOrder(order['id'] as int)['id'], second['id']);
+    });
+
+    test('ยกเลิกใบกำกับภาษีที่ยังไม่เคยออกให้ออเดอร์นี้ไม่ได้ (404)', () {
+      final order = paidOrder();
+      expect(
+        () => store.voidTaxInvoice(order['id'] as int, 'เหตุผลทดสอบ'),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404),
+        ),
+      );
+    });
+
+    test('ออกใบกำกับภาษีไม่ได้ถ้าร้านยังไม่ตั้งค่าเลขผู้เสียภาษี/ที่อยู่', () {
+      final order = paidOrder();
+      store.settings['storeTaxId'] = null;
+
+      expect(
+        () => store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.abbreviated,
+        }),
+        throwsException,
+      );
+    });
   });
 }

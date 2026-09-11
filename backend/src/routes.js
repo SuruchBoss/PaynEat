@@ -11,6 +11,7 @@ import paymentRoutes from './modules/payments/payment.routes.js';
 import reportRoutes from './modules/reports/report.routes.js';
 import settingsRoutes from './modules/settings/settings.routes.js';
 import shiftRoutes from './modules/shifts/shift.routes.js';
+import taxInvoiceRoutes from './modules/tax-invoices/tax-invoice.routes.js';
 
 const router = Router();
 
@@ -26,5 +27,6 @@ router.use('/payments', paymentRoutes);
 router.use('/reports', reportRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/shifts', shiftRoutes);
+router.use('/tax-invoices', taxInvoiceRoutes);
 
 export default router;

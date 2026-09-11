@@ -465,5 +465,11 @@ class DemoSeed {
     'vatRate': 0.07,
     'serviceChargeRate': 0.1,
     'vatIncluded': false,
+    // ข้อมูลผู้เสียภาษีของร้านตัวอย่าง (ดู docs/tickets/07-tax-invoice.md) — seed ไว้ให้ลอง
+    // ออกใบกำกับภาษีได้ทันทีโดยไม่ต้องตั้งค่าเองก่อน
+    'storeTaxId': '0105558000012',
+    'storeAddress':
+        '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
+    'storeBranch': 'สำนักงานใหญ่',
   };
 }
