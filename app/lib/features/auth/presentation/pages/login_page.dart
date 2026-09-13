@@ -253,8 +253,8 @@ class _LoginFormPanel extends GetView<AuthController> {
                 if (AppConfig.demoMode) ...[
                   const _DemoModeBanner(),
                   const SizedBox(height: 14),
+                  const DemoAccountPicker(),
                 ],
-                const DemoAccountPicker(),
 
                 const SizedBox(height: 24),
                 Center(
