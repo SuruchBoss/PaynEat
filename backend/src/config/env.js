@@ -9,6 +9,16 @@ const toInt = (value, fallback) => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+// ห้ามมี fallback secret ที่ใช้งานได้จริงในโค้ด — ถ้าใครก็ตามที่เห็นซอร์สนี้รู้ค่า default
+// ก็ปลอม JWT สิทธิ์ admin ได้ทันทีถ้าเซิร์ฟเวอร์ไหนลืมตั้งค่า env นี้ (ดู SECURITY.md)
+// จึงบังคับให้ตั้งค่าเองเสมอ ไม่ตั้งค่าก็ไม่ต้องให้เซิร์ฟเวอร์ start (fail-closed)
+if (!process.env.JWT_SECRET) {
+  throw new Error(
+    'ต้องตั้งค่า JWT_SECRET ใน environment ก่อนรันเซิร์ฟเวอร์ (ดู .env.example) — ' +
+      'ไม่มีค่าเริ่มต้นให้เพื่อความปลอดภัย',
+  );
+}
+
 export const env = {
   rootDir,
   nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -19,7 +29,7 @@ export const env = {
     ? path.resolve(rootDir, process.env.DATABASE_FILE)
     : path.resolve(rootDir, 'data/payneat.sqlite'),
   jwt: {
-    secret: process.env.JWT_SECRET ?? 'payneat-dev-secret-change-me',
+    secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '12h',
   },
   corsOrigin: (process.env.CORS_ORIGIN ?? '*').split(',').map((item) => item.trim()),

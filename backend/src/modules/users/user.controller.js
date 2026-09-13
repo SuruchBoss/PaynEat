@@ -7,14 +7,14 @@ export const userController = {
 
   detail: asyncHandler(async (req, res) => ok(res, userService.getById(req.validated.params.id))),
 
-  create: asyncHandler(async (req, res) => created(res, userService.create(req.body))),
+  create: asyncHandler(async (req, res) => created(res, userService.create(req.body, req.user))),
 
   update: asyncHandler(async (req, res) =>
-    ok(res, userService.update(req.validated.params.id, req.body)),
+    ok(res, userService.update(req.validated.params.id, req.body, req.user)),
   ),
 
   resetPassword: asyncHandler(async (req, res) =>
-    ok(res, userService.resetPassword(req.validated.params.id, req.body.password)),
+    ok(res, userService.resetPassword(req.validated.params.id, req.body.password, req.user)),
   ),
 
   remove: asyncHandler(async (req, res) => {
