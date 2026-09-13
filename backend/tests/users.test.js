@@ -198,3 +198,53 @@ test('admin ยังสร้าง/แก้ไข/รีเซ็ตรหั
   });
   assert.equal(reset.status, 200);
 });
+
+// เช็คสถานะบัญชีจาก DB ทุก request แทนที่จะเชื่อ token เก่าเฉยๆ — ดูรายงาน security review
+// (Vuln 5): token ที่ออกไปก่อนถูกปิดใช้งาน/เปลี่ยน role ต้องใช้ต่อไม่ได้ทันที ไม่ต้องรอหมดอายุ
+test('token เก่าใช้ต่อไม่ได้ทันทีหลังบัญชีถูกปิดใช้งาน (ไม่ต้องรอ token หมดอายุ)', async () => {
+  const admin = await login('admin', 'admin123');
+  const created = await post('/api/v1/users', admin.token, {
+    name: 'จะถูกปิดใช้งานระหว่างมี token ค้าง',
+    username: uniqueUsername('deactlive'),
+    password: 'test1234',
+    role: 'cashier',
+  });
+
+  const staff = await login(created.body.data.username, 'test1234');
+  const before = await get('/api/v1/auth/me', staff.token);
+  assert.equal(before.status, 200);
+
+  await patch(`/api/v1/users/${created.body.data.id}`, admin.token, { isActive: false });
+
+  const after = await get('/api/v1/auth/me', staff.token);
+  assert.equal(after.status, 401);
+});
+
+test('token เก่าใช้สิทธิ์เดิมต่อไม่ได้หลังถูกเปลี่ยน role (สิทธิ์ใหม่มีผลทันทีจาก DB)', async () => {
+  const admin = await login('admin', 'admin123');
+  const created = await post('/api/v1/users', admin.token, {
+    name: 'จะถูกลด role ระหว่างมี token ค้าง',
+    username: uniqueUsername('demote'),
+    password: 'test1234',
+    role: 'manager',
+  });
+
+  const manager = await login(created.body.data.username, 'test1234');
+  const beforeDemote = await post('/api/v1/users', manager.token, {
+    name: 'สร้างได้ตอนยังเป็น manager',
+    username: uniqueUsername('okmgr'),
+    password: 'test1234',
+    role: 'waiter',
+  });
+  assert.equal(beforeDemote.status, 201);
+
+  await patch(`/api/v1/users/${created.body.data.id}`, admin.token, { role: 'waiter' });
+
+  const afterDemote = await post('/api/v1/users', manager.token, {
+    name: 'ไม่ควรสร้างได้แล้วหลังลด role',
+    username: uniqueUsername('nomore'),
+    password: 'test1234',
+    role: 'waiter',
+  });
+  assert.equal(afterDemote.status, 403);
+});

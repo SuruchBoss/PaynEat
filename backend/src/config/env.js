@@ -32,7 +32,12 @@ export const env = {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '12h',
   },
-  corsOrigin: (process.env.CORS_ORIGIN ?? '*').split(',').map((item) => item.trim()),
+  // ค่าเริ่มต้น (ไม่ตั้ง CORS_ORIGIN) คือ '*' แบบ string ตรงๆ ให้ cors ใช้ wildcard path จริง —
+  // เดิม .split(',') ทำให้ได้ array ['*'] ซึ่ง cors package เทียบแบบ exact-string จึงไม่ match
+  // origin จริงของเบราว์เซอร์เลยสักตัว (ปิดกั้น cross-origin ทั้งหมดโดยไม่ตั้งใจ ดู security review #6)
+  corsOrigin: process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map((item) => item.trim())
+    : '*',
   // ค่าเริ่มต้นของร้าน ใช้ตอนคำนวณบิล (ปรับได้ที่ตาราง settings)
   store: {
     name: process.env.STORE_NAME ?? 'PaynEat Restaurant',
