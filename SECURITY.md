@@ -31,9 +31,13 @@ PaynEat POS ยังไม่มีระบบเวอร์ชันแบ�
   `.env.example` เป็นแค่ placeholder (`change-this-secret-in-production`) ห้ามใช้ตรงๆ
   ถ้าเคย deploy ที่ไหนไปแล้วด้วยค่า placeholder หรือค่าที่หลุดออกไป ให้เปลี่ยนทันที (จะทำให้
   ทุก session ที่ login ค้างอยู่หลุดออกจากระบบ ต้อง login ใหม่)
-- **เปลี่ยนรหัสผ่านบัญชีเดโม** (`admin123`, `waiter123` ฯลฯ ใน `backend/src/db/seed.js`) หรือ
-  ปิด `AUTO_SEED` แล้วสร้างบัญชีจริงเอง — ค่าเหล่านี้เผยแพร่อยู่ใน README เพื่อให้กดทดลองใช้งานได้
-  ทันที ไม่เหมาะกับระบบที่ใช้งานจริง
+- **ตั้งรหัสผ่านบัญชีเดโมเองก่อน deploy** (`admin123`, `waiter123` ฯลฯ ใน `backend/src/db/seed.js`
+  เผยแพร่อยู่ใน README เพื่อให้กดทดลองใช้งานได้ทันที ไม่เหมาะกับระบบที่ใช้งานจริง) — ระบบบังคับไว้
+  แล้ว: ถ้าตั้ง `NODE_ENV=production` แล้ว seed ข้อมูลตัวอย่าง (`AUTO_SEED` ไม่ได้ปิดไว้ และตาราง
+  `users` ยังว่างอยู่) ต้องตั้งค่า `SEED_ADMIN_PASSWORD`, `SEED_MANAGER_PASSWORD`,
+  `SEED_WAITER1_PASSWORD`, `SEED_WAITER2_PASSWORD`, `SEED_KITCHEN_PASSWORD`,
+  `SEED_CASHIER_PASSWORD` ให้ครบทั้ง 6 ตัวก่อนเสมอ (ดู `.env.example`) ไม่งั้นเซิร์ฟเวอร์จะไม่ยอม
+  สตาร์ต — หรือจะปิด `AUTO_SEED` แล้วสร้างบัญชีจริงเองทั้งหมดแทนก็ได้เช่นกัน
 - ตั้งค่า `CORS_ORIGIN` ให้เจาะจงโดเมนจริงแทน `*`
 - ตรวจสอบว่าไฟล์ฐานข้อมูล SQLite (`backend/data/*.sqlite`) และ `.env` ไม่ถูก commit หรือเปิดเผย
   สู่สาธารณะ (มีอยู่ใน `.gitignore` แล้ว แต่ควรตรวจซ้ำก่อน deploy)
