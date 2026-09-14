@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-431%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-442%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 431 automated tests.
+control and 442 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -277,7 +277,7 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 174 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 185 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 257 cases — domain / controller / widget
 ```
 
@@ -391,6 +391,11 @@ cd app && flutter test      # 257 cases — domain / controller / widget
   token moves from AA (4.5:1) to AAA (7:1) and card borders from 1.24:1 to 4.10:1. The hues and
   their meanings never change; only the depth does. Remembered per device, not per account
   (see `docs/DECISIONS.md` #18)
+- **Passed a full OWASP Top 10 security review** — all 7 findings fixed, fail-closed throughout:
+  no fallback JWT secret in the code, a deactivated/role-changed account loses access immediately
+  instead of waiting for its token to expire, a manager can't self-promote or touch an admin
+  account, and a real deployment (`NODE_ENV=production`) refuses to seed accounts with the known
+  demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
 
 ---
 
@@ -685,11 +690,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 174 cases
+cd backend && npm test      # 185 cases
 cd app && flutter test      # 257 cases
 ```
 
-**Backend (174 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (185 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -732,6 +737,15 @@ the whole order all restore stock correctly.
 (`INV<Buddhist year>-<6-digit sequence>`) staying sequential across multiple orders, rejecting a second
 invoice for the same bill / a bill that hasn't been paid yet / a store that hasn't set its tax ID, RBAC
 (kitchen staff can't issue one), and the void-then-reissue flow producing a fresh running number.
+
+After a full OWASP Top 10 security review, added tests covering all 7 vulnerabilities found and fixed:
+`users.test.js` gained 7 cases — a manager can't create/self-promote/edit/reset-password an admin account
+(privilege escalation), admin can still do all of that normally, and an old token stops carrying its
+previous privileges the moment an account is deactivated or its role changes (no waiting for the token to
+expire). `security-headers.test.js` (2 new cases) confirms the CSP header is present on every endpoint
+except `/docs` (Swagger UI needs inline script/style). `seed-production-safety.test.js` (2 new cases)
+confirms `NODE_ENV=production` refuses to seed accounts with the known demo passwords (`admin123` etc.) —
+each account's password must be set explicitly via `SEED_*_PASSWORD` first (see `docs/DECISIONS.md` #20).
 
 **Flutter (257 cases)** — split into 3 levels:
 
@@ -833,7 +847,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 19 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 20 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

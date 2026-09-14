@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-431%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-442%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 431 automated tests.
+control and 442 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -264,7 +264,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 174 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 185 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 257 เคส — domain / controller / widget
 ```
 
@@ -363,6 +363,11 @@ cd app && flutter test      # 257 เคส — domain / controller / widget
   ที่มีไอน้ำ และแท็บเล็ตที่มีรอยนิ้วมือ — ตัวหนังสือทุกตัวขยับจากเกณฑ์ AA (4.5:1) เป็น AAA (7:1)
   ขอบการ์ดจาก 1.24:1 เป็น 4.10:1 โครงสีและความหมายของสีไม่เปลี่ยน จำค่าไว้กับเครื่อง
   ไม่ใช่กับบัญชีผู้ใช้ (ดู `docs/DECISIONS.md` #18)
+- **ผ่าน security review เต็มรูปแบบ (OWASP Top 10)** แก้ครบ 7 ช่องโหว่ที่พบ — เจาะจงเป็น
+  fail-closed ทุกจุด: ไม่มี JWT secret สำรองในโค้ด, บัญชีที่ถูกปิดใช้งาน/เปลี่ยนสิทธิ์มีผลทันที
+  ไม่ต้องรอ token หมดอายุ, manager ยกระดับตัวเอง/แตะบัญชี admin ไม่ได้, และ deploy จริง
+  (`NODE_ENV=production`) จะไม่ยอม seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้วให้เองด้วย
+  (ดู `docs/DECISIONS.md` #20 และ `SECURITY.md`)
 
 ---
 
@@ -646,11 +651,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 174 เคส
+cd backend && npm test      # 185 เคส
 cd app && flutter test      # 257 เคส
 ```
 
-**Backend (174 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (185 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -689,6 +694,15 @@ sync เมนูเหมือนกัน → แก้จำนวน/ลบ
 `INV<ปี พ.ศ.>-<เลขรัน 6 หลัก>` และเรียงต่อเนื่องข้ามหลายออเดอร์, ปฏิเสธออกซ้ำให้บิลเดียวกัน/บิลที่
 ยังไม่จ่ายเงิน/ร้านที่ยังไม่ตั้งค่าเลขผู้เสียภาษี, RBAC (พนักงานครัวออกไม่ได้), และ flow
 ยกเลิก (void) แล้วออกใหม่ได้ด้วยเลขที่รันใหม่
+
+หลังทำ security review เต็มรูปแบบ (OWASP Top 10) เพิ่มเทสต์คุมช่องโหว่ที่พบและแก้แล้วทั้ง 7 จุด:
+`users.test.js` เพิ่ม 7 เคส — manager สร้างบัญชี/เลื่อนตัวเอง/แก้ไข/รีเซ็ตรหัสผ่านบัญชี admin
+ไม่ได้ (privilege escalation), admin ยังทำได้ตามปกติ, และ token เก่าใช้สิทธิ์เดิมต่อไม่ได้ทันที
+หลังบัญชีถูกปิดใช้งานหรือเปลี่ยน role (ไม่ต้องรอ token หมดอายุ) — `security-headers.test.js`
+(2 เคส ใหม่) ยืนยันว่า CSP header เปิดอยู่ทุก endpoint ยกเว้น `/docs` (Swagger UI ต้องใช้ inline
+script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ยืนยันว่า `NODE_ENV=production`
+ปฏิเสธ seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้ว (`admin123` ฯลฯ) ต้องตั้ง `SEED_*_PASSWORD` เองก่อน
+เสมอ (ดู `docs/DECISIONS.md` #20)
 
 **Flutter (257 เคส)** — แบ่งเป็น 3 ระดับ:
 
@@ -788,7 +802,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 19 ข้อ พร้อมข้อเสียที่ยอมรับ
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 20 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้

@@ -16,6 +16,36 @@ const USERS = [
   { name: 'พี่แอน (แคชเชียร์)', username: 'cashier', password: 'cashier123', role: 'cashier' },
 ];
 
+// ชื่อ env var รหัสผ่านต่อบัญชีเดโม 1 ตัว — ใช้เฉพาะตอน NODE_ENV=production (ดู resolveSeedPassword
+// ด้านล่าง และ SECURITY.md หัวข้อ "ข้อควรระวังสำหรับผู้ที่จะ deploy ใช้งานจริง")
+const SEED_PASSWORD_ENV_KEYS = {
+  admin: 'SEED_ADMIN_PASSWORD',
+  manager: 'SEED_MANAGER_PASSWORD',
+  waiter1: 'SEED_WAITER1_PASSWORD',
+  waiter2: 'SEED_WAITER2_PASSWORD',
+  kitchen: 'SEED_KITCHEN_PASSWORD',
+  cashier: 'SEED_CASHIER_PASSWORD',
+};
+
+// รหัสผ่านเดโม (admin123 ฯลฯ) เผยแพร่อยู่ใน README/ซอร์สโค้ดสาธารณะ ใช้ได้เฉพาะตอนรันดูในเครื่อง/
+// เดโมเท่านั้น — ใน production ต้องตั้งรหัสผ่านเองผ่าน env ให้ครบทุกบัญชีก่อนเสมอ ไม่งั้น seed()
+// จะ throw แทนที่จะ fallback ไปใช้รหัสผ่านที่รู้กันอยู่แล้วอย่างเงียบๆ (fail-closed เหมือน
+// JWT_SECRET ใน config/env.js — ดูรายงาน security review)
+const resolveSeedPassword = (user) => {
+  if (process.env.NODE_ENV !== 'production') return user.password;
+
+  const envKey = SEED_PASSWORD_ENV_KEYS[user.username];
+  const value = envKey ? process.env[envKey] : undefined;
+  if (!value) {
+    throw new Error(
+      `ต้องตั้งค่า ${envKey} ก่อน seed บัญชี "${user.username}" ใน production ` +
+        `(ห้ามใช้รหัสผ่านเดโม "${user.password}" ที่เผยแพร่อยู่ใน README/ซอร์สโค้ด) ` +
+        'หรือตั้ง AUTO_SEED=false แล้วสร้างบัญชีจริงเอง — ดู SECURITY.md',
+    );
+  }
+  return value;
+};
+
 // prettier-ignore
 const CATEGORIES = [
   { name: 'แนะนำ', nameEn: 'Recommended', icon: '⭐', sortOrder: 1 },
@@ -181,7 +211,12 @@ export const seed = () => {
         'INSERT INTO users (name, username, password_hash, role) VALUES (?, ?, ?, ?)',
       );
       for (const user of USERS) {
-        insertUser.run(user.name, user.username, bcrypt.hashSync(user.password, 10), user.role);
+        insertUser.run(
+          user.name,
+          user.username,
+          bcrypt.hashSync(resolveSeedPassword(user), 10),
+          user.role,
+        );
       }
     }
 
@@ -323,7 +358,9 @@ export const seed = () => {
 if (import.meta.url === `file://${process.argv[1]}`) {
   seed();
   console.log(
-    '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
+    process.env.NODE_ENV === 'production'
+      ? '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีผู้ใช้ตั้งรหัสผ่านจาก SEED_*_PASSWORD ตามที่ตั้งค่าไว้)'
+      : '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
   );
 }
 
