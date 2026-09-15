@@ -94,7 +94,9 @@ class TableController extends GetxController {
 
     result.fold(
       onSuccess: (_) {
-        AppDialogs.success('อัปเดตสถานะโต๊ะ ${table.name} แล้ว');
+        AppDialogs.success(
+          'table_status_updated_success'.trParams({'name': table.name}),
+        );
         loadTables(showLoader: false);
       },
       onFailure: (failure) => AppDialogs.error(failure.message),

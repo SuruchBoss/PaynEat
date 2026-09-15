@@ -49,11 +49,11 @@ class PrinterSettingsController extends GetxController {
     final ip = ipController.text.trim();
     final port = int.tryParse(portController.text.trim());
     if (enabled.value && ip.isEmpty) {
-      AppDialogs.error('กรุณากรอก IP เครื่องพิมพ์');
+      AppDialogs.error('settings_printer_ip_required'.tr);
       return null;
     }
     if (port == null || port <= 0 || port > 65535) {
-      AppDialogs.error('พอร์ตไม่ถูกต้อง');
+      AppDialogs.error('settings_printer_port_invalid'.tr);
       return null;
     }
     return PrinterProfile(
@@ -71,7 +71,7 @@ class PrinterSettingsController extends GetxController {
     isSaving.value = true;
     await _settingsService.save(draft);
     isSaving.value = false;
-    AppDialogs.success('บันทึกการตั้งค่าเครื่องพิมพ์แล้ว');
+    AppDialogs.success('settings_printer_saved_success'.tr);
   }
 
   Future<void> testPrint() async {
@@ -83,7 +83,7 @@ class PrinterSettingsController extends GetxController {
     isTesting.value = false;
 
     result.fold(
-      onSuccess: (_) => AppDialogs.success('พิมพ์ทดสอบสำเร็จ'),
+      onSuccess: (_) => AppDialogs.success('settings_printer_test_success'.tr),
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
   }

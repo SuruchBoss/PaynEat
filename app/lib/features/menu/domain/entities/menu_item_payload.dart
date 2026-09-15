@@ -1,3 +1,4 @@
+import '../../../ingredient/domain/entities/ingredient.dart';
 import 'menu_option.dart';
 
 /// ข้อมูลที่ใช้สร้าง/แก้ไขเมนู (แยกจาก entity เพราะรูปร่างต่างกัน)
@@ -13,6 +14,7 @@ class MenuItemPayload {
     this.isRecommended,
     this.prepMinutes,
     this.optionGroups,
+    this.ingredients,
   });
 
   final String name;
@@ -25,6 +27,7 @@ class MenuItemPayload {
   final bool? isRecommended;
   final int? prepMinutes;
   final List<MenuOptionGroup>? optionGroups;
+  final List<MenuItemIngredientUsage>? ingredients;
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -54,6 +57,15 @@ class MenuItemPayload {
                     },
                   )
                   .toList(growable: false),
+            },
+          )
+          .toList(growable: false),
+    if (ingredients != null)
+      'ingredients': ingredients!
+          .map(
+            (link) => {
+              'ingredientId': link.ingredientId,
+              'qtyPerUnit': link.qtyPerUnit,
             },
           )
           .toList(growable: false),

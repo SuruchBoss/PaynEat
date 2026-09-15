@@ -10,30 +10,28 @@ import '../controllers/auth_controller.dart';
 class DemoAccountPicker extends GetView<AuthController> {
   const DemoAccountPicker({super.key});
 
-  static const List<
-    ({String label, String username, String password, IconData icon})
-  >
-  _accounts = [
+  static List<({String label, String username, String password, IconData icon})>
+  get _accounts => [
     (
-      label: 'พนักงานเสิร์ฟ',
+      label: 'role_waiter'.tr,
       username: 'waiter1',
       password: 'waiter123',
       icon: Icons.room_service_rounded,
     ),
     (
-      label: 'ครัว',
+      label: 'role_kitchen'.tr,
       username: 'kitchen',
       password: 'kitchen123',
       icon: Icons.soup_kitchen_rounded,
     ),
     (
-      label: 'แคชเชียร์',
+      label: 'role_cashier'.tr,
       username: 'cashier',
       password: 'cashier123',
       icon: Icons.point_of_sale_rounded,
     ),
     (
-      label: 'ผู้ดูแลระบบ',
+      label: 'role_admin'.tr,
       username: 'admin',
       password: 'admin123',
       icon: Icons.admin_panel_settings_rounded,
@@ -53,14 +51,14 @@ class DemoAccountPicker extends GetView<AuthController> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.bolt_rounded,
                 size: 16,
                 color: AppColors.textSecondary,
               ),
               const SizedBox(width: 6),
               Text(
-                'บัญชีทดลองใช้',
+                'auth_demo_accounts_label'.tr,
                 style: Theme.of(
                   context,
                 ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w700),
@@ -77,11 +75,11 @@ class DemoAccountPicker extends GetView<AuthController> {
                     avatar: Icon(
                       account.icon,
                       size: 16,
-                      color: AppColors.primary,
+                      color: AppColors.brandInk,
                     ),
                     label: Text(account.label),
                     backgroundColor: AppColors.surface,
-                    side: const BorderSide(color: AppColors.border),
+                    side: BorderSide(color: AppColors.border),
                     onPressed: () => controller.fillDemoAccount(
                       account.username,
                       account.password,

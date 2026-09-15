@@ -23,8 +23,8 @@ class CartPanel extends GetView<CartController> {
         Expanded(
           child: Obx(() {
             if (controller.isEmpty) {
-              return const EmptyView(
-                message: 'ยังไม่มีรายการในออเดอร์\nแตะเมนูทางซ้ายเพื่อเพิ่ม',
+              return EmptyView(
+                message: 'order_cart_empty_message'.tr,
                 icon: Icons.shopping_basket_outlined,
               );
             }
@@ -54,19 +54,21 @@ class _CartHeader extends GetView<CartController> {
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.receipt_long_rounded,
                 size: 18,
-                color: AppColors.primary,
+                color: AppColors.brandInk,
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   controller.isAddingToExistingOrder
-                      ? 'สั่งเพิ่ม'
+                      ? 'order_cart_title_add'.tr
                       : controller.tableName != null
-                      ? 'โต๊ะ ${controller.tableName}'
-                      : 'ออเดอร์ใหม่',
+                      ? 'order_table_prefix'.trParams({
+                          'table': controller.tableName!,
+                        })
+                      : 'order_cart_title_new'.tr,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
@@ -78,7 +80,7 @@ class _CartHeader extends GetView<CartController> {
                     ? const SizedBox.shrink()
                     : TextButton(
                         onPressed: controller.clear,
-                        child: const Text('ล้าง'),
+                        child: Text('order_clear_button'.tr),
                       ),
               ),
             ],
@@ -90,26 +92,29 @@ class _CartHeader extends GetView<CartController> {
                 children: [
                   if (controller.tableId == null) ...[
                     _TypeToggle(
-                      label: 'กลับบ้าน',
+                      label: OrderType.label(OrderType.takeaway),
                       selected:
                           controller.orderType.value == OrderType.takeaway,
                       onTap: () => controller.setOrderType(OrderType.takeaway),
                     ),
                     const SizedBox(width: 8),
                     _TypeToggle(
-                      label: 'เดลิเวอรี',
+                      label: OrderType.label(OrderType.delivery),
                       selected:
                           controller.orderType.value == OrderType.delivery,
                       onTap: () => controller.setOrderType(OrderType.delivery),
                     ),
                   ] else ...[
-                    const Icon(
+                    Icon(
                       Icons.people_outline_rounded,
                       size: 16,
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(width: 6),
-                    const Text('จำนวนลูกค้า', style: TextStyle(fontSize: 13)),
+                    Text(
+                      'order_guest_count_label'.tr,
+                      style: const TextStyle(fontSize: 13),
+                    ),
                     const Spacer(),
                     QuantityStepper(
                       value: controller.guestCount.value,
@@ -146,14 +151,14 @@ class _TypeToggle extends StatelessWidget {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          minimumSize: const Size(0, 36),
+          minimumSize: const Size(0, 44),
           padding: EdgeInsets.zero,
           backgroundColor: selected ? AppColors.primarySoft : null,
           side: BorderSide(
             color: selected ? AppColors.primary : AppColors.border,
           ),
           foregroundColor: selected
-              ? AppColors.primary
+              ? AppColors.brandInk
               : AppColors.textSecondary,
         ),
         child: Text(label, style: const TextStyle(fontSize: 13)),
@@ -199,7 +204,7 @@ class _CartLineTile extends GetView<CartController> {
                         padding: const EdgeInsets.only(top: 2),
                         child: Text(
                           line.optionsSummary,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11.5,
                             color: AppColors.textSecondary,
                           ),
@@ -210,18 +215,18 @@ class _CartLineTile extends GetView<CartController> {
                         padding: const EdgeInsets.only(top: 3),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.edit_note_rounded,
                               size: 13,
-                              color: AppColors.warning,
+                              color: AppColors.warningInk,
                             ),
                             const SizedBox(width: 3),
                             Expanded(
                               child: Text(
                                 line.note!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11.5,
-                                  color: AppColors.warning,
+                                  color: AppColors.warningInk,
                                   fontStyle: FontStyle.italic,
                                 ),
                               ),
@@ -236,8 +241,8 @@ class _CartLineTile extends GetView<CartController> {
                 onPressed: () => controller.removeAt(index),
                 icon: const Icon(Icons.close_rounded, size: 16),
                 visualDensity: VisualDensity.compact,
-                color: AppColors.textDisabled,
-                tooltip: 'ลบรายการ',
+                color: AppColors.textSecondary,
+                tooltip: 'order_remove_item'.tr,
               ),
             ],
           ),
@@ -277,20 +282,26 @@ class _CartFooter extends GetView<CartController> {
 
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: AppColors.surface,
           border: Border(top: BorderSide(color: AppColors.border)),
         ),
         child: Column(
           children: [
-            _SummaryRow(label: 'ยอดรวมอาหาร', value: preview.subtotal),
             _SummaryRow(
-              label:
-                  'Service Charge ${settings.serviceChargePercent.toStringAsFixed(0)}%',
+              label: 'order_subtotal_label'.tr,
+              value: preview.subtotal,
+            ),
+            _SummaryRow(
+              label: 'order_service_charge_percent_label'.trParams({
+                'percent': settings.serviceChargePercent.toStringAsFixed(0),
+              }),
               value: preview.serviceCharge,
             ),
             _SummaryRow(
-              label: 'VAT ${settings.vatPercent.toStringAsFixed(0)}%',
+              label: 'order_vat_percent_label'.trParams({
+                'percent': settings.vatPercent.toStringAsFixed(0),
+              }),
               value: preview.vat,
             ),
             const Padding(
@@ -299,17 +310,20 @@ class _CartFooter extends GetView<CartController> {
             ),
             Row(
               children: [
-                const Text(
-                  'รวมทั้งสิ้น',
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+                Text(
+                  'order_total_label'.tr,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const Spacer(),
                 Text(
                   Formatters.baht(preview.total),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.primary,
+                    color: AppColors.brandInk,
                   ),
                 ),
               ],
@@ -327,14 +341,18 @@ class _CartFooter extends GetView<CartController> {
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       )
                     : const Icon(Icons.soup_kitchen_rounded, size: 18),
                 label: Text(
                   controller.isAddingToExistingOrder
-                      ? 'ยืนยันสั่งเพิ่ม (${controller.totalQuantity})'
-                      : 'ยืนยันและส่งครัว (${controller.totalQuantity})',
+                      ? 'order_confirm_add_items_button'.trParams({
+                          'count': '${controller.totalQuantity}',
+                        })
+                      : 'order_confirm_send_kitchen_button'.trParams({
+                          'count': '${controller.totalQuantity}',
+                        }),
                 ),
               ),
             ),
@@ -346,7 +364,7 @@ class _CartFooter extends GetView<CartController> {
                   onPressed: controller.isEmpty || controller.isSubmitting.value
                       ? null
                       : () => controller.submit(sendToKitchenNow: false),
-                  child: const Text('บันทึกไว้ก่อน (ยังไม่ส่งครัว)'),
+                  child: Text('order_save_draft_button'.tr),
                 ),
               ),
             ],
@@ -371,10 +389,7 @@ class _SummaryRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(Formatters.money(value), style: const TextStyle(fontSize: 13)),

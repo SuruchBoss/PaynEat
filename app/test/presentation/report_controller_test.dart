@@ -126,7 +126,7 @@ void main() {
 
     test('load เมื่อ summary ล้มเหลว → ตั้ง errorMessage', () async {
       controller.onInit();
-      repository.nextSummaryResult = const Result.failure(
+      repository.nextSummaryResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 
@@ -140,12 +140,8 @@ void main() {
       () async {
         controller.onInit();
         repository.nextSummaryResult = Result.success(_summary());
-        repository.nextTopItemsResult = const Result.failure(
-          NetworkFailure('พัง'),
-        );
-        repository.nextSalesByDayResult = const Result.failure(
-          NetworkFailure('พัง'),
-        );
+        repository.nextTopItemsResult = Result.failure(NetworkFailure('พัง'));
+        repository.nextSalesByDayResult = Result.failure(NetworkFailure('พัง'));
 
         await controller.load();
 

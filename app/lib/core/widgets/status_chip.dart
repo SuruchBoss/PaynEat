@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/app_colors.dart';
+
 /// ป้ายสถานะสีอ่อน ใช้ซ้ำได้ทั้งสถานะโต๊ะ ออเดอร์ และรายการอาหาร
 class StatusChip extends StatelessWidget {
   const StatusChip({
@@ -17,6 +19,10 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // พื้นกับขอบใช้สีสด ส่วนตัวหนังสือกับไอคอนใช้เฉดเข้มของสีเดียวกัน
+    // ป้ายพวกนี้ตัวเล็ก (11.5–12.5px) ถ้าใช้สีสดเป็นตัวหนังสือจะได้คอนทราสต์แค่ ~2:1
+    final ink = AppColors.inkOf(color);
+
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: dense ? 8 : 10,
@@ -31,13 +37,13 @@ class StatusChip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: dense ? 12 : 14, color: color),
+            Icon(icon, size: dense ? 12 : 14, color: ink),
             const SizedBox(width: 4),
           ],
           Text(
             label,
             style: TextStyle(
-              color: color,
+              color: ink,
               fontSize: dense ? 11.5 : 12.5,
               fontWeight: FontWeight.w700,
             ),

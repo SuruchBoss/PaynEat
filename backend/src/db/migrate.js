@@ -28,6 +28,17 @@ export const migrate = () => {
     'shift_id',
     'INTEGER REFERENCES shifts(id) ON DELETE SET NULL',
   );
+  addColumnIfMissing(
+    db,
+    'orders',
+    'promotion_id',
+    'INTEGER REFERENCES promotions(id) ON DELETE SET NULL',
+  );
+  addColumnIfMissing(db, 'orders', 'promotion_name_snapshot', 'TEXT');
+  addColumnIfMissing(db, 'orders', 'promotion_code_snapshot', 'TEXT');
+  addColumnIfMissing(db, 'orders', 'promotion_discount_amount', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'order_items', 'stock_deducted', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'menu_items', 'auto_disabled_by_stock', 'INTEGER NOT NULL DEFAULT 0');
 
   const defaults = {
     store_name: env.store.name,

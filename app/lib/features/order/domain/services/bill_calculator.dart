@@ -5,13 +5,19 @@ class BillBreakdown {
   const BillBreakdown({
     required this.subtotal,
     required this.discount,
+    this.promotionDiscount = 0,
     required this.serviceCharge,
     required this.vat,
     required this.total,
   });
 
   final double subtotal;
+
+  /// ส่วนลดที่พนักงานกดให้เอง (manual) — ไม่รวมส่วนลดจากโปรโมชัน
   final double discount;
+
+  /// ส่วนลดจากโปรโมชัน — แยกจาก [discount] เพื่อแสดงแยกกันได้ในใบเสร็จ/รายงาน
+  final double promotionDiscount;
   final double serviceCharge;
   final double vat;
   final double total;
@@ -50,12 +56,14 @@ class BillCalculator {
     List<CartLine> lines, {
     double discountAmount = 0,
     double discountPercent = 0,
+    double promotionDiscountAmount = 0,
   }) {
     final subtotal = lines.fold<double>(0, (sum, line) => sum + line.lineTotal);
     return fromSubtotal(
       subtotal,
       discountAmount: discountAmount,
       discountPercent: discountPercent,
+      promotionDiscountAmount: promotionDiscountAmount,
     );
   }
 
@@ -63,6 +71,7 @@ class BillCalculator {
     double subtotal, {
     double discountAmount = 0,
     double discountPercent = 0,
+    double promotionDiscountAmount = 0,
   }) {
     if (subtotal <= 0) return BillBreakdown.zero;
 
@@ -73,7 +82,14 @@ class BillCalculator {
       (percentDiscount + discountAmount).clamp(0, subtotal).toDouble(),
     );
 
-    final afterDiscount = _round(subtotal - discount);
+    final remainingAfterDiscount = _round(
+      (subtotal - discount).clamp(0, subtotal).toDouble(),
+    );
+    final promotionDiscount = _round(
+      promotionDiscountAmount.clamp(0, remainingAfterDiscount).toDouble(),
+    );
+
+    final afterDiscount = _round(subtotal - discount - promotionDiscount);
     final serviceCharge = _round(afterDiscount * serviceChargeRate);
 
     if (vatIncluded) {
@@ -81,6 +97,7 @@ class BillCalculator {
       return BillBreakdown(
         subtotal: subtotal,
         discount: discount,
+        promotionDiscount: promotionDiscount,
         serviceCharge: serviceCharge,
         vat: _round(gross - gross / (1 + vatRate)),
         total: gross,
@@ -91,6 +108,7 @@ class BillCalculator {
     return BillBreakdown(
       subtotal: subtotal,
       discount: discount,
+      promotionDiscount: promotionDiscount,
       serviceCharge: serviceCharge,
       vat: vat,
       total: _round(afterDiscount + serviceCharge + vat),

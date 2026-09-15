@@ -4,9 +4,14 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../../core/constants/app_constants.dart';
+import '../../../tax_invoice/domain/entities/tax_invoice.dart';
+import '../../../tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/receipt_controller.dart';
 import '../widgets/refund_dialog.dart';
+import '../widgets/tax_invoice_document_dialog.dart';
+import '../widgets/tax_invoice_request_dialog.dart';
 
 /// ใบเสร็จ — จัดวางแบบสลิปจริงเพื่อให้พิมพ์ออกเครื่องพิมพ์ความร้อนได้เลย
 class ReceiptPage extends GetView<ReceiptController> {
@@ -16,7 +21,7 @@ class ReceiptPage extends GetView<ReceiptController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ใบเสร็จรับเงิน'),
+        title: Text('payment_receipt_title'.tr),
         actions: [
           Obx(
             () => IconButton(
@@ -30,13 +35,13 @@ class ReceiptPage extends GetView<ReceiptController> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.print_rounded),
-              tooltip: 'พิมพ์ใบเสร็จ',
+              tooltip: 'payment_print_receipt_tooltip'.tr,
             ),
           ),
           IconButton(
             onPressed: () => Get.until((route) => route.isFirst),
             icon: const Icon(Icons.home_rounded),
-            tooltip: 'กลับหน้าหลัก',
+            tooltip: 'payment_back_to_home_tooltip'.tr,
           ),
         ],
       ),
@@ -51,7 +56,7 @@ class ReceiptPage extends GetView<ReceiptController> {
         final order = controller.order.value;
         final receipt = controller.receipt.value;
         if (order == null || receipt == null) {
-          return const EmptyView(message: 'ไม่พบข้อมูลใบเสร็จ');
+          return EmptyView(message: 'payment_receipt_not_found'.tr);
         }
 
         return Center(
@@ -62,7 +67,7 @@ class ReceiptPage extends GetView<ReceiptController> {
               child: Container(
                 padding: const EdgeInsets.all(22),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(color: AppColors.border),
                 ),
@@ -72,10 +77,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                     Center(
                       child: Column(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.restaurant_menu_rounded,
                             size: 30,
-                            color: AppColors.primary,
+                            color: AppColors.brandInk,
                           ),
                           const SizedBox(height: 8),
                           Text(
@@ -86,8 +91,8 @@ class ReceiptPage extends GetView<ReceiptController> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'ใบเสร็จรับเงิน / ใบกำกับภาษีอย่างย่อ',
+                          Text(
+                            'payment_receipt_subtitle'.tr,
                             style: TextStyle(
                               fontSize: 11.5,
                               color: AppColors.textSecondary,
@@ -97,20 +102,28 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     ),
                     const _DashedDivider(),
-                    _KeyValue(label: 'เลขที่', value: order.code),
                     _KeyValue(
-                      label: 'วันที่',
+                      label: 'payment_receipt_order_code_label'.tr,
+                      value: order.code,
+                    ),
+                    _KeyValue(
+                      label: 'payment_receipt_date_label'.tr,
                       value: Formatters.dateTime(order.closedAt),
                     ),
                     _KeyValue(
-                      label: 'โต๊ะ / ประเภท',
+                      label: 'payment_receipt_table_type_label'.tr,
                       value: order.displayTarget,
                     ),
                     if (order.waiterName != null)
-                      _KeyValue(label: 'พนักงาน', value: order.waiterName!),
+                      _KeyValue(
+                        label: 'payment_receipt_staff_label'.tr,
+                        value: order.waiterName!,
+                      ),
                     _KeyValue(
-                      label: 'จำนวนลูกค้า',
-                      value: '${order.guestCount} ท่าน',
+                      label: 'payment_receipt_guest_count_label'.tr,
+                      value: 'payment_guest_count_value'.trParams({
+                        'count': order.guestCount.toString(),
+                      }),
                     ),
                     const _DashedDivider(),
                     for (final item in order.activeItems) ...[
@@ -140,7 +153,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                                   if (item.options.isNotEmpty)
                                     Text(
                                       item.optionsSummary,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
                                         color: AppColors.textSecondary,
                                       ),
@@ -158,22 +171,33 @@ class ReceiptPage extends GetView<ReceiptController> {
                     ],
                     const _DashedDivider(),
                     _KeyValue(
-                      label: 'ยอดรวมอาหาร',
+                      label: 'payment_receipt_subtotal_label'.tr,
                       value: Formatters.money(order.subtotal),
                     ),
                     if (order.hasDiscount)
                       _KeyValue(
-                        label: 'ส่วนลด',
+                        label: 'payment_discount_label'.tr,
                         value: '-${Formatters.money(order.discountAmount)}',
                       ),
+                    if (order.hasPromotion)
+                      _KeyValue(
+                        label: 'promotion_summary_label'.trParams({
+                          'name': order.promotionName ?? '',
+                        }),
+                        value:
+                            '-${Formatters.money(order.promotionDiscountAmount)}',
+                      ),
                     _KeyValue(
-                      label:
-                          'Service Charge ${(receipt.serviceChargeRate * 100).toStringAsFixed(0)}%',
+                      label: 'payment_service_charge_rate_label'.trParams({
+                        'rate': (receipt.serviceChargeRate * 100)
+                            .toStringAsFixed(0),
+                      }),
                       value: Formatters.money(order.serviceCharge),
                     ),
                     _KeyValue(
-                      label:
-                          'VAT ${(receipt.vatRate * 100).toStringAsFixed(0)}%',
+                      label: 'payment_vat_rate_label'.trParams({
+                        'rate': (receipt.vatRate * 100).toStringAsFixed(0),
+                      }),
                       value: Formatters.money(order.vat),
                     ),
                     const SizedBox(height: 8),
@@ -188,9 +212,9 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                       child: Row(
                         children: [
-                          const Text(
-                            'รวมทั้งสิ้น',
-                            style: TextStyle(
+                          Text(
+                            'payment_grand_total_label'.tr,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w800,
                             ),
@@ -198,10 +222,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                           const Spacer(),
                           Text(
                             Formatters.baht(order.total),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w900,
-                              color: AppColors.primary,
+                              color: AppColors.brandInk,
                             ),
                           ),
                         ],
@@ -215,14 +239,14 @@ class ReceiptPage extends GetView<ReceiptController> {
                           children: [
                             Text(
                               payment.methodLabel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12.5,
                                 color: AppColors.textSecondary,
                               ),
                             ),
                             const Spacer(),
                             Text(
-                              Formatters.money(payment.amount),
+                              Formatters.money(payment.tendered),
                               style: const TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: FontWeight.w600,
@@ -237,10 +261,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                                   controller,
                                   payment,
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.assignment_return_outlined,
                                   size: 16,
-                                  color: AppColors.danger,
+                                  color: AppColors.dangerInk,
                                 ),
                               ),
                             ],
@@ -249,17 +273,17 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     if (receipt.changeTotal > 0)
                       _KeyValue(
-                        label: 'เงินทอน',
+                        label: 'payment_change_due_label'.tr,
                         value: Formatters.money(receipt.changeTotal),
                       ),
                     if (receipt.isRefunded) ...[
                       const _DashedDivider(),
-                      const Text(
-                        'รายการคืนเงิน',
+                      Text(
+                        'payment_refund_list_title'.tr,
                         style: TextStyle(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.danger,
+                          color: AppColors.dangerInk,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -272,7 +296,7 @@ class ReceiptPage extends GetView<ReceiptController> {
                               Expanded(
                                 child: Text(
                                   refund.reason,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 12,
                                     color: AppColors.textSecondary,
                                   ),
@@ -280,10 +304,10 @@ class ReceiptPage extends GetView<ReceiptController> {
                               ),
                               Text(
                                 '-${Formatters.money(refund.amount)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.danger,
+                                  color: AppColors.dangerInk,
                                 ),
                               ),
                             ],
@@ -291,16 +315,20 @@ class ReceiptPage extends GetView<ReceiptController> {
                         ),
                       const SizedBox(height: 4),
                       _KeyValue(
-                        label: 'ยอดสุทธิหลังคืนเงิน',
+                        label: 'payment_net_total_after_refund_label'.tr,
                         value: Formatters.money(
                           order.total - receipt.refundedTotal,
                         ),
                       ),
                     ],
+                    if (order.status == OrderStatus.paid) ...[
+                      const _DashedDivider(),
+                      _TaxInvoiceSection(controller: controller),
+                    ],
                     const SizedBox(height: 18),
-                    const Center(
+                    Center(
                       child: Text(
-                        'ขอบคุณที่ใช้บริการ 🙏',
+                        'payment_thank_you_message'.tr,
                         style: TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -308,12 +336,12 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Center(
+                    Center(
                       child: Text(
-                        'Powered by PaynEat POS',
+                        'payment_powered_by'.tr,
                         style: TextStyle(
                           fontSize: 10.5,
-                          color: AppColors.textDisabled,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -343,6 +371,125 @@ class ReceiptPage extends GetView<ReceiptController> {
   }
 }
 
+/// ส่วน "ขอใบกำกับภาษี" — โผล่เฉพาะออเดอร์ที่จ่ายครบแล้ว (ดู docs/tickets/07-tax-invoice.md)
+class _TaxInvoiceSection extends StatelessWidget {
+  const _TaxInvoiceSection({required this.controller});
+
+  final ReceiptController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (controller.isLoadingTaxInvoice.value) {
+        return const Padding(
+          padding: EdgeInsets.symmetric(vertical: 8),
+          child: Center(
+            child: SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
+      }
+
+      final invoice = controller.taxInvoice.value;
+      if (invoice == null) {
+        return Obx(
+          () => OutlinedButton.icon(
+            onPressed: controller.isIssuingTaxInvoice.value
+                ? null
+                : () => _requestTaxInvoice(controller),
+            icon: const Icon(Icons.receipt_long_outlined, size: 18),
+            label: Text('tax_invoice_request_button'.tr),
+          ),
+        );
+      }
+
+      return InkWell(
+        onTap: () => _viewTaxInvoice(controller, invoice),
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: invoice.isVoid
+                ? AppColors.danger.withValues(alpha: 0.08)
+                : AppColors.primarySoft,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.receipt_long_rounded,
+                size: 18,
+                color: invoice.isVoid ? AppColors.danger : AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      invoice.runningNumber,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      invoice.isVoid
+                          ? 'tax_invoice_voided_badge'.tr
+                          : 'tax_invoice_tap_to_view_hint'.tr,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: invoice.isVoid
+                            ? AppColors.danger
+                            : AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.textDisabled,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Future<void> _requestTaxInvoice(ReceiptController controller) async {
+    final result = await TaxInvoiceRequestDialog.show();
+    if (result == null) return;
+    await controller.requestTaxInvoice(
+      IssueTaxInvoiceParams(
+        orderId: controller.orderId,
+        invoiceType: result.invoiceType,
+        customerName: result.customerName,
+        customerAddress: result.customerAddress,
+        customerTaxId: result.customerTaxId,
+      ),
+    );
+  }
+
+  Future<void> _viewTaxInvoice(
+    ReceiptController controller,
+    TaxInvoice invoice,
+  ) async {
+    final voidReason = await TaxInvoiceDocumentDialog.show(
+      invoice: invoice,
+      canVoid: controller.canVoidTaxInvoice,
+    );
+    if (voidReason != null) {
+      await controller.voidCurrentTaxInvoice(voidReason);
+    }
+  }
+}
+
 class _KeyValue extends StatelessWidget {
   const _KeyValue({required this.label, required this.value});
 
@@ -357,10 +504,7 @@ class _KeyValue extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12.5,
-              color: AppColors.textSecondary,
-            ),
+            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           const Spacer(),
           Text(
@@ -388,7 +532,7 @@ class _DashedDivider extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(
               dashCount,
-              (_) => const SizedBox(
+              (_) => SizedBox(
                 width: 4,
                 height: 1,
                 child: DecoratedBox(

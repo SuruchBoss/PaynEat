@@ -18,12 +18,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
     double? vatRate,
     double? serviceChargeRate,
     bool? vatIncluded,
+    String? storeTaxId,
+    String? storeAddress,
+    String? storeBranch,
   }) => guard(
     () => _remote.update({
       'storeName': ?storeName,
       'vatRate': ?vatRate,
       'serviceChargeRate': ?serviceChargeRate,
       'vatIncluded': ?vatIncluded,
+      'storeTaxId': ?storeTaxId,
+      'storeAddress': ?storeAddress,
+      'storeBranch': ?storeBranch,
     }),
   );
 }

@@ -36,7 +36,7 @@ Failure mapExceptionToFailure(Object error) {
     return UnexpectedFailure(error.message);
   }
 
-  return const UnexpectedFailure();
+  return UnexpectedFailure();
 }
 
 /// helper ลดโค้ด try/catch ซ้ำ ๆ ในทุก repository

@@ -50,6 +50,10 @@ export const toOrderDto = (row, items = []) => {
     discountValue:
       row.discount_type === 'percent' ? row.discount_value / 100 : toBaht(row.discount_value),
     discountAmount: toBaht(row.discount_amount),
+    promotionId: row.promotion_id ?? null,
+    promotionName: row.promotion_name_snapshot ?? null,
+    promotionCode: row.promotion_code_snapshot ?? null,
+    promotionDiscountAmount: toBaht(row.promotion_discount_amount ?? 0),
     serviceCharge: toBaht(row.service_charge),
     vat: toBaht(row.vat),
     total: toBaht(row.total),

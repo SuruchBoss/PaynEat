@@ -44,7 +44,7 @@ class _SplashPageState extends State<SplashPage> {
               width: 26,
               height: 26,
               child: CircularProgressIndicator(
-                color: Colors.white,
+                color: AppColors.surface,
                 strokeWidth: 2.5,
               ),
             ),

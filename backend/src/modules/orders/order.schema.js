@@ -46,6 +46,10 @@ export const discountSchema = z.object({
   value: z.number().min(0).default(0),
 });
 
+export const redeemPromotionSchema = z.object({
+  code: z.string().trim().min(1, 'กรุณากรอกโค้ดส่วนลด'),
+});
+
 export const cancelOrderSchema = z.object({
   reason: z.string().min(1, 'กรุณาระบุเหตุผลการยกเลิก').max(200),
 });

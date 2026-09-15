@@ -138,7 +138,7 @@ class CartController extends GetxController {
   /// [sendToKitchenNow] = true จะส่งเข้าครัวทันทีในขั้นตอนเดียว
   Future<void> submit({bool sendToKitchenNow = true}) async {
     if (lines.isEmpty) {
-      AppDialogs.info('ยังไม่ได้เลือกรายการอาหาร');
+      AppDialogs.info('order_no_items_selected'.tr);
       return;
     }
 
@@ -166,8 +166,8 @@ class CartController extends GetxController {
         clear();
         AppDialogs.success(
           isAddingToExistingOrder
-              ? 'เพิ่มรายการเข้าออเดอร์ ${order.code} แล้ว'
-              : 'เปิดออเดอร์ ${order.code} เรียบร้อย',
+              ? 'order_add_items_success'.trParams({'code': order.code})
+              : 'order_create_success'.trParams({'code': order.code}),
         );
         Get.offNamed<void>(
           AppRoutes.orderDetail,
@@ -185,17 +185,17 @@ class CartController extends GetxController {
           await _offlineQueue.enqueue(
             orderId: existingOrderId!,
             orderLabel: tableName != null
-                ? 'โต๊ะ $tableName'
-                : 'ออเดอร์ #$existingOrderId',
+                ? 'order_table_prefix'.trParams({'table': tableName!})
+                : 'order_number_prefix'.trParams({
+                    'id': existingOrderId!.toString(),
+                  }),
             items: cartToPayload(queuedLines),
             summary: queuedLines
                 .map((line) => '${line.menuItem.name} x${line.quantity}')
                 .join(', '),
           );
           clear();
-          AppDialogs.info(
-            'ออฟไลน์ — บันทึกรายการไว้ในเครื่องแล้ว จะส่งเข้าระบบอัตโนมัติเมื่อเน็ตกลับมา',
-          );
+          AppDialogs.info('order_offline_queued_message'.tr);
           Get.back<void>();
           return;
         }

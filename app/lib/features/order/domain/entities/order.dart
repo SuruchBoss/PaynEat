@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import '../../../../core/constants/app_constants.dart';
 import 'order_item.dart';
 
@@ -20,6 +22,10 @@ class Order {
     this.discountType = DiscountType.none,
     this.discountValue = 0,
     this.discountAmount = 0,
+    this.promotionId,
+    this.promotionName,
+    this.promotionCode,
+    this.promotionDiscountAmount = 0,
     this.serviceCharge = 0,
     this.vat = 0,
     this.cancelledReason,
@@ -46,6 +52,10 @@ class Order {
   final String discountType;
   final double discountValue;
   final double discountAmount;
+  final int? promotionId;
+  final String? promotionName;
+  final String? promotionCode;
+  final double promotionDiscountAmount;
   final double serviceCharge;
   final double vat;
   final double total;
@@ -66,6 +76,7 @@ class Order {
       status == OrderStatus.open && activeItems.isNotEmpty;
   bool get hasDiscount =>
       discountType != DiscountType.none && discountAmount > 0;
+  bool get hasPromotion => promotionId != null && promotionDiscountAmount > 0;
 
   List<OrderItem> get activeItems =>
       items.where((item) => !item.isCancelled).toList(growable: false);
@@ -74,8 +85,9 @@ class Order {
       activeItems.fold(0, (sum, item) => sum + item.quantity);
 
   /// ชื่อที่ใช้แสดงหัวออเดอร์ เช่น "โต๊ะ A3" หรือ "กลับบ้าน"
-  String get displayTarget =>
-      tableName != null ? 'โต๊ะ $tableName' : OrderType.label(type);
+  String get displayTarget => tableName != null
+      ? 'order_table_prefix'.trParams({'table': tableName!})
+      : OrderType.label(type);
 
   @override
   bool operator ==(Object other) =>

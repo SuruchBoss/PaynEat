@@ -10,6 +10,9 @@ const updateSettingsSchema = z.object({
   vatRate: z.number().min(0).max(1).optional(),
   serviceChargeRate: z.number().min(0).max(1).optional(),
   vatIncluded: z.boolean().optional(),
+  storeTaxId: z.string().trim().max(20).optional(),
+  storeAddress: z.string().trim().max(500).optional(),
+  storeBranch: z.string().trim().max(80).optional(),
 });
 
 const router = Router();

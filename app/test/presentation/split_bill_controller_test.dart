@@ -141,7 +141,7 @@ void main() {
     test('load ล้มเหลว → ตั้ง errorMessage', () async {
       controller.onInit();
       await Future<void>.delayed(Duration.zero);
-      orderRepository.nextGetOrderResult = const Result.failure(
+      orderRepository.nextGetOrderResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

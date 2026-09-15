@@ -8,6 +8,7 @@ import '../../features/order/domain/entities/pending_order_items.dart';
 import '../../features/order/domain/repositories/order_repository.dart';
 import '../errors/failures.dart';
 import 'storage_service.dart';
+import '../utils/app_clock.dart';
 
 /// คิวรายการอาหาร "สั่งเพิ่มเข้าออเดอร์เดิม" ที่ค้างส่งเพราะเน็ตหลุดตอนกดยืนยัน
 ///
@@ -63,12 +64,15 @@ class OfflineOrderQueueService extends GetxService {
   }) async {
     pending.add(
       PendingOrderItems(
+        // id ต้องไม่ซ้ำ จึงใช้นาฬิกาจริงเสมอ — ถ้าใช้ AppClock ที่ตรึงเวลาไว้
+        // ตอนถ่ายภาพ/เทสต์ ทุกรายการที่เข้าคิวจะได้ id เดียวกันหมด
+        // ignore: use_app_clock_not_date_time_now
         id: '${DateTime.now().microsecondsSinceEpoch}',
         orderId: orderId,
         orderLabel: orderLabel,
         items: items,
         summary: summary,
-        queuedAt: DateTime.now(),
+        queuedAt: AppClock.now(),
       ),
     );
     await _persist();
@@ -102,9 +106,10 @@ class OfflineOrderQueueService extends GetxService {
         onFailure: (failure) {
           if (failure is NetworkFailure) return true;
           pending.removeWhere((item) => item.id == entry.id);
-          lastFailureMessage.value =
-              'ส่งรายการที่ค้างไว้ของ ${entry.orderLabel} ไม่สำเร็จ: '
-              '${failure.message}';
+          lastFailureMessage.value = 'order_offline_sync_failed'.trParams({
+            'label': entry.orderLabel,
+            'message': failure.message,
+          });
           return false;
         },
       );

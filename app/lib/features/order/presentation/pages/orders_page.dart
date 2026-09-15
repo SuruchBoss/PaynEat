@@ -17,7 +17,7 @@ class OrdersPage extends GetView<OrderListController> {
     return Column(
       children: [
         Container(
-          color: Colors.white,
+          color: AppColors.surface,
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: SizedBox(
             height: 34,
@@ -39,10 +39,14 @@ class OrdersPage extends GetView<OrderListController> {
                     selected: selected,
                     showCheckmark: false,
                     onSelected: (_) => controller.setFilter(filter.value),
-                    selectedColor: AppColors.primary,
+                    selectedColor: AppColors.fillOf(AppColors.primary),
                     backgroundColor: AppColors.surfaceAlt,
                     labelStyle: TextStyle(
-                      color: selected ? Colors.white : AppColors.textSecondary,
+                      color: selected
+                          ? AppColors.onColor(
+                              AppColors.fillOf(AppColors.primary),
+                            )
+                          : AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
                     ),
@@ -62,8 +66,8 @@ class OrdersPage extends GetView<OrderListController> {
               return ErrorView(message: error, onRetry: controller.load);
             }
             if (controller.orders.isEmpty) {
-              return const EmptyView(
-                message: 'ยังไม่มีออเดอร์ในหมวดนี้',
+              return EmptyView(
+                message: 'order_list_empty'.tr,
                 icon: Icons.receipt_long_outlined,
               );
             }
@@ -98,7 +102,7 @@ class _OrderTile extends StatelessWidget {
     final color = AppColors.orderStatus(order.status);
 
     return Material(
-      color: Colors.white,
+      color: AppColors.surface,
       borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onTap,
@@ -151,8 +155,12 @@ class _OrderTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      '${order.code} · ${order.totalQuantity} รายการ · ${Formatters.time(order.createdAt)}',
-                      style: const TextStyle(
+                      'order_list_row_summary'.trParams({
+                        'code': order.code,
+                        'count': order.totalQuantity.toString(),
+                        'time': Formatters.time(order.createdAt),
+                      }),
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppColors.textSecondary,
                       ),
@@ -168,10 +176,7 @@ class _OrderTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textDisabled,
-              ),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textDisabled),
             ],
           ),
         ),

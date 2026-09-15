@@ -1,0 +1,13 @@
+name: payneat_lints
+description: >
+  กฎ lint เฉพาะของโปรเจกต์ PaynEat POS — ใช้ดักรูปแบบการเขียนที่เคยทำให้เกิดบั๊กจริง
+  มาแล้วในโค้ดเบสนี้ ไม่ได้ตั้งใจให้เป็นแพ็กเกจสาธารณะ
+publish_to: none
+version: 1.0.0
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  analyzer: ^8.0.0
+  custom_lint_builder: ^0.8.1

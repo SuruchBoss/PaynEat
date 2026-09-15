@@ -65,7 +65,7 @@ void main() {
         repository.nextGetTablesResult = Result.success([_table(1)]);
         await controller.loadTables();
 
-        repository.nextGetTablesResult = const Result.failure(
+        repository.nextGetTablesResult = Result.failure(
           NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
         );
         await controller.loadTables();

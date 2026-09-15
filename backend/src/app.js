@@ -14,10 +14,19 @@ import apiRoutes from './routes.js';
 export const createApp = () => {
   const app = express();
 
-  app.use(helmet({ contentSecurityPolicy: false }));
-  app.use(cors({ origin: env.corsOrigin, credentials: true }));
+  // ปิด CSP เฉพาะ /docs (Swagger UI ต้องใช้ inline script/style) ที่อื่นทั้งหมดเป็น JSON
+  // ล้วนแต่ยังเปิด CSP ไว้เป็น defense-in-depth (ดู security review #7)
+  app.use((req, res, next) => {
+    const isDocs =
+      req.path === '/docs' || req.path.startsWith('/docs/') || req.path === '/openapi.json';
+    return helmet({ contentSecurityPolicy: !isDocs })(req, res, next);
+  });
+  // credentials ใช้คู่กับ origin แบบ wildcard ('*') ไม่ได้ตามสเปก CORS/Fetch (เบราว์เซอร์ปฏิเสธ
+  // อยู่แล้ว) จึงเปิดเฉพาะตอนตั้ง CORS_ORIGIN เป็นรายชื่อ origin จริงเท่านั้น (ดู security review #6)
+  app.use(cors({ origin: env.corsOrigin, credentials: env.corsOrigin !== '*' }));
   app.use(compression());
-  app.use(express.json({ limit: '1mb' }));
+  // 3mb เพื่อรองรับรูปเมนูที่ส่งมาเป็น base64 data URL (ดู menu.schema.js: imageUrl)
+  app.use(express.json({ limit: '3mb' }));
   app.use(express.urlencoded({ extended: true }));
   if (!env.isTest) app.use(morgan('dev'));
 

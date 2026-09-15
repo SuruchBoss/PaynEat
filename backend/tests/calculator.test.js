@@ -66,3 +66,31 @@ test('โหมดราคารวม VAT แล้ว จะถอด VAT อ
   assert.equal(bill.total, 15000);
   assert.equal(bill.vat, 15000 - Math.round(15000 / 1.07));
 });
+
+test('ส่วนลดโปรโมชันหักก่อนคิด service charge และ VAT เหมือนส่วนลดมือ', () => {
+  const bill = calculateBill({
+    items,
+    promotionDiscountAmount: 5000,
+    vatRate: 0.07,
+    serviceChargeRate: 0.1,
+  });
+
+  assert.equal(bill.promotionDiscountAmount, 5000);
+  assert.equal(bill.serviceCharge, 1000); // 10% ของ (150-50)
+  assert.equal(bill.total, 11770); // เหมือนเคสส่วนลดมือ 50 บาท
+});
+
+test('ส่วนลดมือกับส่วนลดโปรโมชันรวมกันได้ แต่รวมกันแล้วต้องไม่เกิน subtotal', () => {
+  const bill = calculateBill({
+    items,
+    discountType: 'amount',
+    discountValue: 12000,
+    promotionDiscountAmount: 5000,
+    vatRate: 0.07,
+    serviceChargeRate: 0.1,
+  });
+
+  assert.equal(bill.discountAmount, 12000);
+  assert.equal(bill.promotionDiscountAmount, 3000); // เหลือแค่ 30 บาทก่อนชน subtotal (150-120)
+  assert.equal(bill.total, 0);
+});

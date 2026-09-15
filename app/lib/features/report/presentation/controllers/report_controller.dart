@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/report.dart';
 import '../../domain/usecases/report_usecases.dart';
+import '../../../../core/utils/app_clock.dart';
 
 /// ช่วงเวลาที่เลือกดูรายงาน
 enum ReportRange { today, last7Days, thisMonth, custom }
@@ -41,7 +42,7 @@ class ReportController extends GetxController {
   String get toLabel => Formatters.date(to);
 
   void selectRange(ReportRange value) {
-    final now = DateTime.now();
+    final now = AppClock.now();
     range.value = value;
 
     switch (value) {

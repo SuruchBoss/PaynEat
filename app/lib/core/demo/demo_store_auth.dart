@@ -5,8 +5,8 @@ extension DemoStoreAuth on DemoStore {
   Map<String, dynamic> login(String username, String password) {
     final user = users.firstWhere(
       (row) => row['username'] == username && row['password'] == password,
-      orElse: () => throw const ApiException(
-        message: 'username หรือรหัสผ่านไม่ถูกต้อง',
+      orElse: () => throw ApiException(
+        message: 'auth_invalid_credentials'.tr,
         statusCode: 401,
       ),
     );
@@ -25,8 +25,10 @@ extension DemoStoreAuth on DemoStore {
     final id = int.tryParse(token?.split('-').last ?? '');
     final user = users.firstWhere(
       (row) => row['id'] == id,
-      orElse: () =>
-          throw const ApiException(message: 'เซสชันหมดอายุ', statusCode: 401),
+      orElse: () => throw ApiException(
+        message: 'auth_demo_session_expired'.tr,
+        statusCode: 401,
+      ),
     );
     return _publicUser(user);
   }
@@ -41,10 +43,7 @@ extension DemoStoreAuth on DemoStore {
     required String role,
   }) {
     if (users.any((row) => row['username'] == username)) {
-      throw const ApiException(
-        message: 'username นี้ถูกใช้งานแล้ว',
-        statusCode: 409,
-      );
+      throw ApiException(message: 'auth_username_taken'.tr, statusCode: 409);
     }
     final user = {
       'id': _nextId(),
@@ -69,6 +68,6 @@ extension DemoStoreAuth on DemoStore {
   Map<String, dynamic> _findUser(int id) => users.firstWhere(
     (row) => row['id'] == id,
     orElse: () =>
-        throw const ApiException(message: 'ไม่พบผู้ใช้งาน', statusCode: 404),
+        throw ApiException(message: 'auth_user_not_found'.tr, statusCode: 404),
   );
 }

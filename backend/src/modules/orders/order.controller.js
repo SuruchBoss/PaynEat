@@ -66,6 +66,18 @@ export const orderController = {
     ok(res, orderService.applyDiscount(req.validated.params.id, req.body)),
   ),
 
+  redeemPromotion: asyncHandler(async (req, res) =>
+    ok(res, orderService.redeemPromotionCode(req.validated.params.id, req.body.code)),
+  ),
+
+  removePromotion: asyncHandler(async (req, res) =>
+    ok(res, orderService.removePromotion(req.validated.params.id)),
+  ),
+
+  eligiblePromotions: asyncHandler(async (req, res) =>
+    ok(res, orderService.listEligiblePromotions(req.validated.params.id)),
+  ),
+
   cancel: asyncHandler(async (req, res) =>
     ok(res, orderService.cancel(req.validated.params.id, req.body.reason)),
   ),

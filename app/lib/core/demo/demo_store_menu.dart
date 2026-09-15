@@ -33,8 +33,8 @@ extension DemoStoreMenu on DemoStore {
 
   void deleteCategory(int id) {
     if (menuItems.any((item) => item['categoryId'] == id)) {
-      throw const ApiException(
-        message: 'ลบไม่ได้ เพราะยังมีเมนูอยู่ในหมวดหมู่นี้',
+      throw ApiException(
+        message: 'menu_delete_category_has_items_error'.tr,
         statusCode: 409,
       );
     }
@@ -65,8 +65,10 @@ extension DemoStoreMenu on DemoStore {
 
   Map<String, dynamic> menuItem(int id) => menuItems.firstWhere(
     (row) => row['id'] == id,
-    orElse: () =>
-        throw const ApiException(message: 'ไม่พบเมนูนี้', statusCode: 404),
+    orElse: () => throw ApiException(
+      message: 'menu_item_not_found_error'.tr,
+      statusCode: 404,
+    ),
   );
 
   Map<String, dynamic> saveMenuItem(Map<String, dynamic> body, {int? id}) {
@@ -84,12 +86,14 @@ extension DemoStoreMenu on DemoStore {
         'nameEn': body['nameEn'],
         'description': body['description'],
         'price': body['price'],
-        'imageUrl': null,
+        'imageUrl': body['imageUrl'],
         'isAvailable': body['isAvailable'] ?? true,
         'isRecommended': body['isRecommended'] ?? false,
         'prepMinutes': body['prepMinutes'] ?? 10,
         'sortOrder': menuItems.length + 1,
         'optionGroups': _normalizeOptionGroups(body['optionGroups']),
+        'ingredients': _normalizeIngredientLinks(body['ingredients']),
+        'autoDisabledByStock': false,
       };
       menuItems.add(item);
       return item;
@@ -99,12 +103,50 @@ extension DemoStoreMenu on DemoStore {
     body.forEach((key, value) {
       if (key == 'optionGroups') {
         item[key] = _normalizeOptionGroups(value);
+      } else if (key == 'ingredients') {
+        item[key] = _normalizeIngredientLinks(value);
       } else {
         item[key] = value;
       }
     });
     item['categoryName'] = categoryName;
+    // แก้ isAvailable เองผ่านฟอร์ม ถือเป็นการ override ระบบตัดสต๊อกอัตโนมัติ
+    if (body.containsKey('isAvailable')) {
+      item['autoDisabledByStock'] = false;
+    }
     return item;
+  }
+
+  /// วัตถุดิบที่ผูกไว้ต้องมีอยู่จริงและห้ามซ้ำกันในเมนูเดียว — denormalize
+  /// ชื่อ/หน่วยไว้ตรง ๆ เหมือน categoryName (ดู docs/tickets/06-inventory-stock.md)
+  List<Map<String, dynamic>> _normalizeIngredientLinks(dynamic links) {
+    if (links is! List) return const [];
+    final seen = <int>{};
+    return links
+        .whereType<Map<String, dynamic>>()
+        .map((link) {
+          final ingredientId = link['ingredientId'] as int;
+          if (!seen.add(ingredientId)) {
+            throw ApiException(
+              message: 'ingredient_error_duplicate_link'.tr,
+              statusCode: 422,
+            );
+          }
+          final ingredient = ingredients.firstWhere(
+            (row) => row['id'] == ingredientId,
+            orElse: () => throw ApiException(
+              message: 'ingredient_error_link_not_found'.tr,
+              statusCode: 400,
+            ),
+          );
+          return {
+            'ingredientId': ingredientId,
+            'ingredientName': ingredient['name'],
+            'unit': ingredient['unit'],
+            'qtyPerUnit': (link['qtyPerUnit'] as num).toDouble(),
+          };
+        })
+        .toList(growable: false);
   }
 
   /// ตัวเลือกที่ส่งมาจากฟอร์มยังไม่มี id จริง — ออก id ให้เหมือนที่ backend ทำ
@@ -138,6 +180,7 @@ extension DemoStoreMenu on DemoStore {
   Map<String, dynamic> setAvailability(int id, bool isAvailable) {
     final item = menuItem(id);
     item['isAvailable'] = isAvailable;
+    item['autoDisabledByStock'] = false;
     return item;
   }
 

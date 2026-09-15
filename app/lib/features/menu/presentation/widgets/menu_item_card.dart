@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/menu_item.dart';
+import 'menu_item_thumbnail.dart';
 
 /// การ์ดเมนู 1 รายการ
 ///
@@ -41,7 +43,7 @@ class MenuItemCard extends StatelessWidget {
     return Opacity(
       opacity: disabled ? 0.55 : 1,
       child: Material(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         child: InkWell(
           onTap: disabled ? null : onTap,
@@ -60,21 +62,24 @@ class MenuItemCard extends StatelessWidget {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: _palette,
+                      MenuItemThumbnail(
+                        imageUrl: item.imageUrl,
+                        placeholder: DecoratedBox(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: _palette,
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            item.name.substring(0, 1),
-                            style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white.withValues(alpha: 0.9),
+                          child: Center(
+                            child: Text(
+                              item.displayName.substring(0, 1),
+                              style: TextStyle(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white.withValues(alpha: 0.9),
+                              ),
                             ),
                           ),
                         ),
@@ -89,21 +94,21 @@ class MenuItemCard extends StatelessWidget {
                               vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.surface,
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Icon(
                                   Icons.star_rounded,
                                   size: 12,
-                                  color: AppColors.warning,
+                                  color: AppColors.warningInk,
                                 ),
-                                SizedBox(width: 3),
+                                const SizedBox(width: 3),
                                 Text(
-                                  'แนะนำ',
-                                  style: TextStyle(
+                                  'menu_recommended_badge'.tr,
+                                  style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -116,9 +121,9 @@ class MenuItemCard extends StatelessWidget {
                         Container(
                           color: Colors.black.withValues(alpha: 0.45),
                           alignment: Alignment.center,
-                          child: const Text(
-                            'ของหมด',
-                            style: TextStyle(
+                          child: Text(
+                            'menu_sold_out_badge'.tr,
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 14,
@@ -136,7 +141,7 @@ class MenuItemCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          item.name,
+                          item.displayName,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
@@ -151,17 +156,17 @@ class MenuItemCard extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 Formatters.baht(item.price),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,
-                                  color: AppColors.primary,
+                                  color: AppColors.brandInk,
                                 ),
                               ),
                             ),
                             if (trailing != null)
                               trailing!
                             else if (item.hasOptions)
-                              const Icon(
+                              Icon(
                                 Icons.tune_rounded,
                                 size: 15,
                                 color: AppColors.textDisabled,

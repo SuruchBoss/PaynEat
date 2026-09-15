@@ -18,12 +18,18 @@ class UpdateSettingsParams {
     this.vatRate,
     this.serviceChargeRate,
     this.vatIncluded,
+    this.storeTaxId,
+    this.storeAddress,
+    this.storeBranch,
   });
 
   final String? storeName;
   final double? vatRate;
   final double? serviceChargeRate;
   final bool? vatIncluded;
+  final String? storeTaxId;
+  final String? storeAddress;
+  final String? storeBranch;
 }
 
 class UpdateSettingsUseCase
@@ -39,5 +45,8 @@ class UpdateSettingsUseCase
         vatRate: params.vatRate,
         serviceChargeRate: params.serviceChargeRate,
         vatIncluded: params.vatIncluded,
+        storeTaxId: params.storeTaxId,
+        storeAddress: params.storeAddress,
+        storeBranch: params.storeBranch,
       );
 }

@@ -1,3 +1,4 @@
+import '../../../ingredient/data/models/ingredient_model.dart';
 import '../../domain/entities/menu_item.dart';
 import '../../domain/entities/menu_option.dart';
 
@@ -57,6 +58,7 @@ class MenuItemModel extends MenuItem {
     super.prepMinutes,
     super.sortOrder,
     super.optionGroups,
+    super.ingredients,
   });
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) => MenuItemModel(
@@ -75,6 +77,10 @@ class MenuItemModel extends MenuItem {
     optionGroups: (json['optionGroups'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(MenuOptionGroupModel.fromJson)
+        .toList(growable: false),
+    ingredients: (json['ingredients'] as List? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .map(MenuItemIngredientUsageModel.fromJson)
         .toList(growable: false),
   );
 }

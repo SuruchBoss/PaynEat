@@ -10,6 +10,7 @@ import 'package:payneat_pos/app/routes/app_routes.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
+import 'package:payneat_pos/core/utils/app_clock.dart';
 import 'package:payneat_pos/features/auth/domain/usecases/login_usecase.dart';
 
 /// เครื่องมือถ่ายภาพหน้าจอของแอปโดยไม่ต้องใช้เบราว์เซอร์หรืออุปกรณ์จริง
@@ -21,17 +22,41 @@ import 'package:payneat_pos/features/auth/domain/usecases/login_usecase.dart';
 class ScreenshotHarness {
   const ScreenshotHarness._();
 
-  static const String fontDir = 'tool/fonts';
+  static const String fontDir = 'assets/fonts';
 
   /// ขนาดหน้าจอมาตรฐานที่ใช้ถ่ายภาพ
   static const Size phone = Size(390, 844); // iPhone 14
   static const Size tablet = Size(1194, 834); // iPad Pro 11" แนวนอน
   static const Size desktop = Size(1440, 900); // จอโน้ตบุ๊ก
 
+  /// เวลาที่ตรึงไว้ตอนถ่ายภาพ — ตั้งใจให้เป็นช่วงเย็นที่ร้านกำลังยุ่ง
+  /// กราฟยอดขายรายชั่วโมงและออเดอร์ในครัวจะได้มีข้อมูลให้ดูเต็ม ๆ
+  ///
+  /// จงใจใช้เวลา "ตามเครื่อง" ไม่ใช่ UTC เพราะ `Formatters.parse` แปลง UTC
+  /// กลับเป็นเวลาเครื่องก่อนแสดงผลอยู่แล้ว พอตรึงเป็นเวลาเครื่อง ค่าที่วาด
+  /// ออกมาจึงเท่ากันทุกเครื่อง ไม่ว่า time zone จะตั้งไว้เป็นอะไร
+  static final DateTime capturedAt = DateTime(2026, 9, 11, 19, 42);
+
+  /// ตรึงนาฬิกาก่อนสร้างข้อมูลสาธิต
+  ///
+  /// ถ้าไม่ตรึง ภาพที่ถ่ายซ้ำจะได้ไฟล์ไม่เหมือนเดิมทุกครั้ง เพราะเวลาบนการ์ด
+  /// ออเดอร์ ("· 07:45") เดินตามนาฬิกาจริง กลายเป็น diff ปลอมใน git ที่แยก
+  /// ไม่ออกว่าอันไหนคือการเปลี่ยนแปลงจริงของ UI
+  ///
+  /// ต้องเรียก "ก่อน" [seedScenario] เพราะข้อมูลสาธิตประทับเวลาตอนถูกสร้าง
+  static void freezeClock() => AppClock.freeze(capturedAt);
+
+  /// คืนนาฬิกาจริง — เรียกใน tearDownAll เสมอ
+  static void unfreezeClock() => AppClock.unfreeze();
+
   /// โหลดฟอนต์จริงเข้าไปใน test binding
   ///
   /// ถ้าไม่โหลด flutter_test จะวาดตัวอักษรเป็นกล่องดำ (ฟอนต์ Ahem)
-  /// ลงทะเบียน Noto Sans Thai เป็นชื่อ 'Roboto' เพื่อให้กลายเป็นฟอนต์เริ่มต้นของทั้งแอป
+  ///
+  /// ลงทะเบียนสองชื่อ:
+  /// - `NotoSansThai` คือชื่อที่ธีมของแอปเรียกใช้จริง (ดู `AppTheme.fontFamily`)
+  /// - `Roboto` เผื่อ widget ของ Material ที่สร้าง TextStyle เองโดยไม่ผ่านธีม
+  ///   จะได้ไม่หล่นไปโดนฟอนต์ Ahem แล้วกลายเป็นกล่องสี่เหลี่ยมในภาพ
   static Future<void> loadFonts() async {
     Future<void> load(String family, List<String> paths) async {
       final loader = FontLoader(family);
@@ -44,12 +69,14 @@ class ScreenshotHarness {
       await loader.load();
     }
 
-    await load('Roboto', [
+    const thaiFaces = [
       '$fontDir/NotoSansThai-400.ttf',
       '$fontDir/NotoSansThai-500.ttf',
       '$fontDir/NotoSansThai-700.ttf',
       '$fontDir/NotoSansThai-800.ttf',
-    ]);
+    ];
+    await load('NotoSansThai', thaiFaces);
+    await load('Roboto', thaiFaces);
 
     const materialIcons =
         '/opt/fl/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';
@@ -236,11 +263,14 @@ class ScreenshotHarness {
       reference: 'PROMPTPAY-4471',
       cashierId: 6,
     );
+    final cashAmount = double.parse((total - 100).toStringAsFixed(2));
     store.pay(
       orderId: paidId,
       method: 'cash',
-      amount: double.parse((total - 100).toStringAsFixed(2)),
-      received: 200,
+      amount: cashAmount,
+      // ให้เงินเกินไว้เสมอ 20 บาท เพื่อให้มีเงินทอนในใบเสร็จตัวอย่าง
+      // ไม่ล็อกเป็นค่าคงที่ เพราะยอดบิลจริงเปลี่ยนได้ตามราคาเมนู/ตัวเลือกที่ปรับ
+      received: cashAmount + 20,
       cashierId: 6,
     );
 
@@ -248,7 +278,7 @@ class ScreenshotHarness {
     void backdate(Map<String, dynamic> order, int index, int minutes) {
       final items = (order['items'] as List).cast<Map<String, dynamic>>();
       if (index < items.length) {
-        items[index]['createdAt'] = DateTime.now()
+        items[index]['createdAt'] = AppClock.now()
             .toUtc()
             .subtract(Duration(minutes: minutes))
             .toIso8601String();
@@ -271,14 +301,8 @@ class ScreenshotHarness {
     );
 
     // ให้บิลที่ปิดแล้วอยู่ในช่วงมื้อเย็น ใบเสร็จในเอกสารจะได้ไม่ขึ้นเวลาแปลก ๆ
-    final dinner = DateTime.now();
-    final paidStamp = DateTime(
-      dinner.year,
-      dinner.month,
-      dinner.day,
-      19,
-      42,
-    ).toUtc().toIso8601String();
+    // [capturedAt] เป็นช่วงมื้อเย็นอยู่แล้ว จึงใช้ค่านั้นตรง ๆ ได้เลย
+    final paidStamp = capturedAt.toUtc().toIso8601String();
     final paidOrder = store.findOrder(paidId);
     paidOrder['createdAt'] = paidStamp;
     paidOrder['closedAt'] = paidStamp;
@@ -314,7 +338,7 @@ class ScreenshotHarness {
   };
 
   static void _seedTodaySalesCurve(DemoStore store) {
-    final now = DateTime.now();
+    final now = AppClock.now();
 
     // ตัดบิลของวันนี้ที่ตกนอกเวลาเปิดร้านออกก่อน (เกิดจากเวลาของเครื่องที่รันเครื่องมือ)
     // เพื่อให้กราฟในเอกสารเป็นวันขายวันเดียวที่อ่านง่าย

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../app/theme/app_theme.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -22,7 +23,7 @@ class SplitBillPage extends GetView<SplitBillController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('แยกบิลรายการอาหาร')),
+      appBar: AppBar(title: Text('payment_split_bill_title'.tr)),
       body: Obx(() {
         if (controller.isLoading.value) return const LoadingView();
         final error = controller.errorMessage.value;
@@ -30,10 +31,12 @@ class SplitBillPage extends GetView<SplitBillController> {
           return ErrorView(message: error, onRetry: controller.load);
         }
         final order = controller.order.value;
-        if (order == null) return const EmptyView(message: 'ไม่พบออเดอร์');
+        if (order == null) {
+          return EmptyView(message: 'payment_order_not_found'.tr);
+        }
         if (order.isPaid) {
-          return const EmptyView(
-            message: 'ออเดอร์นี้ชำระเงินครบแล้ว',
+          return EmptyView(
+            message: 'payment_order_already_paid'.tr,
             icon: Icons.check_circle_rounded,
           );
         }
@@ -55,8 +58,8 @@ class SplitBillPage extends GetView<SplitBillController> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'แตะเลือกเมนูที่จะให้คนนี้จ่าย แล้วกดชำระ — ทำซ้ำได้จนครบทุกรายการ',
+                  Text(
+                    'payment_split_bill_instructions'.tr,
                     style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textSecondary,
@@ -82,10 +85,14 @@ class SplitBillPage extends GetView<SplitBillController> {
                       controlAffinity: ListTileControlAffinity.leading,
                       title: Text(item.name),
                       subtitle: Text(
-                        item.isPaid ? 'จ่ายแล้ว' : '${item.quantity} รายการ',
+                        item.isPaid
+                            ? 'payment_item_paid_label'.tr
+                            : 'payment_item_quantity_label'.trParams({
+                                'count': item.quantity.toString(),
+                              }),
                         style: TextStyle(
                           color: item.isPaid
-                              ? AppColors.success
+                              ? AppColors.successInk
                               : AppColors.textSecondary,
                         ),
                       ),
@@ -100,27 +107,30 @@ class SplitBillPage extends GetView<SplitBillController> {
             const SizedBox(height: 12),
             AppCard(
               child: preview == null
-                  ? const Text('เลือกรายการด้านบนเพื่อดูยอดที่ต้องจ่าย')
+                  ? Text('payment_select_items_hint'.tr)
                   : Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _AmountRow(
-                          label: 'ยอดรายการที่เลือก',
+                          label: 'payment_selected_subtotal_label'.tr,
                           value: preview.subtotal,
                         ),
                         if (preview.discountAmount > 0)
                           _AmountRow(
-                            label: 'ส่วนลด',
+                            label: 'payment_discount_label'.tr,
                             value: -preview.discountAmount,
                           ),
                         _AmountRow(
-                          label: 'Service Charge',
+                          label: 'payment_service_charge_label'.tr,
                           value: preview.serviceCharge,
                         ),
-                        _AmountRow(label: 'VAT', value: preview.vat),
+                        _AmountRow(
+                          label: 'payment_vat_label'.tr,
+                          value: preview.vat,
+                        ),
                         const Divider(height: 20),
                         _AmountRow(
-                          label: 'ยอดที่ต้องจ่ายรอบนี้',
+                          label: 'payment_amount_due_this_round_label'.tr,
                           value: preview.total,
                           bold: true,
                         ),
@@ -168,7 +178,7 @@ class _AmountRow extends StatelessWidget {
             style: TextStyle(
               fontSize: bold ? 18 : 13.5,
               fontWeight: bold ? FontWeight.w900 : FontWeight.w600,
-              color: bold ? AppColors.primary : null,
+              color: bold ? AppColors.brandInk : null,
             ),
           ),
         ],
@@ -188,9 +198,9 @@ class _PaymentForm extends GetView<SplitBillController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text(
-            'ช่องทางชำระเงิน',
-            style: TextStyle(fontWeight: FontWeight.w800),
+          Text(
+            'payment_method_section_title'.tr,
+            style: const TextStyle(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 10),
           Obx(
@@ -205,11 +215,13 @@ class _PaymentForm extends GetView<SplitBillController> {
                       selected: selected,
                       showCheckmark: false,
                       onSelected: (_) => controller.selectMethod(method),
-                      selectedColor: AppColors.primary,
+                      selectedColor: AppColors.fillOf(AppColors.primary),
                       backgroundColor: AppColors.surfaceAlt,
                       labelStyle: TextStyle(
                         color: selected
-                            ? Colors.white
+                            ? AppColors.onColor(
+                                AppColors.fillOf(AppColors.primary),
+                              )
                             : AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
                       ),
@@ -233,9 +245,9 @@ class _PaymentForm extends GetView<SplitBillController> {
                           FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
                         ],
                         onChanged: controller.onReceivedChanged,
-                        decoration: const InputDecoration(
-                          labelText: 'รับเงินมา',
-                          suffixText: 'บาท',
+                        decoration: InputDecoration(
+                          labelText: 'payment_received_label'.tr,
+                          suffixText: 'common_baht'.tr,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -243,7 +255,7 @@ class _PaymentForm extends GetView<SplitBillController> {
                         spacing: 8,
                         children: [
                           ActionChip(
-                            label: const Text('พอดี'),
+                            label: Text('payment_exact_amount_label'.tr),
                             onPressed: () =>
                                 controller.setReceived(preview.total),
                           ),
@@ -258,9 +270,9 @@ class _PaymentForm extends GetView<SplitBillController> {
                         ),
                         child: Row(
                           children: [
-                            const Text(
-                              'เงินทอน',
-                              style: TextStyle(
+                            Text(
+                              'payment_change_due_label'.tr,
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -268,10 +280,8 @@ class _PaymentForm extends GetView<SplitBillController> {
                             const Spacer(),
                             Text(
                               Formatters.baht(controller.change),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.secondary,
+                              style: AppTheme.moneyLarge.copyWith(
+                                color: AppColors.secondaryInk,
                               ),
                             ),
                           ],
@@ -285,7 +295,10 @@ class _PaymentForm extends GetView<SplitBillController> {
           Obx(
             () => FilledButton.icon(
               style: FilledButton.styleFrom(
-                backgroundColor: AppColors.success,
+                backgroundColor: AppColors.fillOf(AppColors.success),
+                foregroundColor: AppColors.onColor(
+                  AppColors.fillOf(AppColors.success),
+                ),
                 minimumSize: const Size(0, 52),
               ),
               onPressed: controller.canPay && !controller.isPaying.value
@@ -297,12 +310,14 @@ class _PaymentForm extends GetView<SplitBillController> {
                       height: 18,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     )
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
-                'รับชำระ ${Formatters.baht(preview.total)}',
+                'payment_submit_button'.trParams({
+                  'amount': Formatters.baht(preview.total),
+                }),
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,

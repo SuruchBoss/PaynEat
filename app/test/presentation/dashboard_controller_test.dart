@@ -78,7 +78,7 @@ void main() {
       repository.nextDashboardResult = Result.success(_dashboard());
       await controller.load();
 
-      repository.nextDashboardResult = const Result.failure(
+      repository.nextDashboardResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
       await controller.load();

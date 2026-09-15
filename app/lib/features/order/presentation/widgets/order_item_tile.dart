@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -32,7 +33,7 @@ class OrderItemTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: AppColors.border),
         ),
@@ -90,7 +91,7 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         item.optionsSummary,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                         ),
@@ -101,18 +102,18 @@ class OrderItemTile extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 3),
                       child: Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.edit_note_rounded,
                             size: 13,
-                            color: AppColors.warning,
+                            color: AppColors.warningInk,
                           ),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
                               item.note!,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
-                                color: AppColors.warning,
+                                color: AppColors.warningInk,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -138,30 +139,37 @@ class OrderItemTile extends StatelessWidget {
                               size: 18,
                             ),
                             visualDensity: VisualDensity.compact,
-                            color: AppColors.textDisabled,
-                            tooltip: 'ลบรายการ',
+                            color: AppColors.textSecondary,
+                            tooltip: 'order_remove_item'.tr,
                           ),
                         if (onCancel != null && !item.isEditable)
                           IconButton(
                             onPressed: onCancel,
                             icon: const Icon(Icons.block_rounded, size: 17),
                             visualDensity: VisualDensity.compact,
-                            color: AppColors.textDisabled,
-                            tooltip: 'ยกเลิกรายการ',
+                            color: AppColors.textSecondary,
+                            tooltip: 'order_cancel_item'.tr,
                           ),
                         if (onAdvance != null && item.nextActionLabel != null)
                           FilledButton(
                             onPressed: onAdvance,
                             style: FilledButton.styleFrom(
-                              minimumSize: const Size(0, 32),
+                              minimumSize: const Size(0, 48),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 14,
                               ),
-                              backgroundColor: color,
-                              textStyle: const TextStyle(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w700,
+                              backgroundColor: AppColors.fillOf(color),
+                              foregroundColor: AppColors.onColor(
+                                AppColors.fillOf(color),
                               ),
+                              // ต้อง copyWith จาก labelLarge ของธีม ไม่ใช่สร้าง TextStyle
+                              // เปล่า ๆ ขึ้นใหม่ — ไม่งั้น fontFamily จะหลุดไปใช้ค่า default
+                              // ของแพลตฟอร์ม (ดูคำเตือนเดียวกันใน app_theme.dart)
+                              textStyle: Theme.of(context).textTheme.labelLarge
+                                  ?.copyWith(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                             ),
                             child: Text(item.nextActionLabel!),
                           ),

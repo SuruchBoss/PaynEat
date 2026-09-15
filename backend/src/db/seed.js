@@ -16,6 +16,36 @@ const USERS = [
   { name: 'พี่แอน (แคชเชียร์)', username: 'cashier', password: 'cashier123', role: 'cashier' },
 ];
 
+// ชื่อ env var รหัสผ่านต่อบัญชีเดโม 1 ตัว — ใช้เฉพาะตอน NODE_ENV=production (ดู resolveSeedPassword
+// ด้านล่าง และ SECURITY.md หัวข้อ "ข้อควรระวังสำหรับผู้ที่จะ deploy ใช้งานจริง")
+const SEED_PASSWORD_ENV_KEYS = {
+  admin: 'SEED_ADMIN_PASSWORD',
+  manager: 'SEED_MANAGER_PASSWORD',
+  waiter1: 'SEED_WAITER1_PASSWORD',
+  waiter2: 'SEED_WAITER2_PASSWORD',
+  kitchen: 'SEED_KITCHEN_PASSWORD',
+  cashier: 'SEED_CASHIER_PASSWORD',
+};
+
+// รหัสผ่านเดโม (admin123 ฯลฯ) เผยแพร่อยู่ใน README/ซอร์สโค้ดสาธารณะ ใช้ได้เฉพาะตอนรันดูในเครื่อง/
+// เดโมเท่านั้น — ใน production ต้องตั้งรหัสผ่านเองผ่าน env ให้ครบทุกบัญชีก่อนเสมอ ไม่งั้น seed()
+// จะ throw แทนที่จะ fallback ไปใช้รหัสผ่านที่รู้กันอยู่แล้วอย่างเงียบๆ (fail-closed เหมือน
+// JWT_SECRET ใน config/env.js — ดูรายงาน security review)
+const resolveSeedPassword = (user) => {
+  if (process.env.NODE_ENV !== 'production') return user.password;
+
+  const envKey = SEED_PASSWORD_ENV_KEYS[user.username];
+  const value = envKey ? process.env[envKey] : undefined;
+  if (!value) {
+    throw new Error(
+      `ต้องตั้งค่า ${envKey} ก่อน seed บัญชี "${user.username}" ใน production ` +
+        `(ห้ามใช้รหัสผ่านเดโม "${user.password}" ที่เผยแพร่อยู่ใน README/ซอร์สโค้ด) ` +
+        'หรือตั้ง AUTO_SEED=false แล้วสร้างบัญชีจริงเอง — ดู SECURITY.md',
+    );
+  }
+  return value;
+};
+
 // prettier-ignore
 const CATEGORIES = [
   { name: 'แนะนำ', nameEn: 'Recommended', icon: '⭐', sortOrder: 1 },
@@ -122,6 +152,45 @@ const MENU_OPTIONS = {
   น้ำมะนาวโซดา: ['sweet', 'ice'],
 };
 
+// วัตถุดิบตัวอย่าง (ดู docs/tickets/06-inventory-stock.md) — หน่วยอิสระที่ร้านตั้งเอง ไม่ใช่เงิน
+// "ปลาทับทิม" ตั้งใจให้ current_stock ต่ำกว่า low_stock_threshold ตั้งแต่ seed เพื่อให้เห็นตัวอย่าง
+// การแจ้งเตือนของใกล้หมดได้ทันทีโดยไม่ต้องสั่งอาหารก่อน
+// prettier-ignore
+const INGREDIENTS = [
+  { name: 'กุ้งสด', unit: 'กรัม', currentStock: 3000, lowStockThreshold: 500 },
+  { name: 'หมูสับ', unit: 'กรัม', currentStock: 4000, lowStockThreshold: 800 },
+  { name: 'ข้าวสวย', unit: 'จาน', currentStock: 100, lowStockThreshold: 20 },
+  { name: 'ไข่ไก่', unit: 'ฟอง', currentStock: 60, lowStockThreshold: 12 },
+  { name: 'เนื้อปู', unit: 'กรัม', currentStock: 500, lowStockThreshold: 300 },
+  { name: 'ปลาทับทิม', unit: 'ตัว', currentStock: 3, lowStockThreshold: 5 },
+];
+
+// เมนู → วัตถุดิบที่ใช้ + ปริมาณต่อ 1 ที่ (ผูกไว้แค่บางเมนูเป็นตัวอย่าง ไม่ใช่ทุกเมนู)
+const MENU_ITEM_INGREDIENTS = {
+  ข้าวผัดกุ้ง: [
+    { ingredient: 'กุ้งสด', qtyPerUnit: 80 },
+    { ingredient: 'ข้าวสวย', qtyPerUnit: 1 },
+  ],
+  ผัดกะเพราหมูสับ: [
+    { ingredient: 'หมูสับ', qtyPerUnit: 100 },
+    { ingredient: 'ข้าวสวย', qtyPerUnit: 1 },
+  ],
+  ปลาทับทิมนึ่งมะนาว: [{ ingredient: 'ปลาทับทิม', qtyPerUnit: 1 }],
+  ไข่เจียวปู: [
+    { ingredient: 'ไข่ไก่', qtyPerUnit: 2 },
+    { ingredient: 'เนื้อปู', qtyPerUnit: 50 },
+  ],
+};
+
+// ข้อมูลผู้เสียภาษีของร้านตัวอย่าง (ดู docs/tickets/07-tax-invoice.md) — ไม่มี default จาก .env
+// เหมือนค่าตั้งค่าอื่น เพราะร้านจริงที่ไม่ได้จด VAT ไม่ควรมีเลขผู้เสียภาษีปลอมขึ้นมาเอง จึง seed
+// ไว้ตรงนี้เฉพาะโหมดเดโมเพื่อให้ลองออกใบกำกับภาษีได้ทันทีโดยไม่ต้องตั้งค่าเองก่อน
+const STORE_TAX_INFO = {
+  store_tax_id: '0105558000012',
+  store_address: '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
+  store_branch: 'สำนักงานใหญ่',
+};
+
 // prettier-ignore
 const TABLES = [
   ...Array.from({ length: 8 }, (_, i) => ({ name: `A${i + 1}`, zone: 'โซนในร้าน', seats: i < 4 ? 2 : 4 })),
@@ -142,7 +211,12 @@ export const seed = () => {
         'INSERT INTO users (name, username, password_hash, role) VALUES (?, ?, ?, ?)',
       );
       for (const user of USERS) {
-        insertUser.run(user.name, user.username, bcrypt.hashSync(user.password, 10), user.role);
+        insertUser.run(
+          user.name,
+          user.username,
+          bcrypt.hashSync(resolveSeedPassword(user), 10),
+          user.role,
+        );
       }
     }
 
@@ -176,6 +250,7 @@ export const seed = () => {
         INSERT INTO options (group_id, name, price_delta, is_default, sort_order) VALUES (?, ?, ?, ?, ?)
       `);
 
+      const menuItemIdByName = new Map();
       MENU.forEach((item, index) => {
         const result = insertMenu.run(
           categoryIdByName.get(item.cat),
@@ -188,6 +263,7 @@ export const seed = () => {
           index,
         );
         const menuItemId = result.lastInsertRowid;
+        menuItemIdByName.set(item.name, menuItemId);
 
         (MENU_OPTIONS[item.name] ?? []).forEach((templateKey, groupIndex) => {
           const template = OPTION_TEMPLATES[templateKey];
@@ -210,6 +286,40 @@ export const seed = () => {
           });
         });
       });
+
+      const ingredientCount = db.prepare('SELECT COUNT(*) AS c FROM ingredients').get().c;
+      if (ingredientCount === 0) {
+        const insertIngredient = db.prepare(`
+          INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const ingredient of INGREDIENTS) {
+          insertIngredient.run(
+            ingredient.name,
+            ingredient.unit,
+            ingredient.currentStock,
+            ingredient.lowStockThreshold,
+          );
+        }
+
+        const ingredientIdByName = new Map(
+          db
+            .prepare('SELECT id, name FROM ingredients')
+            .all()
+            .map((row) => [row.name, row.id]),
+        );
+        const insertLink = db.prepare(`
+          INSERT INTO menu_item_ingredients (menu_item_id, ingredient_id, qty_per_unit)
+          VALUES (?, ?, ?)
+        `);
+        for (const [menuItemName, links] of Object.entries(MENU_ITEM_INGREDIENTS)) {
+          const menuItemId = menuItemIdByName.get(menuItemName);
+          if (!menuItemId) continue;
+          for (const link of links) {
+            insertLink.run(menuItemId, ingredientIdByName.get(link.ingredient), link.qtyPerUnit);
+          }
+        }
+      }
     }
 
     const tableCount = db.prepare('SELECT COUNT(*) AS c FROM dining_tables').get().c;
@@ -218,6 +328,14 @@ export const seed = () => {
         'INSERT INTO dining_tables (name, zone, seats) VALUES (?, ?, ?)',
       );
       for (const table of TABLES) insertTable.run(table.name, table.zone, table.seats);
+    }
+
+    const hasStoreTaxId = db.prepare("SELECT 1 FROM settings WHERE key = 'store_tax_id'").get();
+    if (!hasStoreTaxId) {
+      const upsertSetting = db.prepare(
+        'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING',
+      );
+      for (const [key, value] of Object.entries(STORE_TAX_INFO)) upsertSetting.run(key, value);
     }
 
     // เปิดกะแรกให้พร้อมใช้งานทันที (ร้านจริงจะเปิด/ปิดกะเองทุกวันหลังจากนี้)
@@ -240,7 +358,9 @@ export const seed = () => {
 if (import.meta.url === `file://${process.argv[1]}`) {
   seed();
   console.log(
-    '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
+    process.env.NODE_ENV === 'production'
+      ? '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีผู้ใช้ตั้งรหัสผ่านจาก SEED_*_PASSWORD ตามที่ตั้งค่าไว้)'
+      : '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
   );
 }
 

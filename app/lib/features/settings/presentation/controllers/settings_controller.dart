@@ -25,6 +25,9 @@ class SettingsController extends GetxController {
   final TextEditingController storeNameController = TextEditingController();
   final TextEditingController vatController = TextEditingController();
   final TextEditingController serviceChargeController = TextEditingController();
+  final TextEditingController storeTaxIdController = TextEditingController();
+  final TextEditingController storeAddressController = TextEditingController();
+  final TextEditingController storeBranchController = TextEditingController();
 
   @override
   void onInit() {
@@ -37,6 +40,9 @@ class SettingsController extends GetxController {
     storeNameController.dispose();
     vatController.dispose();
     serviceChargeController.dispose();
+    storeTaxIdController.dispose();
+    storeAddressController.dispose();
+    storeBranchController.dispose();
     super.onClose();
   }
 
@@ -55,6 +61,9 @@ class SettingsController extends GetxController {
         serviceChargeController.text = data.serviceChargePercent
             .toStringAsFixed(0);
         vatIncluded.value = data.vatIncluded;
+        storeTaxIdController.text = data.storeTaxId ?? '';
+        storeAddressController.text = data.storeAddress ?? '';
+        storeBranchController.text = data.storeBranch ?? '';
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -65,11 +74,11 @@ class SettingsController extends GetxController {
     final servicePercent = double.tryParse(serviceChargeController.text.trim());
 
     if (vatPercent == null || vatPercent < 0 || vatPercent > 100) {
-      AppDialogs.error('VAT ต้องอยู่ระหว่าง 0-100');
+      AppDialogs.error('settings_vat_range_error'.tr);
       return;
     }
     if (servicePercent == null || servicePercent < 0 || servicePercent > 100) {
-      AppDialogs.error('Service Charge ต้องอยู่ระหว่าง 0-100');
+      AppDialogs.error('settings_service_charge_range_error'.tr);
       return;
     }
 
@@ -80,6 +89,9 @@ class SettingsController extends GetxController {
         vatRate: vatPercent / 100,
         serviceChargeRate: servicePercent / 100,
         vatIncluded: vatIncluded.value,
+        storeTaxId: storeTaxIdController.text.trim(),
+        storeAddress: storeAddressController.text.trim(),
+        storeBranch: storeBranchController.text.trim(),
       ),
     );
     isSaving.value = false;
@@ -87,7 +99,7 @@ class SettingsController extends GetxController {
     result.fold(
       onSuccess: (data) {
         settings.value = data;
-        AppDialogs.success('บันทึกการตั้งค่าแล้ว');
+        AppDialogs.success('settings_saved_success'.tr);
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
     );

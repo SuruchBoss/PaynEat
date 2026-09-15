@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../order/domain/entities/order_item.dart';
 
@@ -21,11 +23,16 @@ class KitchenTicketCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = AppColors.itemStatus(item.status);
     final accent = isLate ? AppColors.danger : color;
+    // จอครัวอ่านจากระยะไกลในที่ที่มีไอน้ำและแสงจ้า ตัวหนังสือบนหัวตั๋ว
+    // (ชื่อโต๊ะ + เวลารอ) จึงต้องใช้เฉดเข้ม ไม่ใช้สีสดแบบเดียวกับเส้นขอบ
+    final accentInk = isLate
+        ? AppColors.dangerInk
+        : AppColors.itemStatusInk(item.status);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: accent.withValues(alpha: 0.4),
@@ -46,17 +53,19 @@ class KitchenTicketCard extends StatelessWidget {
                       ? Icons.table_restaurant_rounded
                       : Icons.takeout_dining_rounded,
                   size: 15,
-                  color: accent,
+                  color: accentInk,
                 ),
                 const SizedBox(width: 6),
                 Text(
                   item.tableName != null
-                      ? 'โต๊ะ ${item.tableName}'
-                      : 'กลับบ้าน',
+                      ? 'kitchen_table_label'.trParams({
+                          'table': item.tableName!,
+                        })
+                      : OrderType.label(OrderType.takeaway),
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,
-                    color: accent,
+                    color: accentInk,
                   ),
                 ),
                 const Spacer(),
@@ -65,7 +74,7 @@ class KitchenTicketCard extends StatelessWidget {
                       ? Icons.local_fire_department_rounded
                       : Icons.schedule_rounded,
                   size: 14,
-                  color: accent,
+                  color: accentInk,
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -73,7 +82,7 @@ class KitchenTicketCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w700,
-                    color: accent,
+                    color: accentInk,
                   ),
                 ),
               ],
@@ -157,19 +166,19 @@ class KitchenTicketCard extends StatelessWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.campaign_rounded,
                           size: 15,
-                          color: AppColors.warning,
+                          color: AppColors.warningInk,
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             item.note!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: AppColors.warning,
+                              color: AppColors.warningInk,
                             ),
                           ),
                         ),
@@ -181,8 +190,14 @@ class KitchenTicketCard extends StatelessWidget {
                   width: double.infinity,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
-                      backgroundColor: color,
-                      minimumSize: const Size(0, 42),
+                      // คงพื้นสีสดไว้ เพราะจอครัวอาศัยความสดของสีในการกวาดสายตา
+                      // หาตั๋วที่ต้องทำจากระยะไกล แล้วให้ onColor เลือกสีป้ายเอง —
+                      // เหลือง "รอทำ" ได้ป้ายสีเข้ม (7.93:1) แทนสีขาวที่ได้แค่ 2.13:1
+                      backgroundColor: AppColors.fillOf(color),
+                      foregroundColor: AppColors.onColor(
+                        AppColors.fillOf(color),
+                      ),
+                      minimumSize: const Size(0, 56),
                     ),
                     onPressed: onAdvance,
                     child: Text(item.nextActionLabel ?? '-'),

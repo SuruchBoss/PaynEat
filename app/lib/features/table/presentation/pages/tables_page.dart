@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/horizontal_fade.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/dining_table.dart';
 import '../controllers/table_controller.dart';
@@ -21,7 +22,7 @@ class TablesPage extends GetView<TableController> {
         Expanded(
           child: Obx(() {
             if (controller.isLoading.value && controller.tables.isEmpty) {
-              return const LoadingView(message: 'กำลังโหลดผังโต๊ะ...');
+              return LoadingView(message: 'table_loading_message'.tr);
             }
             final error = controller.errorMessage.value;
             if (error != null && controller.tables.isEmpty) {
@@ -30,8 +31,8 @@ class TablesPage extends GetView<TableController> {
 
             final tables = controller.filteredTables;
             if (tables.isEmpty) {
-              return const EmptyView(
-                message: 'ไม่พบโต๊ะตามเงื่อนไขที่เลือก',
+              return EmptyView(
+                message: 'table_empty_filtered_message'.tr,
                 icon: Icons.table_restaurant_outlined,
               );
             }
@@ -86,9 +87,11 @@ class _TableGrid extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '${entry.value.length} โต๊ะ',
-                      style: const TextStyle(
-                        color: AppColors.textDisabled,
+                      'table_count_in_zone'.trParams({
+                        'count': entry.value.length.toString(),
+                      }),
+                      style: TextStyle(
+                        color: AppColors.textSecondary,
                         fontSize: 12,
                       ),
                     ),
@@ -132,7 +135,7 @@ class _TableGrid extends StatelessWidget {
       SafeArea(
         child: Container(
           decoration: const BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -144,7 +147,7 @@ class _TableGrid extends StatelessWidget {
                 child: Row(
                   children: [
                     Text(
-                      'โต๊ะ ${table.name}',
+                      'table_number_label'.trParams({'name': table.name}),
                       style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w800,
@@ -152,8 +155,8 @@ class _TableGrid extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      '${table.seats} ที่นั่ง · ${table.zone}',
-                      style: const TextStyle(
+                      '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
+                      style: TextStyle(
                         color: AppColors.textSecondary,
                         fontSize: 12.5,
                       ),
@@ -171,10 +174,7 @@ class _TableGrid extends StatelessWidget {
                   ),
                   title: Text(TableStatus.label(status)),
                   trailing: table.status == status
-                      ? const Icon(
-                          Icons.check_rounded,
-                          color: AppColors.primary,
-                        )
+                      ? Icon(Icons.check_rounded, color: AppColors.brandInk)
                       : null,
                   onTap: () {
                     Get.back<void>();
@@ -200,48 +200,53 @@ class _TableSummaryBar extends StatelessWidget {
     return Obx(
       () => Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-        color: Colors.white,
+        color: AppColors.surface,
         child: Column(
           children: [
             Row(
               children: [
+                // ดึงสีจาก tableStatus() จุดเดียวกับที่การ์ดโต๊ะใช้ ไม่ระบุสีตรง ๆ ซ้ำอีกที่
+                // ไม่งั้นแถบสรุปด้านบนจะเพี้ยนจากผังโต๊ะด้านล่างทันทีที่สีสถานะถูกแก้
                 _CounterPill(
-                  label: 'โต๊ะว่าง',
+                  label: 'table_available_count_label'.tr,
                   value: '${controller.availableCount}',
-                  color: AppColors.success,
+                  color: AppColors.tableStatus(TableStatus.available),
                 ),
                 const SizedBox(width: 10),
                 _CounterPill(
-                  label: 'มีลูกค้า',
+                  label: 'table_occupied_count_label'.tr,
                   value: '${controller.occupiedCount}',
-                  color: AppColors.primary,
+                  color: AppColors.tableStatus(TableStatus.occupied),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: controller.loadTables,
                   icon: const Icon(Icons.refresh_rounded),
-                  tooltip: 'รีเฟรช',
+                  tooltip: 'table_refresh_tooltip'.tr,
                 ),
               ],
             ),
             const SizedBox(height: 10),
             SizedBox(
-              height: 34,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: [
-                  _FilterChipItem(
-                    label: 'ทุกโซน',
-                    selected: controller.selectedZone.value == null,
-                    onTap: () => controller.filterByZone(null),
-                  ),
-                  for (final zone in controller.zones)
+              height: 44,
+              child: HorizontalFade(
+                builder: (context, scrollController) => ListView(
+                  controller: scrollController,
+                  scrollDirection: Axis.horizontal,
+                  children: [
                     _FilterChipItem(
-                      label: zone,
-                      selected: controller.selectedZone.value == zone,
-                      onTap: () => controller.filterByZone(zone),
+                      label: 'table_all_zones_filter'.tr,
+                      selected: controller.selectedZone.value == null,
+                      onTap: () => controller.filterByZone(null),
                     ),
-                ],
+                    for (final zone in controller.zones)
+                      _FilterChipItem(
+                        label: zone,
+                        selected: controller.selectedZone.value == zone,
+                        onTap: () => controller.filterByZone(zone),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -309,10 +314,12 @@ class _FilterChipItem extends StatelessWidget {
         selected: selected,
         onSelected: (_) => onTap(),
         showCheckmark: false,
-        selectedColor: AppColors.primary,
+        selectedColor: AppColors.fillOf(AppColors.primary),
         backgroundColor: AppColors.surfaceAlt,
         labelStyle: TextStyle(
-          color: selected ? Colors.white : AppColors.textSecondary,
+          color: selected
+              ? AppColors.onColor(AppColors.fillOf(AppColors.primary))
+              : AppColors.textSecondary,
           fontWeight: FontWeight.w600,
           fontSize: 13,
         ),

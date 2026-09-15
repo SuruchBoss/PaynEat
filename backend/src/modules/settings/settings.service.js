@@ -14,6 +14,11 @@ export const settingsService = {
       vatRate: Number(raw.vat_rate ?? env.store.vatRate),
       serviceChargeRate: Number(raw.service_charge_rate ?? env.store.serviceChargeRate),
       vatIncluded: (raw.vat_included ?? String(env.store.vatIncluded)) === 'true',
+      // ข้อมูลร้านสำหรับออกใบกำกับภาษี (ดู docs/tickets/07-tax-invoice.md) — ไม่มีค่า default
+      // จาก .env เพราะร้านที่ไม่ได้จด VAT ไม่จำเป็นต้องมี ปล่อยว่างได้จนกว่าจะตั้งค่าเอง
+      storeTaxId: raw.store_tax_id ?? null,
+      storeAddress: raw.store_address ?? null,
+      storeBranch: raw.store_branch ?? null,
     };
   },
 
@@ -24,6 +29,9 @@ export const settingsService = {
       vatRate: 'vat_rate',
       serviceChargeRate: 'service_charge_rate',
       vatIncluded: 'vat_included',
+      storeTaxId: 'store_tax_id',
+      storeAddress: 'store_address',
+      storeBranch: 'store_branch',
     };
     for (const [field, key] of Object.entries(map)) {
       if (payload[field] === undefined) continue;

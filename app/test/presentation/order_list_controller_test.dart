@@ -88,7 +88,7 @@ void main() {
         await controller.load();
         expect(controller.orders.length, 1);
 
-        repository.nextResult = const Result.failure(
+        repository.nextResult = Result.failure(
           NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
         );
         await controller.load();

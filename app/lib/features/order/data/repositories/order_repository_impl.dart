@@ -1,5 +1,6 @@
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../core/usecases/result.dart';
+import '../../../promotion/domain/entities/promotion.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_item.dart';
 import '../../domain/repositories/order_repository.dart';
@@ -113,4 +114,16 @@ class OrderRepositoryImpl implements OrderRepository {
   @override
   Future<Result<List<OrderItem>>> getKitchenQueue({List<String>? statuses}) =>
       guard(() async => await _remote.getKitchenQueue(statuses: statuses));
+
+  @override
+  Future<Result<Order>> redeemPromotionCode(int orderId, String code) =>
+      guard(() async => await _remote.redeemPromotionCode(orderId, code));
+
+  @override
+  Future<Result<Order>> removePromotion(int orderId) =>
+      guard(() async => await _remote.removePromotion(orderId));
+
+  @override
+  Future<Result<List<EligiblePromotion>>> getEligiblePromotions(int orderId) =>
+      guard(() async => await _remote.getEligiblePromotions(orderId));
 }

@@ -79,4 +79,8 @@ rm -f audit-report.html audit-report.pages.json audit-report-visual.pdf  # ไ�
 ## หมายเหตุ
 
 - ต้องมีฟอนต์ที่ `app/tool/fonts/` เพราะ `flutter_test` ไม่มีฟอนต์ระบบให้ใช้
+- **เวลาถูกตรึงไว้ที่ 11 ก.ย. 2026 19:42** (`ScreenshotHarness.capturedAt`) ถ่ายกี่ครั้ง
+  ก็ได้ไฟล์เหมือนเดิมทุกไบต์ ภาพที่เปลี่ยนใน git จึงเป็นการเปลี่ยนแปลงจริงของ UI เสมอ
+  ไม่ใช่แค่นาฬิกาเดิน — โค้ดที่ผลลัพธ์ขึ้นกับเวลาปัจจุบันต้องเรียกผ่าน `AppClock.now()`
+  ไม่ใช่ `DateTime.now()` ตรง ๆ ไม่งั้นจะหลุดการตรึงนี้
 - ฉบับภาษาอังกฤษใช้ฟอนต์ Noto Sans ส่วนฉบับภาษาไทยใช้ Noto Sans Thai (ตั้งค่าที่ `LABELS['font']`)

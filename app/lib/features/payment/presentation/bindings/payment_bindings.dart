@@ -5,6 +5,7 @@ import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../../shift/domain/usecases/shift_usecases.dart';
+import '../../../tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 import '../../domain/usecases/payment_usecases.dart';
 import '../controllers/checkout_controller.dart';
 import '../controllers/receipt_controller.dart';
@@ -34,6 +35,9 @@ class ReceiptBinding extends Bindings {
         session: Get.find<SessionService>(),
         printerSettings: Get.find<PrinterSettingsService>(),
         printerService: Get.find<ReceiptPrinterService>(),
+        getTaxInvoice: Get.find<GetTaxInvoiceUseCase>(),
+        issueTaxInvoice: Get.find<IssueTaxInvoiceUseCase>(),
+        voidTaxInvoice: Get.find<VoidTaxInvoiceUseCase>(),
       ),
     );
   }

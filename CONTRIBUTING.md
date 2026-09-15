@@ -73,4 +73,5 @@ CI (`.github/workflows/ci.yml`) รันชุดเดียวกันนี
 
 ## License
 
-โค้ดที่ contribute เข้ามาจะอยู่ภายใต้สัญญาอนุญาต MIT เดียวกับโปรเจกต์ (ดู [`LICENSE`](LICENSE))
+โค้ดที่ contribute เข้ามาจะอยู่ภายใต้สัญญาอนุญาต Apache License 2.0 เดียวกับโปรเจกต์ (ดู [`LICENSE`](LICENSE)
+และ [`NOTICE`](NOTICE))

@@ -88,6 +88,9 @@ void main() {
       cancelOrder: CancelOrderUseCase(repository),
       moveOrderTable: MoveOrderTableUseCase(repository),
       mergeOrders: MergeOrdersUseCase(repository),
+      redeemPromotionCode: RedeemPromotionCodeUseCase(repository),
+      removePromotion: RemovePromotionUseCase(repository),
+      getEligiblePromotions: GetEligiblePromotionsUseCase(repository),
       session: session,
     );
   });
@@ -127,7 +130,7 @@ void main() {
     test('load ล้มเหลว → ตั้ง errorMessage', () async {
       controller.onInit();
       await Future<void>.delayed(Duration.zero);
-      repository.nextGetOrderResult = const Result.failure(
+      repository.nextGetOrderResult = Result.failure(
         NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
       );
 

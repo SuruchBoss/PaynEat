@@ -92,4 +92,15 @@ class StorageService {
 
   Future<void> savePendingOrderItems(String json) =>
       _write(StorageKeys.pendingOrderItems, json);
+
+  /// ภาษาที่ผู้ใช้เลือกไว้ — ผูกกับเครื่องนี้เท่านั้น จึงไม่ถูกล้างตอน [clear] (logout)
+  String? get locale => _read(StorageKeys.locale);
+
+  Future<void> saveLocale(String languageCode) =>
+      _write(StorageKeys.locale, languageCode);
+
+  String? get contrast => _read(StorageKeys.contrast);
+
+  Future<void> saveContrast(String value) =>
+      _write(StorageKeys.contrast, value);
 }

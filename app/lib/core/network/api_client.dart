@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart' hide Response;
 
 import '../../app/config/app_config.dart';
 import '../errors/exceptions.dart';
@@ -70,7 +71,7 @@ class ApiClient {
         throw const NetworkException();
       }
       throw ApiException(
-        message: error.message ?? 'เรียก API ไม่สำเร็จ',
+        message: error.message ?? 'error_api_call_failed'.tr,
         statusCode: error.response?.statusCode,
       );
     }
@@ -93,8 +94,10 @@ class ApiClient {
     final error = body is Map<String, dynamic> ? body['error'] : null;
     throw ApiException(
       message: error is Map<String, dynamic>
-          ? (error['message'] as String? ?? 'เรียก API ไม่สำเร็จ')
-          : 'เรียก API ไม่สำเร็จ (HTTP $statusCode)',
+          ? (error['message'] as String? ?? 'error_api_call_failed'.tr)
+          : 'error_api_call_failed_with_status'.trParams({
+              'status': statusCode.toString(),
+            }),
       statusCode: statusCode,
       code: error is Map<String, dynamic> ? error['code'] as String? : null,
       details: error is Map<String, dynamic> && error['details'] is List

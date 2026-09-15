@@ -15,13 +15,13 @@ class TablePickerDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('ย้ายไปโต๊ะไหน'),
+      title: Text('order_move_table_picker_title'.tr),
       content: SizedBox(
         width: double.maxFinite,
         child: tables.isEmpty
-            ? const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12),
-                child: Text('ไม่มีโต๊ะว่างให้ย้ายตอนนี้'),
+            ? Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                child: Text('order_move_table_picker_empty'.tr),
               )
             : ListView.builder(
                 shrinkWrap: true,
@@ -31,14 +31,22 @@ class TablePickerDialog extends StatelessWidget {
                   return ListTile(
                     leading: const Icon(Icons.table_bar_rounded),
                     title: Text(table.name),
-                    subtitle: Text('${table.zone} · ${table.seats} ที่นั่ง'),
+                    subtitle: Text(
+                      'order_table_seats_summary'.trParams({
+                        'zone': table.zone,
+                        'seats': '${table.seats}',
+                      }),
+                    ),
                     onTap: () => Get.back(result: table.id),
                   );
                 },
               ),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back<void>(), child: const Text('ปิด')),
+        TextButton(
+          onPressed: () => Get.back<void>(),
+          child: Text('common_close'.tr),
+        ),
       ],
     );
   }

@@ -38,8 +38,10 @@ extension DemoStoreTables on DemoStore {
 
   Map<String, dynamic> _findTable(int id) => tables.firstWhere(
     (row) => row['id'] == id,
-    orElse: () =>
-        throw const ApiException(message: 'ไม่พบโต๊ะนี้', statusCode: 404),
+    orElse: () => throw ApiException(
+      message: 'table_error_not_found'.tr,
+      statusCode: 404,
+    ),
   );
 
   Map<String, dynamic> setTableStatus(int id, String status) {
@@ -49,8 +51,8 @@ extension DemoStoreTables on DemoStore {
           row['tableId'] == id && OrderStatus.isActive(row['status'] as String),
     );
     if (status == TableStatus.available && hasOpenOrder) {
-      throw const ApiException(
-        message: 'โต๊ะนี้ยังมีออเดอร์ที่ยังไม่ปิด',
+      throw ApiException(
+        message: 'table_error_has_open_order'.tr,
         statusCode: 409,
       );
     }

@@ -18,6 +18,9 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     vatRate: (json['vatRate'] as num?)?.toDouble() ?? 0,
     serviceChargeRate: (json['serviceChargeRate'] as num?)?.toDouble() ?? 0,
     vatIncluded: json['vatIncluded'] as bool? ?? false,
+    storeTaxId: json['storeTaxId'] as String?,
+    storeAddress: json['storeAddress'] as String?,
+    storeBranch: json['storeBranch'] as String?,
   );
 
   @override

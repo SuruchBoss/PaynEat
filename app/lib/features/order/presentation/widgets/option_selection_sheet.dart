@@ -99,7 +99,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
       child: Column(
@@ -134,7 +134,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                           padding: const EdgeInsets.only(top: 3),
                           child: Text(
                             widget.item.description!,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12.5,
                               color: AppColors.textSecondary,
                             ),
@@ -168,19 +168,21 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                       ),
                       const SizedBox(width: 8),
                       if (group.isRequired)
-                        const Text(
-                          'ต้องเลือก',
+                        Text(
+                          'order_option_required'.tr,
                           style: TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.danger,
+                            color: AppColors.dangerInk,
                           ),
                         )
                       else
                         Text(
-                          'เลือกได้ ${group.maxSelect} อย่าง',
-                          style: const TextStyle(
+                          'order_option_max_select'.trParams({
+                            'count': '${group.maxSelect}',
+                          }),
+                          style: TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.textDisabled,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                     ],
@@ -207,9 +209,9 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                 TextField(
                   controller: _noteController,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'บอกครัวเพิ่มเติม (ถ้ามี)',
-                    hintText: 'เช่น ไม่ใส่ผักชี, แยกน้ำจิ้ม',
+                  decoration: InputDecoration(
+                    labelText: 'order_kitchen_note_label'.tr,
+                    hintText: 'order_kitchen_note_hint'.tr,
                   ),
                 ),
               ],
@@ -244,8 +246,12 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                         : null,
                     child: Text(
                       _missingGroups.isEmpty
-                          ? 'เพิ่มลงออเดอร์ · ${Formatters.baht(_unitPrice * _quantity)}'
-                          : 'กรุณาเลือก ${_missingGroups.first}',
+                          ? 'order_add_to_cart_button'.trParams({
+                              'price': Formatters.baht(_unitPrice * _quantity),
+                            })
+                          : 'order_select_required_group'.trParams({
+                              'group': _missingGroups.first,
+                            }),
                     ),
                   ),
                 ),
@@ -292,10 +298,10 @@ class _OptionChip extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               if (selected) ...[
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   size: 15,
-                  color: AppColors.primary,
+                  color: AppColors.brandInk,
                 ),
                 const SizedBox(width: 6),
               ],
@@ -304,14 +310,14 @@ class _OptionChip extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? AppColors.primary : AppColors.textPrimary,
+                  color: selected ? AppColors.brandInk : AppColors.textPrimary,
                 ),
               ),
               if (priceDelta > 0) ...[
                 const SizedBox(width: 6),
                 Text(
                   '+${Formatters.money(priceDelta)}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),

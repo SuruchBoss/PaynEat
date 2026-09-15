@@ -11,7 +11,8 @@ import '../controllers/dashboard_controller.dart';
 import '../widgets/hourly_bar_chart.dart';
 import '../widgets/stat_card.dart';
 
-/// แดชบอร์ดผู้จัดการ — ยอดขายวันนี้ ช่วงเวลาขายดี เมนูขายดี และสถานะร้านแบบเรียลไทม์
+/// แดชบอร์ดผู้จัดการ — สถานะร้าน ณ ตอนนี้: ยอดขายวันนี้ ช่วงเวลาขายดี และช่องทางชำระเงิน
+/// (เมนูขายดีและการเทียบย้อนหลังอยู่ที่หน้ารายงาน เพื่อไม่ให้สองหน้าทำงานทับกัน)
 class DashboardPage extends GetView<DashboardController> {
   const DashboardPage({super.key});
 
@@ -19,7 +20,7 @@ class DashboardPage extends GetView<DashboardController> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (controller.isLoading.value) {
-        return const LoadingView(message: 'กำลังโหลดข้อมูลภาพรวม...');
+        return LoadingView(message: 'report_dashboard_loading'.tr);
       }
       final error = controller.errorMessage.value;
       if (error != null) {
@@ -55,30 +56,36 @@ class DashboardPage extends GetView<DashboardController> {
               ),
               children: [
                 StatCard(
-                  label: 'ยอดขายวันนี้',
+                  label: 'report_today_sales_label'.tr,
                   value: Formatters.baht(today.netSales),
-                  caption: 'รวม VAT และ Service Charge',
+                  caption: 'report_today_sales_caption'.tr,
                   icon: Icons.payments_rounded,
                   color: AppColors.success,
                 ),
                 StatCard(
-                  label: 'จำนวนบิล',
+                  label: 'report_order_count_label'.tr,
                   value: '${today.orderCount}',
-                  caption: 'ลูกค้า ${today.guestCount} ท่าน',
+                  caption: 'report_guest_count_caption'.trParams({
+                    'count': today.guestCount.toString(),
+                  }),
                   icon: Icons.receipt_long_rounded,
                   color: AppColors.info,
                 ),
                 StatCard(
-                  label: 'เฉลี่ยต่อบิล',
+                  label: 'report_average_per_order_label'.tr,
                   value: Formatters.baht(today.averagePerOrder),
-                  caption: 'ต่อหัว ${Formatters.baht(today.averagePerGuest)}',
+                  caption: 'report_average_per_guest_caption'.trParams({
+                    'amount': Formatters.baht(today.averagePerGuest),
+                  }),
                   icon: Icons.trending_up_rounded,
                   color: AppColors.primary,
                 ),
                 StatCard(
-                  label: 'ส่วนลดที่ให้ไป',
+                  label: 'report_discount_given_label'.tr,
                   value: Formatters.baht(today.discount),
-                  caption: 'VAT ${Formatters.money(today.vat)}',
+                  caption: 'report_vat_caption'.trParams({
+                    'amount': Formatters.money(today.vat),
+                  }),
                   icon: Icons.local_offer_rounded,
                   color: AppColors.purple,
                 ),
@@ -89,9 +96,9 @@ class DashboardPage extends GetView<DashboardController> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SectionHeader(
-                    title: 'ยอดขายรายชั่วโมง',
-                    subtitle: 'ดูว่าช่วงไหนลูกค้าเยอะที่สุดของวัน',
+                  SectionHeader(
+                    title: 'report_hourly_sales_title'.tr,
+                    subtitle: 'report_hourly_sales_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
                   HourlyBarChart(data: data.hourly),
@@ -99,22 +106,10 @@ class DashboardPage extends GetView<DashboardController> {
               ),
             ),
             const SizedBox(height: 16),
-            Responsive.isWide(context)
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _TopItemsCard(items: data.topItems)),
-                      const SizedBox(width: 12),
-                      Expanded(child: _PaymentBreakdownCard(summary: today)),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      _TopItemsCard(items: data.topItems),
-                      const SizedBox(height: 12),
-                      _PaymentBreakdownCard(summary: today),
-                    ],
-                  ),
+            // "เมนูขายดี" ย้ายไปอยู่ที่หน้ารายงานที่เดียว — หน้าภาพรวมทำหน้าที่บอก
+            // "สถานะร้าน ณ ตอนนี้" ส่วนหน้ารายงานไว้ดูย้อนหลังและเทียบช่วงเวลา
+            // ก่อนหน้านี้ทั้งสองหน้าแสดงชุดข้อมูลเดียวกันเมื่อเลือกช่วง "วันนี้"
+            _PaymentBreakdownCard(summary: today),
           ],
         ),
       );
@@ -141,7 +136,7 @@ class _LiveBar extends StatelessWidget {
         children: [
           Expanded(
             child: _LiveItem(
-              label: 'ออเดอร์ที่เปิดอยู่',
+              label: 'report_open_orders_label'.tr,
               value: '${live.openOrders}',
               icon: Icons.pending_actions_rounded,
             ),
@@ -149,7 +144,7 @@ class _LiveBar extends StatelessWidget {
           _divider(),
           Expanded(
             child: _LiveItem(
-              label: 'โต๊ะที่ใช้งาน',
+              label: 'report_occupied_tables_label'.tr,
               value: '${live.occupiedTables}/${live.totalTables}',
               icon: Icons.table_restaurant_rounded,
             ),
@@ -157,7 +152,7 @@ class _LiveBar extends StatelessWidget {
           _divider(),
           Expanded(
             child: _LiveItem(
-              label: 'รอครัวทำ',
+              label: 'report_pending_kitchen_label'.tr,
               value: '${live.pendingKitchenItems}',
               icon: Icons.soup_kitchen_rounded,
             ),
@@ -215,106 +210,10 @@ class _LiveItem extends StatelessWidget {
   }
 }
 
-class _TopItemsCard extends StatelessWidget {
-  const _TopItemsCard({required this.items});
-
-  final List<TopItem> items;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(title: 'เมนูขายดีวันนี้'),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(
-                child: Text(
-                  'ยังไม่มียอดขายวันนี้',
-                  style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
-                ),
-              ),
-            )
-          else
-            for (final entry in items.asMap().entries)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: entry.key == 0
-                            ? AppColors.warning.withValues(alpha: 0.16)
-                            : AppColors.surfaceAlt,
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: Text(
-                        '${entry.key + 1}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w800,
-                          color: entry.key == 0
-                              ? AppColors.warning
-                              : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        entry.value.name,
-                        style: const TextStyle(
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text(
-                      '${entry.value.quantity} จาน',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    SizedBox(
-                      width: 74,
-                      child: Text(
-                        Formatters.baht(entry.value.revenue),
-                        textAlign: TextAlign.right,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PaymentBreakdownCard extends StatelessWidget {
   const _PaymentBreakdownCard({required this.summary});
 
   final SalesSummary summary;
-
-  static const List<Color> _colors = [
-    AppColors.success,
-    AppColors.info,
-    AppColors.purple,
-    AppColors.warning,
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -325,15 +224,18 @@ class _PaymentBreakdownCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionHeader(title: 'ช่องทางชำระเงิน'),
+          SectionHeader(title: 'report_payment_methods_title'.tr),
           const SizedBox(height: 12),
           if (methods.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 20),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
               child: Center(
                 child: Text(
-                  'ยังไม่มีรายการชำระเงิน',
-                  style: TextStyle(color: AppColors.textDisabled, fontSize: 13),
+                  'report_no_payments_yet'.tr,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 13,
+                  ),
                 ),
               ),
             )
@@ -342,10 +244,10 @@ class _PaymentBreakdownCard extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 9,
-                    height: 9,
+                    width: 11,
+                    height: 11,
                     decoration: BoxDecoration(
-                      color: _colors[entry.key % _colors.length],
+                      color: AppColors.paymentMethod(entry.value.method),
                       shape: BoxShape.circle,
                     ),
                   ),
@@ -357,10 +259,12 @@ class _PaymentBreakdownCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    '${entry.value.count} บิล',
-                    style: const TextStyle(
+                    'report_bill_count'.trParams({
+                      'count': entry.value.count.toString(),
+                    }),
+                    style: TextStyle(
                       fontSize: 12,
-                      color: AppColors.textDisabled,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -381,7 +285,7 @@ class _PaymentBreakdownCard extends StatelessWidget {
                   minHeight: 5,
                   backgroundColor: AppColors.surfaceAlt,
                   valueColor: AlwaysStoppedAnimation(
-                    _colors[entry.key % _colors.length],
+                    AppColors.paymentMethod(entry.value.method),
                   ),
                 ),
               ),

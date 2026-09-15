@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../app/theme/app_colors.dart';
 
@@ -55,7 +56,7 @@ class EmptyView extends StatelessWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surfaceAlt,
                 shape: BoxShape.circle,
               ),
@@ -65,10 +66,7 @@ class EmptyView extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 16),
@@ -103,27 +101,24 @@ class ErrorView extends StatelessWidget {
                 color: AppColors.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.wifi_off_rounded,
                 size: 32,
-                color: AppColors.danger,
+                color: AppColors.dangerInk,
               ),
             ),
             const SizedBox(height: 16),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.textSecondary,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 20),
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh_rounded, size: 18),
-                label: const Text('ลองใหม่อีกครั้ง'),
+                label: Text('common_retry'.tr),
               ),
             ],
           ],

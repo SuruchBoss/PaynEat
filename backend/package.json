@@ -26,7 +26,11 @@
     "socket.io",
     "clean-architecture"
   ],
-  "license": "MIT",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "SuruchBoss",
+    "url": "https://github.com/SuruchBoss"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SuruchBoss/PaynEat.git",

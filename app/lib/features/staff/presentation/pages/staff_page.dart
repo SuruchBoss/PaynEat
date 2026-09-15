@@ -29,12 +29,12 @@ class StaffPage extends GetView<StaffController> {
         heroTag: 'fab-staff',
         onPressed: () => _showCreateDialog(context),
         icon: const Icon(Icons.person_add_rounded),
-        label: const Text('เพิ่มพนักงาน'),
+        label: Text('staff_add_staff'.tr),
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: AppColors.surface,
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             child: Obx(
               () => Wrap(
@@ -42,7 +42,7 @@ class StaffPage extends GetView<StaffController> {
                 runSpacing: 8,
                 children: [
                   _RoleChip(
-                    label: 'ทั้งหมด (${controller.staff.length})',
+                    label: '${'common_all'.tr} (${controller.staff.length})',
                     selected: controller.roleFilter.value == null,
                     color: AppColors.textSecondary,
                     onTap: () => controller.filterByRole(null),
@@ -71,8 +71,8 @@ class StaffPage extends GetView<StaffController> {
 
               final staff = controller.filteredStaff;
               if (staff.isEmpty) {
-                return const EmptyView(
-                  message: 'ไม่พบพนักงานในบทบาทนี้',
+                return EmptyView(
+                  message: 'staff_empty_state'.tr,
                   icon: Icons.people_outline_rounded,
                 );
               }
@@ -100,7 +100,7 @@ class StaffPage extends GetView<StaffController> {
     await Get.dialog<void>(
       StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: const Text('เพิ่มพนักงาน'),
+          title: Text('staff_add_staff'.tr),
           content: SizedBox(
             width: 360,
             child: Form(
@@ -111,35 +111,41 @@ class StaffPage extends GetView<StaffController> {
                   TextFormField(
                     controller: nameController,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      labelText: 'ชื่อ-นามสกุล',
+                    decoration: InputDecoration(
+                      labelText: 'staff_name_label'.tr,
                     ),
                     validator: (value) =>
                         (value == null || value.trim().length < 2)
-                        ? 'กรุณากรอกชื่อ'
+                        ? 'staff_name_required'.tr
                         : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: usernameController,
-                    decoration: const InputDecoration(labelText: 'ชื่อผู้ใช้'),
+                    decoration: InputDecoration(
+                      labelText: 'staff_username_label'.tr,
+                    ),
                     validator: (value) =>
                         (value == null || value.trim().length < 3)
-                        ? 'อย่างน้อย 3 ตัวอักษร'
+                        ? 'staff_username_min_length'.tr
                         : null,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: passwordController,
-                    decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
+                    decoration: InputDecoration(
+                      labelText: 'staff_password_label'.tr,
+                    ),
                     validator: (value) => (value == null || value.length < 6)
-                        ? 'อย่างน้อย 6 ตัวอักษร'
+                        ? 'staff_password_min_length'.tr
                         : null,
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     initialValue: role,
-                    decoration: const InputDecoration(labelText: 'บทบาท'),
+                    decoration: InputDecoration(
+                      labelText: 'staff_role_label'.tr,
+                    ),
                     items: UserRole.all
                         .map(
                           (value) => DropdownMenuItem(
@@ -158,7 +164,7 @@ class StaffPage extends GetView<StaffController> {
           actions: [
             TextButton(
               onPressed: () => Get.back<void>(),
-              child: const Text('ยกเลิก'),
+              child: Text('common_cancel'.tr),
             ),
             FilledButton(
               onPressed: () async {
@@ -171,7 +177,7 @@ class StaffPage extends GetView<StaffController> {
                 );
                 if (created) Get.back<void>();
               },
-              child: const Text('เพิ่มพนักงาน'),
+              child: Text('staff_add_staff'.tr),
             ),
           ],
         ),
@@ -200,10 +206,14 @@ class _RoleChip extends StatelessWidget {
       selected: selected,
       showCheckmark: false,
       onSelected: (_) => onTap(),
-      selectedColor: color,
+      // คงพื้นสีสดของบทบาทไว้ แล้วให้ onColor เลือกสีป้ายเอง — สีครัว (เหลือง)
+      // ได้ป้ายสีเข้ม 7.93:1 ส่วนสีแอดมิน (ม่วง) ได้ป้ายสีขาว 5.55:1
+      selectedColor: AppColors.fillOf(color),
       backgroundColor: AppColors.surfaceAlt,
       labelStyle: TextStyle(
-        color: selected ? Colors.white : AppColors.textSecondary,
+        color: selected
+            ? AppColors.onColor(AppColors.fillOf(color))
+            : AppColors.textSecondary,
         fontWeight: FontWeight.w600,
         fontSize: 13,
       ),
@@ -223,7 +233,7 @@ class _StaffRow extends GetView<StaffController> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.border),
       ),
@@ -266,8 +276,8 @@ class _StaffRow extends GetView<StaffController> {
                     ),
                     if (!user.isActive) ...[
                       const SizedBox(width: 6),
-                      const StatusChip(
-                        label: 'ปิดใช้งาน',
+                      StatusChip(
+                        label: 'staff_status_inactive'.tr,
                         color: AppColors.danger,
                         dense: true,
                       ),
@@ -277,7 +287,7 @@ class _StaffRow extends GetView<StaffController> {
                 const SizedBox(height: 2),
                 Text(
                   '@${user.username}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textSecondary,
                   ),
@@ -303,19 +313,27 @@ class _StaffRow extends GetView<StaffController> {
                   .map(
                     (role) => PopupMenuItem(
                       value: role,
-                      child: Text('เปลี่ยนเป็น ${UserRole.label(role)}'),
+                      child: Text(
+                        'staff_change_role_to'.trParams({
+                          'role': UserRole.label(role),
+                        }),
+                      ),
                     ),
                   ),
               const PopupMenuDivider(),
               PopupMenuItem(
                 value: 'toggle',
-                child: Text(user.isActive ? 'ปิดการใช้งาน' : 'เปิดการใช้งาน'),
+                child: Text(
+                  user.isActive
+                      ? 'staff_deactivate_action'.tr
+                      : 'staff_activate_action'.tr,
+                ),
               ),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'delete',
                 child: Text(
-                  'ลบบัญชี',
-                  style: TextStyle(color: AppColors.danger),
+                  'staff_delete_account'.tr,
+                  style: TextStyle(color: AppColors.dangerInk),
                 ),
               ),
             ],

@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 /// Exception ระดับ data layer — ถูกแปลงเป็น [Failure] ที่ชั้น repository
 class ApiException implements Exception {
   const ApiException({
@@ -17,16 +19,18 @@ class ApiException implements Exception {
 }
 
 class NetworkException implements Exception {
-  const NetworkException([this.message = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้']);
+  const NetworkException([this._message]);
 
-  final String message;
+  final String? _message;
+  String get message => _message ?? 'error_network_unreachable'.tr;
 
   @override
   String toString() => 'NetworkException: $message';
 }
 
 class CacheException implements Exception {
-  const CacheException([this.message = 'อ่าน/เขียนข้อมูลในเครื่องไม่สำเร็จ']);
+  const CacheException([this._message]);
 
-  final String message;
+  final String? _message;
+  String get message => _message ?? 'error_cache_io'.tr;
 }

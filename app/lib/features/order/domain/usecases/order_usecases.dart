@@ -1,5 +1,6 @@
 import '../../../../core/usecases/result.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../../promotion/domain/entities/promotion.dart';
 import '../entities/order_item_payload.dart';
 import '../entities/cart_line.dart';
 import '../entities/order.dart';
@@ -292,4 +293,45 @@ class GetKitchenQueueUseCase
   @override
   Future<Result<List<OrderItem>>> call(List<String>? params) =>
       _repository.getKitchenQueue(statuses: params);
+}
+
+class RedeemPromotionCodeParams {
+  const RedeemPromotionCodeParams({required this.orderId, required this.code});
+
+  final int orderId;
+  final String code;
+}
+
+/// กรอกโค้ดส่วนลด — ถ้าเข้าเงื่อนไขจะผูกไว้กับออเดอร์ทันที
+class RedeemPromotionCodeUseCase
+    implements UseCase<Order, RedeemPromotionCodeParams> {
+  const RedeemPromotionCodeUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<Order>> call(RedeemPromotionCodeParams params) =>
+      _repository.redeemPromotionCode(params.orderId, params.code);
+}
+
+/// เอาโปรโมชันที่ผูกด้วยโค้ดออกจากออเดอร์
+class RemovePromotionUseCase implements UseCase<Order, int> {
+  const RemovePromotionUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<Order>> call(int params) => _repository.removePromotion(params);
+}
+
+/// โปรโมชันทั้งหมดที่เข้าเงื่อนไขกับบิลนี้ตอนนี้
+class GetEligiblePromotionsUseCase
+    implements UseCase<List<EligiblePromotion>, int> {
+  const GetEligiblePromotionsUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<List<EligiblePromotion>>> call(int params) =>
+      _repository.getEligiblePromotions(params);
 }

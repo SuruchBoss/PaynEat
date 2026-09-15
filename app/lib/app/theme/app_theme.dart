@@ -7,6 +7,19 @@ import 'app_colors.dart';
 class AppTheme {
   const AppTheme._();
 
+  /// ฟอนต์หลักของแอป — ต้องตรงกับชื่อ family ใน `pubspec.yaml`
+  /// เครื่องมือถ่ายภาพหน้าจอ (`tool/screenshots`) ก็ลงทะเบียนฟอนต์ด้วยชื่อนี้
+  /// ภาพในเอกสารจึงตรงกับที่ผู้ใช้เห็นจริง
+  static const String fontFamily = 'NotoSansThai';
+
+  /// ตัวเลขเงินก้อนใหญ่ที่ต้องอ่านให้ถูกในครั้งเดียว (เงินทอน / ยอดสุทธิ)
+  /// รวมไว้ที่เดียวเพราะก่อนหน้านี้หน้าเก็บเงินกับหน้าแยกบิลใช้คนละขนาด (22 กับ 20)
+  /// สีปล่อยให้ผู้เรียกกำหนดเอง แล้วแต่ว่าเป็นยอดรับหรือยอดทอน
+  static const TextStyle moneyLarge = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w900,
+  );
+
   static const double radiusSm = 8;
   static const double radiusMd = 12;
   static const double radiusLg = 16;
@@ -32,6 +45,9 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       splashFactory: InkSparkle.splashFactory,
       visualDensity: VisualDensity.standard,
+      // ตั้งที่ ThemeData ชั้นนี้จุดเดียว ทุก TextStyle ที่ copyWith ต่อจาก textTheme
+      // จะได้ฟอนต์นี้ไปด้วยอัตโนมัติ (ดูฟอนต์ที่ฝังไว้ใน pubspec.yaml)
+      fontFamily: fontFamily,
       textTheme: _textTheme,
     );
 
@@ -53,10 +69,10 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
         ),
       ),
-      dividerTheme: const DividerThemeData(
+      dividerTheme: DividerThemeData(
         color: AppColors.border,
         thickness: 1,
         space: 1,
@@ -93,7 +109,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(0, 48),
           foregroundColor: AppColors.textPrimary,
-          side: const BorderSide(color: AppColors.border),
+          side: BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(radiusMd),
           ),
@@ -105,7 +121,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.brandInk,
           textStyle: text.labelLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
       ),
@@ -146,7 +162,9 @@ class AppTheme {
         borderSide: BorderSide(color: color, width: width),
       );
 
-  static const TextTheme _textTheme = TextTheme(
+  /// ต้องเป็น getter ไม่ใช่ field — ไม่งั้นสีจะถูกคำนวณครั้งเดียวตอนคลาสถูกโหลด
+  /// แล้วค้างเป็นสีของโหมดแรกที่เปิด พอสลับโหมดคอนทราสต์ตัวหนังสือจะไม่เปลี่ยนตาม
+  static TextTheme get _textTheme => TextTheme(
     headlineMedium: TextStyle(
       fontSize: 26,
       fontWeight: FontWeight.w800,

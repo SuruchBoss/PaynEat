@@ -2,6 +2,7 @@ import { ApiError } from '../../core/ApiError.js';
 import { toSatang } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { categoryRepository } from '../categories/category.repository.js';
+import { ingredientRepository } from '../ingredients/ingredient.repository.js';
 import { menuRepository } from './menu.repository.js';
 import { toMenuItemDto } from './menu.mapper.js';
 
@@ -10,6 +11,25 @@ const assertCategoryExists = (categoryId) => {
   if (!categoryRepository.findById(categoryId)) {
     throw ApiError.badRequest('ไม่พบหมวดหมู่ที่ระบุ');
   }
+};
+
+const assertIngredientsExist = (ingredients) => {
+  if (!ingredients?.length) return;
+  for (const link of ingredients) {
+    if (!ingredientRepository.findById(link.ingredientId)) {
+      throw ApiError.badRequest(`ไม่พบวัตถุดิบ id=${link.ingredientId}`);
+    }
+  }
+};
+
+const saveIngredientLinks = (menuItemId, ingredients) => {
+  menuRepository.removeIngredientLinks(menuItemId);
+  ingredients.forEach((link) => {
+    menuRepository.createIngredientLink(menuItemId, {
+      ingredientId: link.ingredientId,
+      qtyPerUnit: link.qtyPerUnit,
+    });
+  });
 };
 
 const saveOptionGroups = (menuItemId, optionGroups) => {
@@ -37,8 +57,13 @@ export const menuService = {
   list(filters) {
     const { items, total } = menuRepository.findAll(filters);
     const groupsByItem = menuRepository.findOptionGroupsForItems(items.map((item) => item.id));
+    const ingredientsByItem = menuRepository.findIngredientLinksForItems(
+      items.map((item) => item.id),
+    );
     return {
-      items: items.map((item) => toMenuItemDto(item, groupsByItem.get(item.id) ?? [])),
+      items: items.map((item) =>
+        toMenuItemDto(item, groupsByItem.get(item.id) ?? [], ingredientsByItem.get(item.id) ?? []),
+      ),
       total,
     };
   },
@@ -46,11 +71,16 @@ export const menuService = {
   getById(id) {
     const item = menuRepository.findById(id);
     if (!item) throw ApiError.notFound('ไม่พบเมนูนี้');
-    return toMenuItemDto(item, menuRepository.findOptionGroups(id));
+    return toMenuItemDto(
+      item,
+      menuRepository.findOptionGroups(id),
+      menuRepository.findIngredientLinks(id),
+    );
   },
 
   create(payload) {
     assertCategoryExists(payload.categoryId);
+    assertIngredientsExist(payload.ingredients);
     const run = getDb().transaction(() => {
       const created = menuRepository.create({
         ...payload,
@@ -60,6 +90,9 @@ export const menuService = {
       if (payload.optionGroups?.length) {
         saveOptionGroups(created.id, payload.optionGroups);
       }
+      if (payload.ingredients?.length) {
+        saveIngredientLinks(created.id, payload.ingredients);
+      }
       return created.id;
     });
     return this.getById(run());
@@ -68,15 +101,22 @@ export const menuService = {
   update(id, payload) {
     this.getById(id);
     assertCategoryExists(payload.categoryId);
+    assertIngredientsExist(payload.ingredients);
 
     const run = getDb().transaction(() => {
       menuRepository.update(id, {
         ...payload,
         price: payload.price === undefined ? undefined : toSatang(payload.price),
         imageUrl: payload.imageUrl === '' ? null : payload.imageUrl,
+        // แก้ isAvailable ผ่านฟอร์มแก้ไขปกติ = พนักงานตั้งใจ override เอง เลยล้างสถานะ
+        // "ปิดขายอัตโนมัติเพราะสต๊อกหมด" ทิ้งเหมือนกับตอนกดสลับผ่าน setAvailability
+        autoDisabledByStock: payload.isAvailable === undefined ? undefined : false,
       });
       if (payload.optionGroups) {
         saveOptionGroups(id, payload.optionGroups);
+      }
+      if (payload.ingredients) {
+        saveIngredientLinks(id, payload.ingredients);
       }
     });
     run();
@@ -85,7 +125,7 @@ export const menuService = {
 
   setAvailability(id, isAvailable) {
     this.getById(id);
-    menuRepository.update(id, { isAvailable });
+    menuRepository.setStockAvailability(id, isAvailable, false);
     return this.getById(id);
   },
 

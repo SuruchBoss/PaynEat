@@ -6,6 +6,9 @@ import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../auth/presentation/pages/profile_page.dart';
+import '../../../ingredient/domain/usecases/ingredient_usecases.dart';
+import '../../../ingredient/presentation/controllers/ingredients_controller.dart';
+import '../../../ingredient/presentation/pages/ingredients_page.dart';
 import '../../../kitchen/presentation/controllers/kitchen_controller.dart';
 import '../../../kitchen/presentation/pages/kitchen_page.dart';
 import '../../../menu/domain/usecases/menu_usecases.dart';
@@ -14,6 +17,9 @@ import '../../../menu/presentation/pages/menu_management_page.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../../order/presentation/controllers/order_list_controller.dart';
 import '../../../order/presentation/pages/orders_page.dart';
+import '../../../promotion/domain/usecases/promotion_usecases.dart';
+import '../../../promotion/presentation/controllers/promotions_controller.dart';
+import '../../../promotion/presentation/pages/promotions_page.dart';
 import '../../../report/domain/usecases/report_usecases.dart';
 import '../../../report/presentation/controllers/dashboard_controller.dart';
 import '../../../report/presentation/controllers/report_controller.dart';
@@ -102,6 +108,24 @@ class HomeBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
+      () => PromotionsController(
+        getPromotions: Get.find<GetPromotionsUseCase>(),
+        savePromotion: Get.find<SavePromotionUseCase>(),
+        setPromotionActive: Get.find<SetPromotionActiveUseCase>(),
+        deletePromotion: Get.find<DeletePromotionUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => IngredientsController(
+        getIngredients: Get.find<GetIngredientsUseCase>(),
+        saveIngredient: Get.find<SaveIngredientUseCase>(),
+        adjustStock: Get.find<AdjustStockUseCase>(),
+        deleteIngredient: Get.find<DeleteIngredientUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
       () => StaffController(
         getStaff: Get.find<GetStaffUseCase>(),
         createStaff: Get.find<CreateStaffUseCase>(),
@@ -129,62 +153,77 @@ class HomeBinding extends Bindings {
 
   /// เมนูที่แต่ละบทบาทเห็น — เป็นฟังก์ชันบริสุทธิ์จึงเขียนเทสต์ได้ง่าย
   static List<HomeDestination> destinationsForRole(String role) {
+    // labels are translation keys — resolved with `.tr` where they are
+    // displayed (AppBar title, nav rail/bar/drawer) so they stay in sync
+    // when the user switches language at runtime.
     const tables = HomeDestination(
-      label: 'ผังโต๊ะ',
+      label: 'home_nav_tables',
       icon: Icons.table_restaurant_outlined,
       selectedIcon: Icons.table_restaurant_rounded,
       page: TablesPage(),
     );
     const orders = HomeDestination(
-      label: 'ออเดอร์',
+      label: 'home_nav_orders',
       icon: Icons.receipt_long_outlined,
       selectedIcon: Icons.receipt_long_rounded,
       page: OrdersPage(),
     );
     const kitchen = HomeDestination(
-      label: 'ครัว',
+      label: 'home_nav_kitchen',
       icon: Icons.soup_kitchen_outlined,
       selectedIcon: Icons.soup_kitchen_rounded,
       page: KitchenPage(),
     );
     const dashboard = HomeDestination(
-      label: 'ภาพรวม',
+      label: 'home_nav_dashboard',
       icon: Icons.dashboard_outlined,
       selectedIcon: Icons.dashboard_rounded,
       page: DashboardPage(),
     );
     const menu = HomeDestination(
-      label: 'จัดการเมนู',
+      label: 'home_nav_menu',
       icon: Icons.restaurant_menu_outlined,
       selectedIcon: Icons.restaurant_menu_rounded,
       page: MenuManagementPage(),
     );
+    const promotions = HomeDestination(
+      label: 'home_nav_promotions',
+      icon: Icons.local_offer_outlined,
+      selectedIcon: Icons.local_offer_rounded,
+      page: PromotionsPage(),
+    );
+    const ingredients = HomeDestination(
+      label: 'home_nav_ingredients',
+      icon: Icons.inventory_2_outlined,
+      selectedIcon: Icons.inventory_2_rounded,
+      page: IngredientsPage(),
+    );
     const staff = HomeDestination(
-      label: 'พนักงาน',
+      label: 'home_nav_staff',
       icon: Icons.people_outline_rounded,
       selectedIcon: Icons.people_rounded,
       page: StaffPage(),
     );
     const reports = HomeDestination(
-      label: 'รายงาน',
+      label: 'home_nav_reports',
       icon: Icons.insights_outlined,
       selectedIcon: Icons.insights_rounded,
       page: ReportsPage(),
     );
     const settings = HomeDestination(
-      label: 'ตั้งค่า',
+      label: 'home_nav_settings',
       icon: Icons.settings_outlined,
       selectedIcon: Icons.settings_rounded,
       page: SettingsPage(),
     );
     const profile = HomeDestination(
-      label: 'บัญชี',
+      label: 'home_nav_profile',
       icon: Icons.person_outline_rounded,
       selectedIcon: Icons.person_rounded,
       page: ProfilePage(),
     );
     const shift = HomeDestination(
-      label: 'กะ',
+      label: 'home_nav_shift',
       icon: Icons.point_of_sale_outlined,
       selectedIcon: Icons.point_of_sale_rounded,
       page: ShiftPage(),
@@ -197,6 +236,8 @@ class HomeBinding extends Bindings {
         orders,
         kitchen,
         menu,
+        ingredients,
+        promotions,
         staff,
         reports,
         shift,

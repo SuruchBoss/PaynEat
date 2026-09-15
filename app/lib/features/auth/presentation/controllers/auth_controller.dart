@@ -115,9 +115,9 @@ class AuthController extends GetxController {
 
   Future<void> signOut() async {
     final confirmed = await AppDialogs.confirm(
-      title: 'ออกจากระบบ',
-      message: 'ต้องการออกจากระบบใช่หรือไม่?',
-      confirmLabel: 'ออกจากระบบ',
+      title: 'auth_logout'.tr,
+      message: 'auth_logout_confirm_message'.tr,
+      confirmLabel: 'auth_logout'.tr,
       destructive: true,
     );
     if (!confirmed) return;
@@ -131,13 +131,15 @@ class AuthController extends GetxController {
   Future<void> handleSessionExpired() async {
     if (!_session.isLoggedIn) return;
     await _session.end();
-    AppDialogs.error('เซสชันหมดอายุ กรุณาเข้าสู่ระบบใหม่');
+    AppDialogs.error('auth_session_expired_message'.tr);
     Get.offAllNamed<void>(AppRoutes.login);
   }
 
   String? validateUsername(String? value) =>
-      (value == null || value.trim().isEmpty) ? 'กรุณากรอกชื่อผู้ใช้' : null;
+      (value == null || value.trim().isEmpty)
+      ? 'auth_username_required'.tr
+      : null;
 
   String? validatePassword(String? value) =>
-      (value == null || value.isEmpty) ? 'กรุณากรอกรหัสผ่าน' : null;
+      (value == null || value.isEmpty) ? 'auth_password_required'.tr : null;
 }

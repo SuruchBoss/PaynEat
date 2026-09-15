@@ -25,7 +25,7 @@ class StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppTheme.radiusLg),
         border: Border.all(color: AppColors.border),
       ),
@@ -42,13 +42,15 @@ class StatCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(9),
                 ),
-                child: Icon(icon, size: 18, color: color),
+                // ไอคอนวางบนพื้น tint ของสีตัวเอง สีสดจึงจมหายไป
+                // (ส้ม 2.50:1 เหลือง 1.94:1) ต้องใช้เฉดเข้มเสมอ
+                child: Icon(icon, size: 18, color: AppColors.inkOf(color)),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     color: AppColors.textSecondary,
                   ),
@@ -70,10 +72,7 @@ class StatCard extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               caption!,
-              style: const TextStyle(
-                fontSize: 11.5,
-                color: AppColors.textDisabled,
-              ),
+              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
             ),
           ],
         ],
