@@ -216,6 +216,21 @@ export const orderService = {
       });
       for (const item of itemRows) orderRepository.addItem(order.id, item);
       if (payload.tableId) tableRepository.setStatus(payload.tableId, 'occupied');
+      // ดู docs/tickets/13-order-audit-trail.md — บันทึกทุกครั้งที่เปิดออเดอร์ใหม่ ไม่ใช่แค่
+      // เหตุการณ์เสี่ยง เพื่อให้ audit ทางการเงิน/ผู้จัดการย้อนดูได้ว่าใครกดสั่งออเดอร์นี้
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.create',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `เปิดออเดอร์ใหม่ #${order.code} (${itemRows.length} รายการ)`,
+        metadata: {
+          orderCode: order.code,
+          type: payload.type,
+          tableId: payload.tableId,
+          itemCount: itemRows.length,
+        },
+      });
       return order.id;
     });
 
@@ -226,7 +241,7 @@ export const orderService = {
     return dto;
   },
 
-  addItems(orderId, items) {
+  addItems(orderId, items, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
@@ -241,6 +256,19 @@ export const orderService = {
           orderRepository.updateItem(created.id, { stockDeducted: true });
         }
       }
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.item.add',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `เพิ่ม ${itemRows.length} รายการเข้าออเดอร์ #${order.code}: ${itemRows
+          .map((row) => `${row.nameSnapshot} x${row.quantity}`)
+          .join(', ')}`,
+        metadata: {
+          orderCode: order.code,
+          items: itemRows.map((row) => ({ name: row.nameSnapshot, quantity: row.quantity })),
+        },
+      });
     });
     run();
 
@@ -251,7 +279,7 @@ export const orderService = {
     return dto;
   },
 
-  updateItem(orderId, itemId, payload) {
+  updateItem(orderId, itemId, payload, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
@@ -271,6 +299,21 @@ export const orderService = {
       if (item.stock_deducted) {
         ingredientService.adjustForQuantityChange(item, item.quantity, quantity);
       }
+      if (quantity !== item.quantity) {
+        auditLogService.log({
+          actorUser: user,
+          action: 'order.item.edit',
+          entityType: 'order_item',
+          entityId: item.id,
+          summary: `แก้ไขจำนวน "${item.name_snapshot}" ในออเดอร์ #${order.code} จาก ${item.quantity} เป็น ${quantity}`,
+          metadata: {
+            orderId: order.id,
+            orderCode: order.code,
+            previousQuantity: item.quantity,
+            newQuantity: quantity,
+          },
+        });
+      }
     });
     run();
 
@@ -279,7 +322,7 @@ export const orderService = {
     return dto;
   },
 
-  removeItem(orderId, itemId) {
+  removeItem(orderId, itemId, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
@@ -292,6 +335,20 @@ export const orderService = {
     const run = getDb().transaction(() => {
       if (item.stock_deducted) ingredientService.restoreForOrderItem(item);
       orderRepository.removeItem(itemId);
+      // entityType เป็น 'order' ไม่ใช่ 'order_item' เพราะรายการนี้ถูกลบออกจากฐานข้อมูลจริง
+      // (ไม่เหมือน order_item.void ที่แค่เปลี่ยนสถานะ) entityId ที่ถูกลบไปแล้วจะลิงก์ไม่ได้
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.item.remove',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `ลบรายการ "${item.name_snapshot}" (${item.quantity} ชิ้น) ออกจากออเดอร์ #${order.code}`,
+        metadata: {
+          orderCode: order.code,
+          itemName: item.name_snapshot,
+          quantity: item.quantity,
+        },
+      });
     });
     run();
     const dto = buildDto(recalculate(order.id));
@@ -520,7 +577,7 @@ export const orderService = {
   },
 
   /** ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น เช่น ลูกค้าขอย้ายที่นั่ง */
-  moveTable(orderId, tableId) {
+  moveTable(orderId, tableId, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
     if (!order.table_id) throw ApiError.badRequest('ออเดอร์นี้ไม่ได้ผูกกับโต๊ะ ย้ายโต๊ะไม่ได้');
@@ -533,10 +590,19 @@ export const orderService = {
     }
 
     const oldTableId = order.table_id;
+    const oldTable = tableRepository.findById(oldTableId);
     const run = getDb().transaction(() => {
       orderRepository.updateTable(order.id, tableId);
       tableRepository.setStatus(tableId, 'occupied');
       tableRepository.setStatus(oldTableId, 'available');
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.move_table',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `ย้ายออเดอร์ #${order.code} จากโต๊ะ "${oldTable?.name ?? oldTableId}" ไปโต๊ะ "${table.name}"`,
+        metadata: { orderCode: order.code, fromTableId: oldTableId, toTableId: tableId },
+      });
     });
     run();
 
@@ -548,7 +614,7 @@ export const orderService = {
   },
 
   /** รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล */
-  mergeOrders(targetOrderId, sourceOrderId) {
+  mergeOrders(targetOrderId, sourceOrderId, user) {
     if (targetOrderId === sourceOrderId) {
       throw ApiError.badRequest('เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้');
     }
@@ -565,6 +631,14 @@ export const orderService = {
         cancelledReason: `รวมเข้ากับบิล #${target.code}`,
       });
       if (sourceTableId) tableRepository.setStatus(sourceTableId, 'available');
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.merge',
+        entityType: 'order',
+        entityId: target.id,
+        summary: `รวมบิล #${source.code} เข้ากับ #${target.code}`,
+        metadata: { targetOrderCode: target.code, sourceOrderCode: source.code },
+      });
     });
     run();
 

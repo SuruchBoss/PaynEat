@@ -38,3 +38,9 @@
 - `backend/src/db/schema.sql`
 - `backend/src/middlewares/`
 - `backend/src/modules/orders/`, `backend/src/modules/users/`, `backend/src/modules/settings/`
+
+## ดูเพิ่มเติม
+
+`docs/tickets/13-order-audit-trail.md` ขยายขอบเขตของ ticket นี้ให้ครอบคลุม "ใครกดสั่ง/แก้ไข
+ออเดอร์" (เปิดออเดอร์ใหม่, เพิ่ม/แก้ไข/ลบรายการ, ย้ายโต๊ะ, รวมบิล) สำหรับ financial audit และ
+ผู้จัดการร้าน ไม่ใช่แค่เหตุการณ์เสี่ยงต่อการทุจริตเหมือนรายการข้างบน

@@ -277,3 +277,117 @@ test('POST /tax-invoices/order/:id/void — ยกเลิกใบกำกั
   assert.equal(log.entityType, 'tax_invoice');
   assert.equal(log.reason, 'ทดสอบ audit log');
 });
+
+// ดู docs/tickets/13-order-audit-trail.md — audit ระดับ "ใครกดสั่ง/แก้ไขออเดอร์" สำหรับ
+// financial audit และผู้จัดการร้าน ไม่ใช่แค่เหตุการณ์เสี่ยงต่อการทุจริตเหมือนกลุ่มด้านบน
+
+test('POST /orders — เปิดออเดอร์ใหม่ต้องถูกบันทึก audit log พร้อมชื่อพนักงานเสิร์ฟที่กดสั่ง', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const order = await openOrder(waiter.token);
+
+  const log = await findLatestLog(admin.token, 'order.create', order.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการเปิดออเดอร์ใหม่');
+  assert.equal(log.entityType, 'order');
+  assert.match(log.summary, new RegExp(order.code));
+  assert.equal(log.metadata.itemCount, 1);
+});
+
+test('POST /orders/:id/items — เพิ่มรายการเข้าออเดอร์ต้องถูกบันทึก audit log', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const order = await openOrder(waiter.token);
+
+  const menuRes = await get('/api/v1/menu-items?availableOnly=true&limit=200', waiter.token);
+  const menuItem = menuRes.body.data[0];
+
+  const addRes = await post(`/api/v1/orders/${order.id}/items`, waiter.token, {
+    items: [{ menuItemId: menuItem.id, quantity: 2, optionIds: [] }],
+  });
+  assert.equal(addRes.status, 201, JSON.stringify(addRes.body));
+
+  const log = await findLatestLog(admin.token, 'order.item.add', order.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการเพิ่มรายการ');
+  assert.equal(log.metadata.items.length, 1);
+  assert.equal(log.metadata.items[0].quantity, 2);
+});
+
+test('PATCH /orders/:id/items/:itemId — แก้ไขจำนวนต้อง log แต่แก้แค่โน้ตไม่ log', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const order = await openOrder(waiter.token);
+  const item = order.items[0];
+
+  // แก้แค่โน้ตเฉยๆ ไม่ถือว่าเป็นการแก้ไขที่กระทบยอดเงิน ไม่ต้อง log
+  const noteRes = await patch(`/api/v1/orders/${order.id}/items/${item.id}`, waiter.token, {
+    note: 'ไม่เผ็ด',
+  });
+  assert.equal(noteRes.status, 200, JSON.stringify(noteRes.body));
+  const noteLogRes = await get(
+    `/api/v1/audit-logs?action=order.item.edit&entityId=${item.id}`,
+    admin.token,
+  );
+  assert.equal(noteLogRes.body.data.length, 0, 'แก้แค่โน้ตไม่ควร log');
+
+  // แก้จำนวนต้อง log
+  const qtyRes = await patch(`/api/v1/orders/${order.id}/items/${item.id}`, waiter.token, {
+    quantity: 3,
+  });
+  assert.equal(qtyRes.status, 200, JSON.stringify(qtyRes.body));
+
+  const log = await findLatestLog(admin.token, 'order.item.edit', item.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการแก้ไขจำนวน');
+  assert.equal(log.entityType, 'order_item');
+  assert.equal(log.metadata.previousQuantity, 1);
+  assert.equal(log.metadata.newQuantity, 3);
+});
+
+test('DELETE /orders/:id/items/:itemId — ลบรายการต้องถูกบันทึก audit log', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const order = await openOrder(waiter.token);
+  const item = order.items[0];
+
+  const delRes = await del(`/api/v1/orders/${order.id}/items/${item.id}`, waiter.token);
+  assert.equal(delRes.status, 200, JSON.stringify(delRes.body));
+
+  const log = await findLatestLog(admin.token, 'order.item.remove', order.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการลบรายการ');
+  assert.equal(log.metadata.itemName, item.name);
+});
+
+test('PATCH /orders/:id/move-table — ย้ายโต๊ะต้องถูกบันทึก audit log', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const order = await openOrder(waiter.token);
+
+  const tablesRes = await get('/api/v1/tables?status=available', waiter.token);
+  const destination = tablesRes.body.data[0];
+  assert.ok(destination, 'ต้องมีโต๊ะว่างอีกโต๊ะสำหรับย้าย');
+
+  const moveRes = await patch(`/api/v1/orders/${order.id}/move-table`, waiter.token, {
+    tableId: destination.id,
+  });
+  assert.equal(moveRes.status, 200, JSON.stringify(moveRes.body));
+
+  const log = await findLatestLog(admin.token, 'order.move_table', order.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการย้ายโต๊ะ');
+  assert.equal(log.metadata.toTableId, destination.id);
+});
+
+test('POST /orders/:id/merge — รวมบิลต้องถูกบันทึก audit log', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const target = await openOrder(waiter.token);
+  const source = await openOrder(waiter.token);
+
+  const mergeRes = await post(`/api/v1/orders/${target.id}/merge`, waiter.token, {
+    sourceOrderId: source.id,
+  });
+  assert.equal(mergeRes.status, 200, JSON.stringify(mergeRes.body));
+
+  const log = await findLatestLog(admin.token, 'order.merge', target.id);
+  assert.ok(log, 'ต้องมี audit log สำหรับการรวมบิล');
+  assert.equal(log.metadata.sourceOrderCode, source.code);
+  assert.equal(log.metadata.targetOrderCode, target.code);
+});

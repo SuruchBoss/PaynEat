@@ -29,3 +29,7 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - แจ้งเตือนสต๊อกใกล้หมด/ยกเลิกออเดอร์ผิดปกติ ผ่าน push/LINE Notify
 - Flutter integration test กับ backend จริง (README ระบุว่ายังไม่มี มีแค่ unit/widget test)
 - เอา pagination ที่ backend รองรับอยู่แล้วมาใช้ฝั่ง app
+
+## นอกเหนือจาก gap analysis เดิม (ผู้ใช้ร้องขอเพิ่มเติมภายหลัง)
+- `13-order-audit-trail.md` — ✅ เสร็จแล้ว — ขยาย audit log (ticket 08) ให้ครอบคลุม
+  "ใครกดสั่ง/แก้ไขออเดอร์" สำหรับ financial audit และผู้จัดการร้าน ไม่ใช่แค่เหตุการณ์เสี่ยง

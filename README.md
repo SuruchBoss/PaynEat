@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-504%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-510%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 460 automated tests.
+control and 510 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -305,7 +305,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 218 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 224 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 286 เคส — domain / controller / widget
 ```
 
@@ -407,7 +407,10 @@ cd app && flutter test      # 286 เคส — domain / controller / widget
   หน้าร้านแบบ append-only (แก้ไข/ลบไม่ได้จาก UI ไหนเลย): ยกเลิกออเดอร์, ยกเลิกรายการอาหารหลังส่ง
   ครัวแล้ว, แก้ไขส่วนลด, ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์/ตั้งรหัสผ่านใหม่ให้พนักงาน, แก้ค่า VAT/
   ค่าบริการ, คืนเงิน, และยกเลิกใบกำกับภาษี — พร้อมชื่อผู้ทำ เวลา และเหตุผลที่กรอกไว้ทุกครั้ง filter
-  ตามประเภท action ได้ (ดู `docs/DECISIONS.md` #21)
+  ตามประเภท action ได้ (ดู `docs/DECISIONS.md` #21) นอกจากนี้ยังบันทึก **ใครกดสั่ง/แก้ไขออเดอร์**
+  ครบทุกครั้งด้วย เพื่อให้ผู้จัดการ/ฝ่ายบัญชีตรวจสอบย้อนหลังได้ — เปิดออเดอร์ใหม่ (บันทึกชื่อ
+  พนักงานเสิร์ฟที่กดสั่ง), เพิ่มรายการเข้าออเดอร์, แก้ไขจำนวนรายการ, ลบรายการ, ย้ายโต๊ะ, รวมบิล
+  (ดู `docs/DECISIONS.md` #25)
 - **ลูกค้า/แต้มสะสม** เห็นได้ทั้ง `admin`/`manager` — ค้นหารายชื่อลูกค้าทั้งหมด กดเข้าไปดูประวัติ
   การซื้อและแต้มสะสมคงเหลือของลูกค้ารายคนได้ (ดู `docs/DECISIONS.md` #22)
 
@@ -713,11 +716,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 218 เคส
+cd backend && npm test      # 224 เคส
 cd app && flutter test      # 286 เคส
 ```
 
-**Backend (218 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (224 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -766,11 +769,15 @@ script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ย
 ปฏิเสธ seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้ว (`admin123` ฯลฯ) ต้องตั้ง `SEED_*_PASSWORD` เองก่อน
 เสมอ (ดู `docs/DECISIONS.md` #20)
 
-`audit-logs.test.js` (10 เคสใหม่) เทสต์ว่าทุก action เสี่ยงถูกบันทึกถูกต้อง: ยกเลิกออเดอร์
+`audit-logs.test.js` (16 เคส) เทสต์ว่าทุก action เสี่ยงถูกบันทึกถูกต้อง: ยกเลิกออเดอร์
 (พร้อมเหตุผล/ผู้ทำ), void รายการอาหารเฉพาะหลังครัวทำแล้ว (ยกเลิกตอนยัง pending ต้องไม่ log),
 แก้ไขส่วนลด, ปิดใช้งาน/รีเซ็ตรหัสผ่าน/เปลี่ยนสิทธิ์/ลบพนักงาน (แก้ชื่อเฉยๆ ต้องไม่ log), แก้ VAT
 ต้อง log แต่แก้ชื่อร้านเฉยๆ ไม่ log, คืนเงิน, ยกเลิกใบกำกับภาษี และ RBAC (เห็นเฉพาะ admin)
-(ดู `docs/DECISIONS.md` #21)
+(ดู `docs/DECISIONS.md` #21) — เพิ่มอีก 6 เคส (ดู `docs/tickets/13-order-audit-trail.md`,
+`docs/DECISIONS.md` #25) สำหรับ audit ระดับ "ใครกดสั่ง/แก้ไขออเดอร์" ที่ผู้จัดการ/ฝ่ายบัญชี
+ใช้ตรวจสอบได้ (ไม่ใช่แค่เหตุการณ์เสี่ยงต่อการทุจริตเหมือนกลุ่มบนสุด): เปิดออเดอร์ใหม่ (บันทึกชื่อ
+พนักงานเสิร์ฟที่กดสั่ง), เพิ่มรายการเข้าออเดอร์, แก้ไขจำนวนรายการ (แก้แค่โน้ตไม่ log), ลบรายการ,
+ย้ายโต๊ะ, และรวมบิล
 
 `customers.test.js` (11 เคสใหม่) เทสต์ครบทั้งลูกค้าและแต้มสะสม: สร้างลูกค้า/ปฏิเสธเบอร์โทรซ้ำ (409),
 ค้นหาจากชื่อ/เบอร์โทรบางส่วน, RBAC (ครัวเรียกไม่ได้), ผูก `customerId` ตอนเปิดออเดอร์ + ปฏิเสธ
