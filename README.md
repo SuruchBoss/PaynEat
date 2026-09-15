@@ -40,7 +40,7 @@ control and 460 automated tests.
 </tr>
 </table>
 
-<p align="center"><b>จอครัว (KDS)</b> — ตั๋วเด้งขึ้นเองแบบเรียลไทม์ แบ่ง 3 คอลัมน์ตามสถานะ และเตือนจานที่รอเกิน 15 นาทีด้วยกรอบแดง</p>
+<p align="center"><b>จอครัว (KDS)</b> — ตั๋วเด้งขึ้นเองแบบเรียลไทม์ แบ่ง 3 คอลัมน์ตามสถานะ เตือนจานที่รอเกิน 15 นาทีด้วยกรอบแดง และแยกไอคอนโต๊ะ/กลับบ้าน/เดลิเวอรีให้เห็นชัดในตั๋วเดียวกัน</p>
 <p align="center"><img src="docs/screenshots/tablet-14-kitchen.png" width="780"></p>
 
 <p align="center"><b>แดชบอร์ดผู้ดูแลระบบ (เว็บ)</b> — ยอดขายวันนี้ กราฟรายชั่วโมง สัดส่วนช่องทางชำระเงิน และสถานะร้านแบบสด</p>
@@ -48,6 +48,15 @@ control and 460 automated tests.
 
 <p align="center"><b>เก็บเงินแบบแยกจ่าย</b> — จ่าย QR บางส่วน ที่เหลือเงินสด ระบบตัดยอดคงเหลือและคำนวณเงินทอนให้</p>
 <p align="center"><img src="docs/screenshots/tablet-16-checkout.png" width="780"></p>
+
+<table>
+<tr>
+<td width="50%" align="center"><b>สั่งกลับบ้าน/เดลิเวอรี่ — ไม่ผูกโต๊ะ</b><br><sub>กดปุ่มลอยบนหน้าผังโต๊ะ เข้าหน้ารับออเดอร์ได้ทันทีโดยไม่ต้องแตะโต๊ะไหนเลย</sub><br><br>
+<img src="docs/screenshots/phone-28-takeaway-order-taking.png" width="230"></td>
+<td width="50%" align="center"><b>ได้เลขคิวรับอาหารอัตโนมัติ</b><br><sub>รันต่อวันเฉพาะออเดอร์กลับบ้าน — เดลิเวอรีให้ไรเดอร์อ้างอิงจากเลขที่บิลแทน</sub><br><br>
+<img src="docs/screenshots/phone-29-takeaway-order-detail.png" width="230"></td>
+</tr>
+</table>
 
 > 🎬 **วิดีโอ demo presentation (1:41 · 1080p)**
 > · [ฉบับภาษาไทย](docs/video/PaynEat-POS-Demo-TH.mp4)
