@@ -72,6 +72,13 @@ control and 460 automated tests.
 > ภาพทั้งหมดเรนเดอร์จากโค้ดจริงด้วย golden test ที่เขียนไว้ใน [`app/tool/screenshots`](app/tool/screenshots)
 > จึงสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน ([วิธีสร้าง](docs/generator/README.md))
 
+> 🌐 **หน้า Landing Page (HTML ไฟล์เดียว เปิดได้เลย ไม่ต้องติดตั้งอะไร)**
+> · [`docs/landing/index.html`](docs/landing/index.html)
+>
+> เล่าเรื่องระบบจากเงื่อนไขหน้างานจริง — แสงจ้า ไอน้ำ มือเปื้อน เน็ตสะดุด — พร้อมภาพหน้าจอจริง
+> 6 ใบที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วนไม่มี JavaScript สักบรรทัด
+> ผลตรวจความถูกต้องของภาษาและตัวเลขอยู่ใน [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
+
 ---
 
 ## 📋 สารบัญ
