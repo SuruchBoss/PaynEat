@@ -58,3 +58,9 @@ ticket 08 ไม่ต้องสร้างใหม่):
 - `app/lib/core/demo/demo_store_orders.dart`, `demo_data_sources.dart`
 - `app/lib/features/audit_log/domain/entities/audit_log_action.dart`
 - `app/lib/core/localization/translations/audit_log_translations.dart`
+
+## ดูเพิ่มเติม
+
+ทิกเก็ตนี้ตอบโจทย์ audit มุมผู้จัดการร้าน ("ใครสั่ง/แก้ไขออเดอร์") เท่านั้น — ยังไม่ครอบคลุม audit
+ระดับบัญชี/การเงินที่ต้องมองจากฝั่งข้อมูลหลักที่กระทบรายได้ (ราคาเมนู, โปรโมชัน, ต้นทุนวัตถุดิบ)
+ดู `docs/tickets/14-financial-audit-trail.md` สำหรับ gap ที่เหลือ
