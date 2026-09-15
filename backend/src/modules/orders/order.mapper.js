@@ -2,7 +2,9 @@ import { toBaht } from '../../core/money.js';
 
 export const toOrderItemDto = (row) => {
   if (!row) return null;
-  let options = [];
+  // ไม่ใส่ค่าเริ่มต้นตรงนี้ เพราะทั้ง try และ catch เขียนทับทุกเส้นทางอยู่แล้ว
+  // (ESLint 10 เปิดกฎ no-useless-assignment เป็นค่าเริ่มต้น จึงจับจุดนี้ได้)
+  let options;
   try {
     options = JSON.parse(row.options_json ?? '[]');
   } catch {
