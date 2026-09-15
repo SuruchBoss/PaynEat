@@ -56,8 +56,8 @@ class TaxInvoiceDocumentDialog extends StatelessWidget {
                     children: [
                       Text(
                         'tax_invoice_voided_badge'.tr,
-                        style: const TextStyle(
-                          color: AppColors.danger,
+                        style: TextStyle(
+                          color: AppColors.dangerInk,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -191,7 +191,7 @@ class TaxInvoiceDocumentDialog extends StatelessWidget {
             onPressed: () => _promptVoid(context),
             child: Text(
               'tax_invoice_void_button'.tr,
-              style: const TextStyle(color: AppColors.danger),
+              style: TextStyle(color: AppColors.dangerInk),
             ),
           ),
         FilledButton(

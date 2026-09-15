@@ -124,7 +124,7 @@ class _TaxInvoiceRequestDialogState extends State<TaxInvoiceRequestDialog> {
             ],
             if (_error != null) ...[
               const SizedBox(height: 8),
-              Text(_error!, style: const TextStyle(color: AppColors.danger)),
+              Text(_error!, style: TextStyle(color: AppColors.dangerInk)),
             ],
           ],
         ),
