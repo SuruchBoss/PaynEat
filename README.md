@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-554%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-557%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 554 automated tests.
+control and 557 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -316,7 +316,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 243 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 246 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 311 เคส — domain / controller / widget
 ```
 
@@ -428,7 +428,8 @@ cd app && flutter test      # 311 เคส — domain / controller / widget
   พนักงานเสิร์ฟที่กดสั่ง), เพิ่มรายการเข้าออเดอร์, แก้ไขจำนวนรายการ, ลบรายการ, ย้ายโต๊ะ, รวมบิล
   (ดู `docs/DECISIONS.md` #25) รวมถึง audit ระดับ**บัญชี/การเงิน**: แก้ราคาเมนู (เฉพาะตอนราคา
   เปลี่ยนจริง), สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบด้วยมือ — มี **ตัวกรองช่วงวันที่** และปุ่ม
-  **ส่งออกเป็น CSV** ให้ฝ่ายบัญชี (รองรับเฉพาะเว็บ ดู `docs/DECISIONS.md` #27)
+  **ส่งออกเป็น CSV** ให้ฝ่ายบัญชี (รองรับเฉพาะเว็บ ดู `docs/DECISIONS.md` #27) และเปิด/ปิดกะ (พร้อม
+  ส่วนต่างเงินสด), รับชำระเงิน, กรอก/ถอดโค้ดส่วนลด (ดู `docs/DECISIONS.md` #28)
 - **ลูกค้า/แต้มสะสม** เห็นได้ทั้ง `admin`/`manager` — ค้นหารายชื่อลูกค้าทั้งหมด กดเข้าไปดูประวัติ
   การซื้อและแต้มสะสมคงเหลือของลูกค้ารายคนได้ (ดู `docs/DECISIONS.md` #22)
 
@@ -734,11 +735,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 243 เคส
+cd backend && npm test      # 246 เคส
 cd app && flutter test      # 311 เคส
 ```
 
-**Backend (243 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (246 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -825,6 +826,10 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 (`promotion.create`/`update`/`delete`), ปรับสต๊อกวัตถุดิบด้วยมือ (`ingredient.stock_adjust`) —
 เพิ่มอีก 3 เคสสำหรับ `GET /audit-logs/export`: RBAC (admin เท่านั้น), header/เนื้อหา CSV ถูกต้อง
 (UTF-8 BOM กัน Excel อ่านอักษรไทยเพี้ยน), filter ตาม action ได้เหมือน list
+
+`audit-logs.test.js` เพิ่มอีก 3 เคส (ดู `docs/DECISIONS.md` #28) ปิดรู audit log ที่เหลือ: เปิด/ปิดกะ
+(`shift.open`/`shift.close` — ตรวจ metadata ส่วนต่างเงินสดตอนปิดกะ), รับชำระเงิน (`payment.pay`),
+และกรอก/ถอดโค้ดส่วนลด (`order.promotion_redeem`/`order.promotion_remove`)
 
 **Flutter (311 เคส)** — แบ่งเป็น 3 ระดับ:
 

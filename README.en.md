@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-554%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-557%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 554 automated tests.
+control and 557 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -337,7 +337,7 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 243 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 246 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 311 cases — domain / controller / widget
 ```
 
@@ -467,7 +467,9 @@ cd app && flutter test      # 311 cases — domain / controller / widget
   quantity, removing an item, moving a table, and merging bills (see `docs/DECISIONS.md` #25), as well
   as **financial/accounting** audit: editing a menu price (only when the price actually changes),
   creating/editing/deleting a promotion, and manually adjusting ingredient stock — with a **date-range
-  filter** and a **CSV export** button for the finance team (web only, see `docs/DECISIONS.md` #27)
+  filter** and a **CSV export** button for the finance team (web only, see `docs/DECISIONS.md` #27),
+  and opening/closing a shift (with the cash variance), accepting a payment, and entering/removing a
+  discount code (see `docs/DECISIONS.md` #28)
 - **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
   see their purchase history and current points balance (see `docs/DECISIONS.md` #22)
 
@@ -786,11 +788,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 243 cases
+cd backend && npm test      # 246 cases
 cd app && flutter test      # 311 cases
 ```
 
-**Backend (243 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (246 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -886,6 +888,11 @@ again), creating/editing/deleting a promotion (`promotion.create`/`update`/`dele
 adjusting ingredient stock (`ingredient.stock_adjust`) — plus 3 more cases for
 `GET /audit-logs/export`: RBAC (admin only), correct CSV header/content (UTF-8 BOM so Excel doesn't
 mangle Thai text), and filtering by action the same way the list endpoint does.
+
+`audit-logs.test.js` gains another 3 cases (see `docs/DECISIONS.md` #28) closing the remaining audit
+log gaps: opening/closing a shift (`shift.open`/`shift.close` — checking the cash-variance metadata
+on close), accepting a payment (`payment.pay`), and entering/removing a discount code
+(`order.promotion_redeem`/`order.promotion_remove`).
 
 **Flutter (311 cases)** — split into 3 levels:
 

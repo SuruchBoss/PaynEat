@@ -543,3 +543,93 @@ test('GET /audit-logs/export — filter ตาม action ได้เหมื�
     assert.match(line, /,order\.create,/);
   }
 });
+
+test('POST/DELETE /orders/:id/promotion — กรอก/เอาโค้ดส่วนลดออกต้องถูกบันทึก audit log ครบ', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const manager = await login('manager', 'manager123');
+  const order = await openOrder(waiter.token);
+
+  const promoRes = await post('/api/v1/promotions', manager.token, {
+    name: 'ลด 15 บาท (audit test)',
+    type: 'amount',
+    value: 15,
+    code: `AUDIT${Date.now()}`,
+  });
+  assert.equal(promoRes.status, 201, JSON.stringify(promoRes.body));
+  const code = promoRes.body.data.code;
+
+  const redeemRes = await post(`/api/v1/orders/${order.id}/promotion/redeem`, waiter.token, {
+    code,
+  });
+  assert.equal(redeemRes.status, 200, JSON.stringify(redeemRes.body));
+
+  const redeemLog = await findLatestLog(admin.token, 'order.promotion_redeem', order.id);
+  assert.ok(redeemLog, 'ต้องมี audit log สำหรับการกรอกโค้ดส่วนลด');
+  assert.equal(redeemLog.entityType, 'order');
+  assert.match(redeemLog.summary, new RegExp(code));
+
+  const removeRes = await del(`/api/v1/orders/${order.id}/promotion`, waiter.token);
+  assert.equal(removeRes.status, 200, JSON.stringify(removeRes.body));
+
+  const removeLog = await findLatestLog(admin.token, 'order.promotion_remove', order.id);
+  assert.ok(removeLog, 'ต้องมี audit log สำหรับการเอาโปรโมชันออก');
+  assert.equal(removeLog.entityType, 'order');
+  assert.equal(removeLog.metadata.previousPromotionCode, code);
+});
+
+test('POST /payments — รับชำระเงินต้องถูกบันทึก audit log พร้อมยอดและช่องทาง', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+  const order = await openOrder(waiter.token);
+
+  const payRes = await post('/api/v1/payments', cashier.token, {
+    orderId: order.id,
+    method: 'cash',
+    amount: order.total,
+    received: order.total,
+  });
+  assert.equal(payRes.status, 201, JSON.stringify(payRes.body));
+  const paymentId = payRes.body.data.payment.id;
+
+  const log = await findLatestLog(admin.token, 'payment.pay', paymentId);
+  assert.ok(log, 'ต้องมี audit log สำหรับการรับชำระเงิน');
+  assert.equal(log.entityType, 'payment');
+  assert.equal(log.metadata.orderId, order.id);
+  assert.equal(log.metadata.method, 'cash');
+});
+
+test('POST /shifts และ PATCH /shifts/:id/close — เปิด/ปิดกะต้องถูกบันทึก audit log พร้อมยอดเงินสด', async () => {
+  const admin = await login('admin', 'admin123');
+  const manager = await login('manager', 'manager123');
+  const cashier = await login('cashier', 'cashier123');
+
+  // ปิดกะที่ seed เปิดไว้ให้ก่อน (ถ้ามี) เพื่อเปิดกะใหม่สำหรับเทสต์นี้ได้
+  const current = await get('/api/v1/shifts/current', cashier.token);
+  if (current.body.data) {
+    await patch(`/api/v1/shifts/${current.body.data.id}/close`, manager.token, {
+      countedCash: current.body.data.openingCash,
+    });
+  }
+
+  const openRes = await post('/api/v1/shifts', cashier.token, { openingCash: 1500 });
+  assert.equal(openRes.status, 201, JSON.stringify(openRes.body));
+  const shiftId = openRes.body.data.id;
+
+  const openLog = await findLatestLog(admin.token, 'shift.open', shiftId);
+  assert.ok(openLog, 'ต้องมี audit log สำหรับการเปิดกะ');
+  assert.equal(openLog.entityType, 'shift');
+  assert.equal(openLog.metadata.openingCash, 150000); // สตางค์
+
+  const closeRes = await patch(`/api/v1/shifts/${shiftId}/close`, manager.token, {
+    countedCash: 1450,
+    note: 'เงินขาดหาย ทดสอบ audit',
+  });
+  assert.equal(closeRes.status, 200, JSON.stringify(closeRes.body));
+
+  const closeLog = await findLatestLog(admin.token, 'shift.close', shiftId);
+  assert.ok(closeLog, 'ต้องมี audit log สำหรับการปิดกะ');
+  assert.equal(closeLog.reason, 'เงินขาดหาย ทดสอบ audit');
+  assert.equal(closeLog.metadata.variance, -5000); // 1450 - 1500 บาท = -50 บาท = -5000 สตางค์
+});

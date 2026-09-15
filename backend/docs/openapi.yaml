@@ -825,7 +825,9 @@ paths:
         schema: { type: integer }
     post:
       tags: [Orders]
-      summary: กรอกโค้ดส่วนลด — ผูกโปรโมชันนี้กับออเดอร์ถ้าเข้าเงื่อนไข
+      summary: >-
+        กรอกโค้ดส่วนลด — ผูกโปรโมชันนี้กับออเดอร์ถ้าเข้าเงื่อนไข บันทึก audit log ทุกครั้ง
+        (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -846,7 +848,9 @@ paths:
         schema: { type: integer }
     delete:
       tags: [Orders]
-      summary: เอาโปรโมชันที่ผูกด้วยโค้ดออก (โปรโมชัน auto ที่ยังเข้าเงื่อนไขจะกลับมาเอง)
+      summary: >-
+        เอาโปรโมชันที่ผูกด้วยโค้ดออก (โปรโมชัน auto ที่ยังเข้าเงื่อนไขจะกลับมาเอง) บันทึก
+        audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
   /orders/{id}/eligible-promotions:
@@ -918,7 +922,7 @@ paths:
   /payments:
     post:
       tags: [Payments]
-      summary: ชำระเงิน (รองรับแยกจ่ายหลายวิธี)
+      summary: ชำระเงิน (รองรับแยกจ่ายหลายวิธี) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1071,7 +1075,7 @@ paths:
         '200': { description: สำเร็จ }
     post:
       tags: [Shifts]
-      summary: เปิดกะใหม่ พร้อมเงินทอนตั้งต้น
+      summary: เปิดกะใหม่ พร้อมเงินทอนตั้งต้น — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1103,7 +1107,9 @@ paths:
         schema: { type: integer }
     patch:
       tags: [Shifts]
-      summary: ปิดกะ — นับเงินสดจริงเทียบกับยอดที่ระบบคาดไว้ (กระทบยอด)
+      summary: >-
+        ปิดกะ — นับเงินสดจริงเทียบกับยอดที่ระบบคาดไว้ (กระทบยอด) บันทึก audit log ทุกครั้ง
+        พร้อมส่วนต่างเงินสด (ดู ticket 14)
       requestBody:
         required: true
         content:

@@ -75,11 +75,11 @@ export const orderController = {
   ),
 
   redeemPromotion: asyncHandler(async (req, res) =>
-    ok(res, orderService.redeemPromotionCode(req.validated.params.id, req.body.code)),
+    ok(res, orderService.redeemPromotionCode(req.validated.params.id, req.body.code, req.user)),
   ),
 
   removePromotion: asyncHandler(async (req, res) =>
-    ok(res, orderService.removePromotion(req.validated.params.id)),
+    ok(res, orderService.removePromotion(req.validated.params.id, req.user)),
   ),
 
   eligiblePromotions: asyncHandler(async (req, res) =>

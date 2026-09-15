@@ -1,6 +1,8 @@
 import { ApiError } from '../../core/ApiError.js';
-import { toSatang } from '../../core/money.js';
+import { toBaht, toSatang } from '../../core/money.js';
+import { getDb } from '../../db/index.js';
 import { emit, EVENTS } from '../../realtime/socket.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { shiftRepository } from './shift.repository.js';
 import { toShiftDto } from './shift.mapper.js';
 
@@ -19,12 +21,25 @@ export const shiftService = {
     return shiftRepository.list(query).map(toShiftDto);
   },
 
+  /** เปิด/ปิดกะกระทบเงินสดหน้าร้านโดยตรง (โดยเฉพาะปิดกะที่คำนวณส่วนต่าง) จึงต้อง audit
+   * เหมือนเหตุการณ์เสี่ยงอื่น ๆ — ดู docs/tickets/14-financial-audit-trail.md */
   open({ openingCash }, user) {
     if (shiftRepository.findOpen()) {
       throw ApiError.conflict('มีกะที่เปิดอยู่แล้ว ต้องปิดกะเดิมก่อนเปิดกะใหม่');
     }
-    const shift = shiftRepository.open({ openedBy: user.id, openingCash: toSatang(openingCash) });
-    const dto = toShiftDto(shift);
+    const run = getDb().transaction(() => {
+      const shift = shiftRepository.open({ openedBy: user.id, openingCash: toSatang(openingCash) });
+      auditLogService.log({
+        actorUser: user,
+        action: 'shift.open',
+        entityType: 'shift',
+        entityId: shift.id,
+        summary: `เปิดกะ เงินสดตั้งต้น ${toBaht(shift.opening_cash)} บาท`,
+        metadata: { openingCash: shift.opening_cash },
+      });
+      return shift;
+    });
+    const dto = toShiftDto(run());
     emit(EVENTS.SHIFT_OPENED, dto);
     return dto;
   },
@@ -36,15 +51,28 @@ export const shiftService = {
 
     const expectedCash = shift.opening_cash + shiftRepository.cashInDuring(id);
     const counted = toSatang(countedCash);
+    const variance = counted - expectedCash;
 
-    const closed = shiftRepository.close(id, {
-      closedBy: user.id,
-      expectedCash,
-      countedCash: counted,
-      variance: counted - expectedCash,
-      note,
+    const run = getDb().transaction(() => {
+      const closed = shiftRepository.close(id, {
+        closedBy: user.id,
+        expectedCash,
+        countedCash: counted,
+        variance,
+        note,
+      });
+      auditLogService.log({
+        actorUser: user,
+        action: 'shift.close',
+        entityType: 'shift',
+        entityId: id,
+        summary: `ปิดกะ นับได้ ${toBaht(counted)} บาท คาดไว้ ${toBaht(expectedCash)} บาท (ส่วนต่าง ${toBaht(variance)} บาท)`,
+        reason: note,
+        metadata: { expectedCash, countedCash: counted, variance },
+      });
+      return closed;
     });
-    const dto = toShiftDto(closed);
+    const dto = toShiftDto(run());
     emit(EVENTS.SHIFT_CLOSED, dto);
     return dto;
   },

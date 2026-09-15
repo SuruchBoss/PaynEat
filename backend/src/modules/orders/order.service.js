@@ -498,8 +498,10 @@ export const orderService = {
     return dto;
   },
 
-  /** กรอกโค้ดส่วนลด — ถ้าเข้าเงื่อนไขจะผูกไว้กับออเดอร์และคำนวณใหม่ทันที */
-  redeemPromotionCode(orderId, code) {
+  /** กรอกโค้ดส่วนลด — ถ้าเข้าเงื่อนไขจะผูกไว้กับออเดอร์และคำนวณใหม่ทันที
+   * ผูก/ถอดโปรโมชันกระทบยอดขาย/ส่วนลดโดยตรงเหมือน applyDiscount จึง wrap transaction + audit
+   * แบบเดียวกัน (ดู docs/tickets/14-financial-audit-trail.md) */
+  redeemPromotionCode(orderId, code, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
@@ -510,19 +512,35 @@ export const orderService = {
     const reason = describeIneligibility(promotion, { items, now: new Date() });
     if (reason) throw ApiError.badRequest(reason);
 
-    orderRepository.updateTotals(order.id, {
-      subtotal: order.subtotal,
-      discountType: order.discount_type,
-      discountValue: order.discount_value,
-      discountAmount: order.discount_amount,
-      promotionId: promotion.id,
-      promotionName: promotion.name,
-      promotionCode: promotion.code,
-      promotionDiscountAmount: order.promotion_discount_amount,
-      serviceCharge: order.service_charge,
-      vat: order.vat,
-      total: order.total,
+    const run = getDb().transaction(() => {
+      orderRepository.updateTotals(order.id, {
+        subtotal: order.subtotal,
+        discountType: order.discount_type,
+        discountValue: order.discount_value,
+        discountAmount: order.discount_amount,
+        promotionId: promotion.id,
+        promotionName: promotion.name,
+        promotionCode: promotion.code,
+        promotionDiscountAmount: order.promotion_discount_amount,
+        serviceCharge: order.service_charge,
+        vat: order.vat,
+        total: order.total,
+      });
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.promotion_redeem',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `ใช้โค้ดส่วนลด "${promotion.code}" (${promotion.name}) กับออเดอร์ #${order.code}`,
+        metadata: {
+          orderCode: order.code,
+          promotionId: promotion.id,
+          promotionCode: promotion.code,
+          previousPromotionId: order.promotion_id,
+        },
+      });
     });
+    run();
 
     const dto = buildDto(recalculate(order.id));
     emit(EVENTS.ORDER_UPDATED, dto);
@@ -530,23 +548,38 @@ export const orderService = {
   },
 
   /** เอาโปรโมชันที่ผูกด้วยโค้ดออก — ถ้ายังเข้าเงื่อนไขโปรโมชันแบบ auto อื่นอยู่ ระบบจะใส่ให้ใหม่เอง */
-  removePromotion(orderId) {
+  removePromotion(orderId, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
-    orderRepository.updateTotals(order.id, {
-      subtotal: order.subtotal,
-      discountType: order.discount_type,
-      discountValue: order.discount_value,
-      discountAmount: order.discount_amount,
-      promotionId: null,
-      promotionName: null,
-      promotionCode: null,
-      promotionDiscountAmount: 0,
-      serviceCharge: order.service_charge,
-      vat: order.vat,
-      total: order.total,
+    const run = getDb().transaction(() => {
+      orderRepository.updateTotals(order.id, {
+        subtotal: order.subtotal,
+        discountType: order.discount_type,
+        discountValue: order.discount_value,
+        discountAmount: order.discount_amount,
+        promotionId: null,
+        promotionName: null,
+        promotionCode: null,
+        promotionDiscountAmount: 0,
+        serviceCharge: order.service_charge,
+        vat: order.vat,
+        total: order.total,
+      });
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.promotion_remove',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `เอาโปรโมชันออกจากออเดอร์ #${order.code}`,
+        metadata: {
+          orderCode: order.code,
+          previousPromotionId: order.promotion_id,
+          previousPromotionCode: order.promotion_code_snapshot,
+        },
+      });
     });
+    run();
 
     const dto = buildDto(recalculate(order.id));
     emit(EVENTS.ORDER_UPDATED, dto);

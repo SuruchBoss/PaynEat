@@ -40,3 +40,7 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 ## พบระหว่างตรวจโค้ดจริงซ้ำ (2026-09-15) — ไม่เคยอยู่ใน gap analysis รอบแรก
 - `16-promptpay-qr.md` — ✅ เสร็จแล้ว — 🔴 Critical gap เดียวที่เหลืออยู่หลังจากรายการ 1-4 เดิม
   ทำครบแล้ว: ช่องทางจ่าย "QR" เดิมเป็นแค่ label ไม่มี PromptPay QR จริงให้ลูกค้าสแกน
+- ✅ เสร็จแล้ว — self code-review รอบใหม่ (clean code/tech debt/state management/architecture/
+  spaghetti) พบว่า `14-financial-audit-trail.md` ยังเหลือรูอยู่ 3 จุด: เปิด/ปิดกะ, รับชำระเงิน,
+  กรอก/ถอดโค้ดส่วนลด ไม่มี audit log (จุดหลังไม่มี transaction ห่อด้วย) — ปิดครบแล้ว
+  ดู `docs/DECISIONS.md` #28 และหัวข้อ "ส่วนต่อขยาย" ใน `14-financial-audit-trail.md`

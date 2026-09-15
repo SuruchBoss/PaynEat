@@ -76,3 +76,16 @@ audit) มักเริ่มจากอีกทิศทาง: **"ตั�
 - `app/lib/core/utils/csv.dart`, `app/lib/core/utils/csv_download/` (mirror + platform shim)
 - `app/lib/core/demo/demo_store_menu.dart`, `demo_store_promotions.dart`,
   `demo_store_ingredients.dart`, `demo_store_audit_logs.dart` (Demo Mode mirror)
+
+## ส่วนต่อขยาย (2026-09-15) — ปิดรูที่เหลือ (ดู `docs/DECISIONS.md` #28)
+
+self code-review รอบใหม่พบว่ายังมี 3 จุดที่กระทบเงิน/บัญชีโดยตรงแต่ไม่ log: เปิด/ปิดกะ
+(`shift.service.js`), รับชำระเงิน (`payment.service.js#pay`), และกรอก/ถอดโค้ดส่วนลด
+(`order.service.js#redeemPromotionCode/removePromotion` — จุดหลังยังไม่มี transaction ห่อด้วย)
+แก้ครบแล้วตาม pattern เดิม เพิ่มไฟล์ที่เกี่ยวข้อง:
+
+- `backend/src/modules/shifts/shift.service.js` (เพิ่ม transaction + `shift.open`/`shift.close`)
+- `backend/src/modules/payments/payment.service.js` (เพิ่ม `payment.pay` ใน transaction เดิม)
+- `backend/src/modules/orders/order.service.js`,
+  `backend/src/modules/orders/order.controller.js` (เพิ่ม transaction + `order.promotion_redeem`/
+  `order.promotion_remove`, ส่ง `req.user` เข้า service)

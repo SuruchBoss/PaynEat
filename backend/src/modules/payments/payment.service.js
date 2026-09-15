@@ -166,6 +166,23 @@ export const paymentService = {
         pointsRedeemedValue,
       });
 
+      // รับชำระเงินกระทบเงินสด/ยอดขายโดยตรง audit เหมือนคืนเงิน (refund) — ดู
+      // docs/tickets/14-financial-audit-trail.md
+      auditLogService.log({
+        actorUser: user,
+        action: 'payment.pay',
+        entityType: 'payment',
+        entityId: payment.id,
+        summary: `รับชำระเงิน ${toBaht(chargedAmount)} บาท (${payload.method}) ออเดอร์ #${order.code ?? order.id}`,
+        metadata: {
+          orderId: order.id,
+          method: payload.method,
+          amount: toBaht(amount),
+          chargedAmount: toBaht(chargedAmount),
+          pointsRedeemed: pointsToRedeem,
+        },
+      });
+
       if (pointsToRedeem > 0) {
         customerRepository.adjustPoints(order.customer_id, -pointsToRedeem);
       }

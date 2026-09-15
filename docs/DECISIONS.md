@@ -926,3 +926,41 @@ filter chip และป้ายชื่อใหม่ให้อัตโ�
 **ข้อเสียที่ยอมรับ** — ปุ่ม export ไม่โผล่ให้กดบน mobile/desktop เลย (ไม่ใช่แค่กดแล้ว error) — ยอมรับ
 เพราะหน้านี้เป็น admin/เว็บอยู่แล้วตามที่ออกแบบไว้ตั้งแต่ ticket 08 — ถ้าวันไหนต้องรองรับ mobile
 export จริง ต้องเพิ่ม `path_provider` + `share_plus` เป็น dependency ใหม่แยกต่างหาก
+
+## 28. ปิดรู audit log ที่เหลือ — เปิด/ปิดกะ, รับชำระเงิน, กรอก/ถอดโค้ดส่วนลด
+
+**ปัญหา** — self code-review รอบใหม่ (เช็ค clean code/tech debt/state management/architecture/
+spaghetti risk ทั้ง backend และ Flutter) พบว่าแม้ข้อ 21/25/27 จะปิด gap ของ audit log ไปหลายชั้นแล้ว
+ก็ยังมี 3 จุดที่กระทบเงิน/บัญชีโดยตรงแต่ไม่ log เลย:
+
+1. `shift.service.js#open/close` — `close()` คำนวณส่วนต่างเงินสด (variance) ซึ่งเป็นเหตุการณ์เสี่ยง
+   ทุจริตแบบเดียวกับที่ audit log ข้อ 21 ตั้งใจครอบคลุมไว้ตั้งแต่แรก แต่ไม่เคยเรียก
+   `auditLogService.log()` เลยสักจุด
+2. `payment.service.js#pay()` — รับชำระเงิน (รวมการใช้แต้มสะสมลดยอด) ไม่ log ทั้งที่ `refund()` ใน
+   ไฟล์เดียวกัน log ทุกครั้ง — ทำให้ตรวจสอบย้อนหลังได้แค่ "เงินคืนเท่าไหร่" แต่ไม่มี "รับเข้าเท่าไหร่
+   ใครรับ"
+3. `order.service.js#redeemPromotionCode/removePromotion` — เขียน `updateTotals` ตรงๆ โดยไม่มีทั้ง
+   `getDb().transaction()` ห่อและไม่มี audit log ทั้งที่ method พี่น้องในไฟล์เดียวกัน
+   (`applyDiscount`) มีครบทั้งสองอย่าง — เสี่ยงทั้ง data integrity (เขียนไม่ atomic กับ log) และ
+   ตรวจสอบย้อนหลังไม่ได้ว่าใครกรอก/ถอดโค้ดส่วนลดออกจากบิล
+
+**ที่เลือก**
+
+- **เพิ่ม action type ใหม่ 4 รายการเข้า infrastructure เดิมของข้อ 21/25/27** ไม่สร้างระบบแยก:
+  `shift.open`, `shift.close`, `payment.pay`, `order.promotion_redeem`, `order.promotion_remove`
+  (จริง ๆ คือ 5 action แต่ `shift.open`/`shift.close` นับเป็นคู่เดียวกัน) — ทุกจุด log ทุกครั้งไม่มี
+  เงื่อนไขกรอง เพราะกระทบเงิน/ยอดขายโดยตรงทุกครั้งที่เกิด ต่างจาก `menu.price_change` (ข้อ 27) ที่
+  กรองเฉพาะตอนราคาเปลี่ยนจริง
+- **`shift.open/close` ห่อด้วย `getDb().transaction()` เพิ่มใหม่** (เดิมเป็นแค่ single UPDATE/INSERT
+  statement ไม่มี transaction เลยเพราะไม่เคยต้องเขียนคู่กับอะไร) ให้ atomic กับ audit log write
+  ตามหลักการเดียวกับทุก service อื่นที่มี audit log (ถ้า log ล้มเหลว การเปิด/ปิดกะต้องล้มเหลวด้วย)
+- **`redeemPromotionCode`/`removePromotion` ห่อด้วย transaction ตามแบบ `applyDiscount`** ในไฟล์
+  เดียวกันทุกประการ (ทั้งสองอยู่ใน `order.service.js`) แทนที่จะสร้าง pattern ใหม่ — ต้องแก้
+  `order.controller.js` ให้ส่ง `req.user` ผ่านไปด้วย (เดิมไม่เคยส่งเพราะไม่เคยต้องใช้)
+- **ไม่แตะ `customer.service.js`/`table.service.js`** แม้ตรวจพบว่าก็ไม่ log เหมือนกัน — พิจารณาแล้วว่า
+  ความเสี่ยงต่ำกว่ามาก (สร้างลูกค้าใหม่/เปลี่ยนสถานะโต๊ะไม่กระทบตัวเลขทางบัญชีโดยตรงเหมือน 3 จุดข้าง
+  ต้น) จึงไม่รวมในรอบนี้ ทิ้งไว้เป็นของที่พิจารณาเพิ่มได้ในอนาคตถ้าจำเป็น
+
+**ข้อเสียที่ยอมรับ** — ไม่มี ทุกจุดที่แก้เป็นการเติมของที่ขาดตาม pattern เดิมที่มีอยู่แล้วในโปรเจกต์
+ไม่ได้เปลี่ยน behavior หรือ trade-off ใหม่ใดๆ ที่ผู้ใช้จะสังเกตเห็น (audit log อ่านได้เฉพาะ admin
+เหมือนเดิม)
