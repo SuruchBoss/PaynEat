@@ -9,6 +9,8 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 /**
  * เพิ่มคอลัมน์ให้ตารางที่มีอยู่แล้ว (schema.sql ใช้ CREATE TABLE IF NOT EXISTS
  * จึงไม่แก้ตารางเดิมที่มีอยู่แล้วให้อัตโนมัติ) — เรียกซ้ำได้ปลอดภัยเพราะเช็คก่อนว่ามีคอลัมน์อยู่แล้วหรือยัง
+ * ต้องเรียก *หลัง* `db.exec(sql)` เสมอ เพราะบางคอลัมน์ (เช่น auto_disabled_by_stock) ไม่ได้อยู่ใน
+ * CREATE TABLE ของ schema.sql เลย ตั้งใจพึ่ง ALTER TABLE นี้อย่างเดียวเพื่อให้ตารางถูกสร้างขึ้นก่อน
  */
 const addColumnIfMissing = (db, table, column, definition) => {
   const columns = db.prepare(`PRAGMA table_info(${table})`).all();
@@ -39,6 +41,19 @@ export const migrate = () => {
   addColumnIfMissing(db, 'orders', 'promotion_discount_amount', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing(db, 'order_items', 'stock_deducted', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing(db, 'menu_items', 'auto_disabled_by_stock', 'INTEGER NOT NULL DEFAULT 0');
+  // ticket 09 (ลูกค้า/แต้มสะสม) ลืมเพิ่มรายการเหล่านี้ไว้ตอนนั้น — เติมให้ครบตอนนี้เพื่อไม่ให้
+  // ฐานข้อมูลที่มีอยู่แล้วตั้งแต่ก่อนทิกเก็ต 09 พังตอนอัปเกรด (คอลัมน์เหล่านี้อยู่ใน schema.sql
+  // อยู่แล้วสำหรับฐานข้อมูลใหม่ แต่ CREATE TABLE IF NOT EXISTS ไม่แก้ตารางเดิมที่มีอยู่แล้ว)
+  addColumnIfMissing(
+    db,
+    'orders',
+    'customer_id',
+    'INTEGER REFERENCES customers(id) ON DELETE SET NULL',
+  );
+  addColumnIfMissing(db, 'orders', 'points_earned', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'payments', 'points_redeemed', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'payments', 'points_redeemed_value', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'orders', 'queue_number', 'INTEGER');
 
   const defaults = {
     store_name: env.store.name,

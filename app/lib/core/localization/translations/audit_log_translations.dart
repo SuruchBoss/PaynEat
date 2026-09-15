@@ -1,0 +1,34 @@
+/// คำแปลของฟีเจอร์ audit log (ดู docs/tickets/08-audit-log.md)
+const Map<String, String> auditLogTranslationsTh = {
+  'audit_log_empty_state': 'ยังไม่มีประวัติการทำรายการ',
+  'audit_log_reason_prefix': 'เหตุผล: @reason',
+  'audit_log_actor_prefix': 'โดย @name',
+
+  'audit_log_action_order_cancel': 'ยกเลิกออเดอร์',
+  'audit_log_action_order_item_void': 'ยกเลิกรายการหลังส่งครัว',
+  'audit_log_action_order_discount': 'แก้ไขส่วนลด',
+  'audit_log_action_user_deactivate': 'ปิดการใช้งานพนักงาน',
+  'audit_log_action_user_delete': 'ลบบัญชีพนักงาน',
+  'audit_log_action_user_role_change': 'เปลี่ยนสิทธิ์พนักงาน',
+  'audit_log_action_user_password_reset': 'ตั้งรหัสผ่านใหม่ให้พนักงาน',
+  'audit_log_action_settings_update': 'แก้ไขค่า VAT/ค่าบริการ',
+  'audit_log_action_payment_refund': 'คืนเงิน',
+  'audit_log_action_tax_invoice_void': 'ยกเลิกใบกำกับภาษี',
+};
+
+const Map<String, String> auditLogTranslationsEn = {
+  'audit_log_empty_state': 'No activity recorded yet',
+  'audit_log_reason_prefix': 'Reason: @reason',
+  'audit_log_actor_prefix': 'By @name',
+
+  'audit_log_action_order_cancel': 'Cancel order',
+  'audit_log_action_order_item_void': 'Void item after cooking',
+  'audit_log_action_order_discount': 'Edit discount',
+  'audit_log_action_user_deactivate': 'Deactivate staff',
+  'audit_log_action_user_delete': 'Delete staff account',
+  'audit_log_action_user_role_change': "Change staff's role",
+  'audit_log_action_user_password_reset': 'Reset staff password',
+  'audit_log_action_settings_update': 'Edit VAT/service charge',
+  'audit_log_action_payment_refund': 'Refund',
+  'audit_log_action_tax_invoice_void': 'Void tax invoice',
+};

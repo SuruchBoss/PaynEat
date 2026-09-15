@@ -25,6 +25,7 @@ class OrderListFilter {
     this.activeOnly,
     this.dateFrom,
     this.dateTo,
+    this.customerId,
     this.page = 1,
     this.limit = 30,
   });
@@ -33,6 +34,7 @@ class OrderListFilter {
   final bool? activeOnly;
   final String? dateFrom;
   final String? dateTo;
+  final int? customerId;
   final int page;
   final int limit;
 }
@@ -51,6 +53,7 @@ class GetOrdersUseCase
     activeOnly: params.activeOnly,
     dateFrom: params.dateFrom,
     dateTo: params.dateTo,
+    customerId: params.customerId,
     page: params.page,
     limit: params.limit,
   );
@@ -79,6 +82,7 @@ class CreateOrderParams {
   const CreateOrderParams({
     required this.type,
     this.tableId,
+    this.customerId,
     this.guestCount = 1,
     this.note,
     required this.lines,
@@ -86,6 +90,7 @@ class CreateOrderParams {
 
   final String type;
   final int? tableId;
+  final int? customerId;
   final int guestCount;
   final String? note;
   final List<CartLine> lines;
@@ -102,6 +107,7 @@ class CreateOrderUseCase implements UseCase<Order, CreateOrderParams> {
       _repository.createOrder(
         type: params.type,
         tableId: params.tableId,
+        customerId: params.customerId,
         guestCount: params.guestCount,
         note: params.note,
         items: cartToPayload(params.lines),

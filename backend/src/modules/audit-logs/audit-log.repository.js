@@ -1,0 +1,75 @@
+import { getDb } from '../../db/index.js';
+
+export const auditLogRepository = {
+  create({ actorUserId, actorName, action, entityType, entityId, summary, reason, metadata }) {
+    const info = getDb()
+      .prepare(
+        `
+        INSERT INTO audit_logs (
+          actor_user_id, actor_name, action, entity_type, entity_id, summary, reason, metadata_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+      )
+      .run(
+        actorUserId ?? null,
+        actorName,
+        action,
+        entityType,
+        entityId ?? null,
+        summary,
+        reason ?? null,
+        metadata ? JSON.stringify(metadata) : null,
+      );
+    return getDb().prepare('SELECT * FROM audit_logs WHERE id = ?').get(info.lastInsertRowid);
+  },
+
+  findAll({
+    actorUserId,
+    action,
+    entityType,
+    entityId,
+    dateFrom,
+    dateTo,
+    page = 1,
+    limit = 20,
+  } = {}) {
+    const clauses = [];
+    const params = [];
+
+    if (actorUserId) {
+      clauses.push('actor_user_id = ?');
+      params.push(actorUserId);
+    }
+    if (action) {
+      clauses.push('action = ?');
+      params.push(action);
+    }
+    if (entityType) {
+      clauses.push('entity_type = ?');
+      params.push(entityType);
+    }
+    if (entityId) {
+      clauses.push('entity_id = ?');
+      params.push(entityId);
+    }
+    if (dateFrom) {
+      clauses.push('date(created_at) >= date(?)');
+      params.push(dateFrom);
+    }
+    if (dateTo) {
+      clauses.push('date(created_at) <= date(?)');
+      params.push(dateTo);
+    }
+
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    const db = getDb();
+    const total = db.prepare(`SELECT COUNT(*) AS c FROM audit_logs ${where}`).get(...params).c;
+    const rows = db
+      .prepare(`SELECT * FROM audit_logs ${where} ORDER BY id DESC LIMIT ? OFFSET ?`)
+      .all(...params, limit, (page - 1) * limit);
+
+    return { rows, total };
+  },
+};
+
+export default auditLogRepository;

@@ -45,6 +45,10 @@ export const env = {
     vatRate: Number(process.env.VAT_RATE ?? 0.07),
     serviceChargeRate: Number(process.env.SERVICE_CHARGE_RATE ?? 0.1),
     vatIncluded: (process.env.VAT_INCLUDED ?? 'false') === 'true',
+    // แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — ค่าเริ่มต้น: ซื้อครบ 25 บาทได้ 1 แต้ม
+    // ใช้แต้มแลกได้ 1 แต้ม = 1 บาท (ปรับได้ที่หน้าตั้งค่า)
+    pointsEarnRateBaht: Number(process.env.POINTS_EARN_RATE_BAHT ?? 25),
+    pointsRedeemValueBaht: Number(process.env.POINTS_REDEEM_VALUE_BAHT ?? 1),
   },
 };
 

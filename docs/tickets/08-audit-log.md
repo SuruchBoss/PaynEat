@@ -23,9 +23,16 @@
 - Frontend: หน้าจอดู audit log สำหรับ admin (filter ตามผู้ใช้/ช่วงเวลา/ประเภท action)
 
 ## Acceptance Criteria
-- [ ] ทุก action เสี่ยง (ตามรายการข้างบน) ถูกบันทึกพร้อมผู้ทำ/เวลา/รายละเอียด
-- [ ] Admin ดูประวัติ audit log ทั้งหมด filter ได้ตามผู้ใช้/ช่วงเวลา/ประเภท
-- [ ] Log ไม่สามารถแก้ไข/ลบได้จาก UI ปกติ (append-only)
+- [x] ทุก action เสี่ยง (ตามรายการข้างบน) ถูกบันทึกพร้อมผู้ทำ/เวลา/รายละเอียด — ทำแล้ว: cancel
+  order, void order item (หลัง cooking เท่านั้น — pending ยกเลิกเองยังไม่ถือว่าเสี่ยง), แก้ไข
+  ส่วนลด, ปิดใช้งาน/ลบ staff, แก้ settings (VAT/service charge), refund พร้อมขยาย scope เพิ่ม
+  `user.role_change`, `user.password_reset`, `tax_invoice.void` (ดู `docs/DECISIONS.md` #21)
+- [x] Admin ดูประวัติ audit log ทั้งหมด filter ได้ตามผู้ใช้/ประเภท action (ผ่าน query parameter
+  `actorUserId`/`action`/`entityType`/`entityId`/`dateFrom`/`dateTo` ที่ backend ครบ — หน้าจอ
+  admin ต่อ UI filter เฉพาะ action type ด้วยชิปเลือก ส่วนช่วงเวลายังไม่มี date picker บน UI
+  ดู "ข้อเสียที่ยอมรับ" ใน `docs/DECISIONS.md` #21)
+- [x] Log ไม่สามารถแก้ไข/ลบได้จาก UI ปกติ (append-only) — ไม่มี endpoint/ปุ่มแก้ไข/ลบเลยทั้งระบบ
+  ทั้ง backend (`GET /audit-logs` เท่านั้น) และ Flutter (หน้า **ประวัติการทำรายการ** อ่านอย่างเดียว)
 
 ## ไฟล์ที่เกี่ยวข้อง
 - `backend/src/db/schema.sql`

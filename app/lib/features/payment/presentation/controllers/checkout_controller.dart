@@ -4,8 +4,12 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../../customer/domain/entities/customer.dart';
+import '../../../customer/domain/usecases/customer_usecases.dart';
 import '../../../order/domain/entities/order.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
+import '../../../settings/domain/entities/store_settings.dart';
+import '../../../settings/domain/usecases/settings_usecases.dart';
 import '../../../shift/domain/usecases/shift_usecases.dart';
 import '../../domain/entities/payment.dart';
 import '../../domain/usecases/payment_usecases.dart';
@@ -17,18 +21,26 @@ class CheckoutController extends GetxController {
     required GetPaymentSummaryUseCase getSummary,
     required PayOrderUseCase pay,
     required GetCurrentShiftUseCase getCurrentShift,
+    required GetCustomerUseCase getCustomer,
+    required GetSettingsUseCase getSettings,
   }) : _getOrder = getOrder,
        _getSummary = getSummary,
        _pay = pay,
-       _getCurrentShift = getCurrentShift;
+       _getCurrentShift = getCurrentShift,
+       _getCustomer = getCustomer,
+       _getSettings = getSettings;
 
   final GetOrderUseCase _getOrder;
   final GetPaymentSummaryUseCase _getSummary;
   final PayOrderUseCase _pay;
   final GetCurrentShiftUseCase _getCurrentShift;
+  final GetCustomerUseCase _getCustomer;
+  final GetSettingsUseCase _getSettings;
 
   final Rxn<Order> order = Rxn<Order>();
   final Rxn<PaymentSummary> summary = Rxn<PaymentSummary>();
+  final Rxn<Customer> customer = Rxn<Customer>();
+  final Rx<StoreSettings> settings = StoreSettings.fallback.obs;
   final RxBool hasOpenShift = true.obs;
   final RxBool isLoading = true.obs;
   final RxBool isPaying = false.obs;
@@ -36,6 +48,7 @@ class CheckoutController extends GetxController {
   final RxString method = PaymentMethod.cash.obs;
   final RxDouble amount = 0.0.obs;
   final RxDouble received = 0.0.obs;
+  final RxInt pointsToRedeem = 0.obs;
 
   final TextEditingController amountController = TextEditingController();
   final TextEditingController receivedController = TextEditingController();
@@ -65,26 +78,57 @@ class CheckoutController extends GetxController {
   double get remaining => summary.value?.remaining ?? 0;
   bool get isCash => method.value == PaymentMethod.cash;
 
-  /// เงินทอน = เงินที่รับมา - ยอดที่จ่ายรอบนี้
+  /// มูลค่าแต้มที่ใช้แลกรอบนี้ (บาท) — ลดแค่ยอดที่ต้องเก็บจริง (chargedAmount) เท่านั้น
+  /// ไม่แตะยอด amount ที่นับเข้าบัญชีจ่ายของออเดอร์ (ดู docs/tickets/09-customer-loyalty.md)
+  double get pointsRedeemedValue =>
+      pointsToRedeem.value * settings.value.pointsRedeemValueBaht;
+
+  /// ยอดที่ต้องเก็บจริงผ่านช่องทางที่เลือกรอบนี้ หลังหักมูลค่าแต้มที่แลก
+  double get chargedAmount {
+    final value = amount.value - pointsRedeemedValue;
+    return value > 0 ? double.parse(value.toStringAsFixed(2)) : 0;
+  }
+
+  /// แต้มสูงสุดที่แลกได้รอบนี้ — ไม่เกินแต้มคงเหลือของลูกค้า และมูลค่าต้องไม่เกินยอดจ่ายรอบนี้
+  int get maxRedeemablePoints {
+    final loyaltyCustomer = customer.value;
+    if (loyaltyCustomer == null) return 0;
+    final rate = settings.value.pointsRedeemValueBaht;
+    if (rate <= 0) return 0;
+    final byAmount = (amount.value / rate).floor();
+    return loyaltyCustomer.pointsBalance < byAmount
+        ? loyaltyCustomer.pointsBalance
+        : byAmount;
+  }
+
+  /// เงินทอน = เงินที่รับมา - ยอดที่ต้องเก็บจริงรอบนี้ (หลังหักแต้ม)
   double get change {
     if (!isCash) return 0;
-    final value = received.value - amount.value;
+    final value = received.value - chargedAmount;
     return value > 0 ? double.parse(value.toStringAsFixed(2)) : 0;
   }
 
   bool get canPay {
     if (!hasOpenShift.value) return false;
     if (amount.value <= 0 || amount.value > remaining + 0.001) return false;
-    if (isCash && received.value + 0.001 < amount.value) return false;
+    if (isCash && received.value + 0.001 < chargedAmount) return false;
     return true;
   }
 
   Future<void> load() async {
     isLoading.value = true;
     errorMessage.value = null;
+    pointsToRedeem.value = 0;
+    customer.value = null;
 
     final shiftResult = await _getCurrentShift();
     hasOpenShift.value = shiftResult.dataOrNull != null;
+
+    final settingsResult = await _getSettings();
+    settingsResult.fold(
+      onSuccess: (data) => settings.value = data,
+      onFailure: (_) {}, // ใช้ค่า fallback ต่อไปได้ ไม่ต้องรบกวนผู้ใช้
+    );
 
     final results = await Future.wait([
       _getOrder(orderId),
@@ -99,6 +143,8 @@ class CheckoutController extends GetxController {
         // ใช้ order id เดิมเสมอ
         order.value = null;
         order.value = data as Order;
+        final customerId = order.value?.customerId;
+        if (customerId != null) _loadCustomer(customerId);
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -109,6 +155,13 @@ class CheckoutController extends GetxController {
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
+  }
+
+  /// โหลดข้อมูลลูกค้า (รวมแต้มคงเหลือ) เพื่อแสดงและให้แลกแต้มได้ — ดึงไม่ได้ก็ไม่บล็อก
+  /// การจ่ายเงิน แค่ซ่อนส่วนแลกแต้มไป
+  Future<void> _loadCustomer(int customerId) async {
+    final result = await _getCustomer(customerId);
+    result.fold(onSuccess: (data) => customer.value = data, onFailure: (_) {});
   }
 
   void selectMethod(String value) {
@@ -123,6 +176,14 @@ class CheckoutController extends GetxController {
     amount.value = rounded;
     amountController.text = rounded.toStringAsFixed(2);
     if (received.value < rounded) setReceived(rounded);
+    if (pointsToRedeem.value > maxRedeemablePoints) {
+      pointsToRedeem.value = maxRedeemablePoints;
+    }
+  }
+
+  /// ตั้งจำนวนแต้มที่จะแลกรอบนี้ — ถูกจำกัดไม่ให้เกิน [maxRedeemablePoints] เสมอ
+  void setPointsToRedeem(int value) {
+    pointsToRedeem.value = value.clamp(0, maxRedeemablePoints);
   }
 
   void onAmountChanged(String value) {
@@ -171,6 +232,7 @@ class CheckoutController extends GetxController {
         amount: amount.value,
         received: isCash ? received.value : null,
         reference: referenceController.text.trim(),
+        pointsToRedeem: pointsToRedeem.value > 0 ? pointsToRedeem.value : null,
       ),
     );
     isPaying.value = false;

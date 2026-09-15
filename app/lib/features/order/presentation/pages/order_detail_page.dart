@@ -296,6 +296,13 @@ class _OrderHeader extends StatelessWidget {
             runSpacing: 4,
             children: [
               _MetaText(icon: Icons.tag_rounded, text: order.code),
+              if (order.queueNumber != null)
+                _MetaText(
+                  icon: Icons.confirmation_number_rounded,
+                  text: 'order_queue_number_label'.trParams({
+                    'number': '${order.queueNumber}',
+                  }),
+                ),
               _MetaText(
                 icon: Icons.people_outline_rounded,
                 text: 'order_guest_count_summary'.trParams({

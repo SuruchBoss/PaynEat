@@ -12,6 +12,8 @@ class Payment {
     this.reference,
     this.cashierName,
     this.createdAt,
+    this.pointsRedeemed = 0,
+    this.pointsRedeemedValue = 0,
   });
 
   final int id;
@@ -23,6 +25,9 @@ class Payment {
   final String? reference;
   final String? cashierName;
   final String? createdAt;
+  // ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md)
+  final int pointsRedeemed;
+  final double pointsRedeemedValue;
 
   String get methodLabel => PaymentMethod.label(method);
 

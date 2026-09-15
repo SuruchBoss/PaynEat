@@ -136,7 +136,12 @@ class ScreenshotHarness {
   }
 
   /// สร้างข้อมูลตัวอย่างให้หน้าจอดูสมจริง (โต๊ะมีลูกค้า, ครัวมีงาน)
-  static ({int openOrderId, int kitchenOrderId, int paidOrderId})
+  static ({
+    int openOrderId,
+    int kitchenOrderId,
+    int paidOrderId,
+    int takeawayOrderId,
+  })
   seedScenario() {
     final store = DemoStore.instance;
 
@@ -172,6 +177,18 @@ class ScreenshotHarness {
       ],
     );
     store.sendToKitchen(kitchenOrder['id'] as int);
+
+    // ออเดอร์กลับบ้าน — ไม่ผูกโต๊ะเลย ใช้ถ่ายหน้ารับออเดอร์/รายละเอียดออเดอร์กลับบ้าน
+    // และโชว์ไอคอน 🥡 แยกจากตั๋วโต๊ะบนจอครัว (ดู docs/tickets/10-takeaway-delivery-flow.md)
+    final takeaway = store.createOrder(
+      type: 'takeaway',
+      guestCount: 1,
+      waiterId: 3,
+      items: [
+        {'menuItemId': 4, 'quantity': 2},
+      ],
+    );
+    store.sendToKitchen(takeaway['id'] as int);
 
     // โต๊ะ B2 — ครัวกำลังทำอยู่
     final cooking = store.createOrder(
@@ -320,6 +337,7 @@ class ScreenshotHarness {
       openOrderId: ready['id'] as int,
       kitchenOrderId: kitchenOrder['id'] as int,
       paidOrderId: paidId,
+      takeawayOrderId: takeaway['id'] as int,
     );
   }
 

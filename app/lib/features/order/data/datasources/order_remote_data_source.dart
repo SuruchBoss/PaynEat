@@ -10,6 +10,7 @@ abstract class OrderRemoteDataSource {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page,
     int limit,
   });
@@ -18,6 +19,7 @@ abstract class OrderRemoteDataSource {
   Future<OrderModel> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     int guestCount,
     String? note,
     required List<OrderItemPayload> items,
@@ -53,6 +55,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page = 1,
     int limit = 30,
   }) async {
@@ -65,6 +68,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
         if (activeOnly == true) 'activeOnly': 'true',
         'dateFrom': ?dateFrom,
         'dateTo': ?dateTo,
+        'customerId': ?customerId,
       },
     );
     return (
@@ -90,6 +94,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
   Future<OrderModel> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     int guestCount = 1,
     String? note,
     required List<OrderItemPayload> items,
@@ -99,6 +104,7 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       body: {
         'type': type,
         'tableId': ?tableId,
+        'customerId': ?customerId,
         'guestCount': guestCount,
         if (note != null && note.isNotEmpty) 'note': note,
         'items': items.map((item) => item.toJson()).toList(growable: false),

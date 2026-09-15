@@ -62,6 +62,14 @@ const Map<String, String> settingsTranslationsTh = {
       'เลือก "สูง" ถ้าจอโดนแดด อยู่ในครัว หรือมองเห็นตัวหนังสือไม่ชัด',
   'settings_contrast_standard': 'ปกติ',
   'settings_contrast_high': 'สูง',
+
+  'settings_loyalty_title': 'แต้มสะสม',
+  'settings_loyalty_subtitle': 'อัตราแลกแต้ม มีผลกับทุกออเดอร์หลังจากนี้',
+  'settings_points_earn_rate_label': 'จ่ายกี่บาทได้ 1 แต้ม',
+  'settings_points_redeem_value_label': 'มูลค่า 1 แต้มตอนใช้แลกส่วนลด',
+  'settings_points_baht_per_point': 'บาท',
+  'settings_points_earn_rate_error': 'อัตราสะสมแต้มต้องมากกว่า 0',
+  'settings_points_redeem_value_error': 'มูลค่าแต้มต้องไม่ติดลบ',
 };
 
 const Map<String, String> settingsTranslationsEn = {
@@ -128,4 +136,13 @@ const Map<String, String> settingsTranslationsEn = {
       'Pick "High" for screens in sunlight or in the kitchen, or if text is hard to read',
   'settings_contrast_standard': 'Standard',
   'settings_contrast_high': 'High',
+
+  'settings_loyalty_title': 'Loyalty points',
+  'settings_loyalty_subtitle':
+      'Exchange rate — applies to every order after this',
+  'settings_points_earn_rate_label': 'Baht spent per 1 point earned',
+  'settings_points_redeem_value_label': 'Value of 1 point when redeemed',
+  'settings_points_baht_per_point': 'baht',
+  'settings_points_earn_rate_error': 'The earn rate must be greater than 0',
+  'settings_points_redeem_value_error': 'The redeem value cannot be negative',
 };

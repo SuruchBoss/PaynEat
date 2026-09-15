@@ -12,6 +12,7 @@ abstract class PaymentRemoteDataSource {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   });
   Future<PaymentSummaryModel> getSummary(int orderId);
   Future<SplitPreviewModel> getSplitPreview(int orderId, List<int> itemIds);
@@ -36,6 +37,7 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   }) async {
     final response = await _client.post(
       ApiEndpoints.payments,
@@ -46,6 +48,8 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
         if (itemIds != null && itemIds.isNotEmpty) 'itemIds': itemIds,
         'received': ?received,
         if (reference != null && reference.isNotEmpty) 'reference': reference,
+        if (pointsToRedeem != null && pointsToRedeem > 0)
+          'pointsToRedeem': pointsToRedeem,
       },
     );
 

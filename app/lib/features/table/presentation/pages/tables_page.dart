@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/routes/app_routes.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/responsive.dart';
@@ -16,34 +17,46 @@ class TablesPage extends GetView<TableController> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _TableSummaryBar(),
-        Expanded(
-          child: Obx(() {
-            if (controller.isLoading.value && controller.tables.isEmpty) {
-              return LoadingView(message: 'table_loading_message'.tr);
-            }
-            final error = controller.errorMessage.value;
-            if (error != null && controller.tables.isEmpty) {
-              return ErrorView(message: error, onRetry: controller.loadTables);
-            }
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: 'fab-new-takeaway-delivery',
+        onPressed: () => Get.toNamed<void>(AppRoutes.newOrder),
+        icon: const Icon(Icons.takeout_dining_rounded),
+        label: Text('table_new_takeaway_delivery_button'.tr),
+      ),
+      body: Column(
+        children: [
+          _TableSummaryBar(),
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value && controller.tables.isEmpty) {
+                return LoadingView(message: 'table_loading_message'.tr);
+              }
+              final error = controller.errorMessage.value;
+              if (error != null && controller.tables.isEmpty) {
+                return ErrorView(
+                  message: error,
+                  onRetry: controller.loadTables,
+                );
+              }
 
-            final tables = controller.filteredTables;
-            if (tables.isEmpty) {
-              return EmptyView(
-                message: 'table_empty_filtered_message'.tr,
-                icon: Icons.table_restaurant_outlined,
+              final tables = controller.filteredTables;
+              if (tables.isEmpty) {
+                return EmptyView(
+                  message: 'table_empty_filtered_message'.tr,
+                  icon: Icons.table_restaurant_outlined,
+                );
+              }
+
+              return RefreshIndicator(
+                onRefresh: controller.loadTables,
+                child: _TableGrid(tables: tables),
               );
-            }
-
-            return RefreshIndicator(
-              onRefresh: controller.loadTables,
-              child: _TableGrid(tables: tables),
-            );
-          }),
-        ),
-      ],
+            }),
+          ),
+        ],
+      ),
     );
   }
 }

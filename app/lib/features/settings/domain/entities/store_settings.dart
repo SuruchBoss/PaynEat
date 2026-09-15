@@ -9,6 +9,8 @@ class StoreSettings {
     this.storeTaxId,
     this.storeAddress,
     this.storeBranch,
+    this.pointsEarnRateBaht = 25,
+    this.pointsRedeemValueBaht = 1,
   });
 
   final String storeName;
@@ -22,6 +24,11 @@ class StoreSettings {
   final String? storeTaxId;
   final String? storeAddress;
   final String? storeBranch;
+
+  /// แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — จ่ายครบกี่บาทได้ 1 แต้ม /
+  /// มูลค่า 1 แต้มตอนใช้แลกส่วนลด เป็นบาท
+  final double pointsEarnRateBaht;
+  final double pointsRedeemValueBaht;
 
   double get vatPercent => vatRate * 100;
   double get serviceChargePercent => serviceChargeRate * 100;

@@ -15,8 +15,13 @@ class Order {
     this.tableId,
     this.tableName,
     this.tableZone,
+    this.queueNumber,
     this.waiterId,
     this.waiterName,
+    this.customerId,
+    this.customerName,
+    this.customerPhone,
+    this.pointsEarned = 0,
     this.guestCount = 1,
     this.note,
     this.discountType = DiscountType.none,
@@ -43,8 +48,16 @@ class Order {
   final int? tableId;
   final String? tableName;
   final String? tableZone;
+  // เลขคิวรับอาหาร รันต่อวัน — มีเฉพาะออเดอร์ type=takeaway เท่านั้น (ดู
+  // docs/tickets/10-takeaway-delivery-flow.md)
+  final int? queueNumber;
   final int? waiterId;
   final String? waiterName;
+  // ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md)
+  final int? customerId;
+  final String? customerName;
+  final String? customerPhone;
+  final int pointsEarned;
   final int guestCount;
   final String? note;
 

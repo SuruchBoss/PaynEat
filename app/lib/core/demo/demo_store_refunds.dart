@@ -48,6 +48,23 @@ extension DemoStoreRefunds on DemoStore {
       'createdAt': _now(),
     };
     refunds.add(refund);
+
+    // mirror ของ payment.service.js#refund — ดู docs/tickets/08-audit-log.md
+    final order = findOrder(payment['orderId'] as int);
+    _logAudit(
+      actorId: refundedById,
+      action: 'payment.refund',
+      entityType: 'refund',
+      entityId: refund['id'] as int,
+      summary: 'คืนเงิน $amount บาท ให้ออเดอร์ #${order['code']}',
+      reason: reason,
+      metadata: {
+        'paymentId': paymentId,
+        'orderId': payment['orderId'],
+        'amount': amount,
+      },
+    );
+
     return refund;
   }
 }

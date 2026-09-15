@@ -18,6 +18,7 @@ class OrderRepositoryImpl implements OrderRepository {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page = 1,
     int limit = 30,
   }) => guard(() async {
@@ -26,6 +27,7 @@ class OrderRepositoryImpl implements OrderRepository {
       activeOnly: activeOnly,
       dateFrom: dateFrom,
       dateTo: dateTo,
+      customerId: customerId,
       page: page,
       limit: limit,
     );
@@ -44,6 +46,7 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<Result<Order>> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
@@ -51,6 +54,7 @@ class OrderRepositoryImpl implements OrderRepository {
     () async => await _remote.createOrder(
       type: type,
       tableId: tableId,
+      customerId: customerId,
       guestCount: guestCount,
       note: note,
       items: items,

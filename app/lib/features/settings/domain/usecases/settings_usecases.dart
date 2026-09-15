@@ -21,6 +21,8 @@ class UpdateSettingsParams {
     this.storeTaxId,
     this.storeAddress,
     this.storeBranch,
+    this.pointsEarnRateBaht,
+    this.pointsRedeemValueBaht,
   });
 
   final String? storeName;
@@ -30,6 +32,8 @@ class UpdateSettingsParams {
   final String? storeTaxId;
   final String? storeAddress;
   final String? storeBranch;
+  final double? pointsEarnRateBaht;
+  final double? pointsRedeemValueBaht;
 }
 
 class UpdateSettingsUseCase
@@ -48,5 +52,7 @@ class UpdateSettingsUseCase
         storeTaxId: params.storeTaxId,
         storeAddress: params.storeAddress,
         storeBranch: params.storeBranch,
+        pointsEarnRateBaht: params.pointsEarnRateBaht,
+        pointsRedeemValueBaht: params.pointsRedeemValueBaht,
       );
 }

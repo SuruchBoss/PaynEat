@@ -31,6 +31,8 @@ tags:
   - name: Reports
   - name: Settings
   - name: TaxInvoices
+  - name: AuditLogs
+  - name: Customers
 
 components:
   securitySchemes:
@@ -156,6 +158,38 @@ components:
         voidReason: { type: string, nullable: true }
         voidedBy: { type: integer, nullable: true }
         voidedByName: { type: string, nullable: true }
+    AuditLog:
+      type: object
+      description: |
+        รายการ audit log (ดู ticket 08) — append-only, ไม่มี endpoint แก้ไข/ลบ
+        บันทึกอย่างน้อย: ยกเลิกออเดอร์, ยกเลิกรายการหลังส่งครัว, แก้ไขส่วนลด, ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์/
+        ตั้งรหัสผ่านใหม่ให้พนักงาน, แก้ค่า VAT/ค่าบริการ, คืนเงิน, ยกเลิกใบกำกับภาษี
+      properties:
+        id: { type: integer }
+        actorUserId: { type: integer, nullable: true, description: null ถ้าผู้ทำถูกลบบัญชีไปแล้ว }
+        actorName: { type: string, example: ผู้จัดการสาขา, description: snapshot ชื่อผู้ทำไว้ตอนบันทึก }
+        action:
+          type: string
+          example: order.cancel
+          enum:
+            [
+              order.cancel,
+              order_item.void,
+              order.discount,
+              user.deactivate,
+              user.delete,
+              user.role_change,
+              user.password_reset,
+              settings.update,
+              payment.refund,
+              tax_invoice.void,
+            ]
+        entityType: { type: string, example: order }
+        entityId: { type: integer, nullable: true }
+        summary: { type: string, example: 'ยกเลิกออเดอร์ #ORD-20260101-0001' }
+        reason: { type: string, nullable: true }
+        metadata: { type: object, nullable: true, description: รายละเอียดก่อน/หลังแบบ structured }
+        createdAt: { type: string, format: date-time }
     Table:
       type: object
       properties:
@@ -196,7 +230,19 @@ components:
         type: { type: string, enum: [dine_in, takeaway, delivery] }
         tableId: { type: integer, nullable: true }
         tableName: { type: string, nullable: true }
+        queueNumber:
+          type: integer
+          nullable: true
+          example: 3
+          description: เลขคิวรับอาหาร รันต่อวัน — มีเฉพาะออเดอร์ type=takeaway เท่านั้น (ดู ticket 10)
         waiterName: { type: string, nullable: true }
+        customerId: { type: integer, nullable: true, description: ผูกลูกค้าแบบ optional (ดู ticket 09) }
+        customerName: { type: string, nullable: true }
+        customerPhone: { type: string, nullable: true }
+        pointsEarned:
+          type: integer
+          example: 0
+          description: แต้มสะสมที่ลูกค้าได้รับ (ตั้งค่าครั้งเดียวตอนออเดอร์นี้จ่ายครบ)
         guestCount: { type: integer }
         status: { type: string, enum: [open, in_kitchen, served, paid, cancelled] }
         subtotal: { type: number, example: 180 }
@@ -243,6 +289,19 @@ components:
         received: { type: number }
         change: { type: number }
         reference: { type: string, nullable: true }
+        pointsRedeemed: { type: integer, example: 0, description: แต้มสะสมที่ใช้แลกส่วนลดรอบจ่ายนี้ }
+        pointsRedeemedValue: { type: number, example: 0, description: มูลค่าส่วนลดจากแต้ม (บาท) }
+    Customer:
+      type: object
+      description: ลูกค้า/สมาชิก + แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md)
+      properties:
+        id: { type: integer }
+        name: { type: string, example: คุณสมหญิง ใจดี }
+        phone: { type: string, example: '0812345678' }
+        email: { type: string, nullable: true }
+        pointsBalance: { type: integer, example: 120 }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
 
 security:
   - bearerAuth: []
@@ -606,6 +665,7 @@ paths:
         - { in: query, name: activeOnly, schema: { type: string, enum: ['true', 'false'] } }
         - { in: query, name: dateFrom, schema: { type: string, format: date } }
         - { in: query, name: dateTo, schema: { type: string, format: date } }
+        - { in: query, name: customerId, schema: { type: integer }, description: กรองออเดอร์ของลูกค้ารายนี้ (ดู ticket 09) }
       responses:
         '200': { description: สำเร็จ }
     post:
@@ -620,6 +680,7 @@ paths:
               properties:
                 type: { type: string, enum: [dine_in, takeaway, delivery], default: dine_in }
                 tableId: { type: integer }
+                customerId: { type: integer, description: ผูกลูกค้าแบบ optional (ดู ticket 09) }
                 guestCount: { type: integer, default: 1 }
                 note: { type: string }
                 items:
@@ -872,6 +933,13 @@ paths:
                   description: id ของ order item ที่จะจ่ายรอบนี้ (แยกบิลรายการอาหาร)
                 received: { type: number, example: 300, description: จำเป็นเมื่อจ่ายเงินสด }
                 reference: { type: string }
+                pointsToRedeem:
+                  type: integer
+                  example: 0
+                  description: >-
+                    ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู ticket 09) — ต้องมีลูกค้าผูกกับออเดอร์นี้อยู่
+                    แล้ว มูลค่าคำนวณจาก settings.pointsRedeemValueBaht ต้องไม่เกินยอดที่ต้องชำระ
+                    รอบนี้และไม่เกินแต้มคงเหลือของลูกค้า
       responses:
         '201':
           description: บันทึกการชำระเงินสำเร็จ
@@ -1061,12 +1129,30 @@ paths:
   /settings:
     get:
       tags: [Settings]
-      summary: ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี)
+      summary: >-
+        ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี,
+        อัตราแต้มสะสม)
       responses:
         '200': { description: สำเร็จ }
     patch:
       tags: [Settings]
-      summary: แก้ไขค่าตั้งค่าร้าน (admin/manager) — storeTaxId/storeAddress/storeBranch ต้องตั้งก่อนออกใบกำกับภาษีได้
+      summary: >-
+        แก้ไขค่าตั้งค่าร้าน (admin/manager) — storeTaxId/storeAddress/storeBranch ต้องตั้งก่อนออก
+        ใบกำกับภาษีได้ — pointsEarnRateBaht/pointsRedeemValueBaht คุมอัตราแต้มสะสม (ดู ticket 09)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pointsEarnRateBaht:
+                  type: number
+                  example: 25
+                  description: จ่ายครบกี่บาทได้ 1 แต้ม (ค่าเริ่มต้น 25)
+                pointsRedeemValueBaht:
+                  type: number
+                  example: 1
+                  description: มูลค่า 1 แต้มตอนใช้แลกส่วนลด เป็นบาท (ค่าเริ่มต้น 1)
       responses:
         '200': { description: สำเร็จ }
 
@@ -1132,3 +1218,102 @@ paths:
       responses:
         '200': { description: ยกเลิกสำเร็จ }
         '404': { description: ยังไม่มีใบกำกับภาษีที่ยกเลิกได้ }
+
+  /audit-logs:
+    get:
+      tags: [AuditLogs]
+      summary: ประวัติ audit log ทั้งหมด (admin เท่านั้น) — filter ตามผู้ใช้/action/ประเภท/ช่วงเวลาได้
+      parameters:
+        - { in: query, name: actorUserId, schema: { type: integer } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: entityType, schema: { type: string } }
+        - { in: query, name: entityId, schema: { type: integer } }
+        - { in: query, name: dateFrom, schema: { type: string, format: date } }
+        - { in: query, name: dateTo, schema: { type: string, format: date } }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditLog' }
+                  meta:
+                    type: object
+                    properties:
+                      page: { type: integer }
+                      limit: { type: integer }
+                      total: { type: integer }
+                      totalPages: { type: integer }
+        '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }
+
+  /customers:
+    get:
+      tags: [Customers]
+      summary: ค้นหา/รายการลูกค้า (ตามชื่อหรือเบอร์โทร) — ใช้ตอนเปิดออเดอร์/เช็คบิล
+      parameters:
+        - { in: query, name: search, schema: { type: string }, description: ค้นหาจากชื่อหรือเบอร์โทร (partial match) }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+                  meta:
+                    type: object
+                    properties:
+                      page: { type: integer }
+                      limit: { type: integer }
+                      total: { type: integer }
+                      totalPages: { type: integer }
+    post:
+      tags: [Customers]
+      summary: สร้างลูกค้าใหม่
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone]
+              properties:
+                name: { type: string }
+                phone: { type: string, example: '0812345678' }
+                email: { type: string, nullable: true }
+      responses:
+        '201': { description: สร้างสำเร็จ }
+        '409': { description: เบอร์โทรนี้มีลูกค้าอยู่แล้วในระบบ }
+  /customers/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Customers]
+      summary: รายละเอียดลูกค้า (รวมแต้มสะสมคงเหลือ) — ใช้ประกอบหน้าประวัติการซื้อของ admin ร่วมกับ GET /orders?customerId=
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Customer' }
+        '404': { description: ไม่พบลูกค้านี้ }

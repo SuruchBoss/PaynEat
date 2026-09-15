@@ -25,6 +25,7 @@ class _FakeOrderRepository implements OrderRepository {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page = 1,
     int limit = 30,
   }) async {

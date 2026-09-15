@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/services/offline_order_queue_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
@@ -21,6 +22,7 @@ class _FakeOrderRepository implements OrderRepository {
   Future<Result<Order>> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
@@ -51,6 +53,8 @@ class _FakeSettingsRepository implements SettingsRepository {
     String? storeTaxId,
     String? storeAddress,
     String? storeBranch,
+    double? pointsEarnRateBaht,
+    double? pointsRedeemValueBaht,
   }) async => get();
 }
 
@@ -143,6 +147,17 @@ void main() {
       expect(preview.serviceCharge, 15);
       expect(preview.total, 176.55);
     });
+
+    test(
+      'onInit ไม่มี Get.arguments เลย (มาจากปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" ตรงๆ ไม่ผ่านการแตะโต๊ะ) '
+      '→ ต้องตกเป็นกลับบ้านเหมือนกัน ไม่ใช่ทานที่ร้าน (ดู docs/tickets/10-takeaway-delivery-flow.md)',
+      () {
+        controller.onInit();
+
+        expect(controller.tableId, isNull);
+        expect(controller.orderType.value, OrderType.takeaway);
+      },
+    );
   });
 }
 

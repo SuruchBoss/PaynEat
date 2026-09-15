@@ -4,10 +4,13 @@ const ORDER_SELECT = `
   SELECT o.*,
          t.name AS table_name,
          t.zone AS table_zone,
-         u.name AS waiter_name
+         u.name AS waiter_name,
+         c.name AS customer_name,
+         c.phone AS customer_phone
     FROM orders o
     LEFT JOIN dining_tables t ON t.id = o.table_id
     LEFT JOIN users u ON u.id = o.waiter_id
+    LEFT JOIN customers c ON c.id = o.customer_id
 `;
 
 export const orderRepository = {
@@ -27,7 +30,35 @@ export const orderRepository = {
     return `${prefix}-${String(sequence).padStart(4, '0')}`;
   },
 
-  findAll({ status, statuses, tableId, waiterId, dateFrom, dateTo, page = 1, limit = 20 } = {}) {
+  /**
+   * เลขคิวรับอาหารสำหรับ takeaway รันต่อวันแยกจาก `code` (เริ่มที่ 1 ใหม่ทุกวัน) — ใช้ตอนเรียก
+   * ลูกค้ามารับอาหารหน้าร้าน (ดู docs/tickets/10-takeaway-delivery-flow.md)
+   */
+  nextQueueNumber() {
+    const last = getDb()
+      .prepare(
+        `
+        SELECT MAX(queue_number) AS maxNumber
+          FROM orders
+         WHERE type = 'takeaway'
+           AND date(created_at) = date('now')
+      `,
+      )
+      .get();
+    return (last?.maxNumber ?? 0) + 1;
+  },
+
+  findAll({
+    status,
+    statuses,
+    tableId,
+    waiterId,
+    customerId,
+    dateFrom,
+    dateTo,
+    page = 1,
+    limit = 20,
+  } = {}) {
     const clauses = [];
     const params = [];
 
@@ -46,6 +77,10 @@ export const orderRepository = {
     if (waiterId) {
       clauses.push('o.waiter_id = ?');
       params.push(waiterId);
+    }
+    if (customerId) {
+      clauses.push('o.customer_id = ?');
+      params.push(customerId);
     }
     if (dateFrom) {
       clauses.push('date(o.created_at) >= date(?)');
@@ -118,15 +153,24 @@ export const orderRepository = {
     return getDb().prepare('SELECT * FROM order_items WHERE id = ?').get(itemId);
   },
 
-  create({ code, type, tableId, waiterId, guestCount, note }) {
+  create({ code, type, tableId, waiterId, customerId, guestCount, note, queueNumber }) {
     const info = getDb()
       .prepare(
         `
-        INSERT INTO orders (code, type, table_id, waiter_id, guest_count, note)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (code, type, table_id, waiter_id, customer_id, guest_count, note, queue_number)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
-      .run(code, type, tableId ?? null, waiterId ?? null, guestCount ?? 1, note ?? null);
+      .run(
+        code,
+        type,
+        tableId ?? null,
+        waiterId ?? null,
+        customerId ?? null,
+        guestCount ?? 1,
+        note ?? null,
+        queueNumber ?? null,
+      );
     return this.findById(info.lastInsertRowid);
   },
 
@@ -239,6 +283,14 @@ export const orderRepository = {
       `,
       )
       .run(status, closedAt, cancelledReason, orderId);
+    return this.findById(orderId);
+  },
+
+  /** บันทึกแต้มสะสมที่ลูกค้าได้รับตอนออเดอร์นี้จ่ายครบ (ครั้งเดียว ดู payment.service.js#pay) */
+  setPointsEarned(orderId, points) {
+    getDb()
+      .prepare("UPDATE orders SET points_earned = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(points, orderId);
     return this.findById(orderId);
   },
 

@@ -21,7 +21,13 @@ import 'screenshot_harness.dart';
 ///
 /// ภาพจะถูกบันทึกลง tool/screenshots/images/
 void main() {
-  late ({int openOrderId, int kitchenOrderId, int paidOrderId}) ids;
+  late ({
+    int openOrderId,
+    int kitchenOrderId,
+    int paidOrderId,
+    int takeawayOrderId,
+  })
+  ids;
 
   setUpAll(() async {
     await ScreenshotHarness.loadFonts();
@@ -332,6 +338,35 @@ void main() {
       await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-27-tables-high-contrast');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // สั่งกลับบ้าน/เดลิเวอรี่ (ticket 10) — เปิดออเดอร์ไม่ต้องผูกโต๊ะ ได้เลขคิว
+  // ---------------------------------------------------------------------
+  group('สั่งกลับบ้าน/เดลิเวอรี่', () {
+    testWidgets('28 หน้ารับออเดอร์กลับบ้าน (ไม่ผูกโต๊ะ)', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
+
+      // ไม่ส่ง arguments เลย เหมือนตอนกดปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" บนหน้าผังโต๊ะจริง
+      unawaited(Get.toNamed<void>(AppRoutes.newOrder));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-28-takeaway-order-taking');
+    });
+
+    testWidgets('29 รายละเอียดออเดอร์กลับบ้านพร้อมเลขคิว', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
+
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.orderDetail,
+          arguments: {'orderId': ids.takeawayOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-29-takeaway-order-detail');
     });
   });
 }

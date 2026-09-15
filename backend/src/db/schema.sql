@@ -128,12 +128,31 @@ CREATE TABLE IF NOT EXISTS promotions (
 );
 CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active);
 
+-- ลูกค้า/สมาชิก + แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — ผูกกับออเดอร์แบบ optional
+-- เท่านั้น ลูกค้าทั่วไปไม่ต้องผูกก็สั่งอาหารได้ปกติ ค้นหาด้วยเบอร์โทร (unique) เป็นหลัก
+CREATE TABLE IF NOT EXISTS customers (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  name           TEXT    NOT NULL,
+  phone          TEXT    NOT NULL UNIQUE,
+  email          TEXT,
+  points_balance INTEGER NOT NULL DEFAULT 0 CHECK (points_balance >= 0),
+  created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS orders (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
   code              TEXT    NOT NULL UNIQUE,
   type              TEXT    NOT NULL DEFAULT 'dine_in' CHECK (type IN ('dine_in', 'takeaway', 'delivery')),
   table_id          INTEGER REFERENCES dining_tables(id) ON DELETE SET NULL,
+  -- เลขคิวรับอาหารสำหรับลูกค้าที่มารอรับเอง (ดู docs/tickets/10-takeaway-delivery-flow.md) — รันต่อวัน
+  -- เฉพาะออเดอร์ type='takeaway' เท่านั้น (delivery ให้ไรเดอร์อ้างอิงจาก code แทน ไม่มีคนมายืนรอคิว)
+  queue_number      INTEGER,
   waiter_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  -- ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md) — points_earned สะสมครั้งเดียว
+  -- ตอนออเดอร์จ่ายครบ (ดู payment.service.js#pay) ไม่ผูกซ้ำ/ไม่หักคืนอัตโนมัติถ้ามี refund ภายหลัง
+  customer_id       INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+  points_earned     INTEGER NOT NULL DEFAULT 0,
   guest_count       INTEGER NOT NULL DEFAULT 1,
   status            TEXT    NOT NULL DEFAULT 'open'
                     CHECK (status IN ('open', 'in_kitchen', 'served', 'paid', 'cancelled')),
@@ -158,6 +177,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_table ON orders(table_id);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 
 CREATE TABLE IF NOT EXISTS order_items (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -196,16 +216,21 @@ CREATE TABLE IF NOT EXISTS shifts (
 CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
 
 CREATE TABLE IF NOT EXISTS payments (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  order_id      INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  shift_id      INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
-  method        TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
-  amount        INTEGER NOT NULL CHECK (amount >= 0),
-  received      INTEGER NOT NULL DEFAULT 0,
-  change_amount INTEGER NOT NULL DEFAULT 0,
-  reference     TEXT,
-  cashier_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id              INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  shift_id              INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  method                TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
+  amount                INTEGER NOT NULL CHECK (amount >= 0),
+  received              INTEGER NOT NULL DEFAULT 0,
+  change_amount         INTEGER NOT NULL DEFAULT 0,
+  reference             TEXT,
+  cashier_id            INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  -- แต้มสะสมที่ใช้แลกส่วนลดตอนจ่ายเงินรอบนี้ (ดู docs/tickets/09-customer-loyalty.md) —
+  -- points_redeemed_value คือมูลค่าส่วนลดเป็นสตางค์ที่คำนวณจาก settings ณ เวลานั้น (snapshot ไว้
+  -- เพราะ settings เปลี่ยนอัตราได้ภายหลัง)
+  points_redeemed       INTEGER NOT NULL DEFAULT 0,
+  points_redeemed_value INTEGER NOT NULL DEFAULT 0,
+  created_at            TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_shift ON payments(shift_id);
@@ -262,3 +287,25 @@ CREATE TABLE IF NOT EXISTS tax_invoices (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tax_invoices_active_order
   ON tax_invoices(order_id) WHERE voided_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_tax_invoices_order ON tax_invoices(order_id);
+
+-- Audit log — บันทึกการกระทำที่เสี่ยงต่อการทุจริตหน้าร้าน (ดู docs/tickets/08-audit-log.md)
+-- append-only เสมอ: ไม่มี endpoint แก้ไข/ลบเปิดให้ใช้เลยทั้งระบบ — snapshot ชื่อผู้ทำไว้ที่ actor_name
+-- ตรงๆ (เหมือน promotion_name_snapshot/tax_invoices ด้านบน) เพื่อให้ log ยังอ่านได้ครบแม้ผู้ใช้คนนั้น
+-- ถูกลบภายหลัง (actor_user_id เป็น ON DELETE SET NULL ไม่ใช่ RESTRICT เพราะไม่ควรบล็อกการลบ user
+-- แค่เพราะเคยมี log อ้างถึง — ข้อมูลที่ต้องอ่านได้เสมอคือ actor_name ที่ snapshot ไว้แล้ว)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  actor_name    TEXT    NOT NULL,
+  action        TEXT    NOT NULL,
+  entity_type   TEXT    NOT NULL,
+  entity_id     INTEGER,
+  summary       TEXT    NOT NULL,
+  reason        TEXT,
+  metadata_json TEXT,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);

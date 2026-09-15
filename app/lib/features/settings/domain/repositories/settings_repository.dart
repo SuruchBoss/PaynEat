@@ -11,5 +11,7 @@ abstract class SettingsRepository {
     String? storeTaxId,
     String? storeAddress,
     String? storeBranch,
+    double? pointsEarnRateBaht,
+    double? pointsRedeemValueBaht,
   });
 }

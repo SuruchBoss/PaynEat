@@ -836,4 +836,540 @@ void main() {
       );
     });
   });
+
+  group('DemoStore audit logs — บันทึกการกระทำที่เสี่ยง (ticket 08)', () {
+    Map<String, dynamic> openOrder() {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('cancelOrder log เป็น order.cancel พร้อมเหตุผลและชื่อผู้ทำ', () {
+      final order = openOrder();
+      store.cancelOrder(order['id'] as int, 'ลูกค้ายกเลิก', actorId: 2);
+
+      final logs = store.auditLogList(action: 'order.cancel');
+      expect(logs, isNotEmpty);
+      final log = logs.first;
+      expect(log['entityType'], 'order');
+      expect(log['entityId'], order['id']);
+      expect(log['reason'], 'ลูกค้ายกเลิก');
+      expect(log['actorName'], 'สมชาย (ผู้จัดการ)');
+      expect(log['summary'], contains(order['code']));
+    });
+
+    test(
+      'void รายการหลังครัวทำแล้ว log เป็น order_item.void แต่ยกเลิกตอน pending ไม่ log',
+      () {
+        final orderA = openOrder();
+        final itemA = (orderA['items'] as List).first as Map<String, dynamic>;
+        store.updateItemStatus(
+          orderA['id'] as int,
+          itemA['id'] as int,
+          OrderItemStatus.cancelled,
+          actorId: 3,
+        );
+        expect(
+          store.auditLogList(
+            action: 'order_item.void',
+            entityId: itemA['id'] as int,
+          ),
+          isEmpty,
+        );
+
+        final orderB = openOrder();
+        final itemB = (orderB['items'] as List).first as Map<String, dynamic>;
+        store.updateItemStatus(
+          orderB['id'] as int,
+          itemB['id'] as int,
+          OrderItemStatus.cooking,
+        );
+        store.updateItemStatus(
+          orderB['id'] as int,
+          itemB['id'] as int,
+          OrderItemStatus.cancelled,
+          actorId: 2,
+        );
+
+        final logs = store.auditLogList(
+          action: 'order_item.void',
+          entityId: itemB['id'] as int,
+        );
+        expect(logs, hasLength(1));
+        expect(logs.first['entityType'], 'order_item');
+        expect(logs.first['actorName'], 'สมชาย (ผู้จัดการ)');
+      },
+    );
+
+    test(
+      'applyDiscount log เป็น order.discount ทุกครั้งรวมถึงตอนยกเลิกส่วนลด',
+      () {
+        final order = openOrder();
+        store.applyDiscount(
+          order['id'] as int,
+          DiscountType.percent,
+          10,
+          actorId: 6,
+        );
+        var logs = store.auditLogList(
+          action: 'order.discount',
+          entityId: order['id'] as int,
+        );
+        expect(logs, hasLength(1));
+        expect(logs.first['metadata']['newType'], DiscountType.percent);
+
+        store.applyDiscount(
+          order['id'] as int,
+          DiscountType.none,
+          0,
+          actorId: 6,
+        );
+        logs = store.auditLogList(
+          action: 'order.discount',
+          entityId: order['id'] as int,
+        );
+        expect(logs, hasLength(2));
+      },
+    );
+
+    test(
+      'updateStaff log แยก role_change/deactivate/password_reset แต่แก้ชื่อเฉยๆ ไม่ log',
+      () {
+        final created = store.createStaff(
+          name: 'พนักงานทดสอบ audit log',
+          username: 'audit_log_test_${DateTime.now().microsecondsSinceEpoch}',
+          password: 'test1234',
+          role: UserRole.waiter,
+        );
+        final userId = created['id'] as int;
+
+        store.updateStaff(userId, {'role': UserRole.cashier}, actorId: 1);
+        final roleLogs = store.auditLogList(
+          action: 'user.role_change',
+          entityId: userId,
+        );
+        expect(roleLogs, hasLength(1));
+        expect(roleLogs.first['metadata']['previousRole'], UserRole.waiter);
+        expect(roleLogs.first['metadata']['newRole'], UserRole.cashier);
+
+        store.updateStaff(userId, {'isActive': false}, actorId: 1);
+        expect(
+          store.auditLogList(action: 'user.deactivate', entityId: userId),
+          hasLength(1),
+        );
+
+        store.updateStaff(userId, {'password': 'newpassword'}, actorId: 1);
+        expect(
+          store.auditLogList(action: 'user.password_reset', entityId: userId),
+          hasLength(1),
+        );
+
+        final before = store.auditLogList(entityId: userId).length;
+        store.updateStaff(userId, {'name': 'ชื่อใหม่เฉยๆ'}, actorId: 1);
+        expect(store.auditLogList(entityId: userId), hasLength(before));
+      },
+    );
+
+    test('deleteStaff log เป็น user.delete แม้บัญชีจะถูกลบไปแล้ว', () {
+      final created = store.createStaff(
+        name: 'จะถูกลบ',
+        username: 'audit_log_del_${DateTime.now().microsecondsSinceEpoch}',
+        password: 'test1234',
+        role: UserRole.waiter,
+      );
+      final userId = created['id'] as int;
+
+      store.deleteStaff(userId, actorId: 1);
+
+      final logs = store.auditLogList(action: 'user.delete', entityId: userId);
+      expect(logs, hasLength(1));
+      expect(logs.first['actorUserId'], 1);
+      expect(logs.first['actorName'], 'ผู้ดูแลระบบ');
+    });
+
+    test(
+      'updateSettings log เป็น settings.update เฉพาะตอนแก้ VAT/ค่าบริการ',
+      () {
+        final previousVat = store.settings['vatRate'] as double;
+        store.updateSettings({'vatRate': previousVat + 0.01}, actorId: 1);
+        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+
+        store.updateSettings({'storeName': 'ร้านทดสอบ audit log'}, actorId: 1);
+        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+      },
+    );
+
+    test('refundPayment log เป็น payment.refund', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+      final payment = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+        cashierId: 6,
+      );
+      final paymentId = (payment['payment'] as Map)['id'] as int;
+
+      final refund = store.refundPayment(
+        paymentId: paymentId,
+        amount: total,
+        reason: 'ลูกค้าคืนอาหาร',
+        refundedById: 2,
+      );
+
+      final logs = store.auditLogList(
+        action: 'payment.refund',
+        entityId: refund['id'] as int,
+      );
+      expect(logs, hasLength(1));
+      expect(logs.first['entityType'], 'refund');
+      expect(logs.first['reason'], 'ลูกค้าคืนอาหาร');
+    });
+
+    test('voidTaxInvoice log เป็น tax_invoice.void', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      final order = store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+      final total = (order['total'] as num).toDouble();
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+        cashierId: 6,
+      );
+      final invoice = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+
+      store.voidTaxInvoice(order['id'] as int, 'ออกผิดประเภท', voidedById: 1);
+
+      final logs = store.auditLogList(
+        action: 'tax_invoice.void',
+        entityId: invoice['id'] as int,
+      );
+      expect(logs, hasLength(1));
+      expect(logs.first['reason'], 'ออกผิดประเภท');
+    });
+  });
+
+  group('DemoStore customers/loyalty — ลูกค้า/แต้มสะสม (ticket 09)', () {
+    Map<String, dynamic> openOrder({int? customerId}) {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        customerId: customerId,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 2, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('createCustomer สร้างลูกค้าใหม่ pointsBalance เริ่มต้นเป็น 0', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+
+      expect(customer['pointsBalance'], 0);
+      expect(store.customers, contains(customer));
+    });
+
+    test('createCustomer ด้วยเบอร์โทรซ้ำต้องถูกปฏิเสธ', () {
+      store.createCustomer(name: 'คุณสมหญิง', phone: '0812345678');
+
+      expect(
+        () => store.createCustomer(name: 'คุณสมชาย', phone: '0812345678'),
+        throwsException,
+      );
+    });
+
+    test('customerSearch ค้นหาได้ทั้งจากชื่อและเบอร์โทร (partial match)', () {
+      store.createCustomer(name: 'สมหญิง ใจดี', phone: '0899999999');
+      store.createCustomer(name: 'John Smith', phone: '0888888888');
+
+      expect(store.customerSearch(search: 'สมหญิง'), hasLength(1));
+      expect(store.customerSearch(search: '9999'), hasLength(1));
+      expect(store.customerSearch(search: 'ไม่มีจริง'), isEmpty);
+    });
+
+    test(
+      'createOrder ผูก customerId แล้ว order มี customerName/customerPhone',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+
+        final order = openOrder(customerId: customer['id'] as int);
+
+        expect(order['customerId'], customer['id']);
+        expect(order['customerName'], customer['name']);
+        expect(order['customerPhone'], customer['phone']);
+      },
+    );
+
+    test('createOrder ด้วย customerId ที่ไม่มีจริงต้องถูกปฏิเสธ', () {
+      expect(() => openOrder(customerId: 999999), throwsException);
+    });
+
+    test(
+      'จ่ายเงินครบเต็มจำนวนของออเดอร์ที่ผูกลูกค้า → ได้แต้มสะสมตามอัตราที่ตั้งค่า',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+        final order = openOrder(customerId: customer['id'] as int);
+        final total = (order['total'] as num).toDouble();
+        final earnRate = (store.settings['pointsEarnRateBaht'] as num)
+            .toDouble();
+        final expectedPoints = (total / earnRate).floor();
+
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          received: total,
+        );
+
+        expect(result['isFullyPaid'], isTrue);
+        expect((result['order'] as Map)['pointsEarned'], expectedPoints);
+        expect(
+          store.findCustomer(customer['id'] as int)['pointsBalance'],
+          expectedPoints,
+        );
+      },
+    );
+
+    test('ออเดอร์ที่ไม่ได้ผูกลูกค้า จ่ายครบแล้วไม่ได้แต้ม', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+      );
+
+      expect(store.findOrder(order['id'] as int)['pointsEarned'], 0);
+    });
+
+    test('แยกจ่ายหลายรอบ ลูกค้าได้แต้มแค่ครั้งเดียวตอนจ่ายครบ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+      final half = total / 2;
+
+      final firstResult = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: half,
+        received: half,
+      );
+      expect(firstResult['isFullyPaid'], isFalse);
+      expect(store.findCustomer(customer['id'] as int)['pointsBalance'], 0);
+
+      final remaining = total - half;
+      final secondResult = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: remaining,
+        received: remaining,
+      );
+      expect(secondResult['isFullyPaid'], isTrue);
+
+      final earnRate = (store.settings['pointsEarnRateBaht'] as num).toDouble();
+      final expectedPoints = (total / earnRate).floor();
+      expect(
+        store.findCustomer(customer['id'] as int)['pointsBalance'],
+        expectedPoints,
+      );
+    });
+
+    test(
+      'ใช้แต้มสะสมแลกส่วนลด → ลดยอดที่ต้องเก็บจริง แต่ไม่กระทบยอดที่นับเข้าออเดอร์',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+        store.adjustCustomerPoints(customer['id'] as int, 50);
+        final order = openOrder(customerId: customer['id'] as int);
+        final total = (order['total'] as num).toDouble();
+        final redeemRate = (store.settings['pointsRedeemValueBaht'] as num)
+            .toDouble();
+        const pointsToRedeem = 10;
+        final redeemedValue = pointsToRedeem * redeemRate;
+
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          received: total - redeemedValue,
+          pointsToRedeem: pointsToRedeem,
+        );
+
+        final payment = result['payment'] as Map<String, dynamic>;
+        // ยอดที่นับเข้าบัญชีจ่ายของออเดอร์ (amount) ต้องไม่ลดลงจากการใช้แต้ม —
+        // ลดแค่ยอดที่เก็บเงินจริง (received) เท่านั้น (ดู docs/DECISIONS.md)
+        expect(payment['amount'], total);
+        expect(payment['pointsRedeemed'], pointsToRedeem);
+        expect(payment['pointsRedeemedValue'], redeemedValue);
+        expect(payment['received'], total - redeemedValue);
+        expect(result['isFullyPaid'], isTrue);
+
+        final earnRate = (store.settings['pointsEarnRateBaht'] as num)
+            .toDouble();
+        final earnedThisOrder = (total / earnRate).floor();
+        expect(
+          store.findCustomer(customer['id'] as int)['pointsBalance'],
+          50 - pointsToRedeem + earnedThisOrder,
+        );
+      },
+    );
+
+    test('ใช้แต้มเกินยอดคงเหลือของลูกค้าต้องถูกปฏิเสธ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          pointsToRedeem: 1,
+        ),
+        throwsException,
+      );
+    });
+
+    test('ใช้แต้มโดยออเดอร์ไม่ได้ผูกลูกค้าต้องถูกปฏิเสธ', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          pointsToRedeem: 1,
+        ),
+        throwsException,
+      );
+    });
+
+    test('ใช้แต้มที่มีมูลค่าเกินยอดที่ต้องชำระรอบนี้ต้องถูกปฏิเสธ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      store.adjustCustomerPoints(customer['id'] as int, 1000);
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+      final redeemRate = (store.settings['pointsRedeemValueBaht'] as num)
+          .toDouble();
+      // แต้มพอ (1000) แต่มูลค่าเกินยอดที่จ่ายจริงรอบนี้ (จ่ายแค่บางส่วน)
+      final partialAmount = total / 4;
+      final tooManyPoints = (partialAmount / redeemRate).ceil() + 10;
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: partialAmount,
+          pointsToRedeem: tooManyPoints,
+        ),
+        throwsException,
+      );
+    });
+  });
+
+  group('DemoStore takeaway/delivery — เลขคิวรับอาหาร (ticket 10)', () {
+    Map<String, dynamic> openOrder({required String type, int? tableId}) {
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: type,
+        tableId: tableId,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('ออเดอร์ทานที่ร้านไม่มีเลขคิว', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final order = openOrder(
+        type: OrderType.dineIn,
+        tableId: table['id'] as int,
+      );
+
+      expect(order['queueNumber'], isNull);
+    });
+
+    test('ออเดอร์เดลิเวอรีไม่มีเลขคิว (ไรเดอร์อ้างอิงจาก code แทน)', () {
+      final order = openOrder(type: OrderType.delivery);
+
+      expect(order['tableId'], isNull);
+      expect(order['queueNumber'], isNull);
+    });
+
+    test('ออเดอร์กลับบ้านหลายใบติดกัน ได้เลขคิวรันต่อเนื่องเริ่มที่ 1', () {
+      final first = openOrder(type: OrderType.takeaway);
+      final second = openOrder(type: OrderType.takeaway);
+      final third = openOrder(type: OrderType.takeaway);
+
+      expect(first['queueNumber'], 1);
+      expect(second['queueNumber'], 2);
+      expect(third['queueNumber'], 3);
+    });
+
+    test('เลขคิวนับแยกจากออเดอร์ dine_in/delivery ที่แทรกอยู่ระหว่างกัน', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final firstTakeaway = openOrder(type: OrderType.takeaway);
+      openOrder(type: OrderType.dineIn, tableId: table['id'] as int);
+      openOrder(type: OrderType.delivery);
+      final secondTakeaway = openOrder(type: OrderType.takeaway);
+
+      expect(firstTakeaway['queueNumber'], 1);
+      expect(secondTakeaway['queueNumber'], 2);
+    });
+  });
 }

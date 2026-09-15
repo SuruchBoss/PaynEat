@@ -4,8 +4,10 @@ import 'package:payneat_pos/app/theme/app_colors.dart';
 import 'package:payneat_pos/core/widgets/quantity_stepper.dart';
 import 'package:payneat_pos/core/widgets/state_views.dart';
 import 'package:payneat_pos/core/widgets/status_chip.dart';
+import 'package:payneat_pos/features/kitchen/presentation/widgets/kitchen_ticket_card.dart';
 import 'package:payneat_pos/features/menu/domain/entities/menu_item.dart';
 import 'package:payneat_pos/features/menu/presentation/widgets/menu_item_card.dart';
+import 'package:payneat_pos/features/order/domain/entities/order_item.dart';
 
 Widget wrap(Widget child) => MaterialApp(
   home: Scaffold(body: Center(child: child)),
@@ -141,5 +143,75 @@ void main() {
 
       expect(find.text('ยังไม่มีออเดอร์'), findsOneWidget);
     });
+  });
+
+  group('KitchenTicketCard — แยกป้าย/ไอคอนตามประเภทออเดอร์ (ticket 10)', () {
+    OrderItem itemOf({String? tableName, String? orderType}) => OrderItem(
+      id: 1,
+      orderId: 1,
+      name: 'ผัดกะเพรา',
+      unitPrice: 60,
+      quantity: 1,
+      lineTotal: 60,
+      status: 'pending',
+      tableName: tableName,
+      orderType: orderType,
+    );
+
+    testWidgets('ออเดอร์ทานที่ร้าน — ขึ้นชื่อโต๊ะและไอคอนโต๊ะ', (tester) async {
+      await tester.pumpWidget(
+        wrap(
+          KitchenTicketCard(
+            item: itemOf(tableName: 'A1', orderType: 'dine_in'),
+            isLate: false,
+            onAdvance: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('โต๊ะ A1'), findsOneWidget);
+      expect(find.byIcon(Icons.table_restaurant_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.takeout_dining_rounded), findsNothing);
+      expect(find.byIcon(Icons.moped_rounded), findsNothing);
+    });
+
+    testWidgets(
+      'ออเดอร์กลับบ้าน — ขึ้นป้าย "กลับบ้าน" และไอคอนถุง ไม่ใช่ไอคอนโต๊ะ',
+      (tester) async {
+        await tester.pumpWidget(
+          wrap(
+            KitchenTicketCard(
+              item: itemOf(orderType: 'takeaway'),
+              isLate: false,
+              onAdvance: () {},
+            ),
+          ),
+        );
+
+        expect(find.text('กลับบ้าน'), findsOneWidget);
+        expect(find.byIcon(Icons.takeout_dining_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.table_restaurant_rounded), findsNothing);
+      },
+    );
+
+    testWidgets(
+      'ออเดอร์เดลิเวอรี — ขึ้นป้าย "เดลิเวอรี" และไอคอนมอเตอร์ไซค์ แยกจากกลับบ้าน',
+      (tester) async {
+        await tester.pumpWidget(
+          wrap(
+            KitchenTicketCard(
+              item: itemOf(orderType: 'delivery'),
+              isLate: false,
+              onAdvance: () {},
+            ),
+          ),
+        );
+
+        expect(find.text('เดลิเวอรี'), findsOneWidget);
+        expect(find.byIcon(Icons.moped_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.takeout_dining_rounded), findsNothing);
+        expect(find.byIcon(Icons.table_restaurant_rounded), findsNothing);
+      },
+    );
   });
 }

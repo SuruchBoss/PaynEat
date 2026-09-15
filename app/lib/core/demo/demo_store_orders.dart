@@ -14,11 +14,15 @@ extension DemoStoreOrders on DemoStore {
     String? status,
     bool? activeOnly,
     String? dateFrom,
+    int? customerId,
   }) {
     final result = orders.where((order) {
       if (status != null && order['status'] != status) return false;
       if (activeOnly == true &&
           !OrderStatus.isActive(order['status'] as String)) {
+        return false;
+      }
+      if (customerId != null && order['customerId'] != customerId) {
         return false;
       }
       return true;
@@ -36,9 +40,24 @@ extension DemoStoreOrders on DemoStore {
     return null;
   }
 
+  /// เลขคิวรับอาหาร รันต่อวันเฉพาะออเดอร์ type=takeaway — mirror ของ
+  /// order.repository.js#nextQueueNumber (ดู docs/tickets/10-takeaway-delivery-flow.md)
+  int _nextQueueNumber(DateTime now) {
+    final sameDayTakeawayCount = orders.where((order) {
+      if (order['type'] != OrderType.takeaway) return false;
+      final createdAt = DateTime.tryParse(order['createdAt'] as String? ?? '');
+      if (createdAt == null) return false;
+      return createdAt.year == now.year &&
+          createdAt.month == now.month &&
+          createdAt.day == now.day;
+    }).length;
+    return sameDayTakeawayCount + 1;
+  }
+
   Map<String, dynamic> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     required List<Map<String, dynamic>> items,
     int? waiterId,
@@ -49,6 +68,8 @@ extension DemoStoreOrders on DemoStore {
         statusCode: 409,
       );
     }
+    // ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md)
+    final customer = customerId == null ? null : findCustomer(customerId);
 
     final table = tableId == null ? null : _findTable(tableId);
     final now = AppClock.now();
@@ -65,8 +86,13 @@ extension DemoStoreOrders on DemoStore {
       'tableId': tableId,
       'tableName': table?['name'],
       'tableZone': table?['zone'],
+      'queueNumber': type == OrderType.takeaway ? _nextQueueNumber(now) : null,
       'waiterId': waiterId,
       'waiterName': waiterId == null ? null : _findUser(waiterId)['name'],
+      'customerId': customerId,
+      'customerName': customer?['name'],
+      'customerPhone': customer?['phone'],
+      'pointsEarned': 0,
       'guestCount': guestCount,
       'status': OrderStatus.open,
       'note': null,
@@ -230,10 +256,12 @@ extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> updateItemStatus(
     int orderId,
     int itemId,
-    String status,
-  ) {
+    String status, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     final item = _findItem(order, itemId);
+    final previousItemStatus = item['status'] as String;
 
     const transitions = {
       OrderItemStatus.pending: [
@@ -270,6 +298,26 @@ extension DemoStoreOrders on DemoStore {
 
     item['status'] = status;
     item['updatedAt'] = _now();
+
+    // log เฉพาะการ void รายการที่ครัวลงมือทำแล้ว (pending ยกเลิกเองยังไม่ถือว่าเสี่ยง)
+    // mirror ของ order.service.js#updateItemStatus — ดู docs/tickets/08-audit-log.md
+    if (status == OrderItemStatus.cancelled &&
+        previousItemStatus != OrderItemStatus.pending) {
+      _logAudit(
+        actorId: actorId,
+        action: 'order_item.void',
+        entityType: 'order_item',
+        entityId: itemId,
+        summary:
+            'ยกเลิกรายการ "${item['name']}" ในออเดอร์ #${order['code']} '
+            '(สถานะก่อนยกเลิก: $previousItemStatus)',
+        metadata: {
+          'orderId': orderId,
+          'orderCode': order['code'],
+          'previousStatus': previousItemStatus,
+        },
+      );
+    }
 
     final active = (order['items'] as List)
         .where((row) => row['status'] != OrderItemStatus.cancelled)
@@ -310,11 +358,39 @@ extension DemoStoreOrders on DemoStore {
     return _recalculate(order);
   }
 
-  Map<String, dynamic> applyDiscount(int orderId, String type, double value) {
+  Map<String, dynamic> applyDiscount(
+    int orderId,
+    String type,
+    double value, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     _assertMutable(order);
+    final previousType = order['discountType'];
+    final previousValue = order['discountValue'];
     order['discountType'] = type;
     order['discountValue'] = type == DiscountType.none ? 0.0 : value;
+
+    // mirror ของ order.service.js#applyDiscount — log ทุกครั้งที่แก้ส่วนลด
+    // รวมถึงตอนยกเลิกส่วนลด (type == none) ดู docs/tickets/08-audit-log.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.discount',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary: type == DiscountType.none
+          ? 'ยกเลิกส่วนลดออเดอร์ #${order['code']}'
+          : 'ให้ส่วนลดออเดอร์ #${order['code']} เป็น $value'
+                '${type == DiscountType.percent ? '%' : ' บาท'}',
+      metadata: {
+        'orderCode': order['code'],
+        'previousType': previousType,
+        'previousValue': previousValue,
+        'newType': type,
+        'newValue': order['discountValue'],
+      },
+    );
+
     return _recalculate(order);
   }
 
@@ -385,7 +461,7 @@ extension DemoStoreOrders on DemoStore {
     return _recalculate(target);
   }
 
-  Map<String, dynamic> cancelOrder(int orderId, String reason) {
+  Map<String, dynamic> cancelOrder(int orderId, String reason, {int? actorId}) {
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.paid) {
       throw ApiException(
@@ -412,6 +488,16 @@ extension DemoStoreOrders on DemoStore {
     order['cancelledReason'] = reason;
     order['closedAt'] = _now();
     _freeTable(order);
+
+    _logAudit(
+      actorId: actorId,
+      action: 'order.cancel',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary: 'ยกเลิกออเดอร์ #${order['code']}',
+      reason: reason,
+      metadata: {'orderCode': order['code']},
+    );
 
     return _recalculate(order);
   }

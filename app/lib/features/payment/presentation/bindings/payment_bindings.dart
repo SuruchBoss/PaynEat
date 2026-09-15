@@ -3,7 +3,9 @@ import 'package:get/get.dart';
 import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../customer/domain/usecases/customer_usecases.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
+import '../../../settings/domain/usecases/settings_usecases.dart';
 import '../../../shift/domain/usecases/shift_usecases.dart';
 import '../../../tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 import '../../domain/usecases/payment_usecases.dart';
@@ -20,6 +22,8 @@ class CheckoutBinding extends Bindings {
         getSummary: Get.find<GetPaymentSummaryUseCase>(),
         pay: Get.find<PayOrderUseCase>(),
         getCurrentShift: Get.find<GetCurrentShiftUseCase>(),
+        getCustomer: Get.find<GetCustomerUseCase>(),
+        getSettings: Get.find<GetSettingsUseCase>(),
       ),
     );
   }

@@ -7,6 +7,8 @@ import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
 import { promotionRepository } from '../promotions/promotion.repository.js';
 import { ingredientService } from '../ingredients/ingredient.service.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
+import { customerRepository } from '../customers/customer.repository.js';
 import { orderRepository } from './order.repository.js';
 import { calculateBill } from './order.calculator.js';
 import {
@@ -192,6 +194,10 @@ export const orderService = {
         throw ApiError.conflict('โต๊ะนี้มีออเดอร์ที่เปิดอยู่แล้ว กรุณาเพิ่มรายการเข้าออเดอร์เดิม');
       }
     }
+    // ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md) — ลูกค้าทั่วไปไม่ต้องผูกก็ได้
+    if (payload.customerId && !customerRepository.findById(payload.customerId)) {
+      throw ApiError.badRequest('ไม่พบลูกค้าที่ระบุ');
+    }
 
     const itemRows = (payload.items ?? []).map(buildItemRow);
 
@@ -201,8 +207,12 @@ export const orderService = {
         type: payload.type,
         tableId: payload.tableId,
         waiterId: user?.id,
+        customerId: payload.customerId,
         guestCount: payload.guestCount,
         note: payload.note,
+        // เลขคิวรับอาหารเฉพาะ takeaway (ดู docs/tickets/10-takeaway-delivery-flow.md) — delivery
+        // ไม่มีคนมายืนรอคิวหน้าร้าน ไรเดอร์อ้างอิงจาก code แทน
+        queueNumber: payload.type === 'takeaway' ? orderRepository.nextQueueNumber() : null,
       });
       for (const item of itemRows) orderRepository.addItem(order.id, item);
       if (payload.tableId) tableRepository.setStatus(payload.tableId, 'occupied');
@@ -306,10 +316,24 @@ export const orderService = {
       throw ApiError.forbidden('ยกเลิกรายการที่ครัวทำแล้วต้องใช้สิทธิ์ผู้จัดการ');
     }
 
+    // log เฉพาะการ void รายการที่ครัวลงมือทำแล้ว (pending ยกเลิกเองยังไม่ถือว่าเสี่ยง) — ดู
+    // docs/tickets/08-audit-log.md
+    const isRiskyVoid = status === 'cancelled' && item.status !== 'pending';
+
     const run = getDb().transaction(() => {
       orderRepository.updateItem(itemId, { status });
       if (status === 'cancelled' && item.stock_deducted) {
         ingredientService.restoreForOrderItem(item);
+      }
+      if (isRiskyVoid) {
+        auditLogService.log({
+          actorUser: user,
+          action: 'order_item.void',
+          entityType: 'order_item',
+          entityId: item.id,
+          summary: `ยกเลิกรายการ "${item.name_snapshot}" ในออเดอร์ #${order.code} (สถานะก่อนยกเลิก: ${item.status})`,
+          metadata: { orderId: order.id, orderCode: order.code, previousStatus: item.status },
+        });
       }
     });
     run();
@@ -370,7 +394,7 @@ export const orderService = {
     return dto;
   },
 
-  applyDiscount(orderId, { type, value }) {
+  applyDiscount(orderId, { type, value }, user) {
     const order = loadOrder(orderId);
     assertOrderMutable(order);
 
@@ -378,19 +402,39 @@ export const orderService = {
     const storedValue = type === 'percent' ? Math.round(value * 100) : toSatang(value);
     if (type === 'percent' && value > 100) throw ApiError.badRequest('ส่วนลดเกิน 100% ไม่ได้');
 
-    orderRepository.updateTotals(order.id, {
-      subtotal: order.subtotal,
-      discountType: type,
-      discountValue: type === 'none' ? 0 : storedValue,
-      discountAmount: order.discount_amount,
-      promotionId: order.promotion_id,
-      promotionName: order.promotion_name_snapshot,
-      promotionCode: order.promotion_code_snapshot,
-      promotionDiscountAmount: order.promotion_discount_amount,
-      serviceCharge: order.service_charge,
-      vat: order.vat,
-      total: order.total,
+    const run = getDb().transaction(() => {
+      orderRepository.updateTotals(order.id, {
+        subtotal: order.subtotal,
+        discountType: type,
+        discountValue: type === 'none' ? 0 : storedValue,
+        discountAmount: order.discount_amount,
+        promotionId: order.promotion_id,
+        promotionName: order.promotion_name_snapshot,
+        promotionCode: order.promotion_code_snapshot,
+        promotionDiscountAmount: order.promotion_discount_amount,
+        serviceCharge: order.service_charge,
+        vat: order.vat,
+        total: order.total,
+      });
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.discount',
+        entityType: 'order',
+        entityId: order.id,
+        summary:
+          type === 'none'
+            ? `ยกเลิกส่วนลดออเดอร์ #${order.code}`
+            : `ให้ส่วนลดออเดอร์ #${order.code} เป็น ${value}${type === 'percent' ? '%' : ' บาท'}`,
+        metadata: {
+          orderCode: order.code,
+          previousType: order.discount_type,
+          previousValue: order.discount_value,
+          newType: type,
+          newValue: storedValue,
+        },
+      });
     });
+    run();
 
     const dto = buildDto(recalculate(order.id));
     emit(EVENTS.ORDER_UPDATED, dto);
@@ -531,7 +575,7 @@ export const orderService = {
     return dto;
   },
 
-  cancel(orderId, reason) {
+  cancel(orderId, reason, user) {
     const order = loadOrder(orderId);
     if (order.status === 'paid') throw ApiError.conflict('ออเดอร์ที่ชำระเงินแล้วยกเลิกไม่ได้');
     if (order.status === 'cancelled') throw ApiError.conflict('ออเดอร์นี้ถูกยกเลิกไปแล้ว');
@@ -551,6 +595,15 @@ export const orderService = {
         cancelledReason: reason,
       });
       if (order.table_id) tableRepository.setStatus(order.table_id, 'available');
+      auditLogService.log({
+        actorUser: user,
+        action: 'order.cancel',
+        entityType: 'order',
+        entityId: order.id,
+        summary: `ยกเลิกออเดอร์ #${order.code}`,
+        reason,
+        metadata: { orderCode: order.code, previousStatus: order.status },
+      });
     });
     run();
 

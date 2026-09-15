@@ -13,6 +13,8 @@ export const toPaymentDto = (row) => {
     reference: row.reference,
     cashierId: row.cashier_id,
     cashierName: row.cashier_name,
+    pointsRedeemed: row.points_redeemed ?? 0,
+    pointsRedeemedValue: toBaht(row.points_redeemed_value ?? 0),
     createdAt: row.created_at,
   };
 };

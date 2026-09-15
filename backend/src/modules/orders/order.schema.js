@@ -14,6 +14,7 @@ export const createOrderSchema = z
   .object({
     type: z.enum(['dine_in', 'takeaway', 'delivery']).default('dine_in'),
     tableId: z.number().int().positive().optional(),
+    customerId: z.number().int().positive().optional(),
     guestCount: z.number().int().min(1).max(50).default(1),
     note: z.string().max(300).optional(),
     items: z.array(orderItemInputSchema).default([]),
@@ -66,6 +67,7 @@ export const listOrderQuerySchema = z.object({
   status: z.enum(ORDER_STATUSES).optional(),
   tableId: z.coerce.number().int().positive().optional(),
   waiterId: z.coerce.number().int().positive().optional(),
+  customerId: z.coerce.number().int().positive().optional(),
   dateFrom: z.string().optional(),
   dateTo: z.string().optional(),
   activeOnly: z

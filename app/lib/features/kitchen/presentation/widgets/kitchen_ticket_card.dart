@@ -51,6 +51,8 @@ class KitchenTicketCard extends StatelessWidget {
                 Icon(
                   item.tableName != null
                       ? Icons.table_restaurant_rounded
+                      : item.orderType == OrderType.delivery
+                      ? Icons.moped_rounded
                       : Icons.takeout_dining_rounded,
                   size: 15,
                   color: accentInk,
@@ -61,7 +63,7 @@ class KitchenTicketCard extends StatelessWidget {
                       ? 'kitchen_table_label'.trParams({
                           'table': item.tableName!,
                         })
-                      : OrderType.label(OrderType.takeaway),
+                      : OrderType.label(item.orderType ?? OrderType.takeaway),
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 13.5,

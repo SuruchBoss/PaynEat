@@ -16,4 +16,5 @@ abstract class AppRoutes {
   static const String tableForm = '/admin/tables/form';
   static const String promotionForm = '/admin/promotions/form';
   static const String ingredientForm = '/admin/ingredients/form';
+  static const String customerDetail = '/admin/customers/detail';
 }

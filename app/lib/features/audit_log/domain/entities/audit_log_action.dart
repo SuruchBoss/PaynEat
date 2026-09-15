@@ -1,0 +1,45 @@
+/// รายการ action type ที่ระบบบันทึกลง audit log (mirror ของ backend
+/// audit-log module — ดู docs/tickets/08-audit-log.md) ใช้ทำตัวกรอง/ป้ายชื่อ
+/// บนหน้าจอ admin
+class AuditLogAction {
+  const AuditLogAction._();
+
+  static const String orderCancel = 'order.cancel';
+  static const String orderItemVoid = 'order_item.void';
+  static const String orderDiscount = 'order.discount';
+  static const String userDeactivate = 'user.deactivate';
+  static const String userDelete = 'user.delete';
+  static const String userRoleChange = 'user.role_change';
+  static const String userPasswordReset = 'user.password_reset';
+  static const String settingsUpdate = 'settings.update';
+  static const String paymentRefund = 'payment.refund';
+  static const String taxInvoiceVoid = 'tax_invoice.void';
+
+  static const List<String> all = [
+    orderCancel,
+    orderItemVoid,
+    orderDiscount,
+    userDeactivate,
+    userDelete,
+    userRoleChange,
+    userPasswordReset,
+    settingsUpdate,
+    paymentRefund,
+    taxInvoiceVoid,
+  ];
+
+  static const Map<String, String> _keys = {
+    orderCancel: 'audit_log_action_order_cancel',
+    orderItemVoid: 'audit_log_action_order_item_void',
+    orderDiscount: 'audit_log_action_order_discount',
+    userDeactivate: 'audit_log_action_user_deactivate',
+    userDelete: 'audit_log_action_user_delete',
+    userRoleChange: 'audit_log_action_user_role_change',
+    userPasswordReset: 'audit_log_action_user_password_reset',
+    settingsUpdate: 'audit_log_action_settings_update',
+    paymentRefund: 'audit_log_action_payment_refund',
+    taxInvoiceVoid: 'audit_log_action_tax_invoice_void',
+  };
+
+  static String translationKey(String action) => _keys[action] ?? action;
+}

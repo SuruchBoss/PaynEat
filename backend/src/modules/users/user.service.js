@@ -1,5 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { ApiError } from '../../core/ApiError.js';
+import { getDb } from '../../db/index.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { userRepository } from './user.repository.js';
 import { toUserDto } from './user.mapper.js';
 
@@ -36,21 +38,73 @@ export const userService = {
   update(id, payload, actingUser) {
     const target = this.getById(id);
     assertAdminBoundary(actingUser, { targetRole: target.role, newRole: payload.role });
-    return toUserDto(userRepository.update(id, payload));
+
+    const run = getDb().transaction(() => {
+      const updated = userRepository.update(id, payload);
+      // แก้ role กับปิดการใช้งานเป็นการกระทำที่เสี่ยง ต้อง log แยกจากกัน (แก้ชื่อเฉยๆ ไม่ต้อง log)
+      // ดู docs/tickets/08-audit-log.md
+      if (payload.role !== undefined && payload.role !== target.role) {
+        auditLogService.log({
+          actorUser: actingUser,
+          action: 'user.role_change',
+          entityType: 'user',
+          entityId: target.id,
+          summary: `เปลี่ยนสิทธิ์บัญชี "${target.name}" จาก ${target.role} เป็น ${payload.role}`,
+          metadata: { username: target.username, previousRole: target.role, newRole: payload.role },
+        });
+      }
+      if (payload.isActive === false && target.isActive) {
+        auditLogService.log({
+          actorUser: actingUser,
+          action: 'user.deactivate',
+          entityType: 'user',
+          entityId: target.id,
+          summary: `ปิดการใช้งานบัญชี "${target.name}" (${target.username})`,
+          metadata: { username: target.username },
+        });
+      }
+      return updated;
+    });
+    return toUserDto(run());
   },
 
   resetPassword(id, password, actingUser) {
     const target = this.getById(id);
     assertAdminBoundary(actingUser, { targetRole: target.role });
-    return toUserDto(userRepository.updatePassword(id, bcrypt.hashSync(password, 10)));
+
+    const run = getDb().transaction(() => {
+      const updated = userRepository.updatePassword(id, bcrypt.hashSync(password, 10));
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'user.password_reset',
+        entityType: 'user',
+        entityId: target.id,
+        summary: `ตั้งรหัสผ่านใหม่ให้บัญชี "${target.name}" (${target.username})`,
+        metadata: { username: target.username },
+      });
+      return updated;
+    });
+    return toUserDto(run());
   },
 
-  remove(id, currentUserId) {
-    if (Number(id) === Number(currentUserId)) {
+  remove(id, actingUser) {
+    if (Number(id) === Number(actingUser.id)) {
       throw ApiError.badRequest('ไม่สามารถลบบัญชีของตัวเองได้');
     }
-    this.getById(id);
-    userRepository.remove(id);
+    const target = this.getById(id);
+
+    const run = getDb().transaction(() => {
+      userRepository.remove(id);
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'user.delete',
+        entityType: 'user',
+        entityId: target.id,
+        summary: `ลบบัญชี "${target.name}" (${target.username}) ออกจากระบบ`,
+        metadata: { username: target.username, role: target.role },
+      });
+    });
+    run();
   },
 };
 

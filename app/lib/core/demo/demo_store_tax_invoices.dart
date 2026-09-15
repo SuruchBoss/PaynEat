@@ -123,6 +123,24 @@ extension DemoStoreTaxInvoices on DemoStore {
     invoice['voidedByName'] = voidedById == null
         ? null
         : _findUser(voidedById)['name'];
+
+    // mirror ของ tax-invoice.service.js#void — ดู docs/tickets/08-audit-log.md
+    final order = findOrder(orderId);
+    _logAudit(
+      actorId: voidedById,
+      action: 'tax_invoice.void',
+      entityType: 'tax_invoice',
+      entityId: invoice['id'] as int,
+      summary:
+          'ยกเลิกใบกำกับภาษีเลขที่ ${invoice['runningNumber']} ของออเดอร์ #${order['code']}',
+      reason: reason,
+      metadata: {
+        'orderId': order['id'],
+        'orderCode': order['code'],
+        'runningNumber': invoice['runningNumber'],
+      },
+    );
+
     return invoice;
   }
 }
