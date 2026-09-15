@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-510%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-513%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -326,7 +326,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 224 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 286 cases — domain / controller / widget
+cd app && flutter test      # 289 cases — domain / controller / widget
 ```
 
 ---
@@ -766,7 +766,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 224 cases
-cd app && flutter test      # 286 cases
+cd app && flutter test      # 289 cases
 ```
 
 **Backend (224 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -850,7 +850,7 @@ get 1, 2, 3), the KDS query (`findItemsByStatuses`) returns the correct `orderTy
 so they can be displayed distinctly, and checkout/payment for a takeaway order works normally with no
 step anywhere requiring a table (see `docs/DECISIONS.md` #23).
 
-**Flutter (286 cases)** — split into 3 levels:
+**Flutter (289 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -879,6 +879,7 @@ step anywhere requiring a table (see `docs/DECISIONS.md` #23).
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
 | Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
+| Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
 | Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
 | Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |

@@ -12,6 +12,7 @@ class AuditLogFilter {
     this.entityType,
     this.dateFrom,
     this.dateTo,
+    this.page = 1,
     this.limit = 50,
   });
 
@@ -20,22 +21,26 @@ class AuditLogFilter {
   final String? entityType;
   final String? dateFrom;
   final String? dateTo;
+  final int page;
   final int limit;
 }
 
-class GetAuditLogsUseCase implements UseCase<List<AuditLog>, AuditLogFilter> {
+class GetAuditLogsUseCase
+    implements UseCase<({List<AuditLog> logs, int total}), AuditLogFilter> {
   const GetAuditLogsUseCase(this._repository);
 
   final AuditLogRepository _repository;
 
   @override
-  Future<Result<List<AuditLog>>> call(AuditLogFilter params) =>
-      _repository.list(
-        actorUserId: params.actorUserId,
-        action: params.action,
-        entityType: params.entityType,
-        dateFrom: params.dateFrom,
-        dateTo: params.dateTo,
-        limit: params.limit,
-      );
+  Future<Result<({List<AuditLog> logs, int total})>> call(
+    AuditLogFilter params,
+  ) => _repository.list(
+    actorUserId: params.actorUserId,
+    action: params.action,
+    entityType: params.entityType,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+    page: params.page,
+    limit: params.limit,
+  );
 }

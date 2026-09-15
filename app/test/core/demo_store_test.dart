@@ -857,7 +857,7 @@ void main() {
       final order = openOrder();
       store.cancelOrder(order['id'] as int, 'ลูกค้ายกเลิก', actorId: 2);
 
-      final logs = store.auditLogList(action: 'order.cancel');
+      final logs = store.auditLogList(action: 'order.cancel').rows;
       expect(logs, isNotEmpty);
       final log = logs.first;
       expect(log['entityType'], 'order');
@@ -879,10 +879,12 @@ void main() {
           actorId: 3,
         );
         expect(
-          store.auditLogList(
-            action: 'order_item.void',
-            entityId: itemA['id'] as int,
-          ),
+          store
+              .auditLogList(
+                action: 'order_item.void',
+                entityId: itemA['id'] as int,
+              )
+              .rows,
           isEmpty,
         );
 
@@ -900,10 +902,12 @@ void main() {
           actorId: 2,
         );
 
-        final logs = store.auditLogList(
-          action: 'order_item.void',
-          entityId: itemB['id'] as int,
-        );
+        final logs = store
+            .auditLogList(
+              action: 'order_item.void',
+              entityId: itemB['id'] as int,
+            )
+            .rows;
         expect(logs, hasLength(1));
         expect(logs.first['entityType'], 'order_item');
         expect(logs.first['actorName'], 'สมชาย (ผู้จัดการ)');
@@ -920,10 +924,12 @@ void main() {
           10,
           actorId: 6,
         );
-        var logs = store.auditLogList(
-          action: 'order.discount',
-          entityId: order['id'] as int,
-        );
+        var logs = store
+            .auditLogList(
+              action: 'order.discount',
+              entityId: order['id'] as int,
+            )
+            .rows;
         expect(logs, hasLength(1));
         expect(logs.first['metadata']['newType'], DiscountType.percent);
 
@@ -933,10 +939,12 @@ void main() {
           0,
           actorId: 6,
         );
-        logs = store.auditLogList(
-          action: 'order.discount',
-          entityId: order['id'] as int,
-        );
+        logs = store
+            .auditLogList(
+              action: 'order.discount',
+              entityId: order['id'] as int,
+            )
+            .rows;
         expect(logs, hasLength(2));
       },
     );
@@ -953,29 +961,30 @@ void main() {
         final userId = created['id'] as int;
 
         store.updateStaff(userId, {'role': UserRole.cashier}, actorId: 1);
-        final roleLogs = store.auditLogList(
-          action: 'user.role_change',
-          entityId: userId,
-        );
+        final roleLogs = store
+            .auditLogList(action: 'user.role_change', entityId: userId)
+            .rows;
         expect(roleLogs, hasLength(1));
         expect(roleLogs.first['metadata']['previousRole'], UserRole.waiter);
         expect(roleLogs.first['metadata']['newRole'], UserRole.cashier);
 
         store.updateStaff(userId, {'isActive': false}, actorId: 1);
         expect(
-          store.auditLogList(action: 'user.deactivate', entityId: userId),
+          store.auditLogList(action: 'user.deactivate', entityId: userId).rows,
           hasLength(1),
         );
 
         store.updateStaff(userId, {'password': 'newpassword'}, actorId: 1);
         expect(
-          store.auditLogList(action: 'user.password_reset', entityId: userId),
+          store
+              .auditLogList(action: 'user.password_reset', entityId: userId)
+              .rows,
           hasLength(1),
         );
 
-        final before = store.auditLogList(entityId: userId).length;
+        final before = store.auditLogList(entityId: userId).rows.length;
         store.updateStaff(userId, {'name': 'ชื่อใหม่เฉยๆ'}, actorId: 1);
-        expect(store.auditLogList(entityId: userId), hasLength(before));
+        expect(store.auditLogList(entityId: userId).rows, hasLength(before));
       },
     );
 
@@ -990,7 +999,9 @@ void main() {
 
       store.deleteStaff(userId, actorId: 1);
 
-      final logs = store.auditLogList(action: 'user.delete', entityId: userId);
+      final logs = store
+          .auditLogList(action: 'user.delete', entityId: userId)
+          .rows;
       expect(logs, hasLength(1));
       expect(logs.first['actorUserId'], 1);
       expect(logs.first['actorName'], 'ผู้ดูแลระบบ');
@@ -1001,10 +1012,16 @@ void main() {
       () {
         final previousVat = store.settings['vatRate'] as double;
         store.updateSettings({'vatRate': previousVat + 0.01}, actorId: 1);
-        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+        expect(
+          store.auditLogList(action: 'settings.update').rows,
+          hasLength(1),
+        );
 
         store.updateSettings({'storeName': 'ร้านทดสอบ audit log'}, actorId: 1);
-        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+        expect(
+          store.auditLogList(action: 'settings.update').rows,
+          hasLength(1),
+        );
       },
     );
 
@@ -1027,10 +1044,9 @@ void main() {
         refundedById: 2,
       );
 
-      final logs = store.auditLogList(
-        action: 'payment.refund',
-        entityId: refund['id'] as int,
-      );
+      final logs = store
+          .auditLogList(action: 'payment.refund', entityId: refund['id'] as int)
+          .rows;
       expect(logs, hasLength(1));
       expect(logs.first['entityType'], 'refund');
       expect(logs.first['reason'], 'ลูกค้าคืนอาหาร');
@@ -1063,10 +1079,12 @@ void main() {
 
       store.voidTaxInvoice(order['id'] as int, 'ออกผิดประเภท', voidedById: 1);
 
-      final logs = store.auditLogList(
-        action: 'tax_invoice.void',
-        entityId: invoice['id'] as int,
-      );
+      final logs = store
+          .auditLogList(
+            action: 'tax_invoice.void',
+            entityId: invoice['id'] as int,
+          )
+          .rows;
       expect(logs, hasLength(1));
       expect(logs.first['reason'], 'ออกผิดประเภท');
     });

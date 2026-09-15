@@ -729,26 +729,29 @@ class DemoAuditLogDataSource implements AuditLogRemoteDataSource {
   final DemoStore _store;
 
   @override
-  Future<List<AuditLogModel>> list({
+  Future<({List<AuditLogModel> logs, int total})> list({
     int? actorUserId,
     String? action,
     String? entityType,
     String? dateFrom,
     String? dateTo,
+    int page = 1,
     int limit = 50,
-  }) => _delayed(
-    () => _store
-        .auditLogList(
-          actorUserId: actorUserId,
-          action: action,
-          entityType: entityType,
-          dateFrom: dateFrom,
-          dateTo: dateTo,
-          limit: limit,
-        )
-        .map(AuditLogModel.fromJson)
-        .toList(growable: false),
-  );
+  }) => _delayed(() {
+    final result = _store.auditLogList(
+      actorUserId: actorUserId,
+      action: action,
+      entityType: entityType,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+      page: page,
+      limit: limit,
+    );
+    return (
+      logs: result.rows.map(AuditLogModel.fromJson).toList(growable: false),
+      total: result.total,
+    );
+  });
 }
 
 class DemoCustomerDataSource implements CustomerRemoteDataSource {

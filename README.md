@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-510%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-513%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -306,7 +306,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 224 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 286 เคส — domain / controller / widget
+cd app && flutter test      # 289 เคส — domain / controller / widget
 ```
 
 ---
@@ -717,7 +717,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 224 เคส
-cd app && flutter test      # 286 เคส
+cd app && flutter test      # 289 เคส
 ```
 
 **Backend (224 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -793,7 +793,7 @@ script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ย
 `orderType` ถูกต้องครบทั้ง 3 ประเภทให้แยกแสดงผล, และ checkout/ชำระเงินสำหรับออเดอร์ takeaway ทำงาน
 ได้ปกติโดยไม่มีจุดใดบังคับเลือกโต๊ะ (ดู `docs/DECISIONS.md` #23)
 
-**Flutter (286 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (289 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -823,6 +823,7 @@ script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ย
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget รวมถึง `KitchenTicketCard` ต้องแยกไอคอน/ป้ายถูกต้องครบทั้ง 3 ประเภทออเดอร์ (โต๊ะ/กลับบ้าน/เดลิเวอรี) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
+| Widget | `customer_picker_dialog_test.dart` | กล่องผูกลูกค้ากับออเดอร์ — เน็ตสะดุดครั้งเดียวแล้วค้นใหม่สำเร็จต้องกลับมาเห็นรายชื่อ (เคยค้างที่หน้า error ถาวร), มีปุ่มลองใหม่ให้กดกู้ได้, และดีบาวซ์ต้องยุบการพิมพ์ 6 ตัวอักษรเหลือยิงค้นหาครั้งเดียว |
 | Core | `app_clock_test.dart` | `AppClock` ตรึง/คืนนาฬิกาได้ถูกต้อง — กันเวลาที่ตรึงไว้รั่วข้ามเทสต์ |
 | Core | `app_colors_contrast_test.dart` | คำนวณคอนทราสต์ตามสูตร WCAG จริง เทียบกับ **ทุกพื้นที่ใช้จริง** ไม่ใช่แค่พื้นขาว — โหมดปกติต้องผ่าน AA (4.5:1) โหมดคอนทราสต์สูงต้องผ่าน AAA (7:1) และสีที่เอาไปเป็นพื้นปุ่ม/ชิปต้องอ่านป้ายสีขาวออก |
 | Core | `contrast_service_test.dart` | เส้นทางกดสลับโหมดจริง — เปลี่ยนพาเลตต์ บันทึกลงเครื่อง อ่านกลับมาตอนเปิดแอปใหม่ และธีมต้องสร้างสีใหม่ทุกครั้งไม่ใช่คำนวณครั้งเดียวแล้วค้าง |

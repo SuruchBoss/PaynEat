@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -47,6 +49,12 @@ class _CustomerPickerDialogState extends State<CustomerPickerDialog> {
   bool _showCreateForm = false;
   String? _errorMessage;
 
+  Timer? _debounce;
+
+  /// ลำดับของคำค้นล่าสุดที่ยิงออกไป — ใช้ทิ้งคำตอบที่มาช้ากว่าคำค้นถัดไป
+  /// ไม่งั้นรายชื่อที่เห็นอาจเป็นผลของคำค้นเก่าที่เพิ่งกลับมาทีหลัง
+  int _searchSeq = 0;
+
   @override
   void initState() {
     super.initState();
@@ -55,6 +63,7 @@ class _CustomerPickerDialogState extends State<CustomerPickerDialog> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _nameController.dispose();
     _phoneController.dispose();
@@ -62,14 +71,28 @@ class _CustomerPickerDialogState extends State<CustomerPickerDialog> {
     super.dispose();
   }
 
+  /// ดีบาวซ์ก่อนยิงค้นหาจริง กันยิง API ทุกตัวอักษรที่พิมพ์
+  /// ใช้ค่าเดียวกับ CustomersController เพื่อให้ช่องค้นหาลูกค้าสองที่ทำงานเหมือนกัน
+  void _onSearchChanged(String query) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 350), () => _search(query));
+  }
+
   Future<void> _search(String query) async {
-    setState(() => _isLoading = true);
+    final seq = ++_searchSeq;
+    setState(() {
+      _isLoading = true;
+      // ต้องล้างทุกครั้งที่เริ่มค้นใหม่ ไม่งั้นพอเน็ตสะดุดครั้งเดียว
+      // กล่องจะค้างอยู่ที่หน้า error ตลอด แม้ค้นหารอบถัดไปจะสำเร็จแล้วก็ตาม
+      _errorMessage = null;
+    });
 
     final result = await Get.find<SearchCustomersUseCase>()(
       SearchCustomersParams(search: query.trim().isEmpty ? null : query.trim()),
     );
 
-    if (!mounted) return;
+    // คำตอบของคำค้นที่ถูกแทนที่ไปแล้ว ทิ้งทิ้งไปเลย
+    if (!mounted || seq != _searchSeq) return;
     result.fold(
       onSuccess: (data) => setState(() {
         _results = data.customers;
@@ -164,7 +187,7 @@ class _CustomerPickerDialogState extends State<CustomerPickerDialog> {
       children: [
         TextField(
           controller: _searchController,
-          onChanged: _search,
+          onChanged: _onSearchChanged,
           decoration: InputDecoration(
             hintText: 'customer_picker_search_hint'.tr,
             prefixIcon: const Icon(Icons.search_rounded),
@@ -178,9 +201,24 @@ class _CustomerPickerDialogState extends State<CustomerPickerDialog> {
               ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
               : _errorMessage != null
               ? Center(
-                  child: Text(
-                    _errorMessage!,
-                    style: TextStyle(color: AppColors.dangerInk, fontSize: 13),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        _errorMessage!,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: AppColors.dangerInk,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: () => _search(_searchController.text),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
+                        label: Text('common_retry'.tr),
+                      ),
+                    ],
                   ),
                 )
               : _results.isEmpty

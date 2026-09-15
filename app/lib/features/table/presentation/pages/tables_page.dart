@@ -19,11 +19,29 @@ class TablesPage extends GetView<TableController> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: 'fab-new-takeaway-delivery',
-        onPressed: () => Get.toNamed<void>(AppRoutes.newOrder),
-        icon: const Icon(Icons.takeout_dining_rounded),
-        label: Text('table_new_takeaway_delivery_button'.tr),
+      // จอแคบใช้ FAB กลม เพราะป้ายไทย "สั่งกลับบ้าน/เดลิเวอรี่" ทำให้ FAB
+      // แบบ extended กว้าง 392px — ล้นขอบซ้าย 16px บนจอ 360/390px
+      floatingActionButton: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 430;
+          final label = 'table_new_takeaway_delivery_button'.tr;
+          const icon = Icon(Icons.takeout_dining_rounded);
+
+          if (compact) {
+            return FloatingActionButton(
+              heroTag: 'fab-new-takeaway-delivery',
+              onPressed: () => Get.toNamed<void>(AppRoutes.newOrder),
+              tooltip: label,
+              child: icon,
+            );
+          }
+          return FloatingActionButton.extended(
+            heroTag: 'fab-new-takeaway-delivery',
+            onPressed: () => Get.toNamed<void>(AppRoutes.newOrder),
+            icon: icon,
+            label: Text(label),
+          );
+        },
       ),
       body: Column(
         children: [
@@ -84,7 +102,9 @@ class _TableGrid extends StatelessWidget {
         );
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          // ล่าง 88 = FAB สูง 56 + ระยะขอบ 16 + หายใจอีก 16
+          // ถ้าเหลือ 24 ตามเดิม FAB จะทับการ์ดโต๊ะแถวล่างสุด 48px
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
           children: [
             for (final entry in grouped.entries) ...[
               Padding(
