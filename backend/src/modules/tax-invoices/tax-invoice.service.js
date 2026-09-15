@@ -2,6 +2,7 @@ import { ApiError } from '../../core/ApiError.js';
 import { getDb } from '../../db/index.js';
 import { orderRepository } from '../orders/order.repository.js';
 import { settingsService } from '../settings/settings.service.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { taxInvoiceRepository } from './tax-invoice.repository.js';
 import { toTaxInvoiceDto } from './tax-invoice.mapper.js';
 
@@ -70,11 +71,28 @@ export const taxInvoiceService = {
   },
 
   void(orderId, { reason }, user) {
-    loadOrder(orderId);
+    const order = loadOrder(orderId);
     const invoice = taxInvoiceRepository.findActiveByOrder(orderId);
     if (!invoice) throw ApiError.notFound('ออเดอร์นี้ยังไม่มีใบกำกับภาษีที่ยกเลิกได้');
 
-    return toTaxInvoiceDto(taxInvoiceRepository.void(invoice.id, { reason, voidedBy: user.id }));
+    const run = getDb().transaction(() => {
+      const voided = taxInvoiceRepository.void(invoice.id, { reason, voidedBy: user.id });
+      auditLogService.log({
+        actorUser: user,
+        action: 'tax_invoice.void',
+        entityType: 'tax_invoice',
+        entityId: invoice.id,
+        summary: `ยกเลิกใบกำกับภาษีเลขที่ ${invoice.running_number} ของออเดอร์ #${order.code}`,
+        reason,
+        metadata: {
+          orderId: order.id,
+          orderCode: order.code,
+          runningNumber: invoice.running_number,
+        },
+      });
+      return voided;
+    });
+    return toTaxInvoiceDto(run());
   },
 };
 

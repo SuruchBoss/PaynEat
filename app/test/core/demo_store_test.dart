@@ -836,4 +836,239 @@ void main() {
       );
     });
   });
+
+  group('DemoStore audit logs — บันทึกการกระทำที่เสี่ยง (ticket 08)', () {
+    Map<String, dynamic> openOrder() {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('cancelOrder log เป็น order.cancel พร้อมเหตุผลและชื่อผู้ทำ', () {
+      final order = openOrder();
+      store.cancelOrder(order['id'] as int, 'ลูกค้ายกเลิก', actorId: 2);
+
+      final logs = store.auditLogList(action: 'order.cancel');
+      expect(logs, isNotEmpty);
+      final log = logs.first;
+      expect(log['entityType'], 'order');
+      expect(log['entityId'], order['id']);
+      expect(log['reason'], 'ลูกค้ายกเลิก');
+      expect(log['actorName'], 'สมชาย (ผู้จัดการ)');
+      expect(log['summary'], contains(order['code']));
+    });
+
+    test(
+      'void รายการหลังครัวทำแล้ว log เป็น order_item.void แต่ยกเลิกตอน pending ไม่ log',
+      () {
+        final orderA = openOrder();
+        final itemA = (orderA['items'] as List).first as Map<String, dynamic>;
+        store.updateItemStatus(
+          orderA['id'] as int,
+          itemA['id'] as int,
+          OrderItemStatus.cancelled,
+          actorId: 3,
+        );
+        expect(
+          store.auditLogList(
+            action: 'order_item.void',
+            entityId: itemA['id'] as int,
+          ),
+          isEmpty,
+        );
+
+        final orderB = openOrder();
+        final itemB = (orderB['items'] as List).first as Map<String, dynamic>;
+        store.updateItemStatus(
+          orderB['id'] as int,
+          itemB['id'] as int,
+          OrderItemStatus.cooking,
+        );
+        store.updateItemStatus(
+          orderB['id'] as int,
+          itemB['id'] as int,
+          OrderItemStatus.cancelled,
+          actorId: 2,
+        );
+
+        final logs = store.auditLogList(
+          action: 'order_item.void',
+          entityId: itemB['id'] as int,
+        );
+        expect(logs, hasLength(1));
+        expect(logs.first['entityType'], 'order_item');
+        expect(logs.first['actorName'], 'สมชาย (ผู้จัดการ)');
+      },
+    );
+
+    test(
+      'applyDiscount log เป็น order.discount ทุกครั้งรวมถึงตอนยกเลิกส่วนลด',
+      () {
+        final order = openOrder();
+        store.applyDiscount(
+          order['id'] as int,
+          DiscountType.percent,
+          10,
+          actorId: 6,
+        );
+        var logs = store.auditLogList(
+          action: 'order.discount',
+          entityId: order['id'] as int,
+        );
+        expect(logs, hasLength(1));
+        expect(logs.first['metadata']['newType'], DiscountType.percent);
+
+        store.applyDiscount(
+          order['id'] as int,
+          DiscountType.none,
+          0,
+          actorId: 6,
+        );
+        logs = store.auditLogList(
+          action: 'order.discount',
+          entityId: order['id'] as int,
+        );
+        expect(logs, hasLength(2));
+      },
+    );
+
+    test(
+      'updateStaff log แยก role_change/deactivate/password_reset แต่แก้ชื่อเฉยๆ ไม่ log',
+      () {
+        final created = store.createStaff(
+          name: 'พนักงานทดสอบ audit log',
+          username: 'audit_log_test_${DateTime.now().microsecondsSinceEpoch}',
+          password: 'test1234',
+          role: UserRole.waiter,
+        );
+        final userId = created['id'] as int;
+
+        store.updateStaff(userId, {'role': UserRole.cashier}, actorId: 1);
+        final roleLogs = store.auditLogList(
+          action: 'user.role_change',
+          entityId: userId,
+        );
+        expect(roleLogs, hasLength(1));
+        expect(roleLogs.first['metadata']['previousRole'], UserRole.waiter);
+        expect(roleLogs.first['metadata']['newRole'], UserRole.cashier);
+
+        store.updateStaff(userId, {'isActive': false}, actorId: 1);
+        expect(
+          store.auditLogList(action: 'user.deactivate', entityId: userId),
+          hasLength(1),
+        );
+
+        store.updateStaff(userId, {'password': 'newpassword'}, actorId: 1);
+        expect(
+          store.auditLogList(action: 'user.password_reset', entityId: userId),
+          hasLength(1),
+        );
+
+        final before = store.auditLogList(entityId: userId).length;
+        store.updateStaff(userId, {'name': 'ชื่อใหม่เฉยๆ'}, actorId: 1);
+        expect(store.auditLogList(entityId: userId), hasLength(before));
+      },
+    );
+
+    test('deleteStaff log เป็น user.delete แม้บัญชีจะถูกลบไปแล้ว', () {
+      final created = store.createStaff(
+        name: 'จะถูกลบ',
+        username: 'audit_log_del_${DateTime.now().microsecondsSinceEpoch}',
+        password: 'test1234',
+        role: UserRole.waiter,
+      );
+      final userId = created['id'] as int;
+
+      store.deleteStaff(userId, actorId: 1);
+
+      final logs = store.auditLogList(action: 'user.delete', entityId: userId);
+      expect(logs, hasLength(1));
+      expect(logs.first['actorUserId'], 1);
+      expect(logs.first['actorName'], 'ผู้ดูแลระบบ');
+    });
+
+    test(
+      'updateSettings log เป็น settings.update เฉพาะตอนแก้ VAT/ค่าบริการ',
+      () {
+        final previousVat = store.settings['vatRate'] as double;
+        store.updateSettings({'vatRate': previousVat + 0.01}, actorId: 1);
+        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+
+        store.updateSettings({'storeName': 'ร้านทดสอบ audit log'}, actorId: 1);
+        expect(store.auditLogList(action: 'settings.update'), hasLength(1));
+      },
+    );
+
+    test('refundPayment log เป็น payment.refund', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+      final payment = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+        cashierId: 6,
+      );
+      final paymentId = (payment['payment'] as Map)['id'] as int;
+
+      final refund = store.refundPayment(
+        paymentId: paymentId,
+        amount: total,
+        reason: 'ลูกค้าคืนอาหาร',
+        refundedById: 2,
+      );
+
+      final logs = store.auditLogList(
+        action: 'payment.refund',
+        entityId: refund['id'] as int,
+      );
+      expect(logs, hasLength(1));
+      expect(logs.first['entityType'], 'refund');
+      expect(logs.first['reason'], 'ลูกค้าคืนอาหาร');
+    });
+
+    test('voidTaxInvoice log เป็น tax_invoice.void', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      final order = store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+      final total = (order['total'] as num).toDouble();
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+        cashierId: 6,
+      );
+      final invoice = store.issueTaxInvoice(order['id'] as int, {
+        'invoiceType': TaxInvoiceType.abbreviated,
+      });
+
+      store.voidTaxInvoice(order['id'] as int, 'ออกผิดประเภท', voidedById: 1);
+
+      final logs = store.auditLogList(
+        action: 'tax_invoice.void',
+        entityId: invoice['id'] as int,
+      );
+      expect(logs, hasLength(1));
+      expect(logs.first['reason'], 'ออกผิดประเภท');
+    });
+  });
 }

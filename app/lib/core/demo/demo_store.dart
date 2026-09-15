@@ -21,6 +21,8 @@ part 'demo_store_shifts.dart';
 part 'demo_store_reports.dart';
 part 'demo_store_seed_history.dart';
 part 'demo_store_tax_invoices.dart';
+part 'demo_store_settings.dart';
+part 'demo_store_audit_logs.dart';
 
 /// "เซิร์ฟเวอร์จำลอง" ที่อยู่ในหน่วยความจำของแอป
 ///
@@ -58,6 +60,7 @@ class DemoStore {
   final List<Map<String, dynamic>> shifts = [];
   final List<Map<String, dynamic>> promotions = [];
   final List<Map<String, dynamic>> taxInvoices = [];
+  final List<Map<String, dynamic>> auditLogs = [];
 
   /// ผู้ใช้แคชเชียร์ที่ seed ไว้ให้ — ใช้เปิดกะแรกอัตโนมัติเหมือนวันแรกที่ร้านเปิดใช้ระบบ
   static const int _defaultCashierId = 6;
@@ -84,6 +87,7 @@ class DemoStore {
     shifts.clear();
     promotions.clear();
     taxInvoices.clear();
+    auditLogs.clear();
     _orderSequence = 0;
     _idSequence = 1000;
     _seedHistoricalSales();

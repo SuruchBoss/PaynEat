@@ -262,3 +262,25 @@ CREATE TABLE IF NOT EXISTS tax_invoices (
 CREATE UNIQUE INDEX IF NOT EXISTS idx_tax_invoices_active_order
   ON tax_invoices(order_id) WHERE voided_at IS NULL;
 CREATE INDEX IF NOT EXISTS idx_tax_invoices_order ON tax_invoices(order_id);
+
+-- Audit log — บันทึกการกระทำที่เสี่ยงต่อการทุจริตหน้าร้าน (ดู docs/tickets/08-audit-log.md)
+-- append-only เสมอ: ไม่มี endpoint แก้ไข/ลบเปิดให้ใช้เลยทั้งระบบ — snapshot ชื่อผู้ทำไว้ที่ actor_name
+-- ตรงๆ (เหมือน promotion_name_snapshot/tax_invoices ด้านบน) เพื่อให้ log ยังอ่านได้ครบแม้ผู้ใช้คนนั้น
+-- ถูกลบภายหลัง (actor_user_id เป็น ON DELETE SET NULL ไม่ใช่ RESTRICT เพราะไม่ควรบล็อกการลบ user
+-- แค่เพราะเคยมี log อ้างถึง — ข้อมูลที่ต้องอ่านได้เสมอคือ actor_name ที่ snapshot ไว้แล้ว)
+CREATE TABLE IF NOT EXISTS audit_logs (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  actor_name    TEXT    NOT NULL,
+  action        TEXT    NOT NULL,
+  entity_type   TEXT    NOT NULL,
+  entity_id     INTEGER,
+  summary       TEXT    NOT NULL,
+  reason        TEXT,
+  metadata_json TEXT,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);

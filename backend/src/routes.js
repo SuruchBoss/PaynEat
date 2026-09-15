@@ -12,6 +12,7 @@ import reportRoutes from './modules/reports/report.routes.js';
 import settingsRoutes from './modules/settings/settings.routes.js';
 import shiftRoutes from './modules/shifts/shift.routes.js';
 import taxInvoiceRoutes from './modules/tax-invoices/tax-invoice.routes.js';
+import auditLogRoutes from './modules/audit-logs/audit-log.routes.js';
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use('/reports', reportRoutes);
 router.use('/settings', settingsRoutes);
 router.use('/shifts', shiftRoutes);
 router.use('/tax-invoices', taxInvoiceRoutes);
+router.use('/audit-logs', auditLogRoutes);
 
 export default router;

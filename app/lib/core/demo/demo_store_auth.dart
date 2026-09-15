@@ -57,13 +57,72 @@ extension DemoStoreAuth on DemoStore {
     return _publicUser(user);
   }
 
-  Map<String, dynamic> updateStaff(int id, Map<String, dynamic> changes) {
+  Map<String, dynamic> updateStaff(
+    int id,
+    Map<String, dynamic> changes, {
+    int? actorId,
+  }) {
     final user = _findUser(id);
+    final previousRole = user['role'];
+    final previousActive = user['isActive'];
+
     changes.forEach((key, value) => user[key] = value);
+
+    // แก้ role/ปิดการใช้งาน/ตั้งรหัสผ่านใหม่เป็นการกระทำที่เสี่ยง ต้อง log แยกกัน
+    // (แก้ชื่อเฉยๆ ไม่ถือว่าเสี่ยง ไม่ต้อง log) — mirror ของ user.service.js#update
+    // ดู docs/tickets/08-audit-log.md
+    if (changes.containsKey('role') && changes['role'] != previousRole) {
+      _logAudit(
+        actorId: actorId,
+        action: 'user.role_change',
+        entityType: 'user',
+        entityId: id,
+        summary:
+            'เปลี่ยนสิทธิ์บัญชี "${user['name']}" จาก $previousRole เป็น ${changes['role']}',
+        metadata: {
+          'username': user['username'],
+          'previousRole': previousRole,
+          'newRole': changes['role'],
+        },
+      );
+    }
+    if (changes['isActive'] == false && previousActive == true) {
+      _logAudit(
+        actorId: actorId,
+        action: 'user.deactivate',
+        entityType: 'user',
+        entityId: id,
+        summary: 'ปิดการใช้งานบัญชี "${user['name']}" (${user['username']})',
+        metadata: {'username': user['username']},
+      );
+    }
+    if (changes.containsKey('password')) {
+      _logAudit(
+        actorId: actorId,
+        action: 'user.password_reset',
+        entityType: 'user',
+        entityId: id,
+        summary:
+            'ตั้งรหัสผ่านใหม่ให้บัญชี "${user['name']}" (${user['username']})',
+        metadata: {'username': user['username']},
+      );
+    }
+
     return _publicUser(user);
   }
 
-  void deleteStaff(int id) => users.removeWhere((row) => row['id'] == id);
+  void deleteStaff(int id, {int? actorId}) {
+    final user = _findUser(id);
+    users.removeWhere((row) => row['id'] == id);
+    _logAudit(
+      actorId: actorId,
+      action: 'user.delete',
+      entityType: 'user',
+      entityId: id,
+      summary: 'ลบบัญชี "${user['name']}" (${user['username']}) ออกจากระบบ',
+      metadata: {'username': user['username'], 'role': user['role']},
+    );
+  }
 
   Map<String, dynamic> _findUser(int id) => users.firstWhere(
     (row) => row['id'] == id,

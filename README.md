@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-442%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-460%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 442 automated tests.
+control and 460 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -245,6 +245,10 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     พร้อมกราฟรายชั่วโมงและสัดส่วนช่องทางชำระเงิน (เมนูขายดีดูได้ที่หน้า **รายงาน**)
 12. **เปิดหน้า วัตถุดิบ/สต๊อก** (ไอคอนกล่อง 📦 ในเมนูด้านซ้าย) → เห็น "ปลาทับทิม" ถูกไฮไลต์แจ้งเตือน
     ของใกล้หมดให้ทันทีตั้งแต่ seed ข้อมูล
+13. **เปิดหน้า ประวัติการทำรายการ** (ไอคอนนาฬิกา 🕘 ในเมนูด้านซ้าย — เห็นเฉพาะ `admin` เท่านั้น
+    ไม่รวม `manager`) → filter ตามประเภท action ได้ด้วยชิปเลือก ตอนนี้ยังว่างอยู่ — ลองยกเลิก
+    ใบกำกับภาษีที่ออกในขั้นตอน 9 ก่อน (กด **"ยกเลิกใบกำกับภาษี"** ที่หน้าใบเสร็จเดิม) แล้วกลับมา
+    หน้านี้ จะเห็น log ใหม่ทันทีพร้อมชื่อผู้ทำ เวลา และเหตุผลที่กรอกไว้
 
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
@@ -258,14 +262,18 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 - ลองออกใบกำกับภาษีให้บิลเดียวกันซ้ำอีกใบ → ระบบปฏิเสธ (ออกได้ 1 ใบต่อบิลที่ยังไม่ถูกยกเลิก) — เข้าเป็น
   `manager` แล้วกด **"ยกเลิกใบกำกับภาษี"** ที่หน้าใบเสร็จเดิมก่อน ถึงจะออกใบใหม่ให้บิลนั้นได้อีกครั้ง
   ด้วยเลขที่รันใหม่ (ดู `docs/DECISIONS.md` #19)
+- การกระทำที่เสี่ยงต่อการทุจริตหน้าร้านทั้งหมด (ยกเลิกออเดอร์, ยกเลิกรายการหลังส่งครัว, ให้ส่วนลด,
+  ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์พนักงาน, แก้ VAT/ค่าบริการ, คืนเงิน, ยกเลิกใบกำกับภาษี) ถูกบันทึกไว้ที่
+  หน้า **ประวัติการทำรายการ** (เห็นเฉพาะ `admin`) เสมอ พร้อมผู้ทำ/เวลา/เหตุผล — ลองทำข้อไหนก็ได้
+  ข้างบนนี้แล้วกลับไปดูหน้านั้น (ดูขั้นตอน 13 ในทัวร์ และ `docs/DECISIONS.md` #21)
 
 ---
 
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 185 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 257 เคส — domain / controller / widget
+cd backend && npm test      # 195 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 265 เคส — domain / controller / widget
 ```
 
 ---
@@ -351,6 +359,11 @@ cd app && flutter test      # 257 เคส — domain / controller / widget
 - **วัตถุดิบ/สต๊อก** ผูกเมนูกับวัตถุดิบที่ใช้และปริมาณต่อ 1 ที่ได้จากฟอร์มแก้ไขเมนูโดยตรง ระบบตัดสต๊อก
   อัตโนมัติตอนส่งครัว (คืนสต๊อกอัตโนมัติเมื่อยกเลิก/ลบรายการ) เมนูที่วัตถุดิบหมดจะถูกปิดขายอัตโนมัติและ
   เปิดกลับให้เองเมื่อเติมสต๊อก พร้อมหน้าจอแจ้งเตือนวัตถุดิบใกล้หมด (ดู `docs/DECISIONS.md` #15)
+- **ประวัติการทำรายการ (Audit Log)** เห็นเฉพาะ `admin` — บันทึกทุกการกระทำที่เสี่ยงต่อการทุจริต
+  หน้าร้านแบบ append-only (แก้ไข/ลบไม่ได้จาก UI ไหนเลย): ยกเลิกออเดอร์, ยกเลิกรายการอาหารหลังส่ง
+  ครัวแล้ว, แก้ไขส่วนลด, ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์/ตั้งรหัสผ่านใหม่ให้พนักงาน, แก้ค่า VAT/
+  ค่าบริการ, คืนเงิน, และยกเลิกใบกำกับภาษี — พร้อมชื่อผู้ทำ เวลา และเหตุผลที่กรอกไว้ทุกครั้ง filter
+  ตามประเภท action ได้ (ดู `docs/DECISIONS.md` #21)
 
 ### 🔐 ระบบ
 
@@ -626,6 +639,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 | GET | `/reports/summary` | ผู้บริหาร | สรุปยอดตามช่วงวันที่ |
 | GET/PATCH | `/settings` | ทุกคน / admin | ตั้งค่าร้าน |
 | GET/POST/PATCH/DELETE | `/users` | admin, manager | จัดการพนักงาน |
+| GET | `/audit-logs` | admin | ประวัติการกระทำที่เสี่ยงต่อการทุจริต (filter ได้) |
 
 </details>
 
@@ -651,11 +665,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 185 เคส
-cd app && flutter test      # 257 เคส
+cd backend && npm test      # 195 เคส
+cd app && flutter test      # 265 เคส
 ```
 
-**Backend (185 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (195 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -704,7 +718,13 @@ script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ย
 ปฏิเสธ seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้ว (`admin123` ฯลฯ) ต้องตั้ง `SEED_*_PASSWORD` เองก่อน
 เสมอ (ดู `docs/DECISIONS.md` #20)
 
-**Flutter (257 เคส)** — แบ่งเป็น 3 ระดับ:
+`audit-logs.test.js` (10 เคสใหม่) เทสต์ว่าทุก action เสี่ยงถูกบันทึกถูกต้อง: ยกเลิกออเดอร์
+(พร้อมเหตุผล/ผู้ทำ), void รายการอาหารเฉพาะหลังครัวทำแล้ว (ยกเลิกตอนยัง pending ต้องไม่ log),
+แก้ไขส่วนลด, ปิดใช้งาน/รีเซ็ตรหัสผ่าน/เปลี่ยนสิทธิ์/ลบพนักงาน (แก้ชื่อเฉยๆ ต้องไม่ log), แก้ VAT
+ต้อง log แต่แก้ชื่อร้านเฉยๆ ไม่ log, คืนเงิน, ยกเลิกใบกำกับภาษี และ RBAC (เห็นเฉพาะ admin)
+(ดู `docs/DECISIONS.md` #21)
+
+**Flutter (265 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -712,7 +732,7 @@ script/style) — `seed-production-safety.test.js` (2 เคสใหม่) ย
 | Domain | `promotion_engine_test.dart` | พอร์ตเทสต์ตรรกะจับคู่โปรโมชันจาก backend มาที่ Dart (percent/amount/bogo, เงื่อนไขต่าง ๆ, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | การรวมรายการซ้ำในตะกร้า |
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
-| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 12 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ และ flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน |
+| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 15 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน และ flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08) |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม |
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
@@ -786,6 +806,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
   (`INV<ปี พ.ศ.>-<เลขรัน>` รีเซ็ตทุกปี) รองรับยกเลิก (void) ใบที่ออกผิดแล้วออกใหม่ได้
   (ดูหัวข้อ ✨ ฟีเจอร์ และ `docs/DECISIONS.md` #19) — **ยังไม่ทำ e-Tax invoice** (ยื่นอิเล็กทรอนิกส์
   ต่อกรมสรรพากรโดยตรง) ตามที่วางแผนเลื่อนไปเฟสถัดไป
+- [x] **Audit log** — ทำแล้ว: บันทึก action เสี่ยงต่อการทุจริตหน้าร้านแบบ append-only (ยกเลิกออเดอร์,
+  ยกเลิกรายการหลังส่งครัว, แก้ไขส่วนลด, ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์/ตั้งรหัสผ่านใหม่ให้พนักงาน,
+  แก้ VAT/ค่าบริการ, คืนเงิน, ยกเลิกใบกำกับภาษี) พร้อมผู้ทำ/เวลา/เหตุผล หน้าจอดูประวัติเห็นเฉพาะ
+  admin filter ตามประเภท action ได้ (ดูหัวข้อ ✨ ฟีเจอร์ และ `docs/DECISIONS.md` #21)
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 
@@ -802,7 +826,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 20 ข้อ พร้อมข้อเสียที่ยอมรับ
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 21 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้

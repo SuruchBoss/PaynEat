@@ -8,6 +8,7 @@ import { calculateItemsShare } from '../orders/order.calculator.js';
 import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
 import { toPaymentDto } from './payment.mapper.js';
@@ -204,13 +205,28 @@ export const paymentService = {
       throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
     }
 
-    const refund = refundRepository.create({
-      paymentId,
-      orderId: payment.order_id,
-      amount: amountSatang,
-      reason,
-      refundedBy: user.id,
-    });
+    const order = orderRepository.findById(payment.order_id);
+
+    const refund = getDb().transaction(() => {
+      const created = refundRepository.create({
+        paymentId,
+        orderId: payment.order_id,
+        amount: amountSatang,
+        reason,
+        refundedBy: user.id,
+      });
+      auditLogService.log({
+        actorUser: user,
+        action: 'payment.refund',
+        entityType: 'refund',
+        entityId: created.id,
+        summary: `คืนเงิน ${toBaht(amountSatang)} บาท ให้ออเดอร์ #${order?.code ?? payment.order_id}`,
+        reason,
+        metadata: { paymentId, orderId: payment.order_id, amount: toBaht(amountSatang) },
+      });
+      return created;
+    })();
+
     const dto = toRefundDto(refund);
     emit(EVENTS.REFUND_CREATED, dto);
     return dto;

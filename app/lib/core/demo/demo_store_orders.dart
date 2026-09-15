@@ -230,10 +230,12 @@ extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> updateItemStatus(
     int orderId,
     int itemId,
-    String status,
-  ) {
+    String status, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     final item = _findItem(order, itemId);
+    final previousItemStatus = item['status'] as String;
 
     const transitions = {
       OrderItemStatus.pending: [
@@ -270,6 +272,26 @@ extension DemoStoreOrders on DemoStore {
 
     item['status'] = status;
     item['updatedAt'] = _now();
+
+    // log เฉพาะการ void รายการที่ครัวลงมือทำแล้ว (pending ยกเลิกเองยังไม่ถือว่าเสี่ยง)
+    // mirror ของ order.service.js#updateItemStatus — ดู docs/tickets/08-audit-log.md
+    if (status == OrderItemStatus.cancelled &&
+        previousItemStatus != OrderItemStatus.pending) {
+      _logAudit(
+        actorId: actorId,
+        action: 'order_item.void',
+        entityType: 'order_item',
+        entityId: itemId,
+        summary:
+            'ยกเลิกรายการ "${item['name']}" ในออเดอร์ #${order['code']} '
+            '(สถานะก่อนยกเลิก: $previousItemStatus)',
+        metadata: {
+          'orderId': orderId,
+          'orderCode': order['code'],
+          'previousStatus': previousItemStatus,
+        },
+      );
+    }
 
     final active = (order['items'] as List)
         .where((row) => row['status'] != OrderItemStatus.cancelled)
@@ -310,11 +332,39 @@ extension DemoStoreOrders on DemoStore {
     return _recalculate(order);
   }
 
-  Map<String, dynamic> applyDiscount(int orderId, String type, double value) {
+  Map<String, dynamic> applyDiscount(
+    int orderId,
+    String type,
+    double value, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     _assertMutable(order);
+    final previousType = order['discountType'];
+    final previousValue = order['discountValue'];
     order['discountType'] = type;
     order['discountValue'] = type == DiscountType.none ? 0.0 : value;
+
+    // mirror ของ order.service.js#applyDiscount — log ทุกครั้งที่แก้ส่วนลด
+    // รวมถึงตอนยกเลิกส่วนลด (type == none) ดู docs/tickets/08-audit-log.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.discount',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary: type == DiscountType.none
+          ? 'ยกเลิกส่วนลดออเดอร์ #${order['code']}'
+          : 'ให้ส่วนลดออเดอร์ #${order['code']} เป็น $value'
+                '${type == DiscountType.percent ? '%' : ' บาท'}',
+      metadata: {
+        'orderCode': order['code'],
+        'previousType': previousType,
+        'previousValue': previousValue,
+        'newType': type,
+        'newValue': order['discountValue'],
+      },
+    );
+
     return _recalculate(order);
   }
 
@@ -385,7 +435,7 @@ extension DemoStoreOrders on DemoStore {
     return _recalculate(target);
   }
 
-  Map<String, dynamic> cancelOrder(int orderId, String reason) {
+  Map<String, dynamic> cancelOrder(int orderId, String reason, {int? actorId}) {
     final order = findOrder(orderId);
     if (order['status'] == OrderStatus.paid) {
       throw ApiException(
@@ -412,6 +462,16 @@ extension DemoStoreOrders on DemoStore {
     order['cancelledReason'] = reason;
     order['closedAt'] = _now();
     _freeTable(order);
+
+    _logAudit(
+      actorId: actorId,
+      action: 'order.cancel',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary: 'ยกเลิกออเดอร์ #${order['code']}',
+      reason: reason,
+      metadata: {'orderCode': order['code']},
+    );
 
     return _recalculate(order);
   }

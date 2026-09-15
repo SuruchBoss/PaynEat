@@ -5,6 +5,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../audit_log/domain/usecases/audit_log_usecases.dart';
+import '../../../audit_log/presentation/controllers/audit_log_controller.dart';
+import '../../../audit_log/presentation/pages/audit_log_page.dart';
 import '../../../auth/presentation/pages/profile_page.dart';
 import '../../../ingredient/domain/usecases/ingredient_usecases.dart';
 import '../../../ingredient/presentation/controllers/ingredients_controller.dart';
@@ -149,6 +152,10 @@ class HomeBinding extends Bindings {
       ),
       fenix: true,
     );
+    Get.lazyPut(
+      () => AuditLogController(getAuditLogs: Get.find<GetAuditLogsUseCase>()),
+      fenix: true,
+    );
   }
 
   /// เมนูที่แต่ละบทบาทเห็น — เป็นฟังก์ชันบริสุทธิ์จึงเขียนเทสต์ได้ง่าย
@@ -228,9 +235,32 @@ class HomeBinding extends Bindings {
       selectedIcon: Icons.point_of_sale_rounded,
       page: ShiftPage(),
     );
+    // เฉพาะ admin เท่านั้น (ไม่รวม manager) mirror ของ audit-log.routes.js —
+    // ดู docs/tickets/08-audit-log.md
+    const auditLog = HomeDestination(
+      label: 'home_nav_audit_log',
+      icon: Icons.history_outlined,
+      selectedIcon: Icons.history_rounded,
+      page: AuditLogPage(),
+    );
 
     return switch (role) {
-      UserRole.admin || UserRole.manager => const [
+      UserRole.admin => const [
+        dashboard,
+        tables,
+        orders,
+        kitchen,
+        menu,
+        ingredients,
+        promotions,
+        staff,
+        auditLog,
+        reports,
+        shift,
+        settings,
+        profile,
+      ],
+      UserRole.manager => const [
         dashboard,
         tables,
         orders,

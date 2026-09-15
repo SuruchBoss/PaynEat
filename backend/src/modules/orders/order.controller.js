@@ -63,7 +63,7 @@ export const orderController = {
   ),
 
   applyDiscount: asyncHandler(async (req, res) =>
-    ok(res, orderService.applyDiscount(req.validated.params.id, req.body)),
+    ok(res, orderService.applyDiscount(req.validated.params.id, req.body, req.user)),
   ),
 
   redeemPromotion: asyncHandler(async (req, res) =>
@@ -79,7 +79,7 @@ export const orderController = {
   ),
 
   cancel: asyncHandler(async (req, res) =>
-    ok(res, orderService.cancel(req.validated.params.id, req.body.reason)),
+    ok(res, orderService.cancel(req.validated.params.id, req.body.reason, req.user)),
   ),
 
   kitchenQueue: asyncHandler(async (req, res) => {

@@ -18,7 +18,7 @@ export const userController = {
   ),
 
   remove: asyncHandler(async (req, res) => {
-    userService.remove(req.validated.params.id, req.user.id);
+    userService.remove(req.validated.params.id, req.user);
     return noContent(res);
   }),
 };

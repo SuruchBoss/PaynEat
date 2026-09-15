@@ -31,6 +31,7 @@ tags:
   - name: Reports
   - name: Settings
   - name: TaxInvoices
+  - name: AuditLogs
 
 components:
   securitySchemes:
@@ -156,6 +157,38 @@ components:
         voidReason: { type: string, nullable: true }
         voidedBy: { type: integer, nullable: true }
         voidedByName: { type: string, nullable: true }
+    AuditLog:
+      type: object
+      description: |
+        รายการ audit log (ดู ticket 08) — append-only, ไม่มี endpoint แก้ไข/ลบ
+        บันทึกอย่างน้อย: ยกเลิกออเดอร์, ยกเลิกรายการหลังส่งครัว, แก้ไขส่วนลด, ปิดใช้งาน/ลบ/เปลี่ยนสิทธิ์/
+        ตั้งรหัสผ่านใหม่ให้พนักงาน, แก้ค่า VAT/ค่าบริการ, คืนเงิน, ยกเลิกใบกำกับภาษี
+      properties:
+        id: { type: integer }
+        actorUserId: { type: integer, nullable: true, description: null ถ้าผู้ทำถูกลบบัญชีไปแล้ว }
+        actorName: { type: string, example: ผู้จัดการสาขา, description: snapshot ชื่อผู้ทำไว้ตอนบันทึก }
+        action:
+          type: string
+          example: order.cancel
+          enum:
+            [
+              order.cancel,
+              order_item.void,
+              order.discount,
+              user.deactivate,
+              user.delete,
+              user.role_change,
+              user.password_reset,
+              settings.update,
+              payment.refund,
+              tax_invoice.void,
+            ]
+        entityType: { type: string, example: order }
+        entityId: { type: integer, nullable: true }
+        summary: { type: string, example: 'ยกเลิกออเดอร์ #ORD-20260101-0001' }
+        reason: { type: string, nullable: true }
+        metadata: { type: object, nullable: true, description: รายละเอียดก่อน/หลังแบบ structured }
+        createdAt: { type: string, format: date-time }
     Table:
       type: object
       properties:
@@ -1132,3 +1165,37 @@ paths:
       responses:
         '200': { description: ยกเลิกสำเร็จ }
         '404': { description: ยังไม่มีใบกำกับภาษีที่ยกเลิกได้ }
+
+  /audit-logs:
+    get:
+      tags: [AuditLogs]
+      summary: ประวัติ audit log ทั้งหมด (admin เท่านั้น) — filter ตามผู้ใช้/action/ประเภท/ช่วงเวลาได้
+      parameters:
+        - { in: query, name: actorUserId, schema: { type: integer } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: entityType, schema: { type: string } }
+        - { in: query, name: entityId, schema: { type: integer } }
+        - { in: query, name: dateFrom, schema: { type: string, format: date } }
+        - { in: query, name: dateTo, schema: { type: string, format: date } }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 20 } }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditLog' }
+                  meta:
+                    type: object
+                    properties:
+                      page: { type: integer }
+                      limit: { type: integer }
+                      total: { type: integer }
+                      totalPages: { type: integer }
+        '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }

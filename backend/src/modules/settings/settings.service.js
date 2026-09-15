@@ -1,4 +1,6 @@
 import { env } from '../../config/env.js';
+import { getDb } from '../../db/index.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { settingsRepository } from './settings.repository.js';
 
 const NUMBER_KEYS = new Set(['vat_rate', 'service_charge_rate']);
@@ -22,7 +24,7 @@ export const settingsService = {
     };
   },
 
-  update(payload) {
+  update(payload, actingUser) {
     const map = {
       storeName: 'store_name',
       currency: 'currency',
@@ -33,12 +35,45 @@ export const settingsService = {
       storeAddress: 'store_address',
       storeBranch: 'store_branch',
     };
-    for (const [field, key] of Object.entries(map)) {
-      if (payload[field] === undefined) continue;
-      const value =
-        NUMBER_KEYS.has(key) || BOOLEAN_KEYS.has(key) ? String(payload[field]) : payload[field];
-      settingsRepository.set(key, value);
-    }
+    // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) ที่ต้อง log — ดู
+    // docs/tickets/08-audit-log.md
+    const before = this.get();
+
+    getDb().transaction(() => {
+      for (const [field, key] of Object.entries(map)) {
+        if (payload[field] === undefined) continue;
+        const value =
+          NUMBER_KEYS.has(key) || BOOLEAN_KEYS.has(key) ? String(payload[field]) : payload[field];
+        settingsRepository.set(key, value);
+      }
+
+      const rateChanges = [];
+      if (payload.vatRate !== undefined && payload.vatRate !== before.vatRate) {
+        rateChanges.push(`VAT ${before.vatRate}% → ${payload.vatRate}%`);
+      }
+      if (
+        payload.serviceChargeRate !== undefined &&
+        payload.serviceChargeRate !== before.serviceChargeRate
+      ) {
+        rateChanges.push(`ค่าบริการ ${before.serviceChargeRate}% → ${payload.serviceChargeRate}%`);
+      }
+      if (rateChanges.length && actingUser) {
+        auditLogService.log({
+          actorUser: actingUser,
+          action: 'settings.update',
+          entityType: 'settings',
+          entityId: null,
+          summary: `แก้ไขการตั้งค่า: ${rateChanges.join(', ')}`,
+          metadata: {
+            previousVatRate: before.vatRate,
+            newVatRate: payload.vatRate,
+            previousServiceChargeRate: before.serviceChargeRate,
+            newServiceChargeRate: payload.serviceChargeRate,
+          },
+        });
+      }
+    })();
+
     return this.get();
   },
 };

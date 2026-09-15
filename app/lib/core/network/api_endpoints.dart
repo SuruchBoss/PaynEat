@@ -83,4 +83,7 @@ class ApiEndpoints {
   static String taxInvoice(int orderId) => '/tax-invoices/order/$orderId';
   static String taxInvoiceVoid(int orderId) =>
       '/tax-invoices/order/$orderId/void';
+
+  // Audit logs
+  static const String auditLogs = '/audit-logs';
 }

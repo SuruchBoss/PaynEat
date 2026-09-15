@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-442%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-460%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 442 automated tests.
+control and 460 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -254,6 +254,10 @@ The login page has one-tap buttons for each account — no need to type anything
     **Reports** page)
 12. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
     names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
+13. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
+    filter by action type with the chips at the top; it's empty for now — go void the tax invoice you
+    issued in step 9 first (tap **"Void this invoice"** on that receipt page), then come back here and
+    you'll see a brand-new log entry with who did it, when, and the reason you typed
 
 **Want to try the hidden business rules?**
 
@@ -271,14 +275,19 @@ The login page has one-tap buttons for each account — no need to type anything
 - Try requesting a tax invoice again for the same bill → rejected (only 1 active invoice per bill) —
   log in as `manager` and tap **"Void this invoice"** on that same receipt page first, and you can
   issue a fresh one for that bill again with a brand-new running number (see `docs/DECISIONS.md` #19)
+- Every action that's risky for front-of-house fraud (cancelling an order, voiding an item after it's
+  sent to the kitchen, editing a discount, deactivating/deleting/changing the role of a staff account,
+  editing VAT/service charge, a refund, voiding a tax invoice) is always recorded on the **Audit Log**
+  page (`admin` only) with who did it, when, and why — try any of the above, then go check that page
+  (see step 13 in the tour and `docs/DECISIONS.md` #21)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 185 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 257 cases — domain / controller / widget
+cd backend && npm test      # 195 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 265 cases — domain / controller / widget
 ```
 
 ---
@@ -377,6 +386,11 @@ cd app && flutter test      # 257 cases — domain / controller / widget
   automatically when an item is cancelled/removed); a menu item is auto-marked sold out when any linked
   ingredient runs out, and auto-re-enabled once restocked, with a low-stock alert screen (see
   `docs/DECISIONS.md` #15)
+- **Audit Log** (`admin` only) — records every action that's risky for front-of-house fraud, append-only
+  (no UI anywhere can edit or delete an entry): cancelling an order, voiding an order item after it's
+  been sent to the kitchen, editing a discount, deactivating/deleting/changing the role of/resetting the
+  password for a staff account, editing VAT/service charge, a refund, and voiding a tax invoice — each
+  with who did it, when, and the reason given; filterable by action type (see `docs/DECISIONS.md` #21)
 
 ### 🔐 System
 
@@ -665,6 +679,7 @@ Open **http://localhost:3000/docs** for interactive, try-it-yourself documentati
 | GET | `/reports/summary` | Management | Sales summary for a date range |
 | GET/PATCH | `/settings` | Anyone / admin | Store settings |
 | GET/POST/PATCH/DELETE | `/users` | admin, manager | Staff management |
+| GET | `/audit-logs` | admin | Log of front-of-house-fraud-risk actions (filterable) |
 
 </details>
 
@@ -690,11 +705,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 185 cases
-cd app && flutter test      # 257 cases
+cd backend && npm test      # 195 cases
+cd app && flutter test      # 265 cases
 ```
 
-**Backend (185 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (195 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -747,7 +762,13 @@ except `/docs` (Swagger UI needs inline script/style). `seed-production-safety.t
 confirms `NODE_ENV=production` refuses to seed accounts with the known demo passwords (`admin123` etc.) —
 each account's password must be set explicitly via `SEED_*_PASSWORD` first (see `docs/DECISIONS.md` #20).
 
-**Flutter (257 cases)** — split into 3 levels:
+`audit-logs.test.js` (10 new cases) tests that every risky action is logged correctly: cancelling an
+order (with reason/actor), voiding an order item only after it's been sent to the kitchen (cancelling
+while still pending must not log), editing a discount, deactivating/resetting-password/changing-role/
+deleting a staff account (renaming alone must not log), editing VAT logs but editing the store name
+alone doesn't, a refund, voiding a tax invoice, and RBAC (admin-only) (see `docs/DECISIONS.md` #21).
+
+**Flutter (265 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -755,7 +776,7 @@ each account's password must be set explicitly via `SEED_*_PASSWORD` first (see 
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 12 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, and the tax-invoice issue/void/reissue flow with running numbers |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, and the audit-log flow covering every risky action (ticket 08) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -830,6 +851,11 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   and reissuing it is supported (see the ✨ Features section and `docs/DECISIONS.md` #19) — **e-Tax
   invoice** (filing directly with the Revenue Department electronically) is **not done yet**, deliberately
   deferred to a later phase
+- [x] **Audit log** — done: records every action risky for front-of-house fraud, append-only (cancelling
+  an order, voiding an item after it's sent to the kitchen, editing a discount, deactivating/deleting/
+  changing the role of/resetting the password for a staff account, editing VAT/service charge, a refund,
+  voiding a tax invoice) with who did it, when, and why; the log page is admin-only and filterable by
+  action type (see the ✨ Features section and `docs/DECISIONS.md` #21)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -847,7 +873,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 20 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 21 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

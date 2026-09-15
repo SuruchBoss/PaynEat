@@ -1,3 +1,5 @@
+import '../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
+import '../../features/audit_log/data/models/audit_log_model.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/models/user_model.dart';
 import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
@@ -302,7 +304,12 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
   Future<OrderModel> updateItemStatus(int orderId, int itemId, String status) =>
       _delayed(
         () => OrderModel.fromJson(
-          _store.updateItemStatus(orderId, itemId, status),
+          _store.updateItemStatus(
+            orderId,
+            itemId,
+            status,
+            actorId: _auth.currentUserId,
+          ),
         ),
       );
 
@@ -313,12 +320,22 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
   @override
   Future<OrderModel> applyDiscount(int orderId, String type, double value) =>
       _delayed(
-        () => OrderModel.fromJson(_store.applyDiscount(orderId, type, value)),
+        () => OrderModel.fromJson(
+          _store.applyDiscount(
+            orderId,
+            type,
+            value,
+            actorId: _auth.currentUserId,
+          ),
+        ),
       );
 
   @override
-  Future<OrderModel> cancelOrder(int orderId, String reason) =>
-      _delayed(() => OrderModel.fromJson(_store.cancelOrder(orderId, reason)));
+  Future<OrderModel> cancelOrder(int orderId, String reason) => _delayed(
+    () => OrderModel.fromJson(
+      _store.cancelOrder(orderId, reason, actorId: _auth.currentUserId),
+    ),
+  );
 
   @override
   Future<OrderModel> moveTable(int orderId, int tableId) => _delayed(
@@ -601,9 +618,10 @@ class DemoReportDataSource implements ReportRemoteDataSource {
 }
 
 class DemoStaffDataSource implements StaffRemoteDataSource {
-  const DemoStaffDataSource(this._store);
+  const DemoStaffDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   @override
   Future<List<UserModel>> getStaff({String? role}) => _delayed(
@@ -632,22 +650,31 @@ class DemoStaffDataSource implements StaffRemoteDataSource {
   );
 
   @override
-  Future<UserModel> update(int id, Map<String, dynamic> changes) =>
-      _delayed(() => UserModel.fromJson(_store.updateStaff(id, changes)));
-
-  @override
-  Future<UserModel> resetPassword(int id, String password) => _delayed(
-    () => UserModel.fromJson(_store.updateStaff(id, {'password': password})),
+  Future<UserModel> update(int id, Map<String, dynamic> changes) => _delayed(
+    () => UserModel.fromJson(
+      _store.updateStaff(id, changes, actorId: _auth.currentUserId),
+    ),
   );
 
   @override
-  Future<void> delete(int id) => _delayed(() => _store.deleteStaff(id));
+  Future<UserModel> resetPassword(int id, String password) => _delayed(
+    () => UserModel.fromJson(
+      _store.updateStaff(id, {
+        'password': password,
+      }, actorId: _auth.currentUserId),
+    ),
+  );
+
+  @override
+  Future<void> delete(int id) =>
+      _delayed(() => _store.deleteStaff(id, actorId: _auth.currentUserId));
 }
 
 class DemoSettingsDataSource implements SettingsRemoteDataSource {
-  const DemoSettingsDataSource(this._store);
+  const DemoSettingsDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   StoreSettings _map(Map<String, dynamic> json) => StoreSettings(
     storeName: json['storeName'] as String,
@@ -664,8 +691,35 @@ class DemoSettingsDataSource implements SettingsRemoteDataSource {
   Future<StoreSettings> get() => _delayed(() => _map(_store.settings));
 
   @override
-  Future<StoreSettings> update(Map<String, dynamic> changes) => _delayed(() {
-    changes.forEach((key, value) => _store.settings[key] = value);
-    return _map(_store.settings);
-  });
+  Future<StoreSettings> update(Map<String, dynamic> changes) => _delayed(
+    () => _map(_store.updateSettings(changes, actorId: _auth.currentUserId)),
+  );
+}
+
+class DemoAuditLogDataSource implements AuditLogRemoteDataSource {
+  const DemoAuditLogDataSource(this._store);
+
+  final DemoStore _store;
+
+  @override
+  Future<List<AuditLogModel>> list({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+    int limit = 50,
+  }) => _delayed(
+    () => _store
+        .auditLogList(
+          actorUserId: actorUserId,
+          action: action,
+          entityType: entityType,
+          dateFrom: dateFrom,
+          dateTo: dateTo,
+          limit: limit,
+        )
+        .map(AuditLogModel.fromJson)
+        .toList(growable: false),
+  );
 }

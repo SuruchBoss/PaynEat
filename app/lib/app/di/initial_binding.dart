@@ -9,6 +9,10 @@ import '../../core/services/offline_order_queue_service.dart';
 import '../../core/services/printer_settings_service.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/storage_service.dart';
+import '../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
+import '../../features/audit_log/data/repositories/audit_log_repository_impl.dart';
+import '../../features/audit_log/domain/repositories/audit_log_repository.dart';
+import '../../features/audit_log/domain/usecases/audit_log_usecases.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
@@ -165,6 +169,10 @@ class InitialBinding extends Bindings {
       () => TaxInvoiceRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<AuditLogRemoteDataSource>(
+      () => AuditLogRemoteDataSourceImpl(client),
+      fenix: true,
+    );
   }
 
   /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -195,9 +203,12 @@ class InitialBinding extends Bindings {
       DemoReportDataSource(store),
       permanent: true,
     );
-    Get.put<StaffRemoteDataSource>(DemoStaffDataSource(store), permanent: true);
+    Get.put<StaffRemoteDataSource>(
+      DemoStaffDataSource(store, auth),
+      permanent: true,
+    );
     Get.put<SettingsRemoteDataSource>(
-      DemoSettingsDataSource(store),
+      DemoSettingsDataSource(store, auth),
       permanent: true,
     );
     Get.put<ShiftRemoteDataSource>(
@@ -206,6 +217,10 @@ class InitialBinding extends Bindings {
     );
     Get.put<TaxInvoiceRemoteDataSource>(
       DemoTaxInvoiceDataSource(store, auth),
+      permanent: true,
+    );
+    Get.put<AuditLogRemoteDataSource>(
+      DemoAuditLogDataSource(store),
       permanent: true,
     );
   }
@@ -260,6 +275,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<TaxInvoiceRepository>(
       () => TaxInvoiceRepositoryImpl(Get.find<TaxInvoiceRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<AuditLogRepository>(
+      () => AuditLogRepositoryImpl(Get.find<AuditLogRemoteDataSource>()),
       fenix: true,
     );
   }
@@ -464,6 +483,12 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut(
       () => VoidTaxInvoiceUseCase(Get.find<TaxInvoiceRepository>()),
+      fenix: true,
+    );
+
+    // audit log
+    Get.lazyPut(
+      () => GetAuditLogsUseCase(Get.find<AuditLogRepository>()),
       fenix: true,
     );
 
