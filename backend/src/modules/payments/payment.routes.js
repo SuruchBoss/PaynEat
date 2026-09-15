@@ -7,6 +7,7 @@ import {
   splitPreviewSchema,
   createRefundSchema,
   idParamSchema,
+  promptPayQrQuerySchema,
 } from './payment.schema.js';
 
 const router = Router();
@@ -34,5 +35,12 @@ router.post(
 router.get('/order/:id', validate({ params: idParamSchema }), paymentController.summary);
 
 router.get('/order/:id/receipt', validate({ params: idParamSchema }), paymentController.receipt);
+
+router.get(
+  '/promptpay-qr',
+  cashier,
+  validate({ query: promptPayQrQuerySchema }),
+  paymentController.promptPayQr,
+);
 
 export default router;

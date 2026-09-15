@@ -474,5 +474,8 @@ class DemoSeed {
     // แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — ค่าเริ่มต้นตรงกับ backend
     'pointsEarnRateBaht': 25.0,
     'pointsRedeemValueBaht': 1.0,
+    // เลขพร้อมเพย์ของร้านตัวอย่าง (ดู docs/tickets/16-promptpay-qr.md) — seed ไว้ให้เห็น QR
+    // จริงได้ทันทีตอนเลือกช่องทางจ่าย "qr" โดยไม่ต้องตั้งค่าเอง
+    'promptPayId': '0812345678',
   };
 }

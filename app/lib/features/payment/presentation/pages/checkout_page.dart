@@ -12,6 +12,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../order/presentation/widgets/bill_summary.dart';
 import '../controllers/checkout_controller.dart';
+import '../widgets/promptpay_qr_view.dart';
 
 /// หน้าชำระเงิน
 class CheckoutPage extends GetView<CheckoutController> {
@@ -367,15 +368,22 @@ class _PaymentForm extends GetView<CheckoutController> {
                       ),
                     ],
                   )
-                : Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: TextField(
-                      controller: controller.referenceController,
-                      decoration: InputDecoration(
-                        labelText: 'payment_reference_label'.tr,
-                        hintText: 'payment_reference_hint'.tr,
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (controller.method.value == PaymentMethod.qr)
+                        const PromptPayQrView(),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: TextField(
+                          controller: controller.referenceController,
+                          decoration: InputDecoration(
+                            labelText: 'payment_reference_label'.tr,
+                            hintText: 'payment_reference_hint'.tr,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
           ),
           const SizedBox(height: 18),

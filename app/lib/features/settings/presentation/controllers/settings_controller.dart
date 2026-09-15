@@ -32,6 +32,7 @@ class SettingsController extends GetxController {
       TextEditingController();
   final TextEditingController pointsRedeemValueController =
       TextEditingController();
+  final TextEditingController promptPayIdController = TextEditingController();
 
   @override
   void onInit() {
@@ -49,6 +50,7 @@ class SettingsController extends GetxController {
     storeBranchController.dispose();
     pointsEarnRateController.dispose();
     pointsRedeemValueController.dispose();
+    promptPayIdController.dispose();
     super.onClose();
   }
 
@@ -75,6 +77,7 @@ class SettingsController extends GetxController {
         );
         pointsRedeemValueController.text = data.pointsRedeemValueBaht
             .toStringAsFixed(2);
+        promptPayIdController.text = data.promptPayId ?? '';
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -119,6 +122,7 @@ class SettingsController extends GetxController {
         storeBranch: storeBranchController.text.trim(),
         pointsEarnRateBaht: pointsEarnRate,
         pointsRedeemValueBaht: pointsRedeemValue,
+        promptPayId: promptPayIdController.text.trim(),
       ),
     );
     isSaving.value = false;

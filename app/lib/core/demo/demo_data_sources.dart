@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import '../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
 import '../../features/audit_log/data/models/audit_log_model.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -31,6 +33,8 @@ import '../../features/staff/data/datasources/staff_remote_data_source.dart';
 import '../../features/tax_invoice/data/datasources/tax_invoice_remote_data_source.dart';
 import '../../features/tax_invoice/data/models/tax_invoice_model.dart';
 import '../constants/app_constants.dart';
+import '../errors/exceptions.dart';
+import '../utils/promptpay.dart';
 import 'demo_store.dart';
 
 /// Data source ชุด "Demo Mode"
@@ -515,6 +519,22 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
       });
 
   @override
+  Future<PromptPayQrModel> getPromptPayQr(double? amount) => _delayed(() {
+    final promptPayId = _store.settings['promptPayId'] as String?;
+    if (promptPayId == null || promptPayId.isEmpty) {
+      throw ApiException(
+        message: 'settings_promptpay_not_configured_error'.tr,
+        statusCode: 400,
+      );
+    }
+    return PromptPayQrModel(
+      payload: buildPromptPayPayload(promptPayId: promptPayId, amount: amount),
+      promptPayId: promptPayId,
+      amount: amount,
+    );
+  });
+
+  @override
   Future<RefundModel> refund({
     required int paymentId,
     required double amount,
@@ -712,6 +732,7 @@ class DemoSettingsDataSource implements SettingsRemoteDataSource {
     pointsEarnRateBaht: (json['pointsEarnRateBaht'] as num?)?.toDouble() ?? 25,
     pointsRedeemValueBaht:
         (json['pointsRedeemValueBaht'] as num?)?.toDouble() ?? 1,
+    promptPayId: json['promptPayId'] as String?,
   );
 
   @override

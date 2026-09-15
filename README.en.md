@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-513%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-533%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 510 automated tests.
+control and 533 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -265,9 +265,10 @@ The login page has one-tap buttons for each account — no need to type anything
 8. **Back to the waiter window** → the status updates immediately; tap **"Served"**
 9. **Tap "Checkout / Close Bill"** → because you linked a customer in step 4, you'll see a **"Loyalty
    points"** box showing their points balance (a brand-new customer has none to redeem yet). Try a split
-   payment: pay 100 THB by QR first, then the rest in cash (the system tracks the remaining balance and
-   calculates change) — once fully paid, the customer automatically earns points based on the purchase
-   amount (25 THB per point by default)
+   payment: pick **"QR"** and pay 100 THB first → you'll see a **real, scannable PromptPay QR code**
+   (bound to the 100 THB automatically — try changing the amount and watch the QR update), then pay the
+   rest in cash (the system tracks the remaining balance and calculates change) — once fully paid, the
+   customer automatically earns points based on the purchase amount (25 THB per point by default)
 10. **You land on the receipt page** → see a **"Request tax invoice"** button — choose abbreviated
     (issued instantly) or full (enter the customer's name + address) → get a document with a
     continuous running number (e.g. `INV69-000001`) right away
@@ -319,14 +320,18 @@ The login page has one-tap buttons for each account — no need to type anything
   a customer at all, the redeem control won't even show up — try paying part of a linked order's bill
   with points and see how the "amount applied to the order" differs from the "amount actually collected"
   (see `docs/DECISIONS.md` #22)
+- Log in as `admin` → **Settings** → clear the **"PromptPay ID"** field and save → go back to checkout
+  and pick "QR" again → you get a clear error message instead of a broken screen or an empty QR — put
+  a number back (e.g. `0812345678`) and try again to see a real QR come back (see
+  `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 224 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 289 cases — domain / controller / widget
+cd backend && npm test      # 237 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 296 cases — domain / controller / widget
 ```
 
 ---
@@ -393,6 +398,10 @@ cd app && flutter test      # 289 cases — domain / controller / widget
   and the system automatically compares it against the expected total (cash drawer reconciliation) — a
   shift must be open before payments can be accepted
 - Accepts 4 payment methods: cash, PromptPay/QR, credit card, bank transfer
+- **Real PromptPay QR** — picking "QR" shows a real, scannable QR code built to the EMV QR standard,
+  bound to the amount automatically (set the store's PromptPay ID in Settings first) — no payment
+  gateway/callback yet, so the cashier still checks the slip/banking app before confirming, same as
+  bank transfer/card (see `docs/DECISIONS.md` #26)
 - **Split payment** — e.g. 100 THB by QR, the rest in cash — the system tracks the remaining balance
   automatically
 - **Split the bill per person** — pick which items each person is paying for; the system automatically
@@ -426,8 +435,10 @@ cd app && flutter test      # 289 cases — domain / controller / widget
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
-  branch (for issuing tax invoices — optional if the store isn't VAT-registered), and the loyalty
-  points exchange rate (baht spent per point earned / point value when redeemed)
+  branch (for issuing tax invoices — optional if the store isn't VAT-registered), the loyalty
+  points exchange rate (baht spent per point earned / point value when redeemed), and the **PromptPay
+  ID** (phone number/national ID/tax ID — required before the "QR" payment method can show a real QR,
+  see `docs/DECISIONS.md` #26)
 - **Receipt printer settings** — this device's IP/port/paper size, with a test-print button
 - **Conditional promotions/discounts** — create/edit/disable 3 promotion types (percent off, amount off,
   buy-one-get-one), with conditions for day/time window, eligible categories/menu items, minimum spend, and
@@ -765,11 +776,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 224 cases
-cd app && flutter test      # 289 cases
+cd backend && npm test      # 237 cases
+cd app && flutter test      # 296 cases
 ```
 
-**Backend (224 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (237 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -850,7 +861,15 @@ get 1, 2, 3), the KDS query (`findItemsByStatuses`) returns the correct `orderTy
 so they can be displayed distinctly, and checkout/payment for a takeaway order works normally with no
 step anywhere requiring a table (see `docs/DECISIONS.md` #23).
 
-**Flutter (289 cases)** — split into 3 levels:
+`promptpay.test.js` (8 new cases) tests the pure function that builds the PromptPay QR payload to the
+EMV QR standard: CRC-16/CCITT-FALSE matches the standard test vector, static QR (no amount) vs. dynamic
+QR (with an amount), a 13-digit national ID/tax ID uses a different tag than a phone number, non-digit
+characters get stripped from `promptPayId`, the TLV structure is self-consistent across every tag, and
+it throws when `promptPayId` is empty — plus 5 more cases across `settings.test.js`/`payment.test.js`
+for the new `GET /payments/promptpay-qr` endpoint and the new `promptPayId` settings field (see
+`docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26).
+
+**Flutter (296 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -883,6 +902,7 @@ step anywhere requiring a table (see `docs/DECISIONS.md` #23).
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
 | Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
 | Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |
+| Core | `promptpay_test.dart` | Mirrors the backend's PromptPay QR algorithm (EMV QR + CRC-16/CCITT-FALSE) in Dart for Demo Mode — includes a golden-value test that checks the payload matches the backend's output character-for-character (ticket 16) |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is
@@ -956,6 +976,13 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   — **not connecting to any external delivery platform** (Grab, LINE MAN, etc.) yet, deliberately, exactly
   as the ticket itself recommended: that scope is large and depends on each platform's own external API,
   and should become its own follow-up ticket once it's known which platform to integrate with first
+- [x] **Real PromptPay QR** — done: `qr` used to be just a label the cashier confirmed manually; now it
+  generates a real QR code to the EMV QR standard for the customer to scan, bound to the amount
+  automatically (set the store's PromptPay ID in Settings first) — the algorithm has full test coverage
+  on both the backend (JS) and Demo Mode (Dart), with a golden value proving both sides produce the exact
+  same payload (see the ✨ Features section, `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
+  — **no payment gateway/callback for automatic payment verification yet**, deliberately scoped out; the
+  cashier still checks the slip/banking app before confirming, same as bank transfer/card
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -966,6 +993,9 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   correctness must come straight from the server)
 - **PostgreSQL for multi-branch support** — deliberately scoped to a single branch for now (the repository
   layer is already isolated, so this wouldn't be a hard change if it's ever needed)
+- **PromptPay payment gateway/automatic payment-verification callback** — more than a single-branch
+  restaurant like this needs (it requires signing up as a merchant with a bank/provider); generating a
+  real, scannable QR code is enough for this scope (see `docs/tickets/16-promptpay-qr.md`)
 
 ---
 

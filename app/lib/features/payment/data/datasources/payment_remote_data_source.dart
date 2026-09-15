@@ -17,6 +17,7 @@ abstract class PaymentRemoteDataSource {
   Future<PaymentSummaryModel> getSummary(int orderId);
   Future<SplitPreviewModel> getSplitPreview(int orderId, List<int> itemIds);
   Future<({Receipt receipt, OrderModel order})> getReceipt(int orderId);
+  Future<PromptPayQrModel> getPromptPayQr(double? amount);
   Future<RefundModel> refund({
     required int paymentId,
     required double amount,
@@ -109,6 +110,15 @@ class PaymentRemoteDataSourceImpl implements PaymentRemoteDataSource {
       ),
       order: OrderModel.fromJson(data['order'] as Map<String, dynamic>),
     );
+  }
+
+  @override
+  Future<PromptPayQrModel> getPromptPayQr(double? amount) async {
+    final response = await _client.get(
+      ApiEndpoints.promptPayQr,
+      query: {'amount': amount},
+    );
+    return PromptPayQrModel.fromJson(response.asMap);
   }
 
   @override

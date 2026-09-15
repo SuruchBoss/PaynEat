@@ -11,6 +11,7 @@ class StoreSettings {
     this.storeBranch,
     this.pointsEarnRateBaht = 25,
     this.pointsRedeemValueBaht = 1,
+    this.promptPayId,
   });
 
   final String storeName;
@@ -29,6 +30,10 @@ class StoreSettings {
   /// มูลค่า 1 แต้มตอนใช้แลกส่วนลด เป็นบาท
   final double pointsEarnRateBaht;
   final double pointsRedeemValueBaht;
+
+  /// เลขพร้อมเพย์ของร้าน (เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษี) — ต้องตั้งก่อนช่องทางจ่าย
+  /// "qr" จะแสดง QR จริงได้ (ดู docs/tickets/16-promptpay-qr.md) เป็น null ได้จนกว่าจะตั้งค่าเอง
+  final String? promptPayId;
 
   double get vatPercent => vatRate * 100;
   double get serviceChargePercent => serviceChargeRate * 100;

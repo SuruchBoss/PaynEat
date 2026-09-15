@@ -52,6 +52,21 @@ class PaymentSummaryModel extends PaymentSummary {
       );
 }
 
+class PromptPayQrModel extends PromptPayQr {
+  const PromptPayQrModel({
+    required super.payload,
+    required super.promptPayId,
+    super.amount,
+  });
+
+  factory PromptPayQrModel.fromJson(Map<String, dynamic> json) =>
+      PromptPayQrModel(
+        payload: json['payload'] as String? ?? '',
+        promptPayId: json['promptPayId'] as String? ?? '',
+        amount: (json['amount'] as num?)?.toDouble(),
+      );
+}
+
 class RefundModel extends Refund {
   const RefundModel({
     required super.id,

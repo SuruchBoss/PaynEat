@@ -55,6 +55,7 @@ class _FakeSettingsRepository implements SettingsRepository {
     String? storeBranch,
     double? pointsEarnRateBaht,
     double? pointsRedeemValueBaht,
+    String? promptPayId,
   }) async => get();
 }
 

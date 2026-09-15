@@ -13,6 +13,7 @@ const updateSettingsSchema = z.object({
   storeTaxId: z.string().trim().max(20).optional(),
   storeAddress: z.string().trim().max(500).optional(),
   storeBranch: z.string().trim().max(80).optional(),
+  promptPayId: z.string().trim().max(20).optional(),
   pointsEarnRateBaht: z.number().positive().optional(),
   pointsRedeemValueBaht: z.number().min(0).optional(),
 });

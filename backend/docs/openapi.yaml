@@ -1034,6 +1034,20 @@ paths:
       summary: ข้อมูลใบเสร็จสำหรับพิมพ์
       responses:
         '200': { description: สำเร็จ }
+  /payments/promptpay-qr:
+    get:
+      tags: [Payments]
+      summary: >-
+        payload สำหรับสร้าง QR พร้อมเพย์จริง (มาตรฐาน EMV QRCPS) ให้ client เรนเดอร์เป็นภาพ QR เอง
+        — ไม่ระบุ amount ได้ static QR ที่ลูกค้ากรอกยอดเองตอนสแกน ดู docs/tickets/16-promptpay-qr.md
+      parameters:
+        - in: query
+          name: amount
+          schema: { type: number, minimum: 0.01, example: 176.55 }
+          description: ยอดที่ต้องการให้ QR ระบุไว้ (ไม่ใส่ = static QR ไม่ผูกยอด)
+      responses:
+        '200': { description: สำเร็จ }
+        '400': { description: ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์ (ตั้งได้ที่หน้าตั้งค่าระบบ) }
 
   /shifts/current:
     get:
@@ -1131,7 +1145,7 @@ paths:
       tags: [Settings]
       summary: >-
         ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี,
-        อัตราแต้มสะสม)
+        อัตราแต้มสะสม, เลขพร้อมเพย์)
       responses:
         '200': { description: สำเร็จ }
     patch:
@@ -1139,6 +1153,7 @@ paths:
       summary: >-
         แก้ไขค่าตั้งค่าร้าน (admin/manager) — storeTaxId/storeAddress/storeBranch ต้องตั้งก่อนออก
         ใบกำกับภาษีได้ — pointsEarnRateBaht/pointsRedeemValueBaht คุมอัตราแต้มสะสม (ดู ticket 09)
+        — promptPayId ต้องตั้งก่อนช่องทางจ่าย "qr" จะแสดง QR จริงได้ (ดู ticket 16)
       requestBody:
         content:
           application/json:
@@ -1153,6 +1168,10 @@ paths:
                   type: number
                   example: 1
                   description: มูลค่า 1 แต้มตอนใช้แลกส่วนลด เป็นบาท (ค่าเริ่มต้น 1)
+                promptPayId:
+                  type: string
+                  example: '0812345678'
+                  description: เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษีที่ผูกกับพร้อมเพย์ของร้าน
       responses:
         '200': { description: สำเร็จ }
 

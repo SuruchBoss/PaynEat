@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -23,12 +25,14 @@ class CheckoutController extends GetxController {
     required GetCurrentShiftUseCase getCurrentShift,
     required GetCustomerUseCase getCustomer,
     required GetSettingsUseCase getSettings,
+    required GetPromptPayQrUseCase getPromptPayQr,
   }) : _getOrder = getOrder,
        _getSummary = getSummary,
        _pay = pay,
        _getCurrentShift = getCurrentShift,
        _getCustomer = getCustomer,
-       _getSettings = getSettings;
+       _getSettings = getSettings,
+       _getPromptPayQr = getPromptPayQr;
 
   final GetOrderUseCase _getOrder;
   final GetPaymentSummaryUseCase _getSummary;
@@ -36,6 +40,7 @@ class CheckoutController extends GetxController {
   final GetCurrentShiftUseCase _getCurrentShift;
   final GetCustomerUseCase _getCustomer;
   final GetSettingsUseCase _getSettings;
+  final GetPromptPayQrUseCase _getPromptPayQr;
 
   final Rxn<Order> order = Rxn<Order>();
   final Rxn<PaymentSummary> summary = Rxn<PaymentSummary>();
@@ -49,6 +54,13 @@ class CheckoutController extends GetxController {
   final RxDouble amount = 0.0.obs;
   final RxDouble received = 0.0.obs;
   final RxInt pointsToRedeem = 0.obs;
+
+  // QR พร้อมเพย์ (ดู docs/tickets/16-promptpay-qr.md) — โหลดใหม่ทุกครั้งที่ยอด/แต้มที่แลก
+  // เปลี่ยนตอนเลือกช่องทาง "qr" อยู่ debounce ไว้กันยิง request รัวตอนพิมพ์ยอดเอง
+  final Rxn<PromptPayQr> promptPayQr = Rxn<PromptPayQr>();
+  final RxnString promptPayQrError = RxnString();
+  final RxBool isLoadingQr = false.obs;
+  Timer? _qrDebounce;
 
   final TextEditingController amountController = TextEditingController();
   final TextEditingController receivedController = TextEditingController();
@@ -69,6 +81,7 @@ class CheckoutController extends GetxController {
 
   @override
   void onClose() {
+    _qrDebounce?.cancel();
     amountController.dispose();
     receivedController.dispose();
     referenceController.dispose();
@@ -169,6 +182,12 @@ class CheckoutController extends GetxController {
     if (value != PaymentMethod.cash) {
       setReceived(amount.value);
     }
+    if (value == PaymentMethod.qr) {
+      _qrDebounce?.cancel();
+      _fetchPromptPayQr();
+    } else {
+      _qrDebounce?.cancel();
+    }
   }
 
   void setAmount(double value) {
@@ -179,15 +198,47 @@ class CheckoutController extends GetxController {
     if (pointsToRedeem.value > maxRedeemablePoints) {
       pointsToRedeem.value = maxRedeemablePoints;
     }
+    _scheduleQrReload();
   }
 
   /// ตั้งจำนวนแต้มที่จะแลกรอบนี้ — ถูกจำกัดไม่ให้เกิน [maxRedeemablePoints] เสมอ
   void setPointsToRedeem(int value) {
     pointsToRedeem.value = value.clamp(0, maxRedeemablePoints);
+    _scheduleQrReload();
   }
 
   void onAmountChanged(String value) {
     amount.value = double.tryParse(value.trim()) ?? 0;
+    _scheduleQrReload();
+  }
+
+  /// โหลด QR พร้อมเพย์ใหม่ทันที (ตอนเพิ่งเปลี่ยนมาเลือกช่องทาง "qr")
+  Future<void> _fetchPromptPayQr() async {
+    if (method.value != PaymentMethod.qr) return;
+    if (chargedAmount <= 0) {
+      promptPayQr.value = null;
+      promptPayQrError.value = null;
+      return;
+    }
+    isLoadingQr.value = true;
+    promptPayQrError.value = null;
+    final result = await _getPromptPayQr(chargedAmount);
+    isLoadingQr.value = false;
+    result.fold(
+      onSuccess: (data) => promptPayQr.value = data,
+      onFailure: (failure) {
+        promptPayQr.value = null;
+        promptPayQrError.value = failure.message;
+      },
+    );
+  }
+
+  /// หน่วงโหลด QR ใหม่ 350ms กันยิง request รัวตอนพิมพ์ยอดเอง — เรียกได้ตลอดแม้ยังไม่ได้
+  /// เลือกช่องทาง "qr" เพราะเช็คเงื่อนไขซ้ำใน [_fetchPromptPayQr] อยู่แล้ว
+  void _scheduleQrReload() {
+    if (method.value != PaymentMethod.qr) return;
+    _qrDebounce?.cancel();
+    _qrDebounce = Timer(const Duration(milliseconds: 350), _fetchPromptPayQr);
   }
 
   void setReceived(double value) {

@@ -50,6 +50,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
       });
 
   @override
+  Future<Result<PromptPayQr>> getPromptPayQr(double? amount) =>
+      guard(() async => await _remote.getPromptPayQr(amount));
+
+  @override
   Future<Result<Refund>> refund({
     required int paymentId,
     required double amount,

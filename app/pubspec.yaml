@@ -35,6 +35,7 @@ dependencies:
   # จำกัดเพดานไว้ที่ <1.2.3 เพราะ 1.2.3 ต้องการ Dart ^3.10.0 แต่ Flutter 3.35.1 ที่ CI
   # ล็อกไว้ (.github/workflows/ci.yml) มาพร้อม Dart 3.9.0 เท่านั้น — ยกเพดานได้เมื่ออัปเดต Flutter/CI
   image_picker: ">=1.2.0 <1.2.3"
+  qr_flutter: ^4.1.0
 
 dev_dependencies:
   flutter_test:

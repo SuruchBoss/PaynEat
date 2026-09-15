@@ -24,6 +24,7 @@ class CheckoutBinding extends Bindings {
         getCurrentShift: Get.find<GetCurrentShiftUseCase>(),
         getCustomer: Get.find<GetCustomerUseCase>(),
         getSettings: Get.find<GetSettingsUseCase>(),
+        getPromptPayQr: Get.find<GetPromptPayQrUseCase>(),
       ),
     );
   }

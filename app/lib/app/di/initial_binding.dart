@@ -484,6 +484,10 @@ class InitialBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
+      () => GetPromptPayQrUseCase(Get.find<PaymentRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
       () => RefundPaymentUseCase(Get.find<PaymentRepository>()),
       fenix: true,
     );

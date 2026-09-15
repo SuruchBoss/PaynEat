@@ -842,3 +842,40 @@ filter chip และป้ายชื่อใหม่ให้อัตโ�
 ทั้งหมด) แต่ฝั่ง Flutter ไม่มี Flutter SDK ในสภาพแวดล้อมที่พัฒนา (sandbox ไม่มี `flutter`/`dart`
 ติดตั้ง) จึงรีวิวโค้ด Demo Mode ด้วยมือแทนการรัน `flutter analyze`/`flutter test` จริง — ควรรัน
 ยืนยันอีกครั้งในสภาพแวดล้อมที่มี Flutter ก่อน merge ถ้าเป็นไปได้
+
+## 26. PromptPay QR — generate payload เองแทนพึ่ง payment gateway, mirror อัลกอริทึมเป็น Dart คู่กับ JS
+
+**ปัญหา** — ระหว่างตรวจ `docs/FEATURE-GAP-ANALYSIS.md` ซ้ำ พบว่า `qr` ใน `PAYMENT_METHODS`
+เป็นแค่ label ให้ cashier กดยืนยันเอง เหมือน `card`/`transfer` ทุกอย่าง ไม่มีการ generate QR
+ตามมาตรฐาน PromptPay (EMV QR) เลย ทั้งที่เป็น gap เดียวที่เหลืออยู่ใน 🔴 Critical (ดู
+`docs/tickets/16-promptpay-qr.md`)
+
+**ที่เลือก**
+
+- **Generate payload เองเป็น pure function ไม่พึ่ง payment gateway/npm package ภายนอก** —
+  อัลกอริทึม EMV QRCPS Merchant Presented Mode (TLV + CRC-16/CCITT-FALSE) เป็นมาตรฐานสาธารณะที่
+  เสถียร ไม่เปลี่ยนบ่อย เขียนเองสั้นกว่าและไม่ต้องเพิ่ม dependency ใหม่ฝั่ง backend — อ้างอิง
+  โครงสร้างจาก `dtinth/promptpay-qr` (MIT, implementation อ้างอิงที่ใช้กันแพร่หลายที่สุดสำหรับ
+  PromptPay ฝั่ง JS) และตรวจ CRC ด้วย test vector มาตรฐานของ CRC-16/CCITT-FALSE ("123456789" →
+  `0x29B1`) ก่อนเอามาใช้จริง
+- **Backend คำนวณ payload อย่างเดียว ไม่ generate ภาพ QR** — คืนเป็น string ให้ Flutter เรนเดอร์
+  เป็นภาพเองด้วย `qr_flutter` (เพิ่ม dependency ใหม่ฝั่ง Flutter) หลีกเลี่ยงการส่งไฟล์รูปภาพผ่าน
+  API และให้ Flutter ควบคุม UI/ขนาดภาพได้อิสระ
+- **Mirror อัลกอริทึมเป็น Dart อีกชุดสำหรับ Demo Mode** (`app/lib/core/utils/promptpay.dart`)
+  แทนที่จะบังคับให้ Demo Mode เรียก backend จริง (ซึ่งไม่มีให้เรียกตามนิยามของ Demo Mode) — เป็น
+  โค้ดคำนวณที่ซ้ำ Dart/JS ตามหลักการเดียวกับที่ `docs/DECISIONS.md` #2 วางไว้ (bill calculation)
+  จึงคุมด้วย **golden-value test**: คำนวณ payload ตัวอย่างเดียวกัน (เบอร์ `0812345678`, ยอด 100
+  บาท) จากทั้งสองฝั่งแล้วยืนยันว่าได้สตริงตรงกันเป๊ะทุกตัวอักษร (`test/core/utils/promptpay_test.dart`)
+  กันกรณี implement ผิดสเปกโดยไม่รู้ตัวข้างใดข้างหนึ่ง
+- **เพิ่ม field `promptPayId` แยกจาก `storeTaxId` ที่มีอยู่แล้ว** — แม้ทั้งคู่เป็น "เลขประจำร้าน"
+  เหมือนกัน แต่ร้านอาจอยากใช้เบอร์โทรเป็นเลขพร้อมเพย์ ต่างจากเลขผู้เสียภาษีที่ใช้ออกใบกำกับภาษี
+  (คนละความหมาย คนละ validation length) — ใช้ตาราง `settings` key-value เดิม ไม่ต้อง migration
+- **ไม่มี payment gateway/callback ตรวจสอบการจ่ายอัตโนมัติ** — ตามขอบเขตที่ gap analysis แนะนำไว้
+  แคชเชียร์ยังต้องเช็คสลิป/แอปธนาคารเองก่อนกดยืนยันรับชำระ เหมือนช่องทางโอน/บัตรเดิมทุกประการ ไม่ใช่
+  ฟีเจอร์ใหม่ที่ต้องเรียนรู้เพิ่ม
+- **ยังไม่ได้ตั้งค่าเลขพร้อมเพย์ → 400 พร้อมข้อความแจ้งชัดเจน** ไม่ใช่พังเงียบๆ หรือคืน QR ที่ใช้
+  งานจริงไม่ได้ (ทั้ง backend และ Demo Mode ใช้ข้อความเดียวกัน)
+
+**ข้อเสียที่ยอมรับ** — โค้ดคำนวณ EMV QR ซ้ำกัน 2 ภาษา (JS ฝั่ง backend, Dart ฝั่ง Demo Mode) เพิ่ม
+ภาระดูแลถ้าสเปกเปลี่ยน (ไม่น่าเกิดบ่อยเพราะเป็นมาตรฐานสาธารณะที่นิ่งแล้ว) แต่ golden-value test
+ป้องกันไม่ให้สองฝั่งเพี้ยนออกจากกันโดยไม่รู้ตัว — ยึดหลักการเดียวกับ #2

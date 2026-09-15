@@ -23,6 +23,7 @@ class UpdateSettingsParams {
     this.storeBranch,
     this.pointsEarnRateBaht,
     this.pointsRedeemValueBaht,
+    this.promptPayId,
   });
 
   final String? storeName;
@@ -34,6 +35,7 @@ class UpdateSettingsParams {
   final String? storeBranch;
   final double? pointsEarnRateBaht;
   final double? pointsRedeemValueBaht;
+  final String? promptPayId;
 }
 
 class UpdateSettingsUseCase
@@ -54,5 +56,6 @@ class UpdateSettingsUseCase
         storeBranch: params.storeBranch,
         pointsEarnRateBaht: params.pointsEarnRateBaht,
         pointsRedeemValueBaht: params.pointsRedeemValueBaht,
+        promptPayId: params.promptPayId,
       );
 }

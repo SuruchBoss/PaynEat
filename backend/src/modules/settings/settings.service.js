@@ -26,6 +26,10 @@ export const settingsService = {
       storeTaxId: raw.store_tax_id ?? null,
       storeAddress: raw.store_address ?? null,
       storeBranch: raw.store_branch ?? null,
+      // เลขพร้อมเพย์ของร้าน (เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษี) — ใช้สร้าง QR รับเงินจริง
+      // (ดู docs/tickets/16-promptpay-qr.md) แยกจาก storeTaxId เพราะร้านอาจอยากใช้เบอร์โทร
+      // เป็นเลขพร้อมเพย์ ต่างจากเลขผู้เสียภาษีที่ใช้ออกใบกำกับภาษี
+      promptPayId: raw.promptpay_id ?? null,
       // แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md)
       pointsEarnRateBaht: Number(raw.points_earn_rate_baht ?? env.store.pointsEarnRateBaht),
       pointsRedeemValueBaht: Number(
@@ -44,6 +48,7 @@ export const settingsService = {
       storeTaxId: 'store_tax_id',
       storeAddress: 'store_address',
       storeBranch: 'store_branch',
+      promptPayId: 'promptpay_id',
       pointsEarnRateBaht: 'points_earn_rate_baht',
       pointsRedeemValueBaht: 'points_redeem_value_baht',
     };

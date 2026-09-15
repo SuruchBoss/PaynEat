@@ -129,6 +129,20 @@ class Receipt {
   bool get isRefunded => refundedTotal > 0;
 }
 
+/// payload สำหรับ QR พร้อมเพย์ (ดู docs/tickets/16-promptpay-qr.md) — [payload] เอาไปเรนเดอร์
+/// เป็นภาพ QR ได้เลย (ผ่าน qr_flutter) ไม่ใช่ URL รูปภาพ
+class PromptPayQr {
+  const PromptPayQr({
+    required this.payload,
+    required this.promptPayId,
+    this.amount,
+  });
+
+  final String payload;
+  final String promptPayId;
+  final double? amount;
+}
+
 /// คืนเงินหลังชำระเงินแล้ว — ผูกกับ payment ที่ระบุเสมอ (เต็มจำนวนหรือบางส่วนก็ได้)
 class Refund {
   const Refund({
