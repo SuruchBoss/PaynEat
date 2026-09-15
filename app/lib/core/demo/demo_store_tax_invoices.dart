@@ -26,7 +26,7 @@ extension DemoStoreTaxInvoices on DemoStore {
   /// เลขที่ใบกำกับภาษีรูปแบบ INV<ปีพ.ศ. 2 หลัก>-<เลขรัน 6 หลัก> รีเซ็ตทุกปี พ.ศ.
   /// (mirror ของ backend: tax-invoice.service.js#nextRunningNumber)
   String _nextTaxInvoiceRunningNumber() {
-    final buddhistYear = DateTime.now().year + 543;
+    final buddhistYear = AppClock.now().year + 543;
     final yy = buddhistYear.toString().substring(
       buddhistYear.toString().length - 2,
     );
