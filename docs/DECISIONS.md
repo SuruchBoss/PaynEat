@@ -879,3 +879,50 @@ filter chip และป้ายชื่อใหม่ให้อัตโ�
 **ข้อเสียที่ยอมรับ** — โค้ดคำนวณ EMV QR ซ้ำกัน 2 ภาษา (JS ฝั่ง backend, Dart ฝั่ง Demo Mode) เพิ่ม
 ภาระดูแลถ้าสเปกเปลี่ยน (ไม่น่าเกิดบ่อยเพราะเป็นมาตรฐานสาธารณะที่นิ่งแล้ว) แต่ golden-value test
 ป้องกันไม่ให้สองฝั่งเพี้ยนออกจากกันโดยไม่รู้ตัว — ยึดหลักการเดียวกับ #2
+
+## 27. Audit ระดับบัญชี/การเงิน — export CSV เป็น web-only ด้วย `package:web`, ไม่ใช้ `dart:html` ที่ deprecated แล้ว
+
+**ปัญหา** — ticket 13 (ข้อ 25) ปิดฝั่งผู้จัดการร้าน ("ใครสั่ง/แก้ไขออเดอร์") แต่ตรวจโค้ดจริงพบว่า
+ฝั่งบัญชียังไม่ครบ: `menu.service.js` (แก้ราคาเมนู), `promotion.service.js` (สร้าง/แก้/ลบโปรโมชัน),
+`ingredient.service.js` (ปรับสต๊อกมือ) ไม่มีการเรียก `auditLogService.log()` เลย และหน้า "ประวัติการ
+ทำรายการ" ไม่มีทาง export ให้ฝ่ายบัญชี ไม่มี date range picker (ของค้างจากข้อ 21) ดู
+`docs/tickets/14-financial-audit-trail.md`
+
+**ที่เลือก**
+
+- **เพิ่ม action type ใหม่ 5 รายการเข้า infrastructure เดิมของข้อ 21/25** ไม่สร้างระบบ log แยก:
+  `menu.price_change`, `promotion.create`, `promotion.update`, `promotion.delete`,
+  `ingredient.stock_adjust` — `menu.price_change` log เฉพาะตอนราคาเปลี่ยนจริง (หลักการเดียวกับ
+  `order.item.edit` ในข้อ 25 ที่ไม่ log ทุก field) ส่วนโปรโมชัน/สต๊อกกระทบยอดขาย/ต้นทุนโดยตรงทุก
+  ครั้งจึง log ทุก action ไม่กรอง
+- **Export CSV เป็น pure function แยกจากการ generate ที่ backend** (`backend/src/core/csv.js`,
+  `app/lib/core/utils/csv.dart`) — RFC 4180 พื้นฐาน (escape comma/quote/newline) + UTF-8 BOM ขึ้นต้น
+  กัน Excel เปิดแล้วอักษรไทยเพี้ยน (Excel เดาเป็น ANSI ถ้าไม่มี BOM) — endpoint ใหม่
+  `GET /audit-logs/export` reuse filter เดิมของ `GET /audit-logs` แต่ไม่มี pagination (ดึงทุกแถวที่
+  ตรงเงื่อนไขครั้งเดียว เพราะ export ต้องได้ไฟล์ครบ ไม่ใช่แค่หน้าที่กำลังดูอยู่)
+- **ดาวน์โหลดไฟล์ฝั่ง Flutter ใช้ `package:web` + `dart:js_interop` ไม่ใช้ `dart:html`** — `dart:html`
+  ถูก mark `@Deprecated('Use package:web and dart:js_interop instead.')` ในเวอร์ชัน Dart SDK ที่
+  Flutter 3.35.1 ล็อกไว้อยู่แล้ว การใช้จะทำให้ `flutter analyze` ไม่ผ่าน (ต้องได้ "No issues found!"
+  เสมอ) จึงต้องใช้ทางที่ทีม Dart แนะนำแทนตั้งแต่แรก ไม่ใช่ hack ชั่วคราว
+- **Conditional export/import แยก implementation ตาม platform ตอน compile** —
+  `csv_download_web.dart` (สร้าง Blob + `<a download>` แล้วกดให้เอง) เลือกด้วย
+  `if (dart.library.js_interop)` ส่วน `csv_download_stub.dart` (แพลตฟอร์มอื่น โยน
+  `UnsupportedError`) เป็นค่าเริ่มต้น — ทดสอบแล้วว่า `flutter test` (รันบน Dart VM ไม่ใช่เว็บ) ได้
+  `isCsvDownloadSupported == false` เสมอ ตรงกับความเป็นจริงบนแอป mobile/desktop ด้วย (build
+  เป้าหมายที่ไม่ใช่เว็บก็ไม่มี `dart.library.js_interop` เหมือนกัน)
+- **จำกัดขอบเขต export ไว้แค่หน้าเว็บผู้ดูแลระบบเท่านั้น** — หน้า "ประวัติการทำรายการ" อยู่ใน
+  README หัวข้อ "🖥️ ผู้ดูแลระบบ (เว็บ)" อยู่แล้วตั้งแต่ต้น (เห็นเฉพาะ `admin` และเป็น flow ที่ออกแบบ
+  มาสำหรับหน้าจอกว้าง) การ export ไฟล์บนมือถือ/แท็บเล็ตต้องมี `path_provider`/`share_plus` เพิ่ม ซึ่ง
+  เกินความจำเป็นสำหรับ flow ที่ไม่ได้ใช้บนอุปกรณ์นั้นอยู่แล้ว
+- **ปุ่มเช็ค `isCsvDownloadSupported` ก่อนเรียก backend เสมอ** — ไม่เสียเวลายิง API ถ้าดาวน์โหลด
+  ไม่ได้อยู่ดี ขึ้นข้อความแจ้งชัดเจนแทนปุ่มที่กดแล้วไม่มีอะไรเกิดขึ้น
+- **Demo Mode mirror เต็มรูปแบบ** (`demo_store_menu.dart`/`demo_store_promotions.dart`/
+  `demo_store_ingredients.dart` เพิ่ม `_logAudit` เข้า `saveMenuItem`/`savePromotion`/
+  `deletePromotion`/`adjustIngredientStock`, `demo_store_audit_logs.dart` เพิ่ม
+  `auditLogExportCsv` ที่ใช้ `toCsv` ตัวเดียวกับหน้าจออื่น) — `DemoMenuDataSource`/
+  `DemoIngredientDataSource`/`DemoPromotionDataSource` ต้องรับ `DemoAuthDataSource` เพิ่มเพื่อรู้
+  `currentUserId` (เดิมไม่มีเพราะไม่เคย log อะไรมาก่อน)
+
+**ข้อเสียที่ยอมรับ** — ปุ่ม export ไม่โผล่ให้กดบน mobile/desktop เลย (ไม่ใช่แค่กดแล้ว error) — ยอมรับ
+เพราะหน้านี้เป็น admin/เว็บอยู่แล้วตามที่ออกแบบไว้ตั้งแต่ ticket 08 — ถ้าวันไหนต้องรองรับ mobile
+export จริง ต้องเพิ่ม `path_provider` + `share_plus` เป็น dependency ใหม่แยกต่างหาก

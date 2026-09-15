@@ -21,6 +21,13 @@ class AuditLogAction {
   static const String paymentRefund = 'payment.refund';
   static const String taxInvoiceVoid = 'tax_invoice.void';
 
+  // Audit ระดับบัญชี/การเงิน (ดู docs/tickets/14-financial-audit-trail.md)
+  static const String menuPriceChange = 'menu.price_change';
+  static const String promotionCreate = 'promotion.create';
+  static const String promotionUpdate = 'promotion.update';
+  static const String promotionDelete = 'promotion.delete';
+  static const String ingredientStockAdjust = 'ingredient.stock_adjust';
+
   static const List<String> all = [
     orderCreate,
     orderItemAdd,
@@ -38,6 +45,11 @@ class AuditLogAction {
     settingsUpdate,
     paymentRefund,
     taxInvoiceVoid,
+    menuPriceChange,
+    promotionCreate,
+    promotionUpdate,
+    promotionDelete,
+    ingredientStockAdjust,
   ];
 
   static const Map<String, String> _keys = {
@@ -57,6 +69,11 @@ class AuditLogAction {
     settingsUpdate: 'audit_log_action_settings_update',
     paymentRefund: 'audit_log_action_payment_refund',
     taxInvoiceVoid: 'audit_log_action_tax_invoice_void',
+    menuPriceChange: 'audit_log_action_menu_price_change',
+    promotionCreate: 'audit_log_action_promotion_create',
+    promotionUpdate: 'audit_log_action_promotion_update',
+    promotionDelete: 'audit_log_action_promotion_delete',
+    ingredientStockAdjust: 'audit_log_action_ingredient_stock_adjust',
   };
 
   static String translationKey(String action) => _keys[action] ?? action;

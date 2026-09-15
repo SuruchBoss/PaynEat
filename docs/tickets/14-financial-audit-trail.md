@@ -1,7 +1,7 @@
 # Ticket: Audit ระดับบัญชี/การเงิน (Financial/Accounting Audit)
 
 **Priority:** 🟠 High — ต่อยอดจาก `docs/tickets/13-order-audit-trail.md` (เสร็จแล้ว)
-**สถานะ:** ยังไม่ได้ทำ
+**สถานะ:** ✅ เสร็จแล้ว (ดู `docs/DECISIONS.md` #27)
 **Ref:** `docs/tickets/08-audit-log.md` (เสร็จแล้ว — audit ป้องกันทุจริตหน้าร้าน),
 `docs/tickets/13-order-audit-trail.md` (เสร็จแล้ว — audit ระดับผู้จัดการร้าน "ใครสั่ง/แก้ไข
 ออเดอร์"), `docs/tickets/12-report-export.md` (ยังไม่ได้ทำ — export รายงาน/Z-report)
@@ -58,16 +58,21 @@ audit) มักเริ่มจากอีกทิศทาง: **"ตั�
 
 ## Acceptance Criteria
 
-- [ ] แก้ราคาเมนูถูกบันทึก audit log (ราคาเก่า → ใหม่) แต่แก้ field อื่นที่ไม่กระทบราคาไม่ log
-- [ ] สร้าง/แก้ไข/ลบโปรโมชันถูกบันทึก audit log ครบ
-- [ ] ปรับสต๊อก/ต้นทุนวัตถุดิบด้วยมือถูกบันทึก audit log
-- [ ] Export audit log เป็น CSV ได้ตามช่วงวันที่/ตัวกรองที่เลือกไว้ (admin เท่านั้น)
-- [ ] หน้า "ประวัติการทำรายการ" มี date range picker ใช้งานได้จริง (ไม่ใช่แค่ backend รองรับ)
+- [x] แก้ราคาเมนูถูกบันทึก audit log (ราคาเก่า → ใหม่) แต่แก้ field อื่นที่ไม่กระทบราคาไม่ log
+- [x] สร้าง/แก้ไข/ลบโปรโมชันถูกบันทึก audit log ครบ
+- [x] ปรับสต๊อก/ต้นทุนวัตถุดิบด้วยมือถูกบันทึก audit log
+- [x] Export audit log เป็น CSV ได้ตามช่วงวันที่/ตัวกรองที่เลือกไว้ (admin เท่านั้น) — ปุ่ม
+  "ส่งออก CSV" บนหน้าเว็บผู้ดูแลระบบ (รองรับเฉพาะเว็บตามที่ฟีเจอร์นี้เจาะจงไว้)
+- [x] หน้า "ประวัติการทำรายการ" มี date range picker ใช้งานได้จริง (ไม่ใช่แค่ backend รองรับ)
 
 ## ไฟล์ที่เกี่ยวข้อง
 
 - `backend/src/modules/menu/menu.service.js`
 - `backend/src/modules/promotions/promotion.service.js`
 - `backend/src/modules/ingredients/ingredient.service.js`
-- `backend/src/modules/audit-logs/`
-- `app/lib/features/audit_log/presentation/pages/audit_log_page.dart`
+- `backend/src/modules/audit-logs/` (`+export` endpoint, `audit-log.repository.js#findAllForExport`)
+- `backend/src/core/csv.js` (pure CSV builder, ใช้ซ้ำได้ถ้ามี export อื่นในอนาคต)
+- `app/lib/features/audit_log/` (controller/page: date range picker + ปุ่ม export CSV)
+- `app/lib/core/utils/csv.dart`, `app/lib/core/utils/csv_download/` (mirror + platform shim)
+- `app/lib/core/demo/demo_store_menu.dart`, `demo_store_promotions.dart`,
+  `demo_store_ingredients.dart`, `demo_store_audit_logs.dart` (Demo Mode mirror)

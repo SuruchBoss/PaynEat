@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-533%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-554%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 533 automated tests.
+control and 554 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -278,7 +278,9 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 17. **เปิดหน้า ประวัติการทำรายการ** (ไอคอนนาฬิกา 🕘 ในเมนูด้านซ้าย — เห็นเฉพาะ `admin` เท่านั้น
     ไม่รวม `manager`) → filter ตามประเภท action ได้ด้วยชิปเลือก ตอนนี้ยังว่างอยู่ — ลองยกเลิก
     ใบกำกับภาษีที่ออกในขั้นตอน 10 ก่อน (กด **"ยกเลิกใบกำกับภาษี"** ที่หน้าใบเสร็จเดิม) แล้วกลับมา
-    หน้านี้ จะเห็น log ใหม่ทันทีพร้อมชื่อผู้ทำ เวลา และเหตุผลที่กรอกไว้
+    หน้านี้ จะเห็น log ใหม่ทันทีพร้อมชื่อผู้ทำ เวลา และเหตุผลที่กรอกไว้ — ลองกดปุ่ม **"ช่วงเวลา"**
+    เพื่อกรองเฉพาะวันนี้ แล้วกดไอคอน **ดาวน์โหลด 📥** เพื่อส่งออกเป็นไฟล์ CSV (เปิดในเบราว์เซอร์
+    บนเว็บเท่านั้น — ดูหัวข้อ 💰 แคชเชียร์/🖥️ ผู้ดูแลระบบ)
 
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
@@ -304,14 +306,18 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
   เลือกช่องทาง "QR" อีกครั้ง → ขึ้นข้อความแจ้งชัดเจนว่ายังไม่ได้ตั้งค่า แทนที่จะพัง/โชว์ QR เปล่าๆ
   — ใส่เลขกลับคืน (เช่น `0812345678`) แล้วลองใหม่จะเห็น QR จริงกลับมา (ดู
   `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
+- เข้าเป็น `admin` → **จัดการเมนู** → แก้ราคาเมนูสักอย่าง (เช่น 75 → 80 บาท) → กลับไปหน้า
+  **ประวัติการทำรายการ** → เห็น log ใหม่ทันทีแบบ "แก้ราคาเมนู ... 75 → 80 บาท" — แต่ถ้าแก้แค่ชื่อ/
+  คำอธิบายโดยไม่แตะราคา จะไม่มี log ใหม่ขึ้น (ตั้งใจ log เฉพาะสิ่งที่กระทบตัวเลขจริง เหมือนหลักการ
+  เดียวกับการแก้จำนวนรายการในออเดอร์ ดู `docs/DECISIONS.md` #27)
 
 ---
 
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 237 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 296 เคส — domain / controller / widget
+cd backend && npm test      # 243 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 311 เคส — domain / controller / widget
 ```
 
 ---
@@ -420,7 +426,9 @@ cd app && flutter test      # 296 เคส — domain / controller / widget
   ตามประเภท action ได้ (ดู `docs/DECISIONS.md` #21) นอกจากนี้ยังบันทึก **ใครกดสั่ง/แก้ไขออเดอร์**
   ครบทุกครั้งด้วย เพื่อให้ผู้จัดการ/ฝ่ายบัญชีตรวจสอบย้อนหลังได้ — เปิดออเดอร์ใหม่ (บันทึกชื่อ
   พนักงานเสิร์ฟที่กดสั่ง), เพิ่มรายการเข้าออเดอร์, แก้ไขจำนวนรายการ, ลบรายการ, ย้ายโต๊ะ, รวมบิล
-  (ดู `docs/DECISIONS.md` #25)
+  (ดู `docs/DECISIONS.md` #25) รวมถึง audit ระดับ**บัญชี/การเงิน**: แก้ราคาเมนู (เฉพาะตอนราคา
+  เปลี่ยนจริง), สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบด้วยมือ — มี **ตัวกรองช่วงวันที่** และปุ่ม
+  **ส่งออกเป็น CSV** ให้ฝ่ายบัญชี (รองรับเฉพาะเว็บ ดู `docs/DECISIONS.md` #27)
 - **ลูกค้า/แต้มสะสม** เห็นได้ทั้ง `admin`/`manager` — ค้นหารายชื่อลูกค้าทั้งหมด กดเข้าไปดูประวัติ
   การซื้อและแต้มสะสมคงเหลือของลูกค้ารายคนได้ (ดู `docs/DECISIONS.md` #22)
 
@@ -726,11 +734,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 237 เคส
-cd app && flutter test      # 296 เคส
+cd backend && npm test      # 243 เคส
+cd app && flutter test      # 311 เคส
 ```
 
-**Backend (237 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (243 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -811,7 +819,14 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 `GET /payments/promptpay-qr` และฟิลด์ `promptPayId` ใหม่ในหน้าตั้งค่า (ดู
 `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
 
-**Flutter (296 เคส)** — แบ่งเป็น 3 ระดับ:
+`audit-logs.test.js` เพิ่มอีก 3 เคส (ดู `docs/tickets/14-financial-audit-trail.md`,
+`docs/DECISIONS.md` #27) สำหรับ audit ระดับ**บัญชี/การเงิน**: แก้ราคาเมนู (`menu.price_change` —
+แก้แค่ชื่อไม่ log, ส่งราคาเดิมซ้ำไม่ log ซ้ำ), สร้าง/แก้ไข/ลบโปรโมชัน
+(`promotion.create`/`update`/`delete`), ปรับสต๊อกวัตถุดิบด้วยมือ (`ingredient.stock_adjust`) —
+เพิ่มอีก 3 เคสสำหรับ `GET /audit-logs/export`: RBAC (admin เท่านั้น), header/เนื้อหา CSV ถูกต้อง
+(UTF-8 BOM กัน Excel อ่านอักษรไทยเพี้ยน), filter ตาม action ได้เหมือน list
+
+**Flutter (311 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -819,7 +834,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Domain | `promotion_engine_test.dart` | พอร์ตเทสต์ตรรกะจับคู่โปรโมชันจาก backend มาที่ Dart (percent/amount/bogo, เงื่อนไขต่าง ๆ, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | การรวมรายการซ้ำในตะกร้า |
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
-| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 15 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน, flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08), flow ลูกค้า/แต้มสะสม: สร้าง/ค้นหาลูกค้า, ผูก customerId ตอนเปิดออเดอร์, สะสมแต้มครั้งเดียวตอนจ่ายครบ (รวมกรณีแยกจ่ายหลายรอบ), ใช้แต้มแลกส่วนลดโดยยอด amount ไม่เปลี่ยน และปฏิเสธการใช้แต้มที่ไม่ถูกต้องทุกกรณี (ticket 09) และเลขคิวรับอาหารมีเฉพาะ `type=takeaway`, รันต่อวันเรียงถูกต้องแม้มีออเดอร์ dine-in/delivery แทรกกลาง (ticket 10) |
+| Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 15 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน, flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08), flow ลูกค้า/แต้มสะสม: สร้าง/ค้นหาลูกค้า, ผูก customerId ตอนเปิดออเดอร์, สะสมแต้มครั้งเดียวตอนจ่ายครบ (รวมกรณีแยกจ่ายหลายรอบ), ใช้แต้มแลกส่วนลดโดยยอด amount ไม่เปลี่ยน และปฏิเสธการใช้แต้มที่ไม่ถูกต้องทุกกรณี (ticket 09) และเลขคิวรับอาหารมีเฉพาะ `type=takeaway`, รันต่อวันเรียงถูกต้องแม้มีออเดอร์ dine-in/delivery แทรกกลาง (ticket 10), flow audit ระดับบัญชี/การเงิน: แก้ราคาเมนู log เฉพาะตอนราคาเปลี่ยนจริง, สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบมือ, และ `auditLogExportCsv` คืน CSV ที่กรองตาม action ถูกต้อง (ticket 14) |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม รวมกรณีไม่มี `Get.arguments` เลย (มาจากปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" ตรงๆ) ต้องตกเป็นกลับบ้านเหมือนกัน ไม่ใช่ทานที่ร้าน (ticket 10) |
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
@@ -839,6 +854,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Controller | `split_bill_controller_test.dart` | เลือก/ยกเลิกเลือกรายการ, ดึงพรีวิว, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) |
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
+| Controller | `audit_log_controller_test.dart` | ส่ง filter (action/ช่วงวันที่) ไปกับ `load`/`loadMore` ถูกต้อง, `setDateRange` แปลงเป็น ISO date และล้าง filter ได้, `hasMore`/pagination (ticket 14) |
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget รวมถึง `KitchenTicketCard` ต้องแยกไอคอน/ป้ายถูกต้องครบทั้ง 3 ประเภทออเดอร์ (โต๊ะ/กลับบ้าน/เดลิเวอรี) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
 | Widget | `customer_picker_dialog_test.dart` | กล่องผูกลูกค้ากับออเดอร์ — เน็ตสะดุดครั้งเดียวแล้วค้นใหม่สำเร็จต้องกลับมาเห็นรายชื่อ (เคยค้างที่หน้า error ถาวร), มีปุ่มลองใหม่ให้กดกู้ได้, และดีบาวซ์ต้องยุบการพิมพ์ 6 ตัวอักษรเหลือยิงค้นหาครั้งเดียว |
@@ -846,6 +862,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Core | `app_colors_contrast_test.dart` | คำนวณคอนทราสต์ตามสูตร WCAG จริง เทียบกับ **ทุกพื้นที่ใช้จริง** ไม่ใช่แค่พื้นขาว — โหมดปกติต้องผ่าน AA (4.5:1) โหมดคอนทราสต์สูงต้องผ่าน AAA (7:1) และสีที่เอาไปเป็นพื้นปุ่ม/ชิปต้องอ่านป้ายสีขาวออก |
 | Core | `contrast_service_test.dart` | เส้นทางกดสลับโหมดจริง — เปลี่ยนพาเลตต์ บันทึกลงเครื่อง อ่านกลับมาตอนเปิดแอปใหม่ และธีมต้องสร้างสีใหม่ทุกครั้งไม่ใช่คำนวณครั้งเดียวแล้วค้าง |
 | Core | `promptpay_test.dart` | mirror อัลกอริทึม QR พร้อมเพย์ (EMV QR + CRC-16/CCITT-FALSE) ของ backend มาที่ Dart สำหรับ Demo Mode — มี golden-value test เทียบ payload กับฝั่ง backend ให้ตรงกันเป๊ะทุกตัวอักษร (ticket 16) |
+| Core | `csv_test.dart` | mirror ตัวสร้าง CSV ของ backend มาที่ Dart — header, escape comma/quote/newline, ค่า null เป็นสตริงว่าง, ขึ้นต้นด้วย UTF-8 BOM (ticket 14) |
 
 > เมธอดที่แตะการนำทาง (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) ไม่ได้ครอบคลุมในเทสต์ระดับ
 > unit นี้ — ต้องมี `GetMaterialApp` ที่ pump จริง จึงทดสอบเฉพาะตรรกะ/state ที่ไม่พึ่งการนำทาง
@@ -920,6 +937,12 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
   เทียบกันตรงเป๊ะ (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md`
   #26) — **ยังไม่มี payment gateway/callback ตรวจสอบการจ่ายอัตโนมัติ** ตามขอบเขตที่ตั้งใจไว้
   แคชเชียร์ยังต้องเช็คสลิป/แอปธนาคารเองก่อนกดยืนยัน เหมือนช่องทางโอน/บัตร
+- [x] **Audit ระดับบัญชี/การเงิน** — ทำแล้ว: ต่อยอดจาก #21/#25 เพิ่ม action ใหม่ 5 รายการ — แก้ราคา
+  เมนู (เฉพาะตอนราคาเปลี่ยนจริง), สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบด้วยมือ — เพิ่มปุ่ม
+  **ส่งออก CSV** (`GET /audit-logs/export`) และ **date range picker** บนหน้า "ประวัติการทำรายการ"
+  ที่ค้างมาตั้งแต่ #21 (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/14-financial-audit-trail.md`,
+  `docs/DECISIONS.md` #27) — **ส่งออก CSV รองรับเฉพาะเว็บ** เพราะหน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็น
+  เว็บเท่านั้นตามที่ออกแบบไว้ตั้งแต่ ticket 08
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 

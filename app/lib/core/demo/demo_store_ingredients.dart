@@ -49,7 +49,11 @@ extension DemoStoreIngredients on DemoStore {
     return _withIsLowStock(raw);
   }
 
-  Map<String, dynamic> adjustIngredientStock(int id, double delta) {
+  Map<String, dynamic> adjustIngredientStock(
+    int id,
+    double delta, {
+    int? actorId,
+  }) {
     if (delta == 0) {
       throw ApiException(
         message: 'ingredient_error_zero_delta'.tr,
@@ -57,8 +61,27 @@ extension DemoStoreIngredients on DemoStore {
       );
     }
     final raw = _rawIngredient(id);
-    raw['currentStock'] = (raw['currentStock'] as num).toDouble() + delta;
+    final previousStock = (raw['currentStock'] as num).toDouble();
+    raw['currentStock'] = previousStock + delta;
     _syncMenuItemAvailabilityForIngredients({id});
+
+    // mirror ของ ingredient.service.js#adjustStock — ปรับสต๊อกมือกระทบต้นทุน/สต๊อกโดยตรง
+    // จึงต้อง log ทุกครั้ง (ดู docs/tickets/14-financial-audit-trail.md)
+    final direction = delta > 0 ? 'รับเข้า' : 'ตัดออก';
+    _logAudit(
+      actorId: actorId,
+      action: 'ingredient.stock_adjust',
+      entityType: 'ingredient',
+      entityId: id,
+      summary:
+          'ปรับสต๊อก "${raw['name']}" $direction ${delta.abs()} ${raw['unit']} '
+          '($previousStock → ${previousStock + delta})',
+      metadata: {
+        'delta': delta,
+        'previousStock': previousStock,
+        'newStock': previousStock + delta,
+      },
+    );
     return _withIsLowStock(raw);
   }
 

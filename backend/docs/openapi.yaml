@@ -435,7 +435,7 @@ paths:
                     items: { $ref: '#/components/schemas/Promotion' }
     post:
       tags: [Promotions]
-      summary: เพิ่มโปรโมชัน (admin/manager)
+      summary: เพิ่มโปรโมชัน (admin/manager) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -457,12 +457,14 @@ paths:
         '200': { description: สำเร็จ }
     patch:
       tags: [Promotions]
-      summary: แก้ไขโปรโมชัน (admin/manager)
+      summary: แก้ไขโปรโมชัน (admin/manager) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
     delete:
       tags: [Promotions]
-      summary: ลบโปรโมชัน (admin/manager) — ออเดอร์ที่เคยใช้ไปแล้วยังเก็บชื่อ/โค้ดไว้ (snapshot) ไม่กระทบ
+      summary: >-
+        ลบโปรโมชัน (admin/manager) — ออเดอร์ที่เคยใช้ไปแล้วยังเก็บชื่อ/โค้ดไว้ (snapshot) ไม่กระทบ
+        บันทึก audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '204': { description: ลบแล้ว }
 
@@ -513,7 +515,9 @@ paths:
         '200': { description: สำเร็จ }
     patch:
       tags: [Menu]
-      summary: แก้ไขเมนู
+      summary: >-
+        แก้ไขเมนู — แก้ราคาที่เปลี่ยนจริง (ไม่ใช่แก้ field อื่น) บันทึก audit log อัตโนมัติ
+        (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
     delete:
@@ -599,7 +603,9 @@ paths:
         schema: { type: integer }
     post:
       tags: [Ingredients]
-      summary: ปรับสต๊อกมือ (รับของเข้า/ตัดของเสีย) (admin/manager) — sync สถานะเปิด/ปิดขายเมนูที่เกี่ยวข้องอัตโนมัติ
+      summary: >-
+        ปรับสต๊อกมือ (รับของเข้า/ตัดของเสีย) (admin/manager) — sync สถานะเปิด/ปิดขายเมนูที่เกี่ยวข้อง
+        อัตโนมัติ บันทึก audit log ทุกครั้งพร้อมเหตุผลจากช่อง note (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1270,6 +1276,27 @@ paths:
                       limit: { type: integer }
                       total: { type: integer }
                       totalPages: { type: integer }
+        '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }
+  /audit-logs/export:
+    get:
+      tags: [AuditLogs]
+      summary: >-
+        export audit log เป็นไฟล์ CSV (admin เท่านั้น) — filter เดียวกับ GET /audit-logs แต่ไม่มี
+        pagination (ดึงทุกแถวที่ตรงเงื่อนไข) สำหรับส่งให้ฝ่ายบัญชี/ผู้ตรวจสอบภายนอก (ดู
+        docs/tickets/14-financial-audit-trail.md)
+      parameters:
+        - { in: query, name: actorUserId, schema: { type: integer } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: entityType, schema: { type: string } }
+        - { in: query, name: entityId, schema: { type: integer } }
+        - { in: query, name: dateFrom, schema: { type: string, format: date } }
+        - { in: query, name: dateTo, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV (UTF-8 พร้อม BOM ให้ Excel เปิดแล้วอักษรไทยไม่เพี้ยน)
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
         '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }
 
   /customers:

@@ -12,6 +12,16 @@ abstract class AuditLogRemoteDataSource {
     int page = 1,
     int limit = 50,
   });
+
+  /// export CSV ตาม filter เดียวกับ [list] แต่ไม่มี pagination — คืนเนื้อหาไฟล์เป็น String ดิบ
+  /// (ดู docs/tickets/14-financial-audit-trail.md)
+  Future<String> exportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  });
 }
 
 class AuditLogRemoteDataSourceImpl implements AuditLogRemoteDataSource {
@@ -46,4 +56,22 @@ class AuditLogRemoteDataSourceImpl implements AuditLogRemoteDataSource {
       total: result.total,
     );
   }
+
+  @override
+  Future<String> exportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  }) => _client.getText(
+    ApiEndpoints.auditLogsExport,
+    query: {
+      'actorUserId': actorUserId,
+      'action': action,
+      'entityType': entityType,
+      'dateFrom': dateFrom,
+      'dateTo': dateTo,
+    },
+  );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/utils/app_clock.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/horizontal_fade.dart';
 import '../../../../core/widgets/state_views.dart';
@@ -22,6 +23,9 @@ class AuditLogPage extends GetView<AuditLogController> {
     if (action.startsWith('settings.')) return AppColors.info;
     if (action.startsWith('payment.')) return AppColors.success;
     if (action.startsWith('tax_invoice.')) return AppColors.danger;
+    if (action.startsWith('menu.')) return AppColors.secondary;
+    if (action.startsWith('promotion.')) return AppColors.secondary;
+    if (action.startsWith('ingredient.')) return AppColors.warning;
     return AppColors.textSecondary;
   }
 
@@ -74,6 +78,63 @@ class AuditLogPage extends GetView<AuditLogController> {
               }),
             ),
           ),
+          Container(
+            color: AppColors.surface,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Obx(() {
+                    final from = controller.dateFrom.value;
+                    final to = controller.dateTo.value;
+                    final label = from == null && to == null
+                        ? 'audit_log_date_range_all'.tr
+                        : 'audit_log_date_range_selected'.trParams({
+                            'from': from == null ? '…' : Formatters.date(from),
+                            'to': to == null ? '…' : Formatters.date(to),
+                          });
+                    return OutlinedButton.icon(
+                      onPressed: () => _pickDateRange(context),
+                      icon: const Icon(Icons.date_range_rounded, size: 16),
+                      label: Text(
+                        label,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12.5),
+                      ),
+                    );
+                  }),
+                ),
+                Obx(
+                  () =>
+                      (controller.dateFrom.value != null ||
+                          controller.dateTo.value != null)
+                      ? IconButton(
+                          tooltip: 'audit_log_date_range_clear'.tr,
+                          icon: const Icon(Icons.close_rounded, size: 18),
+                          onPressed: () => controller.setDateRange(null, null),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                const SizedBox(width: 4),
+                Obx(
+                  () => controller.isExporting.value
+                      ? const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : IconButton(
+                          tooltip: 'audit_log_export_csv_button'.tr,
+                          icon: const Icon(Icons.file_download_rounded),
+                          onPressed: controller.exportCsv,
+                        ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: Obx(() {
               if (controller.isLoading.value) return const LoadingView();
@@ -112,6 +173,27 @@ class AuditLogPage extends GetView<AuditLogController> {
         ],
       ),
     );
+  }
+
+  Future<void> _pickDateRange(BuildContext context) async {
+    final now = AppClock.now();
+    final current =
+        controller.dateFrom.value != null && controller.dateTo.value != null
+        ? DateTimeRange(
+            start: controller.dateFrom.value!,
+            end: controller.dateTo.value!,
+          )
+        : null;
+
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(now.year - 5),
+      lastDate: now,
+      initialDateRange: current,
+    );
+    if (picked != null) {
+      controller.setDateRange(picked.start, picked.end);
+    }
   }
 }
 

@@ -189,9 +189,12 @@ class InitialBinding extends Bindings {
     final auth = DemoAuthDataSource(store);
 
     Get.put<AuthRemoteDataSource>(auth, permanent: true);
-    Get.put<MenuRemoteDataSource>(DemoMenuDataSource(store), permanent: true);
+    Get.put<MenuRemoteDataSource>(
+      DemoMenuDataSource(store, auth),
+      permanent: true,
+    );
     Get.put<IngredientRemoteDataSource>(
-      DemoIngredientDataSource(store),
+      DemoIngredientDataSource(store, auth),
       permanent: true,
     );
     Get.put<TableRemoteDataSource>(DemoTableDataSource(store), permanent: true);
@@ -204,7 +207,7 @@ class InitialBinding extends Bindings {
       permanent: true,
     );
     Get.put<PromotionRemoteDataSource>(
-      DemoPromotionDataSource(store),
+      DemoPromotionDataSource(store, auth),
       permanent: true,
     );
     Get.put<ReportRemoteDataSource>(
@@ -509,6 +512,10 @@ class InitialBinding extends Bindings {
     // audit log
     Get.lazyPut(
       () => GetAuditLogsUseCase(Get.find<AuditLogRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => ExportAuditLogsUseCase(Get.find<AuditLogRepository>()),
       fenix: true,
     );
 

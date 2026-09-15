@@ -82,9 +82,10 @@ class DemoAuthDataSource implements AuthRemoteDataSource {
 }
 
 class DemoMenuDataSource implements MenuRemoteDataSource {
-  const DemoMenuDataSource(this._store);
+  const DemoMenuDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   @override
   Future<List<CategoryModel>> getCategories({bool activeOnly = false}) =>
@@ -138,7 +139,11 @@ class DemoMenuDataSource implements MenuRemoteDataSource {
   Future<MenuItemModel> updateMenuItem(int id, MenuItemPayload payload) =>
       _delayed(
         () => MenuItemModel.fromJson(
-          _store.saveMenuItem(payload.toJson(), id: id),
+          _store.saveMenuItem(
+            payload.toJson(),
+            id: id,
+            actorId: _auth.currentUserId,
+          ),
         ),
       );
 
@@ -153,9 +158,10 @@ class DemoMenuDataSource implements MenuRemoteDataSource {
 }
 
 class DemoIngredientDataSource implements IngredientRemoteDataSource {
-  const DemoIngredientDataSource(this._store);
+  const DemoIngredientDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   @override
   Future<List<IngredientModel>> getIngredients({bool lowStockOnly = false}) =>
@@ -182,7 +188,9 @@ class DemoIngredientDataSource implements IngredientRemoteDataSource {
 
   @override
   Future<IngredientModel> adjustStock(int id, double delta) => _delayed(
-    () => IngredientModel.fromJson(_store.adjustIngredientStock(id, delta)),
+    () => IngredientModel.fromJson(
+      _store.adjustIngredientStock(id, delta, actorId: _auth.currentUserId),
+    ),
   );
 
   @override
@@ -412,9 +420,10 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
 }
 
 class DemoPromotionDataSource implements PromotionRemoteDataSource {
-  const DemoPromotionDataSource(this._store);
+  const DemoPromotionDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   @override
   Future<List<PromotionModel>> getPromotions({bool activeOnly = false}) =>
@@ -430,18 +439,23 @@ class DemoPromotionDataSource implements PromotionRemoteDataSource {
       _delayed(() => PromotionModel.fromJson(_store.promotion(id)));
 
   @override
-  Future<PromotionModel> createPromotion(Map<String, dynamic> body) =>
-      _delayed(() => PromotionModel.fromJson(_store.savePromotion(body)));
+  Future<PromotionModel> createPromotion(Map<String, dynamic> body) => _delayed(
+    () => PromotionModel.fromJson(
+      _store.savePromotion(body, actorId: _auth.currentUserId),
+    ),
+  );
 
   @override
   Future<PromotionModel> updatePromotion(int id, Map<String, dynamic> body) =>
       _delayed(
-        () => PromotionModel.fromJson(_store.savePromotion(body, id: id)),
+        () => PromotionModel.fromJson(
+          _store.savePromotion(body, id: id, actorId: _auth.currentUserId),
+        ),
       );
 
   @override
   Future<void> deletePromotion(int id) =>
-      _delayed(() => _store.deletePromotion(id));
+      _delayed(() => _store.deletePromotion(id, actorId: _auth.currentUserId));
 }
 
 class DemoPaymentDataSource implements PaymentRemoteDataSource {
@@ -773,6 +787,23 @@ class DemoAuditLogDataSource implements AuditLogRemoteDataSource {
       total: result.total,
     );
   });
+
+  @override
+  Future<String> exportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  }) => _delayed(
+    () => _store.auditLogExportCsv(
+      actorUserId: actorUserId,
+      action: action,
+      entityType: entityType,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    ),
+  );
 }
 
 class DemoCustomerDataSource implements CustomerRemoteDataSource {

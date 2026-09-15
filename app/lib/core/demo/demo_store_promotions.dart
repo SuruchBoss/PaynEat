@@ -36,7 +36,11 @@ extension DemoStorePromotions on DemoStore {
     return null;
   }
 
-  Map<String, dynamic> savePromotion(Map<String, dynamic> body, {int? id}) {
+  Map<String, dynamic> savePromotion(
+    Map<String, dynamic> body, {
+    int? id,
+    int? actorId,
+  }) {
     final rawCode = body['code'] as String?;
     final code = rawCode == null || rawCode.isEmpty
         ? null
@@ -51,6 +55,8 @@ extension DemoStorePromotions on DemoStore {
       }
     }
 
+    // mirror ของ promotion.service.js#create/update — กระทบยอดขาย/ส่วนลดโดยตรง
+    // จึงต้อง log ทุกครั้ง (ดู docs/tickets/14-financial-audit-trail.md)
     if (id == null) {
       final promotion = {
         'id': _nextId(),
@@ -66,6 +72,14 @@ extension DemoStorePromotions on DemoStore {
         'updatedAt': _now(),
       };
       promotions.add(promotion);
+      _logAudit(
+        actorId: actorId,
+        action: 'promotion.create',
+        entityType: 'promotion',
+        entityId: promotion['id'] as int,
+        summary: 'สร้างโปรโมชัน "${promotion['name']}"',
+        metadata: {'type': promotion['type'], 'code': promotion['code']},
+      );
       return promotion;
     }
 
@@ -78,11 +92,26 @@ extension DemoStorePromotions on DemoStore {
       }
     });
     promotion['updatedAt'] = _now();
+    _logAudit(
+      actorId: actorId,
+      action: 'promotion.update',
+      entityType: 'promotion',
+      entityId: id,
+      summary: 'แก้ไขโปรโมชัน "${promotion['name']}"',
+    );
     return promotion;
   }
 
-  void deletePromotion(int id) {
-    promotion(id); // 404 ถ้าไม่พบ
+  void deletePromotion(int id, {int? actorId}) {
+    final existing = promotion(id); // 404 ถ้าไม่พบ
     promotions.removeWhere((row) => row['id'] == id);
+    _logAudit(
+      actorId: actorId,
+      action: 'promotion.delete',
+      entityType: 'promotion',
+      entityId: id,
+      summary: 'ลบโปรโมชัน "${existing['name']}"',
+      metadata: {'type': existing['type'], 'code': existing['code']},
+    );
   }
 }

@@ -14,7 +14,7 @@ export const menuController = {
   create: asyncHandler(async (req, res) => created(res, menuService.create(req.body))),
 
   update: asyncHandler(async (req, res) =>
-    ok(res, menuService.update(req.validated.params.id, req.body)),
+    ok(res, menuService.update(req.validated.params.id, req.body, req.user)),
   ),
 
   setAvailability: asyncHandler(async (req, res) =>

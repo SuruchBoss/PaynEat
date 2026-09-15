@@ -16,7 +16,15 @@ export const ingredientController = {
   ),
 
   adjustStock: asyncHandler(async (req, res) =>
-    ok(res, ingredientService.adjustStock(req.validated.params.id, req.body.delta)),
+    ok(
+      res,
+      ingredientService.adjustStock(
+        req.validated.params.id,
+        req.body.delta,
+        req.body.note,
+        req.user,
+      ),
+    ),
   ),
 
   remove: asyncHandler(async (req, res) => {

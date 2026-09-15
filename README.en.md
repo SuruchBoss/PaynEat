@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-533%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-554%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 533 automated tests.
+control and 554 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -292,7 +292,9 @@ The login page has one-tap buttons for each account — no need to type anything
 17. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
     filter by action type with the chips at the top; it's empty for now — go void the tax invoice you
     issued in step 10 first (tap **"Void this invoice"** on that receipt page), then come back here and
-    you'll see a brand-new log entry with who did it, when, and the reason you typed
+    you'll see a brand-new log entry with who did it, when, and the reason you typed — try the
+    **"Date range"** button to filter to just today, then tap the **download 📥** icon to export a
+    CSV file (opens in the browser, web only — see the 💰 Cashier/🖥️ Admin sections)
 
 **Want to try the hidden business rules?**
 
@@ -324,14 +326,19 @@ The login page has one-tap buttons for each account — no need to type anything
   and pick "QR" again → you get a clear error message instead of a broken screen or an empty QR — put
   a number back (e.g. `0812345678`) and try again to see a real QR come back (see
   `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
+- Log in as `admin` → **Menu Management** → change a menu item's price (e.g. 75 → 80 THB) → go back
+  to the **Audit Log** page → a new entry appears immediately reading "Change menu price ... 75 → 80"
+  — but if you only edit the name/description without touching the price, no new entry shows up
+  (deliberately logs only what actually affects the numbers, the same principle as editing an order
+  item's quantity — see `docs/DECISIONS.md` #27)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 237 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 296 cases — domain / controller / widget
+cd backend && npm test      # 243 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 311 cases — domain / controller / widget
 ```
 
 ---
@@ -457,7 +464,10 @@ cd app && flutter test      # 296 cases — domain / controller / widget
   with who did it, when, and the reason given; filterable by action type (see `docs/DECISIONS.md` #21).
   It also records **who placed or edited each order**, so managers and finance can review the full
   history: opening a new order (recording which waiter placed it), adding items, editing an item's
-  quantity, removing an item, moving a table, and merging bills (see `docs/DECISIONS.md` #25)
+  quantity, removing an item, moving a table, and merging bills (see `docs/DECISIONS.md` #25), as well
+  as **financial/accounting** audit: editing a menu price (only when the price actually changes),
+  creating/editing/deleting a promotion, and manually adjusting ingredient stock — with a **date-range
+  filter** and a **CSV export** button for the finance team (web only, see `docs/DECISIONS.md` #27)
 - **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
   see their purchase history and current points balance (see `docs/DECISIONS.md` #22)
 
@@ -776,11 +786,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 237 cases
-cd app && flutter test      # 296 cases
+cd backend && npm test      # 243 cases
+cd app && flutter test      # 311 cases
 ```
 
-**Backend (237 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (243 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -869,7 +879,15 @@ it throws when `promptPayId` is empty — plus 5 more cases across `settings.tes
 for the new `GET /payments/promptpay-qr` endpoint and the new `promptPayId` settings field (see
 `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26).
 
-**Flutter (296 cases)** — split into 3 levels:
+`audit-logs.test.js` gains 3 more cases (see `docs/tickets/14-financial-audit-trail.md`,
+`docs/DECISIONS.md` #27) for **financial/accounting** audit: editing a menu price
+(`menu.price_change` — renaming alone doesn't log, and resubmitting the same price doesn't log
+again), creating/editing/deleting a promotion (`promotion.create`/`update`/`delete`), and manually
+adjusting ingredient stock (`ingredient.stock_adjust`) — plus 3 more cases for
+`GET /audit-logs/export`: RBAC (admin only), correct CSV header/content (UTF-8 BOM so Excel doesn't
+mangle Thai text), and filtering by action the same way the list endpoint does.
+
+**Flutter (311 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -877,7 +895,7 @@ for the new `GET /payments/promptpay-qr` endpoint and the new `promptPayId` sett
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10) |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -896,6 +914,7 @@ for the new `GET /payments/promptpay-qr` endpoint and the new `promptPayId` sett
 | Controller | `split_bill_controller_test.dart` | Selecting/deselecting items, fetching the preview, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
+| Controller | `audit_log_controller_test.dart` | Sending filters (action/date range) correctly with `load`/`loadMore`, `setDateRange` converting to ISO dates and clearing filters, `hasMore`/pagination (ticket 14) |
 | Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |
@@ -903,6 +922,7 @@ for the new `GET /payments/promptpay-qr` endpoint and the new `promptPayId` sett
 | Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
 | Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |
 | Core | `promptpay_test.dart` | Mirrors the backend's PromptPay QR algorithm (EMV QR + CRC-16/CCITT-FALSE) in Dart for Demo Mode — includes a golden-value test that checks the payload matches the backend's output character-for-character (ticket 16) |
+| Core | `csv_test.dart` | Mirrors the backend's CSV builder in Dart — header, escaping comma/quote/newline, null values become an empty string, and the output is prefixed with a UTF-8 BOM (ticket 14) |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is
@@ -983,6 +1003,12 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   same payload (see the ✨ Features section, `docs/tickets/16-promptpay-qr.md`, `docs/DECISIONS.md` #26)
   — **no payment gateway/callback for automatic payment verification yet**, deliberately scoped out; the
   cashier still checks the slip/banking app before confirming, same as bank transfer/card
+- [x] **Financial/accounting audit** — done: building on #21/#25, adds 5 new action types — editing a
+  menu price (only when the price actually changes), creating/editing/deleting a promotion, manually
+  adjusting ingredient stock — plus a **CSV export** button (`GET /audit-logs/export`) and a **date-range
+  picker** on the Audit Log page, both of which had been outstanding since #21 (see the ✨ Features
+  section, `docs/tickets/14-financial-audit-trail.md`, `docs/DECISIONS.md` #27) — **CSV export is
+  web-only**, since this page lives in the admin zone, which was designed as web-only back in ticket 08
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

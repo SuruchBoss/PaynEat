@@ -1,4 +1,6 @@
 import { ApiError } from '../../core/ApiError.js';
+import { getDb } from '../../db/index.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { menuRepository } from '../menu/menu.repository.js';
 import { ingredientRepository } from './ingredient.repository.js';
 import { toIngredientDto } from './ingredient.mapper.js';
@@ -78,11 +80,30 @@ export const ingredientService = {
     return toIngredientDto(ingredientRepository.update(id, payload));
   },
 
-  adjustStock(id, delta) {
-    this.getById(id);
-    ingredientRepository.adjustStock(id, delta);
-    syncMenuItemAvailabilityForIngredients([id]);
-    return toIngredientDto(ingredientRepository.findById(id));
+  /** ปรับสต๊อกมือโดยแอดมิน/ผู้จัดการ (ต่างจาก deductForOrderItem/restoreForOrderItem ที่ตัดอัตโนมัติ
+   * ตามออเดอร์) — ดู docs/tickets/14-financial-audit-trail.md: กระทบต้นทุน/สต๊อกโดยตรงจึงต้อง log */
+  adjustStock(id, delta, note, actingUser) {
+    const before = this.getById(id);
+    const run = getDb().transaction(() => {
+      ingredientRepository.adjustStock(id, delta);
+      syncMenuItemAvailabilityForIngredients([id]);
+      const direction = delta > 0 ? 'รับเข้า' : 'ตัดออก';
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'ingredient.stock_adjust',
+        entityType: 'ingredient',
+        entityId: id,
+        summary: `ปรับสต๊อก "${before.name}" ${direction} ${Math.abs(delta)} ${before.unit} (${before.currentStock} → ${before.currentStock + delta})`,
+        reason: note,
+        metadata: {
+          delta,
+          previousStock: before.currentStock,
+          newStock: before.currentStock + delta,
+        },
+      });
+      return toIngredientDto(ingredientRepository.findById(id));
+    });
+    return run();
   },
 
   remove(id) {
