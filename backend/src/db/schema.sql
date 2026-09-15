@@ -145,6 +145,9 @@ CREATE TABLE IF NOT EXISTS orders (
   code              TEXT    NOT NULL UNIQUE,
   type              TEXT    NOT NULL DEFAULT 'dine_in' CHECK (type IN ('dine_in', 'takeaway', 'delivery')),
   table_id          INTEGER REFERENCES dining_tables(id) ON DELETE SET NULL,
+  -- เลขคิวรับอาหารสำหรับลูกค้าที่มารอรับเอง (ดู docs/tickets/10-takeaway-delivery-flow.md) — รันต่อวัน
+  -- เฉพาะออเดอร์ type='takeaway' เท่านั้น (delivery ให้ไรเดอร์อ้างอิงจาก code แทน ไม่มีคนมายืนรอคิว)
+  queue_number      INTEGER,
   waiter_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
   -- ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md) — points_earned สะสมครั้งเดียว
   -- ตอนออเดอร์จ่ายครบ (ดู payment.service.js#pay) ไม่ผูกซ้ำ/ไม่หักคืนอัตโนมัติถ้ามี refund ภายหลัง

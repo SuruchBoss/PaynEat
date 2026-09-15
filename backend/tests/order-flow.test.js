@@ -302,7 +302,7 @@ test('กฎทางธุรกิจอื่น ๆ', async (t) => {
     assert.equal(res.status, 422);
   });
 
-  await t.test('ออเดอร์กลับบ้านไม่ต้องระบุโต๊ะ', async () => {
+  await t.test('ออเดอร์กลับบ้านไม่ต้องระบุโต๊ะ พร้อมได้เลขคิว', async () => {
     const menu = await get('/api/v1/menu-items?availableOnly=true&limit=1', waiter.token);
     const res = await post('/api/v1/orders', waiter.token, {
       type: 'takeaway',
@@ -310,5 +310,7 @@ test('กฎทางธุรกิจอื่น ๆ', async (t) => {
     });
     assert.equal(res.status, 201);
     assert.equal(res.body.data.tableId, null);
+    assert.equal(typeof res.body.data.queueNumber, 'number');
+    assert.ok(res.body.data.queueNumber > 0);
   });
 });

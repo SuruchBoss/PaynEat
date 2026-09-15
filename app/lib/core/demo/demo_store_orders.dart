@@ -40,6 +40,20 @@ extension DemoStoreOrders on DemoStore {
     return null;
   }
 
+  /// เลขคิวรับอาหาร รันต่อวันเฉพาะออเดอร์ type=takeaway — mirror ของ
+  /// order.repository.js#nextQueueNumber (ดู docs/tickets/10-takeaway-delivery-flow.md)
+  int _nextQueueNumber(DateTime now) {
+    final sameDayTakeawayCount = orders.where((order) {
+      if (order['type'] != OrderType.takeaway) return false;
+      final createdAt = DateTime.tryParse(order['createdAt'] as String? ?? '');
+      if (createdAt == null) return false;
+      return createdAt.year == now.year &&
+          createdAt.month == now.month &&
+          createdAt.day == now.day;
+    }).length;
+    return sameDayTakeawayCount + 1;
+  }
+
   Map<String, dynamic> createOrder({
     required String type,
     int? tableId,
@@ -72,6 +86,7 @@ extension DemoStoreOrders on DemoStore {
       'tableId': tableId,
       'tableName': table?['name'],
       'tableZone': table?['zone'],
+      'queueNumber': type == OrderType.takeaway ? _nextQueueNumber(now) : null,
       'waiterId': waiterId,
       'waiterName': waiterId == null ? null : _findUser(waiterId)['name'],
       'customerId': customerId,

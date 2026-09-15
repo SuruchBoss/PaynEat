@@ -106,6 +106,9 @@ const Map<String, String> orderTranslationsTh = {
   'order_no_items_selected': 'ยังไม่ได้เลือกรายการอาหาร',
   'order_add_items_success': 'เพิ่มรายการเข้าออเดอร์ @code แล้ว',
   'order_create_success': 'เปิดออเดอร์ @code เรียบร้อย',
+  'order_create_success_with_queue':
+      'เปิดออเดอร์ @code เรียบร้อย คิวที่ @queue',
+  'order_queue_number_label': 'คิวที่ @number',
   'order_offline_queued_message':
       'ออฟไลน์ — บันทึกรายการไว้ในเครื่องแล้ว จะส่งเข้าระบบอัตโนมัติเมื่อเน็ตกลับมา',
 
@@ -229,6 +232,8 @@ const Map<String, String> orderTranslationsEn = {
   'order_no_items_selected': 'No items selected yet',
   'order_add_items_success': 'Items added to order @code',
   'order_create_success': 'Order @code opened',
+  'order_create_success_with_queue': 'Order @code opened — queue number @queue',
+  'order_queue_number_label': 'Queue #@number',
   'order_offline_queued_message':
       "Offline — saved on this device. It will sync automatically once you're back online.",
 

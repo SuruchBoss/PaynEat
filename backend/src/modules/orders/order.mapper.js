@@ -40,6 +40,7 @@ export const toOrderDto = (row, items = []) => {
     tableId: row.table_id,
     tableName: row.table_name,
     tableZone: row.table_zone,
+    queueNumber: row.queue_number ?? null,
     waiterId: row.waiter_id,
     waiterName: row.waiter_name,
     customerId: row.customer_id,

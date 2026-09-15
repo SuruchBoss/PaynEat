@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-484%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-504%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -255,15 +255,23 @@ The login page has one-tap buttons for each account — no need to type anything
     (issued instantly) or full (enter the customer's name + address) → get a document with a
     continuous running number (e.g. `INV69-000001`) right away
 11. **Go back to the table map** → table A1 has already turned green again
-12. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
+12. **Tap "New takeaway/delivery"** (the floating button in the bottom-right of the table map) → opens
+    the order-taking screen with no table attached (the header reads "Takeaway order") → add any menu
+    item and tap **"Confirm & Send to Kitchen"** → you'll see a message reading **"Order ... opened —
+    queue number N"**, and the same number shows up as a 🎫 badge on the order detail page (the queue
+    number runs on its own daily counter for takeaway orders only — a delivery rider references the
+    order by its bill number instead)
+13. **Switch back to the kitchen window** → the new ticket shows a 🥡 "takeaway" icon instead of a table
+    icon, so it's instantly distinguishable from a dine-in order without opening its details
+14. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
     report, complete with the hourly chart and payment-method breakdown (best sellers are on the
     **Reports** page)
-13. **Open the Customers/Loyalty page** (the 🎁 icon in the left nav — visible to both `admin` and
+15. **Open the Customers/Loyalty page** (the 🎁 icon in the left nav — visible to both `admin` and
     `manager`) → see the customer you created in step 4 with the points they just earned; tap their name
     to see their purchase history (the order you just closed should be in there)
-14. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
+16. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
     names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
-15. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
+17. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
     filter by action type with the chips at the top; it's empty for now — go void the tax invoice you
     issued in step 10 first (tap **"Void this invoice"** on that receipt page), then come back here and
     you'll see a brand-new log entry with who did it, when, and the reason you typed
@@ -288,7 +296,7 @@ The login page has one-tap buttons for each account — no need to type anything
   sent to the kitchen, editing a discount, deactivating/deleting/changing the role of a staff account,
   editing VAT/service charge, a refund, voiding a tax invoice) is always recorded on the **Audit Log**
   page (`admin` only) with who did it, when, and why — try any of the above, then go check that page
-  (see step 15 in the tour and `docs/DECISIONS.md` #21)
+  (see step 17 in the tour and `docs/DECISIONS.md` #21)
 - Try redeeming more loyalty points than the customer has, or a points value greater than the amount
   due this round → both are rejected outright (never silently capped), and if the order isn't linked to
   a customer at all, the redeem control won't even show up — try paying part of a linked order's bill
@@ -300,8 +308,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 206 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 278 cases — domain / controller / widget
+cd backend && npm test      # 218 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 286 cases — domain / controller / widget
 ```
 
 ---
@@ -347,6 +355,10 @@ cd app && flutter test      # 278 cases — domain / controller / widget
 - **Link a customer to the order**, optionally, when opening a new order — search by phone number or add a
   new customer in the same window; leave it unlinked and the order still works as usual (see the 💰 Cashier
   section for redeeming loyalty points)
+- **New takeaway/delivery button** — a floating button on the table map opens an order with no table
+  attached at all; takeaway orders automatically get a daily-resetting queue number (delivery orders skip
+  it — a rider references the order by its bill number instead, since nobody's standing around waiting to
+  be called), shown both in the send-to-kitchen confirmation and on the order detail page
 
 ### 🔥 Kitchen (KDS display)
 
@@ -355,6 +367,8 @@ cd app && flutter test      # 278 cases — domain / controller / widget
 - **Flags tickets waiting over 15 minutes** with a red border and flame icon
 - One-tap status changes, designed to be easy to hit with messy hands in a kitchen
 - Toggle a menu item sold-out instantly, without waiting on a manager
+- **Distinct icon/label per order type** on every ticket — table 🍽️ / takeaway 🥡 / delivery 🛵 — obvious
+  at a glance without opening the ticket's details
 
 ### 💰 Cashier
 
@@ -731,11 +745,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 206 cases
-cd app && flutter test      # 278 cases
+cd backend && npm test      # 218 cases
+cd app && flutter test      # 286 cases
 ```
 
-**Backend (206 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (218 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -804,7 +818,14 @@ points for a discount leaving the `amount` applied to the order unchanged (only 
 and rejecting a redemption in both failure cases (no customer linked / value exceeding the amount due
 this round) (see `docs/DECISIONS.md` #22).
 
-**Flutter (278 cases)** — split into 3 levels:
+`takeaway-delivery.test.js` (12 new cases) tests the full takeaway/delivery flow: a queue number is
+assigned only for `type=takeaway` orders (`dine_in`/`delivery` always get `null`), the queue number runs
+on its own daily counter fully independent from the order's bill number (3 consecutive takeaway orders
+get 1, 2, 3), the KDS query (`findItemsByStatuses`) returns the correct `orderType` for all 3 order types
+so they can be displayed distinctly, and checkout/payment for a takeaway order works normally with no
+step anywhere requiring a table (see `docs/DECISIONS.md` #23).
+
+**Flutter (286 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -812,8 +833,8 @@ this round) (see `docs/DECISIONS.md` #22).
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), and the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09) |
-| Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10) |
+| Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10) |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
 | Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables |
@@ -831,7 +852,7 @@ this round) (see `docs/DECISIONS.md` #22).
 | Controller | `split_bill_controller_test.dart` | Selecting/deselecting items, fetching the preview, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
-| Widget | `widgets_test.dart` | Button taps and widget state |
+| Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
 | Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
@@ -900,6 +921,15 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   (admin/manager); admin/manager can see any customer's purchase history and points balance from the
   **Customers/Loyalty** tab (see the ✨ Features section and `docs/DECISIONS.md` #22) — **no redeem UI
   on the split-bill-per-person page yet**, since that wasn't part of this ticket's acceptance criteria
+- [x] **Full takeaway/delivery flow** — done: takeaway and delivery orders can be opened from the "New
+  takeaway/delivery" button on the table map with no table attached at all; takeaway orders (`type=takeaway`
+  only) automatically get a daily-resetting queue number (delivery riders reference the order by its bill
+  number instead — its counter is entirely independent from the bill-number sequence); the KDS shows a
+  distinct icon/label for all 3 order types on every ticket; re-verified that cashier checkout/payment for
+  takeaway orders never requires picking a table (see the ✨ Features section and `docs/DECISIONS.md` #23)
+  — **not connecting to any external delivery platform** (Grab, LINE MAN, etc.) yet, deliberately, exactly
+  as the ticket itself recommended: that scope is large and depends on each platform's own external API,
+  and should become its own follow-up ticket once it's known which platform to integrate with first
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -917,7 +947,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 22 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 23 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

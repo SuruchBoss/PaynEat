@@ -210,6 +210,9 @@ export const orderService = {
         customerId: payload.customerId,
         guestCount: payload.guestCount,
         note: payload.note,
+        // เลขคิวรับอาหารเฉพาะ takeaway (ดู docs/tickets/10-takeaway-delivery-flow.md) — delivery
+        // ไม่มีคนมายืนรอคิวหน้าร้าน ไรเดอร์อ้างอิงจาก code แทน
+        queueNumber: payload.type === 'takeaway' ? orderRepository.nextQueueNumber() : null,
       });
       for (const item of itemRows) orderRepository.addItem(order.id, item);
       if (payload.tableId) tableRepository.setStatus(payload.tableId, 'occupied');

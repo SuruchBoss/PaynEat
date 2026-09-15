@@ -1316,4 +1316,60 @@ void main() {
       );
     });
   });
+
+  group('DemoStore takeaway/delivery — เลขคิวรับอาหาร (ticket 10)', () {
+    Map<String, dynamic> openOrder({required String type, int? tableId}) {
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: type,
+        tableId: tableId,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('ออเดอร์ทานที่ร้านไม่มีเลขคิว', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final order = openOrder(
+        type: OrderType.dineIn,
+        tableId: table['id'] as int,
+      );
+
+      expect(order['queueNumber'], isNull);
+    });
+
+    test('ออเดอร์เดลิเวอรีไม่มีเลขคิว (ไรเดอร์อ้างอิงจาก code แทน)', () {
+      final order = openOrder(type: OrderType.delivery);
+
+      expect(order['tableId'], isNull);
+      expect(order['queueNumber'], isNull);
+    });
+
+    test('ออเดอร์กลับบ้านหลายใบติดกัน ได้เลขคิวรันต่อเนื่องเริ่มที่ 1', () {
+      final first = openOrder(type: OrderType.takeaway);
+      final second = openOrder(type: OrderType.takeaway);
+      final third = openOrder(type: OrderType.takeaway);
+
+      expect(first['queueNumber'], 1);
+      expect(second['queueNumber'], 2);
+      expect(third['queueNumber'], 3);
+    });
+
+    test('เลขคิวนับแยกจากออเดอร์ dine_in/delivery ที่แทรกอยู่ระหว่างกัน', () {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final firstTakeaway = openOrder(type: OrderType.takeaway);
+      openOrder(type: OrderType.dineIn, tableId: table['id'] as int);
+      openOrder(type: OrderType.delivery);
+      final secondTakeaway = openOrder(type: OrderType.takeaway);
+
+      expect(firstTakeaway['queueNumber'], 1);
+      expect(secondTakeaway['queueNumber'], 2);
+    });
+  });
 }

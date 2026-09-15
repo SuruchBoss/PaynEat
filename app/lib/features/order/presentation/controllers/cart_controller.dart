@@ -66,9 +66,11 @@ class CartController extends GetxController {
       existingOrderId = args['orderId'] as int?;
       final seats = args['seats'] as int?;
       if (seats != null) guestCount.value = seats.clamp(1, 50);
-      if (tableId == null && existingOrderId == null) {
-        orderType.value = OrderType.takeaway;
-      }
+    }
+    // มาจากปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" โดยตรง (ไม่ผ่านการแตะโต๊ะ) — ไม่มี arguments เลยก็ต้อง
+    // ตกเป็นค่าเริ่มต้นนี้ด้วย ไม่ใช่แค่ตอน args เป็น Map ถึงจะเช็ค
+    if (tableId == null && existingOrderId == null) {
+      orderType.value = OrderType.takeaway;
     }
 
     _loadSettings();
@@ -180,6 +182,11 @@ class CartController extends GetxController {
         AppDialogs.success(
           isAddingToExistingOrder
               ? 'order_add_items_success'.trParams({'code': order.code})
+              : order.queueNumber != null
+              ? 'order_create_success_with_queue'.trParams({
+                  'code': order.code,
+                  'queue': '${order.queueNumber}',
+                })
               : 'order_create_success'.trParams({'code': order.code}),
         );
         Get.offNamed<void>(

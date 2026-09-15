@@ -30,6 +30,24 @@ export const orderRepository = {
     return `${prefix}-${String(sequence).padStart(4, '0')}`;
   },
 
+  /**
+   * เลขคิวรับอาหารสำหรับ takeaway รันต่อวันแยกจาก `code` (เริ่มที่ 1 ใหม่ทุกวัน) — ใช้ตอนเรียก
+   * ลูกค้ามารับอาหารหน้าร้าน (ดู docs/tickets/10-takeaway-delivery-flow.md)
+   */
+  nextQueueNumber() {
+    const last = getDb()
+      .prepare(
+        `
+        SELECT MAX(queue_number) AS maxNumber
+          FROM orders
+         WHERE type = 'takeaway'
+           AND date(created_at) = date('now')
+      `,
+      )
+      .get();
+    return (last?.maxNumber ?? 0) + 1;
+  },
+
   findAll({
     status,
     statuses,
@@ -135,12 +153,12 @@ export const orderRepository = {
     return getDb().prepare('SELECT * FROM order_items WHERE id = ?').get(itemId);
   },
 
-  create({ code, type, tableId, waiterId, customerId, guestCount, note }) {
+  create({ code, type, tableId, waiterId, customerId, guestCount, note, queueNumber }) {
     const info = getDb()
       .prepare(
         `
-        INSERT INTO orders (code, type, table_id, waiter_id, customer_id, guest_count, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (code, type, table_id, waiter_id, customer_id, guest_count, note, queue_number)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -151,6 +169,7 @@ export const orderRepository = {
         customerId ?? null,
         guestCount ?? 1,
         note ?? null,
+        queueNumber ?? null,
       );
     return this.findById(info.lastInsertRowid);
   },

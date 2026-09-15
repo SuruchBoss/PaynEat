@@ -230,6 +230,11 @@ components:
         type: { type: string, enum: [dine_in, takeaway, delivery] }
         tableId: { type: integer, nullable: true }
         tableName: { type: string, nullable: true }
+        queueNumber:
+          type: integer
+          nullable: true
+          example: 3
+          description: เลขคิวรับอาหาร รันต่อวัน — มีเฉพาะออเดอร์ type=takeaway เท่านั้น (ดู ticket 10)
         waiterName: { type: string, nullable: true }
         customerId: { type: integer, nullable: true, description: ผูกลูกค้าแบบ optional (ดู ticket 09) }
         customerName: { type: string, nullable: true }

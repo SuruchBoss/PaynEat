@@ -12,6 +12,7 @@ const Map<String, String> tableTranslationsTh = {
   'table_occupied_count_label': 'มีลูกค้า',
   'table_refresh_tooltip': 'รีเฟรช',
   'table_all_zones_filter': 'ทุกโซน',
+  'table_new_takeaway_delivery_button': 'สั่งกลับบ้าน/เดลิเวอรี่',
 };
 
 const Map<String, String> tableTranslationsEn = {
@@ -27,4 +28,5 @@ const Map<String, String> tableTranslationsEn = {
   'table_occupied_count_label': 'Occupied',
   'table_refresh_tooltip': 'Refresh',
   'table_all_zones_filter': 'All zones',
+  'table_new_takeaway_delivery_button': 'New takeaway/delivery',
 };
