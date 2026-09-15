@@ -9,12 +9,14 @@ export const promotionController = {
   detail: asyncHandler(async (req, res) =>
     ok(res, promotionService.getById(req.validated.params.id)),
   ),
-  create: asyncHandler(async (req, res) => created(res, promotionService.create(req.body))),
+  create: asyncHandler(async (req, res) =>
+    created(res, promotionService.create(req.body, req.user)),
+  ),
   update: asyncHandler(async (req, res) =>
-    ok(res, promotionService.update(req.validated.params.id, req.body)),
+    ok(res, promotionService.update(req.validated.params.id, req.body, req.user)),
   ),
   remove: asyncHandler(async (req, res) => {
-    promotionService.remove(req.validated.params.id);
+    promotionService.remove(req.validated.params.id, req.user);
     return noContent(res);
   }),
 };

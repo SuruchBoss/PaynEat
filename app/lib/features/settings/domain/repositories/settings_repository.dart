@@ -13,5 +13,6 @@ abstract class SettingsRepository {
     String? storeBranch,
     double? pointsEarnRateBaht,
     double? pointsRedeemValueBaht,
+    String? promptPayId,
   });
 }

@@ -19,6 +19,8 @@ abstract class PaymentRepository {
 
   Future<Result<({Receipt receipt, Order order})>> getReceipt(int orderId);
 
+  Future<Result<PromptPayQr>> getPromptPayQr(double? amount);
+
   Future<Result<Refund>> refund({
     required int paymentId,
     required double amount,

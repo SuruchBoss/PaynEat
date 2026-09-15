@@ -29,4 +29,21 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
       limit: limit,
     ),
   );
+
+  @override
+  Future<Result<String>> exportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  }) => guard(
+    () => _remote.exportCsv(
+      actorUserId: actorUserId,
+      action: action,
+      entityType: entityType,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    ),
+  );
 }

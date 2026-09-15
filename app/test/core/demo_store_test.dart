@@ -1088,6 +1088,122 @@ void main() {
       expect(logs, hasLength(1));
       expect(logs.first['reason'], 'ออกผิดประเภท');
     });
+
+    // ดู docs/tickets/14-financial-audit-trail.md — audit ระดับบัญชี/การเงิน
+    test('saveMenuItem log เป็น menu.price_change เฉพาะตอนราคาเปลี่ยนจริง', () {
+      final category = store.categories.first;
+      final menuItem = store.saveMenuItem({
+        'name': 'เมนูทดสอบ-audit ราคา',
+        'categoryId': category['id'],
+        'price': 100.0,
+      });
+      final itemId = menuItem['id'] as int;
+
+      // แก้แค่ชื่อเฉยๆ ไม่ควร log
+      store.saveMenuItem(
+        {
+          'categoryId': category['id'],
+          'name': 'เมนูทดสอบ-audit ราคา (เปลี่ยนชื่อ)',
+        },
+        id: itemId,
+        actorId: 1,
+      );
+      expect(
+        store.auditLogList(action: 'menu.price_change', entityId: itemId).rows,
+        isEmpty,
+      );
+
+      store.saveMenuItem(
+        {'categoryId': category['id'], 'price': 120.0},
+        id: itemId,
+        actorId: 1,
+      );
+      final logs = store
+          .auditLogList(action: 'menu.price_change', entityId: itemId)
+          .rows;
+      expect(logs, hasLength(1));
+      expect(logs.first['metadata']['previousPrice'], 100.0);
+      expect(logs.first['metadata']['newPrice'], 120.0);
+      expect(logs.first['actorUserId'], 1);
+    });
+
+    test('savePromotion/deletePromotion log ครบทั้งสร้าง/แก้ไข/ลบ', () {
+      final promotion = store.savePromotion({
+        'name': 'โปรทดสอบ audit',
+        'type': 'percent',
+        'value': 10,
+        'conditions': const {},
+      }, actorId: 1);
+      final promotionId = promotion['id'] as int;
+      expect(
+        store
+            .auditLogList(action: 'promotion.create', entityId: promotionId)
+            .rows,
+        hasLength(1),
+      );
+
+      store.savePromotion({'value': 15}, id: promotionId, actorId: 1);
+      expect(
+        store
+            .auditLogList(action: 'promotion.update', entityId: promotionId)
+            .rows,
+        hasLength(1),
+      );
+
+      store.deletePromotion(promotionId, actorId: 1);
+      final deleteLogs = store
+          .auditLogList(action: 'promotion.delete', entityId: promotionId)
+          .rows;
+      expect(deleteLogs, hasLength(1));
+      expect(deleteLogs.first['summary'], contains('โปรทดสอบ audit'));
+    });
+
+    test(
+      'adjustIngredientStock log เป็น ingredient.stock_adjust พร้อมส่วนต่างสต๊อก',
+      () {
+        final ingredient = store.saveIngredient({
+          'name': 'วัตถุดิบทดสอบ-audit',
+          'unit': 'กรัม',
+          'currentStock': 100.0,
+          'lowStockThreshold': 20.0,
+        });
+        final ingredientId = ingredient['id'] as int;
+
+        store.adjustIngredientStock(ingredientId, -30, actorId: 1);
+
+        final logs = store
+            .auditLogList(
+              action: 'ingredient.stock_adjust',
+              entityId: ingredientId,
+            )
+            .rows;
+        expect(logs, hasLength(1));
+        expect(logs.first['metadata']['delta'], -30.0);
+        expect(logs.first['metadata']['previousStock'], 100.0);
+        expect(logs.first['metadata']['newStock'], 70.0);
+      },
+    );
+
+    test('auditLogExportCsv คืน CSV ที่มี header และแถวตรงตาม filter', () {
+      final previousVat = store.settings['vatRate'] as double;
+      store.updateSettings({'vatRate': previousVat + 0.01}, actorId: 1);
+
+      final csv = store.auditLogExportCsv(action: 'settings.update');
+
+      expect(
+        csv,
+        contains('วันเวลา,ผู้ทำ,การกระทำ,ประเภท,รหัสอ้างอิง,รายละเอียด,เหตุผล'),
+      );
+      expect(csv, contains('settings.update'));
+      final dataLines = csv
+          .split('\r\n')
+          .skip(1)
+          .where((line) => line.isNotEmpty)
+          .toList();
+      for (final line in dataLines) {
+        expect(line, contains('settings.update'));
+      }
+    });
   });
 
   group('DemoStore customers/loyalty — ลูกค้า/แต้มสะสม (ticket 09)', () {

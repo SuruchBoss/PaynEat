@@ -1,6 +1,7 @@
 import { ApiError } from '../../core/ApiError.js';
 import { toSatang } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { categoryRepository } from '../categories/category.repository.js';
 import { ingredientRepository } from '../ingredients/ingredient.repository.js';
 import { menuRepository } from './menu.repository.js';
@@ -98,15 +99,18 @@ export const menuService = {
     return this.getById(run());
   },
 
-  update(id, payload) {
-    this.getById(id);
+  update(id, payload, actingUser) {
+    const before = this.getById(id);
     assertCategoryExists(payload.categoryId);
     assertIngredientsExist(payload.ingredients);
+
+    const newPriceSatang = payload.price === undefined ? undefined : toSatang(payload.price);
+    const priceChanged = newPriceSatang !== undefined && newPriceSatang !== toSatang(before.price);
 
     const run = getDb().transaction(() => {
       menuRepository.update(id, {
         ...payload,
-        price: payload.price === undefined ? undefined : toSatang(payload.price),
+        price: newPriceSatang,
         imageUrl: payload.imageUrl === '' ? null : payload.imageUrl,
         // แก้ isAvailable ผ่านฟอร์มแก้ไขปกติ = พนักงานตั้งใจ override เอง เลยล้างสถานะ
         // "ปิดขายอัตโนมัติเพราะสต๊อกหมด" ทิ้งเหมือนกับตอนกดสลับผ่าน setAvailability
@@ -117,6 +121,18 @@ export const menuService = {
       }
       if (payload.ingredients) {
         saveIngredientLinks(id, payload.ingredients);
+      }
+      // Audit สำหรับฝ่ายบัญชี (ดู docs/tickets/14-financial-audit-trail.md) — log เฉพาะตอนราคา
+      // เปลี่ยนจริงเท่านั้น ไม่ log ทุก field ที่แก้ (หลักการเดียวกับ order.item.edit ใน ticket 13)
+      if (priceChanged) {
+        auditLogService.log({
+          actorUser: actingUser,
+          action: 'menu.price_change',
+          entityType: 'menu_item',
+          entityId: id,
+          summary: `แก้ราคาเมนู "${before.name}" ${before.price} → ${payload.price} บาท`,
+          metadata: { previousPrice: before.price, newPrice: payload.price },
+        });
       }
     });
     run();

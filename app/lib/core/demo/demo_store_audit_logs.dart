@@ -37,19 +37,15 @@ extension DemoStoreAuditLogs on DemoStore {
     });
   }
 
-  /// คืน total มาด้วยเหมือน backend (audit-log.controller.js ส่ง meta.total)
-  /// เพื่อให้หน้าจอบอกได้ว่าเห็นอยู่กี่จากทั้งหมด และมีให้โหลดต่อไหม
-  ({List<Map<String, dynamic>> rows, int total}) auditLogList({
+  List<Map<String, dynamic>> _auditLogMatches({
     int? actorUserId,
     String? action,
     String? entityType,
     int? entityId,
     String? dateFrom,
     String? dateTo,
-    int page = 1,
-    int limit = 50,
   }) {
-    final matched = auditLogs.reversed
+    return auditLogs.reversed
         .where((log) {
           if (actorUserId != null && log['actorUserId'] != actorUserId) {
             return false;
@@ -70,6 +66,28 @@ extension DemoStoreAuditLogs on DemoStore {
           return true;
         })
         .toList(growable: false);
+  }
+
+  /// คืน total มาด้วยเหมือน backend (audit-log.controller.js ส่ง meta.total)
+  /// เพื่อให้หน้าจอบอกได้ว่าเห็นอยู่กี่จากทั้งหมด และมีให้โหลดต่อไหม
+  ({List<Map<String, dynamic>> rows, int total}) auditLogList({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    int? entityId,
+    String? dateFrom,
+    String? dateTo,
+    int page = 1,
+    int limit = 50,
+  }) {
+    final matched = _auditLogMatches(
+      actorUserId: actorUserId,
+      action: action,
+      entityType: entityType,
+      entityId: entityId,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    );
 
     return (
       rows: matched
@@ -78,5 +96,39 @@ extension DemoStoreAuditLogs on DemoStore {
           .toList(growable: false),
       total: matched.length,
     );
+  }
+
+  /// ไม่มี pagination — ใช้สำหรับ export CSV เท่านั้น (ดู
+  /// docs/tickets/14-financial-audit-trail.md) mirror ของ
+  /// audit-log.repository.js#findAllForExport
+  String auditLogExportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  }) {
+    final rows = _auditLogMatches(
+      actorUserId: actorUserId,
+      action: action,
+      entityType: entityType,
+      dateFrom: dateFrom,
+      dateTo: dateTo,
+    );
+    return toCsv(rows, [
+      (label: 'วันเวลา', value: (Map<String, dynamic> row) => row['createdAt']),
+      (label: 'ผู้ทำ', value: (Map<String, dynamic> row) => row['actorName']),
+      (label: 'การกระทำ', value: (Map<String, dynamic> row) => row['action']),
+      (label: 'ประเภท', value: (Map<String, dynamic> row) => row['entityType']),
+      (
+        label: 'รหัสอ้างอิง',
+        value: (Map<String, dynamic> row) => row['entityId'],
+      ),
+      (
+        label: 'รายละเอียด',
+        value: (Map<String, dynamic> row) => row['summary'],
+      ),
+      (label: 'เหตุผล', value: (Map<String, dynamic> row) => row['reason']),
+    ]);
   }
 }

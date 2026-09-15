@@ -11,4 +11,12 @@ abstract class AuditLogRepository {
     int page = 1,
     int limit = 50,
   });
+
+  Future<Result<String>> exportCsv({
+    int? actorUserId,
+    String? action,
+    String? entityType,
+    String? dateFrom,
+    String? dateTo,
+  });
 }

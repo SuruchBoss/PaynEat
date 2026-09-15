@@ -435,7 +435,7 @@ paths:
                     items: { $ref: '#/components/schemas/Promotion' }
     post:
       tags: [Promotions]
-      summary: เพิ่มโปรโมชัน (admin/manager)
+      summary: เพิ่มโปรโมชัน (admin/manager) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -457,12 +457,14 @@ paths:
         '200': { description: สำเร็จ }
     patch:
       tags: [Promotions]
-      summary: แก้ไขโปรโมชัน (admin/manager)
+      summary: แก้ไขโปรโมชัน (admin/manager) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
     delete:
       tags: [Promotions]
-      summary: ลบโปรโมชัน (admin/manager) — ออเดอร์ที่เคยใช้ไปแล้วยังเก็บชื่อ/โค้ดไว้ (snapshot) ไม่กระทบ
+      summary: >-
+        ลบโปรโมชัน (admin/manager) — ออเดอร์ที่เคยใช้ไปแล้วยังเก็บชื่อ/โค้ดไว้ (snapshot) ไม่กระทบ
+        บันทึก audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '204': { description: ลบแล้ว }
 
@@ -513,7 +515,9 @@ paths:
         '200': { description: สำเร็จ }
     patch:
       tags: [Menu]
-      summary: แก้ไขเมนู
+      summary: >-
+        แก้ไขเมนู — แก้ราคาที่เปลี่ยนจริง (ไม่ใช่แก้ field อื่น) บันทึก audit log อัตโนมัติ
+        (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
     delete:
@@ -599,7 +603,9 @@ paths:
         schema: { type: integer }
     post:
       tags: [Ingredients]
-      summary: ปรับสต๊อกมือ (รับของเข้า/ตัดของเสีย) (admin/manager) — sync สถานะเปิด/ปิดขายเมนูที่เกี่ยวข้องอัตโนมัติ
+      summary: >-
+        ปรับสต๊อกมือ (รับของเข้า/ตัดของเสีย) (admin/manager) — sync สถานะเปิด/ปิดขายเมนูที่เกี่ยวข้อง
+        อัตโนมัติ บันทึก audit log ทุกครั้งพร้อมเหตุผลจากช่อง note (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -819,7 +825,9 @@ paths:
         schema: { type: integer }
     post:
       tags: [Orders]
-      summary: กรอกโค้ดส่วนลด — ผูกโปรโมชันนี้กับออเดอร์ถ้าเข้าเงื่อนไข
+      summary: >-
+        กรอกโค้ดส่วนลด — ผูกโปรโมชันนี้กับออเดอร์ถ้าเข้าเงื่อนไข บันทึก audit log ทุกครั้ง
+        (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -840,7 +848,9 @@ paths:
         schema: { type: integer }
     delete:
       tags: [Orders]
-      summary: เอาโปรโมชันที่ผูกด้วยโค้ดออก (โปรโมชัน auto ที่ยังเข้าเงื่อนไขจะกลับมาเอง)
+      summary: >-
+        เอาโปรโมชันที่ผูกด้วยโค้ดออก (โปรโมชัน auto ที่ยังเข้าเงื่อนไขจะกลับมาเอง) บันทึก
+        audit log ทุกครั้ง (ดู ticket 14)
       responses:
         '200': { description: สำเร็จ }
   /orders/{id}/eligible-promotions:
@@ -912,7 +922,7 @@ paths:
   /payments:
     post:
       tags: [Payments]
-      summary: ชำระเงิน (รองรับแยกจ่ายหลายวิธี)
+      summary: ชำระเงิน (รองรับแยกจ่ายหลายวิธี) — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1034,6 +1044,20 @@ paths:
       summary: ข้อมูลใบเสร็จสำหรับพิมพ์
       responses:
         '200': { description: สำเร็จ }
+  /payments/promptpay-qr:
+    get:
+      tags: [Payments]
+      summary: >-
+        payload สำหรับสร้าง QR พร้อมเพย์จริง (มาตรฐาน EMV QRCPS) ให้ client เรนเดอร์เป็นภาพ QR เอง
+        — ไม่ระบุ amount ได้ static QR ที่ลูกค้ากรอกยอดเองตอนสแกน ดู docs/tickets/16-promptpay-qr.md
+      parameters:
+        - in: query
+          name: amount
+          schema: { type: number, minimum: 0.01, example: 176.55 }
+          description: ยอดที่ต้องการให้ QR ระบุไว้ (ไม่ใส่ = static QR ไม่ผูกยอด)
+      responses:
+        '200': { description: สำเร็จ }
+        '400': { description: ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์ (ตั้งได้ที่หน้าตั้งค่าระบบ) }
 
   /shifts/current:
     get:
@@ -1051,7 +1075,7 @@ paths:
         '200': { description: สำเร็จ }
     post:
       tags: [Shifts]
-      summary: เปิดกะใหม่ พร้อมเงินทอนตั้งต้น
+      summary: เปิดกะใหม่ พร้อมเงินทอนตั้งต้น — บันทึก audit log ทุกครั้ง (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1083,7 +1107,9 @@ paths:
         schema: { type: integer }
     patch:
       tags: [Shifts]
-      summary: ปิดกะ — นับเงินสดจริงเทียบกับยอดที่ระบบคาดไว้ (กระทบยอด)
+      summary: >-
+        ปิดกะ — นับเงินสดจริงเทียบกับยอดที่ระบบคาดไว้ (กระทบยอด) บันทึก audit log ทุกครั้ง
+        พร้อมส่วนต่างเงินสด (ดู ticket 14)
       requestBody:
         required: true
         content:
@@ -1131,7 +1157,7 @@ paths:
       tags: [Settings]
       summary: >-
         ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี,
-        อัตราแต้มสะสม)
+        อัตราแต้มสะสม, เลขพร้อมเพย์)
       responses:
         '200': { description: สำเร็จ }
     patch:
@@ -1139,6 +1165,7 @@ paths:
       summary: >-
         แก้ไขค่าตั้งค่าร้าน (admin/manager) — storeTaxId/storeAddress/storeBranch ต้องตั้งก่อนออก
         ใบกำกับภาษีได้ — pointsEarnRateBaht/pointsRedeemValueBaht คุมอัตราแต้มสะสม (ดู ticket 09)
+        — promptPayId ต้องตั้งก่อนช่องทางจ่าย "qr" จะแสดง QR จริงได้ (ดู ticket 16)
       requestBody:
         content:
           application/json:
@@ -1153,6 +1180,10 @@ paths:
                   type: number
                   example: 1
                   description: มูลค่า 1 แต้มตอนใช้แลกส่วนลด เป็นบาท (ค่าเริ่มต้น 1)
+                promptPayId:
+                  type: string
+                  example: '0812345678'
+                  description: เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษีที่ผูกกับพร้อมเพย์ของร้าน
       responses:
         '200': { description: สำเร็จ }
 
@@ -1251,6 +1282,27 @@ paths:
                       limit: { type: integer }
                       total: { type: integer }
                       totalPages: { type: integer }
+        '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }
+  /audit-logs/export:
+    get:
+      tags: [AuditLogs]
+      summary: >-
+        export audit log เป็นไฟล์ CSV (admin เท่านั้น) — filter เดียวกับ GET /audit-logs แต่ไม่มี
+        pagination (ดึงทุกแถวที่ตรงเงื่อนไข) สำหรับส่งให้ฝ่ายบัญชี/ผู้ตรวจสอบภายนอก (ดู
+        docs/tickets/14-financial-audit-trail.md)
+      parameters:
+        - { in: query, name: actorUserId, schema: { type: integer } }
+        - { in: query, name: action, schema: { type: string } }
+        - { in: query, name: entityType, schema: { type: string } }
+        - { in: query, name: entityId, schema: { type: integer } }
+        - { in: query, name: dateFrom, schema: { type: string, format: date } }
+        - { in: query, name: dateTo, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV (UTF-8 พร้อม BOM ให้ Excel เปิดแล้วอักษรไทยไม่เพี้ยน)
+          content:
+            text/csv:
+              schema: { type: string, format: binary }
         '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin) }
 
   /customers:

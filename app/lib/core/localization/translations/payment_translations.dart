@@ -20,6 +20,12 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_reference_hint': 'เช่น เลขที่สลิป / 4 ตัวท้ายบัตร',
   'payment_submit_button': 'รับชำระ @amount',
 
+  // promptpay_qr_view (ดู docs/tickets/16-promptpay-qr.md)
+  'payment_promptpay_qr_semantics': 'คิวอาร์โค้ดพร้อมเพย์สำหรับรับชำระเงิน',
+  'payment_promptpay_scan_instruction':
+      'ให้ลูกค้าสแกนจ่ายด้วยแอปธนาคาร แล้วเช็คสลิป/แอปว่าเงินเข้าจริงก่อนกดยืนยันรับชำระ',
+  'payment_promptpay_amount_required': 'กรอกยอดเงินก่อนเพื่อสร้าง QR',
+
   // checkout_controller / split_bill_controller (snackbar)
   'payment_bill_closed_success': 'ปิดบิลเรียบร้อย',
   'payment_partial_paid_success': 'รับชำระแล้ว คงเหลือ @amount บาท',
@@ -121,6 +127,13 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_reference_label': 'Reference number (optional)',
   'payment_reference_hint': 'e.g. slip number / last 4 card digits',
   'payment_submit_button': 'Charge @amount',
+
+  // promptpay_qr_view (see docs/tickets/16-promptpay-qr.md)
+  'payment_promptpay_qr_semantics': 'PromptPay QR code for payment',
+  'payment_promptpay_scan_instruction':
+      'Have the customer scan with their banking app, then check the slip/app before confirming payment',
+  'payment_promptpay_amount_required':
+      'Enter an amount first to generate the QR',
 
   // checkout_controller / split_bill_controller (snackbar)
   'payment_bill_closed_success': 'Bill closed successfully',

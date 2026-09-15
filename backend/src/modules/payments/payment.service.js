@@ -1,5 +1,6 @@
 import { ApiError } from '../../core/ApiError.js';
 import { toSatang, toBaht } from '../../core/money.js';
+import { buildPromptPayPayload } from '../../core/promptpay.js';
 import { getDb } from '../../db/index.js';
 import { emit, EVENTS } from '../../realtime/socket.js';
 import { orderRepository } from '../orders/order.repository.js';
@@ -165,6 +166,23 @@ export const paymentService = {
         pointsRedeemedValue,
       });
 
+      // รับชำระเงินกระทบเงินสด/ยอดขายโดยตรง audit เหมือนคืนเงิน (refund) — ดู
+      // docs/tickets/14-financial-audit-trail.md
+      auditLogService.log({
+        actorUser: user,
+        action: 'payment.pay',
+        entityType: 'payment',
+        entityId: payment.id,
+        summary: `รับชำระเงิน ${toBaht(chargedAmount)} บาท (${payload.method}) ออเดอร์ #${order.code ?? order.id}`,
+        metadata: {
+          orderId: order.id,
+          method: payload.method,
+          amount: toBaht(amount),
+          chargedAmount: toBaht(chargedAmount),
+          pointsRedeemed: pointsToRedeem,
+        },
+      });
+
       if (pointsToRedeem > 0) {
         customerRepository.adjustPoints(order.customer_id, -pointsToRedeem);
       }
@@ -200,6 +218,23 @@ export const paymentService = {
     }
     emit(EVENTS.ORDER_UPDATED, result.order);
     return result;
+  },
+
+  /**
+   * payload สำหรับ QR พร้อมเพย์ (ดู docs/tickets/16-promptpay-qr.md) — ให้ client เรนเดอร์เป็น
+   * ภาพ QR เอง ไม่ generate ภาพที่ฝั่ง backend เพื่อไม่ต้องเพิ่ม dependency ฝั่งนี้ ยอด (amount)
+   * เป็น optional ให้ตรงกับสเปก EMV QR เอง — ถ้าไม่ระบุจะได้ static QR ที่สแกนแล้วกรอกยอดเองได้
+   */
+  promptPayQr(amount) {
+    const settings = settingsService.get();
+    if (!settings.promptPayId) {
+      throw ApiError.badRequest('ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์ (ตั้งได้ที่หน้าตั้งค่าระบบ)');
+    }
+    return {
+      payload: buildPromptPayPayload({ promptPayId: settings.promptPayId, amount }),
+      promptPayId: settings.promptPayId,
+      amount: amount ?? null,
+    };
   },
 
   /** ข้อมูลสำหรับพิมพ์ใบเสร็จ */

@@ -1,5 +1,16 @@
+import { toCsv } from '../../core/csv.js';
 import { auditLogRepository } from './audit-log.repository.js';
 import { toAuditLogDto } from './audit-log.mapper.js';
+
+const CSV_COLUMNS = [
+  { label: 'วันเวลา', value: (log) => log.createdAt },
+  { label: 'ผู้ทำ', value: (log) => log.actorName },
+  { label: 'การกระทำ', value: (log) => log.action },
+  { label: 'ประเภท', value: (log) => log.entityType },
+  { label: 'รหัสอ้างอิง', value: (log) => log.entityId ?? '' },
+  { label: 'รายละเอียด', value: (log) => log.summary },
+  { label: 'เหตุผล', value: (log) => log.reason ?? '' },
+];
 
 export const auditLogService = {
   /**
@@ -25,6 +36,13 @@ export const auditLogService = {
   list(filters) {
     const { rows, total } = auditLogRepository.findAll(filters);
     return { items: rows.map(toAuditLogDto), total };
+  },
+
+  /** export ให้ฝ่ายบัญชี/ผู้ตรวจสอบภายนอก (ดู docs/tickets/14-financial-audit-trail.md) — reuse
+   * filter เดียวกับหน้าจอ list (admin เท่านั้น ควบคุมที่ชั้น route) */
+  exportCsv(filters) {
+    const rows = auditLogRepository.findAllForExport(filters).map(toAuditLogDto);
+    return toCsv(rows, CSV_COLUMNS);
   },
 };
 

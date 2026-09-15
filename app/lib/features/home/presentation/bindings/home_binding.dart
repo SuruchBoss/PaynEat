@@ -156,7 +156,10 @@ class HomeBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
-      () => AuditLogController(getAuditLogs: Get.find<GetAuditLogsUseCase>()),
+      () => AuditLogController(
+        getAuditLogs: Get.find<GetAuditLogsUseCase>(),
+        exportAuditLogs: Get.find<ExportAuditLogsUseCase>(),
+      ),
       fenix: true,
     );
     Get.lazyPut(

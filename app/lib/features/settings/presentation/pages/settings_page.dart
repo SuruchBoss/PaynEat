@@ -125,6 +125,20 @@ class SettingsPage extends GetView<SettingsController> {
                   ),
                   const SizedBox(height: 24),
                   SectionHeader(
+                    title: 'settings_promptpay_title'.tr,
+                    subtitle: 'settings_promptpay_subtitle'.tr,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller.promptPayIdController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      labelText: 'settings_promptpay_id_label'.tr,
+                      hintText: 'settings_promptpay_id_hint'.tr,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SectionHeader(
                     title: 'settings_loyalty_title'.tr,
                     subtitle: 'settings_loyalty_subtitle'.tr,
                   ),

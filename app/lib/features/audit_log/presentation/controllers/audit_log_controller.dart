@@ -1,5 +1,8 @@
 import 'package:get/get.dart';
 
+import '../../../../core/utils/csv_download/csv_download.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../domain/entities/audit_log.dart';
 import '../../domain/entities/audit_log_action.dart';
 import '../../domain/usecases/audit_log_usecases.dart';
@@ -11,18 +14,27 @@ import '../../domain/usecases/audit_log_usecases.dart';
 /// ถ้าดึงครั้งเดียวแล้วจบ ผู้ใช้จะเห็นแค่ 100 รายการล่าสุดโดยไม่รู้ว่ายังมีต่อ —
 /// หน้านี้มีไว้สืบเหตุการณ์ย้อนหลัง การตัดเงียบ ๆ ทำให้สรุปผิดว่า "ไม่มี"
 class AuditLogController extends GetxController {
-  AuditLogController({required GetAuditLogsUseCase getAuditLogs})
-    : _getAuditLogs = getAuditLogs;
+  AuditLogController({
+    required GetAuditLogsUseCase getAuditLogs,
+    required ExportAuditLogsUseCase exportAuditLogs,
+  }) : _getAuditLogs = getAuditLogs,
+       _exportAuditLogs = exportAuditLogs;
 
   static const int pageSize = 50;
 
   final GetAuditLogsUseCase _getAuditLogs;
+  final ExportAuditLogsUseCase _exportAuditLogs;
 
   final RxList<AuditLog> logs = <AuditLog>[].obs;
   final RxBool isLoading = true.obs;
   final RxBool isLoadingMore = false.obs;
+  final RxBool isExporting = false.obs;
   final RxnString errorMessage = RxnString();
   final RxnString actionFilter = RxnString();
+
+  /// ช่วงวันที่ filter (ดู docs/tickets/14-financial-audit-trail.md) — null ทั้งคู่ = ไม่กรอง
+  final Rxn<DateTime> dateFrom = Rxn<DateTime>();
+  final Rxn<DateTime> dateTo = Rxn<DateTime>();
 
   /// จำนวนรายการทั้งหมดที่ตรงตัวกรอง (จาก meta.total ของ backend)
   final RxInt total = 0.obs;
@@ -37,13 +49,24 @@ class AuditLogController extends GetxController {
     load();
   }
 
+  String? get _isoDateFrom =>
+      dateFrom.value == null ? null : Formatters.isoDate(dateFrom.value!);
+  String? get _isoDateTo =>
+      dateTo.value == null ? null : Formatters.isoDate(dateTo.value!);
+
   Future<void> load() async {
     isLoading.value = true;
     errorMessage.value = null;
     _page = 1;
 
     final result = await _getAuditLogs(
-      AuditLogFilter(action: actionFilter.value, page: 1, limit: pageSize),
+      AuditLogFilter(
+        action: actionFilter.value,
+        dateFrom: _isoDateFrom,
+        dateTo: _isoDateTo,
+        page: 1,
+        limit: pageSize,
+      ),
     );
 
     isLoading.value = false;
@@ -64,6 +87,8 @@ class AuditLogController extends GetxController {
     final result = await _getAuditLogs(
       AuditLogFilter(
         action: actionFilter.value,
+        dateFrom: _isoDateFrom,
+        dateTo: _isoDateTo,
         page: _page + 1,
         limit: pageSize,
       ),
@@ -85,5 +110,41 @@ class AuditLogController extends GetxController {
     load();
   }
 
+  /// ตั้งช่วงวันที่ filter แล้วโหลดใหม่ทันที — ส่ง null ทั้งคู่เพื่อล้าง filter
+  void setDateRange(DateTime? from, DateTime? to) {
+    dateFrom.value = from;
+    dateTo.value = to;
+    load();
+  }
+
   String actionLabel(String action) => AuditLogAction.translationKey(action).tr;
+
+  /// export CSV ตาม filter ปัจจุบัน (ดู docs/tickets/14-financial-audit-trail.md) —
+  /// รองรับเฉพาะเว็บ (ดู core/utils/csv_download) เพราะหน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็นเว็บเท่านั้น
+  Future<void> exportCsv() async {
+    if (!isCsvDownloadSupported) {
+      AppDialogs.error('audit_log_export_unsupported_platform'.tr);
+      return;
+    }
+
+    isExporting.value = true;
+    final result = await _exportAuditLogs(
+      AuditLogFilter(
+        action: actionFilter.value,
+        dateFrom: _isoDateFrom,
+        dateTo: _isoDateTo,
+      ),
+    );
+    isExporting.value = false;
+
+    result.fold(
+      onSuccess: (csv) {
+        downloadCsv(
+          'audit-logs-${Formatters.isoDate(DateTime.now())}.csv',
+          csv,
+        );
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
+  }
 }

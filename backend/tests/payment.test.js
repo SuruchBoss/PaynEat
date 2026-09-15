@@ -6,6 +6,7 @@ after(cleanup);
 
 const get = (url, token) => api().get(url).set(authHeader(token));
 const post = (url, token, body) => api().post(url).set(authHeader(token)).send(body);
+const patch = (url, token, body) => api().patch(url).set(authHeader(token)).send(body);
 
 /** เปิดออเดอร์ใหม่ 1 ใบพร้อมโต๊ะว่างและเมนู 1 รายการ คืนออเดอร์ที่สร้างเสร็จ */
 const openOrder = async (waiterToken, quantity = 1) => {
@@ -181,4 +182,49 @@ test('GET /payments/order/:id/receipt — มีข้อมูลร้าน�
   assert.ok(res.body.data.store.name);
   assert.equal(res.body.data.order.id, order.id);
   assert.equal(res.body.data.payments.length, 1);
+});
+
+// ดู docs/tickets/16-promptpay-qr.md — QR พร้อมเพย์จริง แทนที่ปุ่ม "qr" ที่เคยเป็นแค่ label
+test('GET /payments/promptpay-qr — ยังไม่ได้ตั้งเลขพร้อมเพย์ต้องได้ 400', async () => {
+  const cashier = await login('cashier', 'cashier123');
+
+  const res = await get('/api/v1/payments/promptpay-qr?amount=100', cashier.token);
+
+  assert.equal(res.status, 400);
+});
+
+test('GET /payments/promptpay-qr — หลังตั้งเลขพร้อมเพย์แล้ว คืน payload ที่ยาวพอเป็น QR จริงและมี CRC ต่อท้าย', async () => {
+  const admin = await login('admin', 'admin123');
+  const cashier = await login('cashier', 'cashier123');
+  await patch('/api/v1/settings', admin.token, { promptPayId: '0812345678' });
+
+  const res = await get('/api/v1/payments/promptpay-qr?amount=176.55', cashier.token);
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.data.promptPayId, '0812345678');
+  assert.equal(res.body.data.amount, 176.55);
+  assert.match(res.body.data.payload, /^00020101021229.*6304[0-9A-F]{4}$/);
+  assert.ok(res.body.data.payload.includes('5406176.55')); // tag 54 ความยาว 6 ค่า "176.55"
+});
+
+test('GET /payments/promptpay-qr — ไม่ระบุ amount ได้ static QR (ไม่มี tag 54)', async () => {
+  const admin = await login('admin', 'admin123');
+  const cashier = await login('cashier', 'cashier123');
+  await patch('/api/v1/settings', admin.token, { promptPayId: '0812345678' });
+
+  const res = await get('/api/v1/payments/promptpay-qr', cashier.token);
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.data.amount, null);
+  assert.match(res.body.data.payload, /^00020101021129/);
+});
+
+test('GET /payments/promptpay-qr — waiter (อยู่ใน role cashier group) เรียกได้เหมือน cashier', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  await patch('/api/v1/settings', admin.token, { promptPayId: '0812345678' });
+
+  const res = await get('/api/v1/payments/promptpay-qr?amount=50', waiter.token);
+
+  assert.equal(res.status, 200);
 });

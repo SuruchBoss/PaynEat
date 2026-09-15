@@ -91,6 +91,18 @@ class GetReceiptUseCase
       _repository.getReceipt(params);
 }
 
+/// payload QR พร้อมเพย์สำหรับยอด [params] (null = static QR ไม่ผูกยอด) — ดู
+/// docs/tickets/16-promptpay-qr.md
+class GetPromptPayQrUseCase implements UseCase<PromptPayQr, double?> {
+  const GetPromptPayQrUseCase(this._repository);
+
+  final PaymentRepository _repository;
+
+  @override
+  Future<Result<PromptPayQr>> call(double? params) =>
+      _repository.getPromptPayQr(params);
+}
+
 class RefundParams {
   const RefundParams({
     required this.paymentId,

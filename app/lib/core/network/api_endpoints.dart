@@ -64,6 +64,7 @@ class ApiEndpoints {
   static String splitPreview(int orderId) =>
       '/payments/order/$orderId/split-preview';
   static String refundPayment(int paymentId) => '/payments/$paymentId/refund';
+  static const String promptPayQr = '/payments/promptpay-qr';
 
   // Reports
   static const String dashboard = '/reports/dashboard';
@@ -86,6 +87,7 @@ class ApiEndpoints {
 
   // Audit logs
   static const String auditLogs = '/audit-logs';
+  static const String auditLogsExport = '/audit-logs/export';
 
   // Customers
   static const String customers = '/customers';

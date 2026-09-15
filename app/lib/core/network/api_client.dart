@@ -59,6 +59,42 @@ class ApiClient {
 
   Future<ApiResult> delete(String path) => _request(() => _dio.delete(path));
 
+  /// ดึง response แบบข้อความดิบ (ไม่ใช่ envelope `{success,data}`) — ใช้กับ endpoint ที่ตอบเป็น
+  /// ไฟล์ เช่น CSV export ซึ่งไม่ใช่ JSON
+  Future<String> getText(String path, {Map<String, dynamic>? query}) async {
+    late final Response<String> response;
+    try {
+      response = await _dio.get<String>(
+        path,
+        queryParameters: _clean(query),
+        options: Options(responseType: ResponseType.plain),
+      );
+    } on DioException catch (error) {
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.receiveTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.connectionError) {
+        throw const NetworkException();
+      }
+      throw ApiException(
+        message: error.message ?? 'error_api_call_failed'.tr,
+        statusCode: error.response?.statusCode,
+      );
+    }
+
+    final statusCode = response.statusCode ?? 500;
+    if (statusCode == 401) onUnauthorized?.call();
+    if (statusCode < 200 || statusCode >= 300) {
+      throw ApiException(
+        message: 'error_api_call_failed_with_status'.trParams({
+          'status': statusCode.toString(),
+        }),
+        statusCode: statusCode,
+      );
+    }
+    return response.data ?? '';
+  }
+
   Future<ApiResult> _request(Future<Response<dynamic>> Function() send) async {
     late final Response<dynamic> response;
     try {

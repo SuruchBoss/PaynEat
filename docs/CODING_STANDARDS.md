@@ -54,17 +54,47 @@ Flutter: 151 เทสต์ผ่าน · Backend: 94 เทสต์ผ่า
 ตัวอย่างที่ต้องระวังในโปรเจกต์นี้:
 
 - `core/demo/demo_store.dart` — **แก้แล้ว** เคยเป็นไฟล์เดียว 1,142 บรรทัด ตอนนี้แยกเป็น
-  `demo_store.dart` (78 บรรทัด — เก็บเฉพาะ state ร่วมและ helper ที่ใช้ทุกโดเมน) บวก part file
-  ตามโดเมน: `demo_store_auth.dart` (74), `demo_store_menu.dart` (146),
-  `demo_store_tables.dart` (81), `demo_store_orders.dart` (379),
-  `demo_store_payments.dart` (108), `demo_store_reports.dart` (186),
-  `demo_store_seed_history.dart` (127) — ใช้ `part`/`part of` + `extension ... on DemoStore`
-  ต่อไฟล์ ยังเป็นคลาสเดียวกัน เข้าถึง field/เมธอด private ข้ามไฟล์ได้ปกติเพราะ part ทั้งหมดอยู่ใน
-  library เดียวกัน (สมาชิก `static` เช่น `openingHour` ต้องระบุ `DemoStore.` นำหน้าเมื่อเรียกจาก
-  extension — จุดเดียวที่ต่างจากตอนอยู่ในคลาสเดียว) ยืนยันด้วยเทสต์ใหม่
-  `test/core/demo_store_test.dart` (11 เคส ครอบคลุมทุกโดเมนรวมถึงจุดที่โดเมนหนึ่งเรียก private
-  helper ของอีกโดเมน เช่น orders เรียก `_findTable`/`_findUser`) และเทสต์เดิมทั้งหมด 77/77 ผ่าน
-  เพิ่มฟีเจอร์ demo ใหม่จากนี้ไปให้เพิ่มในไฟล์ย่อยตามโดเมนที่เกี่ยวข้อง ไม่ใช่ไฟล์เดียวรวมกัน
+  `demo_store.dart` (112 บรรทัด — เก็บเฉพาะ state ร่วมและ helper ที่ใช้ทุกโดเมน) บวก part file
+  ตามโดเมน 17 ไฟล์ (รายการนี้ต้องอัปเดตทุกครั้งที่แยกไฟล์ใหม่ — ตรวจสอบด้วย
+  `wc -l lib/core/demo/demo_store_*.dart` ก่อนแก้เอกสาร อย่าเดา/คัดลอกเลขเก่า): `demo_store_auth.dart`
+  (132), `demo_store_menu.dart` (210), `demo_store_ingredients.dart` (178),
+  `demo_store_tables.dart` (83), `demo_store_orders.dart` (423 — order lifecycle: create/send
+  to kitchen/discount/move/merge/cancel), `demo_store_order_items.dart` (285 — เพิ่ม/แก้/ลบ/
+  เปลี่ยนสถานะรายการอาหารในออเดอร์ แยกจาก orders เพราะเดิมไฟล์เดียวโต 825 บรรทัด),
+  `demo_store_order_promotions.dart` (125 — resolve/redeem/remove โปรโมชันของออเดอร์ แยกออก
+  จากไฟล์เดียวกัน), `demo_store_payments.dart` (321), `demo_store_promotions.dart` (117),
+  `demo_store_refunds.dart` (70), `demo_store_shifts.dart` (85), `demo_store_reports.dart`
+  (197), `demo_store_seed_history.dart` (127), `demo_store_tax_invoices.dart` (146),
+  `demo_store_settings.dart` (46), `demo_store_audit_logs.dart` (134),
+  `demo_store_customers.dart` (60) — ใช้ `part`/`part of` + `extension ... on DemoStore` ต่อไฟล์
+  ยังเป็นคลาสเดียวกัน เข้าถึง field/เมธอด private ข้ามไฟล์ได้ปกติเพราะ part ทั้งหมดอยู่ใน library
+  เดียวกัน (สมาชิก `static` เช่น `openingHour` ต้องระบุ `DemoStore.` นำหน้าเมื่อเรียกจาก extension —
+  จุดเดียวที่ต่างจากตอนอยู่ในคลาสเดียว) ยืนยันด้วย `test/core/demo_store_test.dart` และเทสต์เดิม
+  ทั้งหมดผ่านครบทุกครั้งที่แยกไฟล์เพิ่ม เพิ่มฟีเจอร์ demo ใหม่จากนี้ไปให้เพิ่มในไฟล์ย่อยตามโดเมนที่
+  เกี่ยวข้อง ไม่ใช่ไฟล์เดียวรวมกัน
+- `core/demo/demo_data_sources.dart` — **แก้แล้ว** เคยเป็นไฟล์เดียว 846 บรรทัด รวม 14 คลาส
+  `Demo*DataSource` ไม่เกี่ยวข้องกัน ตอนนี้แยกเป็น `demo_data_sources.dart` (69 บรรทัด — import
+  รวม + helper ส่วนกลาง `_delayed`) บวก part file ต่อ 1 คลาส (`demo_auth_data_source.dart`,
+  `demo_menu_data_source.dart`, `demo_ingredient_data_source.dart`, `demo_table_data_source.dart`,
+  `demo_order_data_source.dart`, `demo_promotion_data_source.dart`, `demo_payment_data_source.dart`,
+  `demo_tax_invoice_data_source.dart`, `demo_shift_data_source.dart`, `demo_report_data_source.dart`,
+  `demo_staff_data_source.dart`, `demo_settings_data_source.dart`, `demo_audit_log_data_source.dart`,
+  `demo_customer_data_source.dart`) — ต่างจาก `demo_store.dart` ตรงที่แต่ละคลาสเป็นอิสระต่อกัน
+  ไม่ได้แชร์ state แต่ยังใช้ `part`/`part of` เพื่อแชร์ helper `_delayed` ตัวเดียวแบบ private
+  ข้ามไฟล์ได้โดยไม่ต้อง export
+- `app/di/initial_binding.dart` — **แก้แล้ว** เคยเป็นไฟล์เดียว 644 บรรทัด ผูก data source/
+  repository/use case ของ 14 โดเมนรวมกันในเมธอดเดียว (`_bindUseCases` อย่างเดียวยาว 326 บรรทัด)
+  ตอนนี้ `initial_binding.dart` เหลือแค่ composition root (31 บรรทัด — เรียก 5 ฟังก์ชันตามลำดับ)
+  ย้าย logic ไปไฟล์ใน `app/di/bindings/` ตามขั้นตอนที่ต้องผูก (ไม่ใช่ตามโดเมน เพราะแต่ละขั้นตอน
+  วนลูปทุกโดเมนอยู่แล้ว): `core_bindings.dart` (`bindCoreServices` — 38), `data_source_bindings.dart`
+  (`bindDataSources`/demo variant — 142), `repository_bindings.dart` (`bindRepositories` — 109),
+  `use_case_bindings.dart` (`bindUseCases` — 340), `global_controller_bindings.dart`
+  (`bindGlobalControllers` — 23) — เป็นฟังก์ชัน top-level ธรรมดา ไม่ใช้ `part`/`part of` เพราะแต่ละ
+  ฟังก์ชันพึ่งพากันผ่าน `Get.find<T>()` (service locator) อยู่แล้ว ไม่ต้องแชร์ private state ข้ามไฟล์
+  เหมือน `demo_store.dart` — ต่างจาก `presentation/bindings/*_binding.dart` ที่มีอยู่แล้ว
+  (`home_binding.dart`, `order_bindings.dart`, `payment_bindings.dart`, `customer_bindings.dart`)
+  ตรงที่ไฟล์เหล่านั้นผูก **controller ระดับหน้าจอ** จาก use case ที่ `InitialBinding` ผูกไว้แล้ว
+  ส่วน `app/di/bindings/` คือ composition root ระดับแอปที่ต้องรันก่อนเสมอ คนละชั้นกัน
 - ไฟล์หน้าจอ (page) ที่เกิน 400 บรรทัดขึ้นไป ให้แยก widget ย่อยออกเป็นไฟล์ใน `presentation/widgets/`
   ของ feature เดียวกัน แทนที่จะเก็บเป็น private class ในไฟล์เดียวกันทั้งหมด
 
@@ -341,7 +371,7 @@ service ตรงๆ — path, middleware, ลำดับ validation, response 
 | 1 | Backend ไม่มี ESLint/Prettier | style/simple bug ไม่ถูกจับอัตโนมัติ นอกจาก test coverage | เพิ่ม `eslint.config.js` + `.prettierrc.json` แล้ว และเช็คใน CI ทุก PR (ดูหัวข้อ 2.3) | ✅ **แก้แล้ว** |
 | 2 | Controller ใน Flutter ยังไม่มี unit test ครบทุกตัว | บั๊ก logic ใน controller ที่เหลือจับได้ช้าลง ต้องพึ่ง manual QA | เพิ่ม unit test ครบทั้ง 14 controller แล้ว: `AuthController`, `OrderListController`, `TableController` (ชุดแรก) + `MenuBrowseController`, `MenuManagementController`, `KitchenController`, `CheckoutController`, `ReceiptController`, `HomeController`, `SettingsController`, `StaffController`, `OrderDetailController`, `DashboardController`, `ReportController` (ชุดที่สอง) — เฉพาะ path ที่ไม่แตะ `Get.*`/`AppDialogs` โดยตรง (ดูหัวข้อ 6.2) ระหว่างทางเจอบั๊กจริงใน `OrderDetailController` แล้วแก้ (ดูหัวข้อ 3.5) | ✅ **แก้แล้ว** |
 | 3 | Backend module ไม่มี test เฉพาะ module | อาศัย integration test เดียวคุมทั้งระบบ — ถ้า fail จะไม่รู้ทันทีว่าโมดูลไหนพัง | เพิ่มเทสต์แยกครบทั้ง 9 module แล้ว: `menu`, `table`, `payment` (26 เคส) + `categories`, `settings`, `users`, `reports` (25 เคส) รวมกับ `auth`/`order-flow`/`calculator` เดิม | ✅ **แก้แล้ว** |
-| 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็น 7 ไฟล์ตามโดเมนด้วย part/part of แล้ว (ดูหัวข้อ 2.2) | ✅ **แก้แล้ว** |
+| 4 | `demo_store.dart` 1,142 บรรทัดในไฟล์เดียว | แก้ยากขึ้นเรื่อยๆ เมื่อเพิ่ม demo scenario ใหม่ | แยกเป็น 17 ไฟล์ตามโดเมนด้วย part/part of แล้ว (ดูหัวข้อ 2.2) — เช็ครอบล่าสุด (self code-review) ยังพบ `demo_data_sources.dart` (846 บรรทัด) กับ `app/di/initial_binding.dart` (644 บรรทัด) โตเกินแบบเดียวกันแต่ไม่เคยถูก backfill เข้าเอกสารนี้ แก้ครบทั้งคู่แล้วด้วย (ดูหัวข้อ 2.2) | ✅ **แก้แล้ว** |
 | 5 | 3 backend module ไม่มี controller layer | ไม่สม่ำเสมอกับสถาปัตยกรรมที่ README ประกาศไว้ | เพิ่ม controller ให้ `payments`/`reports`/`settings` แล้ว (ดูหัวข้อ 5.3) | ✅ **แก้แล้ว** |
 | 6 | Flutter dependencies ล้าหลัง ~15 แพ็กเกจ (minor version) | ไม่กระทบการทำงาน แต่ควรตามให้ทันเป็นระยะ | บัมป์ `flutter_lints` เป็น `^6.0.0` แล้ว (เดียวที่คุมเวอร์ชันเองได้ผ่าน `pubspec.yaml`) แก้ 24 lint ใหม่ที่โผล่มา (`unnecessary_underscores`, `use_null_aware_elements`) จนกลับมา `flutter analyze` = "No issues found!" — `flutter pub outdated` ตอนนี้ขึ้น "all dependencies are up-to-date" ทั้ง direct และ dev dependencies ส่วนแพ็กเกจที่เหลือ (`path_provider`, `vector_math`, `meta` ฯลฯ) เป็น transitive dependency ที่ผูกเวอร์ชันตายตัวกับ Flutter SDK (3.35.1) เอง ไม่ใช่จาก `pubspec.yaml` — ต้องอัปเดต Flutter SDK ทั้งก้อนถึงจะขยับได้ ไม่ใช่สิ่งที่แก้จากในโปรเจกต์นี้ได้ | ✅ **แก้แล้ว** (เท่าที่แก้ได้จากในโปรเจกต์) |
 | 7 | domain layer import จาก data layer (`MenuItemPayload`, `OrderItemPayload`) | ผิดกฎ Clean Architecture ข้อ 4.1 | ย้ายเข้า `domain/entities/` แล้ว | ✅ **แก้แล้ว** (การตรวจครั้งนี้) |

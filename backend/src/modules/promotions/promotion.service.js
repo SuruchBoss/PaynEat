@@ -1,5 +1,7 @@
 import { ApiError } from '../../core/ApiError.js';
 import { toSatang } from '../../core/money.js';
+import { getDb } from '../../db/index.js';
+import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { promotionRepository } from './promotion.repository.js';
 import { toPromotionDto } from './promotion.mapper.js';
 
@@ -36,45 +38,79 @@ export const promotionService = {
     return toPromotionDto(promotion);
   },
 
-  create(payload) {
+  create(payload, actingUser) {
     assertCodeAvailable(payload.code, undefined);
-    const created = promotionRepository.create({
-      name: payload.name,
-      type: payload.type,
-      value: toStoredValue(payload.type, payload.value),
-      code: payload.code ?? null,
-      conditionsJson: toConditionsJson(payload.conditions),
-      isActive: payload.isActive,
-      validFrom: payload.validFrom ?? null,
-      validTo: payload.validTo ?? null,
+    const run = getDb().transaction(() => {
+      const created = promotionRepository.create({
+        name: payload.name,
+        type: payload.type,
+        value: toStoredValue(payload.type, payload.value),
+        code: payload.code ?? null,
+        conditionsJson: toConditionsJson(payload.conditions),
+        isActive: payload.isActive,
+        validFrom: payload.validFrom ?? null,
+        validTo: payload.validTo ?? null,
+      });
+      // Audit สำหรับฝ่ายบัญชี (ดู docs/tickets/14-financial-audit-trail.md) — สร้าง/แก้/ลบ
+      // โปรโมชันทุกครั้งกระทบยอดขาย/ส่วนลดโดยตรง ต่างจากแก้ field ที่ไม่กระทบราคาของเมนู
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'promotion.create',
+        entityType: 'promotion',
+        entityId: created.id,
+        summary: `สร้างโปรโมชัน "${created.name}"`,
+        metadata: { type: created.type, value: payload.value, code: created.code },
+      });
+      return created;
     });
-    return toPromotionDto(created);
+    return toPromotionDto(run());
   },
 
-  update(id, payload) {
+  update(id, payload, actingUser) {
     const existing = promotionRepository.findById(id);
     if (!existing) throw ApiError.notFound('ไม่พบโปรโมชันนี้');
 
     if (payload.code !== undefined) assertCodeAvailable(payload.code, id);
     const type = payload.type ?? existing.type;
 
-    const updated = promotionRepository.update(id, {
-      name: payload.name,
-      type: payload.type,
-      value: payload.value === undefined ? undefined : toStoredValue(type, payload.value),
-      code: payload.code,
-      conditionsJson: payload.conditions ? toConditionsJson(payload.conditions) : undefined,
-      isActive: payload.isActive,
-      validFrom: payload.validFrom,
-      validTo: payload.validTo,
+    const run = getDb().transaction(() => {
+      const updated = promotionRepository.update(id, {
+        name: payload.name,
+        type: payload.type,
+        value: payload.value === undefined ? undefined : toStoredValue(type, payload.value),
+        code: payload.code,
+        conditionsJson: payload.conditions ? toConditionsJson(payload.conditions) : undefined,
+        isActive: payload.isActive,
+        validFrom: payload.validFrom,
+        validTo: payload.validTo,
+      });
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'promotion.update',
+        entityType: 'promotion',
+        entityId: id,
+        summary: `แก้ไขโปรโมชัน "${updated.name}"`,
+        metadata: { before: toPromotionDto(existing), after: toPromotionDto(updated) },
+      });
+      return updated;
     });
-    return toPromotionDto(updated);
+    return toPromotionDto(run());
   },
 
-  remove(id) {
+  remove(id, actingUser) {
     const existing = promotionRepository.findById(id);
     if (!existing) throw ApiError.notFound('ไม่พบโปรโมชันนี้');
-    promotionRepository.remove(id);
+    getDb().transaction(() => {
+      promotionRepository.remove(id);
+      auditLogService.log({
+        actorUser: actingUser,
+        action: 'promotion.delete',
+        entityType: 'promotion',
+        entityId: id,
+        summary: `ลบโปรโมชัน "${existing.name}"`,
+        metadata: { type: existing.type, code: existing.code },
+      });
+    })();
   },
 };
 

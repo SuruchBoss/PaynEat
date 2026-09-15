@@ -24,6 +24,14 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_store_branch_label': 'สาขา',
   'settings_store_branch_hint': 'เช่น สำนักงานใหญ่, สาขาที่ 001',
 
+  'settings_promptpay_title': 'พร้อมเพย์',
+  'settings_promptpay_subtitle':
+      'ต้องตั้งค่าก่อน ช่องทางจ่าย "QR" จึงจะแสดง QR พร้อมเพย์จริงให้ลูกค้าสแกนได้',
+  'settings_promptpay_id_label': 'เลขพร้อมเพย์',
+  'settings_promptpay_id_hint': 'เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษี',
+  'settings_promptpay_not_configured_error':
+      'ร้านยังไม่ได้ตั้งค่าเลขพร้อมเพย์ (ตั้งได้ที่หน้าตั้งค่าระบบ)',
+
   'settings_printer_title': 'เครื่องพิมพ์ใบเสร็จ',
   'settings_printer_subtitle':
       'พิมพ์ผ่านเครื่องพิมพ์ความร้อนบนวง LAN/WiFi เดียวกัน (ยังไม่รองรับบนเว็บ)',
@@ -96,6 +104,14 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_store_address_label': 'Store address',
   'settings_store_branch_label': 'Branch',
   'settings_store_branch_hint': 'e.g. Head Office, Branch 001',
+
+  'settings_promptpay_title': 'PromptPay',
+  'settings_promptpay_subtitle':
+      'Set this before the "QR" payment method can show a real scannable PromptPay QR code',
+  'settings_promptpay_id_label': 'PromptPay ID',
+  'settings_promptpay_id_hint': 'Phone number / National ID / Tax ID',
+  'settings_promptpay_not_configured_error':
+      'The store has not set a PromptPay ID yet (set it under Settings)',
 
   'settings_printer_title': 'Receipt Printer',
   'settings_printer_subtitle':

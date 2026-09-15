@@ -22,6 +22,19 @@ const Map<String, String> auditLogTranslationsTh = {
   'audit_log_action_tax_invoice_void': 'ยกเลิกใบกำกับภาษี',
   'audit_log_shown_count': 'แสดง @shown จากทั้งหมด @total รายการ',
   'audit_log_load_more': 'โหลดเพิ่ม',
+
+  // audit ระดับบัญชี/การเงิน (ดู docs/tickets/14-financial-audit-trail.md)
+  'audit_log_action_menu_price_change': 'แก้ราคาเมนู',
+  'audit_log_action_promotion_create': 'สร้างโปรโมชัน',
+  'audit_log_action_promotion_update': 'แก้ไขโปรโมชัน',
+  'audit_log_action_promotion_delete': 'ลบโปรโมชัน',
+  'audit_log_action_ingredient_stock_adjust': 'ปรับสต๊อกวัตถุดิบมือ',
+  'audit_log_date_range_all': 'ทุกช่วงเวลา',
+  'audit_log_date_range_selected': '@from – @to',
+  'audit_log_date_range_clear': 'ล้างช่วงวันที่',
+  'audit_log_export_csv_button': 'ส่งออก CSV',
+  'audit_log_export_unsupported_platform':
+      'ส่งออก CSV รองรับเฉพาะบนเว็บ (หน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็นเว็บเท่านั้น)',
 };
 
 const Map<String, String> auditLogTranslationsEn = {
@@ -47,4 +60,17 @@ const Map<String, String> auditLogTranslationsEn = {
   'audit_log_action_tax_invoice_void': 'Void tax invoice',
   'audit_log_shown_count': 'Showing @shown of @total entries',
   'audit_log_load_more': 'Load more',
+
+  // Financial/accounting audit (see docs/tickets/14-financial-audit-trail.md)
+  'audit_log_action_menu_price_change': 'Change menu price',
+  'audit_log_action_promotion_create': 'Create promotion',
+  'audit_log_action_promotion_update': 'Update promotion',
+  'audit_log_action_promotion_delete': 'Delete promotion',
+  'audit_log_action_ingredient_stock_adjust': 'Manual stock adjustment',
+  'audit_log_date_range_all': 'All time',
+  'audit_log_date_range_selected': '@from – @to',
+  'audit_log_date_range_clear': 'Clear date range',
+  'audit_log_export_csv_button': 'Export CSV',
+  'audit_log_export_unsupported_platform':
+      'CSV export is only supported on the web (this page is admin/web-only)',
 };

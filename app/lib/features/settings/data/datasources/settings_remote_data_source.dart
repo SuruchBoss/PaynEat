@@ -24,6 +24,7 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     pointsEarnRateBaht: (json['pointsEarnRateBaht'] as num?)?.toDouble() ?? 25,
     pointsRedeemValueBaht:
         (json['pointsRedeemValueBaht'] as num?)?.toDouble() ?? 1,
+    promptPayId: json['promptPayId'] as String?,
   );
 
   @override

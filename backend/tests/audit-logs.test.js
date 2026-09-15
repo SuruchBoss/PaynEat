@@ -391,3 +391,245 @@ test('POST /orders/:id/merge — รวมบิลต้องถูกบั�
   assert.equal(log.metadata.sourceOrderCode, source.code);
   assert.equal(log.metadata.targetOrderCode, target.code);
 });
+
+// ดู docs/tickets/14-financial-audit-trail.md — audit ระดับ "บัญชี/การเงิน" (แก้ราคาเมนู/
+// โปรโมชัน/สต๊อกวัตถุดิบ) ต่างจากกลุ่มบนสุด (ป้องกันทุจริต) และกลุ่มก่อนหน้า (ใครสั่ง/แก้ไขออเดอร์)
+
+test('PATCH /menu-items/:id — แก้ราคาต้อง log แต่แก้แค่ชื่อเฉยๆ ไม่ log', async () => {
+  const admin = await login('admin', 'admin123');
+  const category = await post('/api/v1/categories', admin.token, {
+    name: `ทดสอบ audit-${Date.now()}`,
+  });
+  const menuItem = await post('/api/v1/menu-items', admin.token, {
+    categoryId: category.body.data.id,
+    name: 'เมนูทดสอบแก้ราคา',
+    price: 100,
+  });
+  assert.equal(menuItem.status, 201, JSON.stringify(menuItem.body));
+  const itemId = menuItem.body.data.id;
+
+  // แก้แค่ชื่อเฉยๆ ไม่กระทบราคา ไม่ต้อง log
+  const renameRes = await patch(`/api/v1/menu-items/${itemId}`, admin.token, {
+    name: 'เมนูทดสอบแก้ราคา (เปลี่ยนชื่อ)',
+  });
+  assert.equal(renameRes.status, 200, JSON.stringify(renameRes.body));
+  const renameLogRes = await get(
+    `/api/v1/audit-logs?action=menu.price_change&entityId=${itemId}`,
+    admin.token,
+  );
+  assert.equal(renameLogRes.body.data.length, 0, 'แก้แค่ชื่อไม่ควร log');
+
+  // แก้ราคาต้อง log
+  const priceRes = await patch(`/api/v1/menu-items/${itemId}`, admin.token, { price: 120 });
+  assert.equal(priceRes.status, 200, JSON.stringify(priceRes.body));
+
+  const log = await findLatestLog(admin.token, 'menu.price_change', itemId);
+  assert.ok(log, 'ต้องมี audit log สำหรับการแก้ราคาเมนู');
+  assert.equal(log.entityType, 'menu_item');
+  assert.equal(log.metadata.previousPrice, 100);
+  assert.equal(log.metadata.newPrice, 120);
+
+  // ส่งราคาเดิมซ้ำ (ไม่เปลี่ยนจริง) ไม่ควร log เพิ่ม
+  const beforeSamePrice = await get(
+    `/api/v1/audit-logs?action=menu.price_change&entityId=${itemId}&limit=50`,
+    admin.token,
+  );
+  await patch(`/api/v1/menu-items/${itemId}`, admin.token, { price: 120 });
+  const afterSamePrice = await get(
+    `/api/v1/audit-logs?action=menu.price_change&entityId=${itemId}&limit=50`,
+    admin.token,
+  );
+  assert.equal(
+    afterSamePrice.body.data.length,
+    beforeSamePrice.body.data.length,
+    'ส่งราคาเดิมซ้ำไม่ควรเพิ่ม log ใหม่',
+  );
+});
+
+test('POST/PATCH/DELETE /promotions — สร้าง/แก้ไข/ลบโปรโมชันต้องถูกบันทึก audit log ครบ', async () => {
+  const admin = await login('admin', 'admin123');
+  const manager = await login('manager', 'manager123');
+
+  const createRes = await post('/api/v1/promotions', manager.token, {
+    name: `โปรโมชันทดสอบ audit-${Date.now()}`,
+    type: 'percent',
+    value: 15,
+    conditions: {},
+  });
+  assert.equal(createRes.status, 201, JSON.stringify(createRes.body));
+  const promotionId = createRes.body.data.id;
+
+  const createLog = await findLatestLog(admin.token, 'promotion.create', promotionId);
+  assert.ok(createLog, 'ต้องมี audit log สำหรับการสร้างโปรโมชัน');
+  assert.equal(createLog.entityType, 'promotion');
+  assert.equal(createLog.actorName, 'สมชาย (ผู้จัดการ)');
+
+  const updateRes = await patch(`/api/v1/promotions/${promotionId}`, manager.token, {
+    value: 20,
+  });
+  assert.equal(updateRes.status, 200, JSON.stringify(updateRes.body));
+  const updateLog = await findLatestLog(admin.token, 'promotion.update', promotionId);
+  assert.ok(updateLog, 'ต้องมี audit log สำหรับการแก้ไขโปรโมชัน');
+
+  const deleteRes = await del(`/api/v1/promotions/${promotionId}`, manager.token);
+  assert.equal(deleteRes.status, 204, JSON.stringify(deleteRes.body));
+  const deleteLog = await findLatestLog(admin.token, 'promotion.delete', promotionId);
+  assert.ok(deleteLog, 'ต้องมี audit log สำหรับการลบโปรโมชัน แม้โปรโมชันจะถูกลบไปแล้ว');
+});
+
+test('POST /ingredients/:id/adjust-stock — ปรับสต๊อกมือต้องถูกบันทึก audit log พร้อมเหตุผล', async () => {
+  const admin = await login('admin', 'admin123');
+  const ingredient = await post('/api/v1/ingredients', admin.token, {
+    name: `วัตถุดิบทดสอบ audit-${Date.now()}`,
+    unit: 'กรัม',
+    currentStock: 100,
+    lowStockThreshold: 20,
+  });
+  assert.equal(ingredient.status, 201, JSON.stringify(ingredient.body));
+  const ingredientId = ingredient.body.data.id;
+
+  const adjustRes = await post(`/api/v1/ingredients/${ingredientId}/adjust-stock`, admin.token, {
+    delta: -30,
+    note: 'ของเสียหายทดสอบ',
+  });
+  assert.equal(adjustRes.status, 200, JSON.stringify(adjustRes.body));
+
+  const log = await findLatestLog(admin.token, 'ingredient.stock_adjust', ingredientId);
+  assert.ok(log, 'ต้องมี audit log สำหรับการปรับสต๊อกมือ');
+  assert.equal(log.entityType, 'ingredient');
+  assert.equal(log.reason, 'ของเสียหายทดสอบ');
+  assert.equal(log.metadata.delta, -30);
+  assert.equal(log.metadata.previousStock, 100);
+  assert.equal(log.metadata.newStock, 70);
+});
+
+test('GET /audit-logs/export — พนักงานเสิร์ฟ/ผู้จัดการดึงไม่ได้ สงวนไว้เฉพาะ admin', async () => {
+  const waiter = await login('waiter1', 'waiter123');
+  const manager = await login('manager', 'manager123');
+
+  assert.equal((await get('/api/v1/audit-logs/export', waiter.token)).status, 403);
+  assert.equal((await get('/api/v1/audit-logs/export', manager.token)).status, 403);
+});
+
+test('GET /audit-logs/export — admin ดึงเป็น CSV ได้ พร้อม header ที่ถูกต้อง', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const manager = await login('manager', 'manager123');
+  const order = await openOrder(waiter.token);
+  const reason = `เหตุผลทดสอบ export-${Date.now()}`;
+  await post(`/api/v1/orders/${order.id}/cancel`, manager.token, { reason });
+
+  const res = await get('/api/v1/audit-logs/export', admin.token);
+
+  assert.equal(res.status, 200);
+  assert.match(res.headers['content-type'], /text\/csv/);
+  assert.match(res.headers['content-disposition'], /attachment/);
+  assert.match(res.headers['content-disposition'], /audit-logs\.csv/);
+  assert.match(res.text, /วันเวลา,ผู้ทำ,การกระทำ,ประเภท,รหัสอ้างอิง,รายละเอียด,เหตุผล/);
+  assert.ok(res.text.includes(reason), 'CSV ต้องมีเหตุผลของ log ที่เพิ่งสร้าง');
+});
+
+test('GET /audit-logs/export — filter ตาม action ได้เหมือน list', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  await openOrder(waiter.token);
+
+  const res = await get('/api/v1/audit-logs/export?action=order.create', admin.token);
+
+  assert.equal(res.status, 200);
+  const dataLines = res.text.trim().split('\r\n').slice(1); // ตัดบรรทัด header ออก
+  assert.ok(dataLines.length > 0, 'ต้องมีอย่างน้อย 1 แถวของ order.create');
+  for (const line of dataLines) {
+    assert.match(line, /,order\.create,/);
+  }
+});
+
+test('POST/DELETE /orders/:id/promotion — กรอก/เอาโค้ดส่วนลดออกต้องถูกบันทึก audit log ครบ', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const manager = await login('manager', 'manager123');
+  const order = await openOrder(waiter.token);
+
+  const promoRes = await post('/api/v1/promotions', manager.token, {
+    name: 'ลด 15 บาท (audit test)',
+    type: 'amount',
+    value: 15,
+    code: `AUDIT${Date.now()}`,
+  });
+  assert.equal(promoRes.status, 201, JSON.stringify(promoRes.body));
+  const code = promoRes.body.data.code;
+
+  const redeemRes = await post(`/api/v1/orders/${order.id}/promotion/redeem`, waiter.token, {
+    code,
+  });
+  assert.equal(redeemRes.status, 200, JSON.stringify(redeemRes.body));
+
+  const redeemLog = await findLatestLog(admin.token, 'order.promotion_redeem', order.id);
+  assert.ok(redeemLog, 'ต้องมี audit log สำหรับการกรอกโค้ดส่วนลด');
+  assert.equal(redeemLog.entityType, 'order');
+  assert.match(redeemLog.summary, new RegExp(code));
+
+  const removeRes = await del(`/api/v1/orders/${order.id}/promotion`, waiter.token);
+  assert.equal(removeRes.status, 200, JSON.stringify(removeRes.body));
+
+  const removeLog = await findLatestLog(admin.token, 'order.promotion_remove', order.id);
+  assert.ok(removeLog, 'ต้องมี audit log สำหรับการเอาโปรโมชันออก');
+  assert.equal(removeLog.entityType, 'order');
+  assert.equal(removeLog.metadata.previousPromotionCode, code);
+});
+
+test('POST /payments — รับชำระเงินต้องถูกบันทึก audit log พร้อมยอดและช่องทาง', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+  const order = await openOrder(waiter.token);
+
+  const payRes = await post('/api/v1/payments', cashier.token, {
+    orderId: order.id,
+    method: 'cash',
+    amount: order.total,
+    received: order.total,
+  });
+  assert.equal(payRes.status, 201, JSON.stringify(payRes.body));
+  const paymentId = payRes.body.data.payment.id;
+
+  const log = await findLatestLog(admin.token, 'payment.pay', paymentId);
+  assert.ok(log, 'ต้องมี audit log สำหรับการรับชำระเงิน');
+  assert.equal(log.entityType, 'payment');
+  assert.equal(log.metadata.orderId, order.id);
+  assert.equal(log.metadata.method, 'cash');
+});
+
+test('POST /shifts และ PATCH /shifts/:id/close — เปิด/ปิดกะต้องถูกบันทึก audit log พร้อมยอดเงินสด', async () => {
+  const admin = await login('admin', 'admin123');
+  const manager = await login('manager', 'manager123');
+  const cashier = await login('cashier', 'cashier123');
+
+  // ปิดกะที่ seed เปิดไว้ให้ก่อน (ถ้ามี) เพื่อเปิดกะใหม่สำหรับเทสต์นี้ได้
+  const current = await get('/api/v1/shifts/current', cashier.token);
+  if (current.body.data) {
+    await patch(`/api/v1/shifts/${current.body.data.id}/close`, manager.token, {
+      countedCash: current.body.data.openingCash,
+    });
+  }
+
+  const openRes = await post('/api/v1/shifts', cashier.token, { openingCash: 1500 });
+  assert.equal(openRes.status, 201, JSON.stringify(openRes.body));
+  const shiftId = openRes.body.data.id;
+
+  const openLog = await findLatestLog(admin.token, 'shift.open', shiftId);
+  assert.ok(openLog, 'ต้องมี audit log สำหรับการเปิดกะ');
+  assert.equal(openLog.entityType, 'shift');
+  assert.equal(openLog.metadata.openingCash, 150000); // สตางค์
+
+  const closeRes = await patch(`/api/v1/shifts/${shiftId}/close`, manager.token, {
+    countedCash: 1450,
+    note: 'เงินขาดหาย ทดสอบ audit',
+  });
+  assert.equal(closeRes.status, 200, JSON.stringify(closeRes.body));
+
+  const closeLog = await findLatestLog(admin.token, 'shift.close', shiftId);
+  assert.ok(closeLog, 'ต้องมี audit log สำหรับการปิดกะ');
+  assert.equal(closeLog.reason, 'เงินขาดหาย ทดสอบ audit');
+  assert.equal(closeLog.metadata.variance, -5000); // 1450 - 1500 บาท = -50 บาท = -5000 สตางค์
+});

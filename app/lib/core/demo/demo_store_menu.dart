@@ -71,7 +71,11 @@ extension DemoStoreMenu on DemoStore {
     ),
   );
 
-  Map<String, dynamic> saveMenuItem(Map<String, dynamic> body, {int? id}) {
+  Map<String, dynamic> saveMenuItem(
+    Map<String, dynamic> body, {
+    int? id,
+    int? actorId,
+  }) {
     final categoryName = categories.firstWhere(
       (row) => row['id'] == body['categoryId'],
       orElse: () => categories.first,
@@ -100,6 +104,7 @@ extension DemoStoreMenu on DemoStore {
     }
 
     final item = menuItem(id);
+    final previousPrice = (item['price'] as num?)?.toDouble();
     body.forEach((key, value) {
       if (key == 'optionGroups') {
         item[key] = _normalizeOptionGroups(value);
@@ -113,6 +118,22 @@ extension DemoStoreMenu on DemoStore {
     // แก้ isAvailable เองผ่านฟอร์ม ถือเป็นการ override ระบบตัดสต๊อกอัตโนมัติ
     if (body.containsKey('isAvailable')) {
       item['autoDisabledByStock'] = false;
+    }
+
+    // mirror ของ menu.service.js#update — log เฉพาะตอนราคาเปลี่ยนจริงเท่านั้น (ดู
+    // docs/tickets/14-financial-audit-trail.md)
+    final newPrice = body['price'] == null
+        ? null
+        : (body['price'] as num).toDouble();
+    if (newPrice != null && newPrice != previousPrice) {
+      _logAudit(
+        actorId: actorId,
+        action: 'menu.price_change',
+        entityType: 'menu_item',
+        entityId: id,
+        summary: 'แก้ราคาเมนู "${item['name']}" $previousPrice → $newPrice บาท',
+        metadata: {'previousPrice': previousPrice, 'newPrice': newPrice},
+      );
     }
     return item;
   }

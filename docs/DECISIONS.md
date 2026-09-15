@@ -842,3 +842,193 @@ filter chip และป้ายชื่อใหม่ให้อัตโ�
 ทั้งหมด) แต่ฝั่ง Flutter ไม่มี Flutter SDK ในสภาพแวดล้อมที่พัฒนา (sandbox ไม่มี `flutter`/`dart`
 ติดตั้ง) จึงรีวิวโค้ด Demo Mode ด้วยมือแทนการรัน `flutter analyze`/`flutter test` จริง — ควรรัน
 ยืนยันอีกครั้งในสภาพแวดล้อมที่มี Flutter ก่อน merge ถ้าเป็นไปได้
+
+## 26. PromptPay QR — generate payload เองแทนพึ่ง payment gateway, mirror อัลกอริทึมเป็น Dart คู่กับ JS
+
+**ปัญหา** — ระหว่างตรวจ `docs/FEATURE-GAP-ANALYSIS.md` ซ้ำ พบว่า `qr` ใน `PAYMENT_METHODS`
+เป็นแค่ label ให้ cashier กดยืนยันเอง เหมือน `card`/`transfer` ทุกอย่าง ไม่มีการ generate QR
+ตามมาตรฐาน PromptPay (EMV QR) เลย ทั้งที่เป็น gap เดียวที่เหลืออยู่ใน 🔴 Critical (ดู
+`docs/tickets/16-promptpay-qr.md`)
+
+**ที่เลือก**
+
+- **Generate payload เองเป็น pure function ไม่พึ่ง payment gateway/npm package ภายนอก** —
+  อัลกอริทึม EMV QRCPS Merchant Presented Mode (TLV + CRC-16/CCITT-FALSE) เป็นมาตรฐานสาธารณะที่
+  เสถียร ไม่เปลี่ยนบ่อย เขียนเองสั้นกว่าและไม่ต้องเพิ่ม dependency ใหม่ฝั่ง backend — อ้างอิง
+  โครงสร้างจาก `dtinth/promptpay-qr` (MIT, implementation อ้างอิงที่ใช้กันแพร่หลายที่สุดสำหรับ
+  PromptPay ฝั่ง JS) และตรวจ CRC ด้วย test vector มาตรฐานของ CRC-16/CCITT-FALSE ("123456789" →
+  `0x29B1`) ก่อนเอามาใช้จริง
+- **Backend คำนวณ payload อย่างเดียว ไม่ generate ภาพ QR** — คืนเป็น string ให้ Flutter เรนเดอร์
+  เป็นภาพเองด้วย `qr_flutter` (เพิ่ม dependency ใหม่ฝั่ง Flutter) หลีกเลี่ยงการส่งไฟล์รูปภาพผ่าน
+  API และให้ Flutter ควบคุม UI/ขนาดภาพได้อิสระ
+- **Mirror อัลกอริทึมเป็น Dart อีกชุดสำหรับ Demo Mode** (`app/lib/core/utils/promptpay.dart`)
+  แทนที่จะบังคับให้ Demo Mode เรียก backend จริง (ซึ่งไม่มีให้เรียกตามนิยามของ Demo Mode) — เป็น
+  โค้ดคำนวณที่ซ้ำ Dart/JS ตามหลักการเดียวกับที่ `docs/DECISIONS.md` #2 วางไว้ (bill calculation)
+  จึงคุมด้วย **golden-value test**: คำนวณ payload ตัวอย่างเดียวกัน (เบอร์ `0812345678`, ยอด 100
+  บาท) จากทั้งสองฝั่งแล้วยืนยันว่าได้สตริงตรงกันเป๊ะทุกตัวอักษร (`test/core/utils/promptpay_test.dart`)
+  กันกรณี implement ผิดสเปกโดยไม่รู้ตัวข้างใดข้างหนึ่ง
+- **เพิ่ม field `promptPayId` แยกจาก `storeTaxId` ที่มีอยู่แล้ว** — แม้ทั้งคู่เป็น "เลขประจำร้าน"
+  เหมือนกัน แต่ร้านอาจอยากใช้เบอร์โทรเป็นเลขพร้อมเพย์ ต่างจากเลขผู้เสียภาษีที่ใช้ออกใบกำกับภาษี
+  (คนละความหมาย คนละ validation length) — ใช้ตาราง `settings` key-value เดิม ไม่ต้อง migration
+- **ไม่มี payment gateway/callback ตรวจสอบการจ่ายอัตโนมัติ** — ตามขอบเขตที่ gap analysis แนะนำไว้
+  แคชเชียร์ยังต้องเช็คสลิป/แอปธนาคารเองก่อนกดยืนยันรับชำระ เหมือนช่องทางโอน/บัตรเดิมทุกประการ ไม่ใช่
+  ฟีเจอร์ใหม่ที่ต้องเรียนรู้เพิ่ม
+- **ยังไม่ได้ตั้งค่าเลขพร้อมเพย์ → 400 พร้อมข้อความแจ้งชัดเจน** ไม่ใช่พังเงียบๆ หรือคืน QR ที่ใช้
+  งานจริงไม่ได้ (ทั้ง backend และ Demo Mode ใช้ข้อความเดียวกัน)
+
+**ข้อเสียที่ยอมรับ** — โค้ดคำนวณ EMV QR ซ้ำกัน 2 ภาษา (JS ฝั่ง backend, Dart ฝั่ง Demo Mode) เพิ่ม
+ภาระดูแลถ้าสเปกเปลี่ยน (ไม่น่าเกิดบ่อยเพราะเป็นมาตรฐานสาธารณะที่นิ่งแล้ว) แต่ golden-value test
+ป้องกันไม่ให้สองฝั่งเพี้ยนออกจากกันโดยไม่รู้ตัว — ยึดหลักการเดียวกับ #2
+
+## 27. Audit ระดับบัญชี/การเงิน — export CSV เป็น web-only ด้วย `package:web`, ไม่ใช้ `dart:html` ที่ deprecated แล้ว
+
+**ปัญหา** — ticket 13 (ข้อ 25) ปิดฝั่งผู้จัดการร้าน ("ใครสั่ง/แก้ไขออเดอร์") แต่ตรวจโค้ดจริงพบว่า
+ฝั่งบัญชียังไม่ครบ: `menu.service.js` (แก้ราคาเมนู), `promotion.service.js` (สร้าง/แก้/ลบโปรโมชัน),
+`ingredient.service.js` (ปรับสต๊อกมือ) ไม่มีการเรียก `auditLogService.log()` เลย และหน้า "ประวัติการ
+ทำรายการ" ไม่มีทาง export ให้ฝ่ายบัญชี ไม่มี date range picker (ของค้างจากข้อ 21) ดู
+`docs/tickets/14-financial-audit-trail.md`
+
+**ที่เลือก**
+
+- **เพิ่ม action type ใหม่ 5 รายการเข้า infrastructure เดิมของข้อ 21/25** ไม่สร้างระบบ log แยก:
+  `menu.price_change`, `promotion.create`, `promotion.update`, `promotion.delete`,
+  `ingredient.stock_adjust` — `menu.price_change` log เฉพาะตอนราคาเปลี่ยนจริง (หลักการเดียวกับ
+  `order.item.edit` ในข้อ 25 ที่ไม่ log ทุก field) ส่วนโปรโมชัน/สต๊อกกระทบยอดขาย/ต้นทุนโดยตรงทุก
+  ครั้งจึง log ทุก action ไม่กรอง
+- **Export CSV เป็น pure function แยกจากการ generate ที่ backend** (`backend/src/core/csv.js`,
+  `app/lib/core/utils/csv.dart`) — RFC 4180 พื้นฐาน (escape comma/quote/newline) + UTF-8 BOM ขึ้นต้น
+  กัน Excel เปิดแล้วอักษรไทยเพี้ยน (Excel เดาเป็น ANSI ถ้าไม่มี BOM) — endpoint ใหม่
+  `GET /audit-logs/export` reuse filter เดิมของ `GET /audit-logs` แต่ไม่มี pagination (ดึงทุกแถวที่
+  ตรงเงื่อนไขครั้งเดียว เพราะ export ต้องได้ไฟล์ครบ ไม่ใช่แค่หน้าที่กำลังดูอยู่)
+- **ดาวน์โหลดไฟล์ฝั่ง Flutter ใช้ `package:web` + `dart:js_interop` ไม่ใช้ `dart:html`** — `dart:html`
+  ถูก mark `@Deprecated('Use package:web and dart:js_interop instead.')` ในเวอร์ชัน Dart SDK ที่
+  Flutter 3.35.1 ล็อกไว้อยู่แล้ว การใช้จะทำให้ `flutter analyze` ไม่ผ่าน (ต้องได้ "No issues found!"
+  เสมอ) จึงต้องใช้ทางที่ทีม Dart แนะนำแทนตั้งแต่แรก ไม่ใช่ hack ชั่วคราว
+- **Conditional export/import แยก implementation ตาม platform ตอน compile** —
+  `csv_download_web.dart` (สร้าง Blob + `<a download>` แล้วกดให้เอง) เลือกด้วย
+  `if (dart.library.js_interop)` ส่วน `csv_download_stub.dart` (แพลตฟอร์มอื่น โยน
+  `UnsupportedError`) เป็นค่าเริ่มต้น — ทดสอบแล้วว่า `flutter test` (รันบน Dart VM ไม่ใช่เว็บ) ได้
+  `isCsvDownloadSupported == false` เสมอ ตรงกับความเป็นจริงบนแอป mobile/desktop ด้วย (build
+  เป้าหมายที่ไม่ใช่เว็บก็ไม่มี `dart.library.js_interop` เหมือนกัน)
+- **จำกัดขอบเขต export ไว้แค่หน้าเว็บผู้ดูแลระบบเท่านั้น** — หน้า "ประวัติการทำรายการ" อยู่ใน
+  README หัวข้อ "🖥️ ผู้ดูแลระบบ (เว็บ)" อยู่แล้วตั้งแต่ต้น (เห็นเฉพาะ `admin` และเป็น flow ที่ออกแบบ
+  มาสำหรับหน้าจอกว้าง) การ export ไฟล์บนมือถือ/แท็บเล็ตต้องมี `path_provider`/`share_plus` เพิ่ม ซึ่ง
+  เกินความจำเป็นสำหรับ flow ที่ไม่ได้ใช้บนอุปกรณ์นั้นอยู่แล้ว
+- **ปุ่มเช็ค `isCsvDownloadSupported` ก่อนเรียก backend เสมอ** — ไม่เสียเวลายิง API ถ้าดาวน์โหลด
+  ไม่ได้อยู่ดี ขึ้นข้อความแจ้งชัดเจนแทนปุ่มที่กดแล้วไม่มีอะไรเกิดขึ้น
+- **Demo Mode mirror เต็มรูปแบบ** (`demo_store_menu.dart`/`demo_store_promotions.dart`/
+  `demo_store_ingredients.dart` เพิ่ม `_logAudit` เข้า `saveMenuItem`/`savePromotion`/
+  `deletePromotion`/`adjustIngredientStock`, `demo_store_audit_logs.dart` เพิ่ม
+  `auditLogExportCsv` ที่ใช้ `toCsv` ตัวเดียวกับหน้าจออื่น) — `DemoMenuDataSource`/
+  `DemoIngredientDataSource`/`DemoPromotionDataSource` ต้องรับ `DemoAuthDataSource` เพิ่มเพื่อรู้
+  `currentUserId` (เดิมไม่มีเพราะไม่เคย log อะไรมาก่อน)
+
+**ข้อเสียที่ยอมรับ** — ปุ่ม export ไม่โผล่ให้กดบน mobile/desktop เลย (ไม่ใช่แค่กดแล้ว error) — ยอมรับ
+เพราะหน้านี้เป็น admin/เว็บอยู่แล้วตามที่ออกแบบไว้ตั้งแต่ ticket 08 — ถ้าวันไหนต้องรองรับ mobile
+export จริง ต้องเพิ่ม `path_provider` + `share_plus` เป็น dependency ใหม่แยกต่างหาก
+
+## 28. ปิดรู audit log ที่เหลือ — เปิด/ปิดกะ, รับชำระเงิน, กรอก/ถอดโค้ดส่วนลด
+
+**ปัญหา** — self code-review รอบใหม่ (เช็ค clean code/tech debt/state management/architecture/
+spaghetti risk ทั้ง backend และ Flutter) พบว่าแม้ข้อ 21/25/27 จะปิด gap ของ audit log ไปหลายชั้นแล้ว
+ก็ยังมี 3 จุดที่กระทบเงิน/บัญชีโดยตรงแต่ไม่ log เลย:
+
+1. `shift.service.js#open/close` — `close()` คำนวณส่วนต่างเงินสด (variance) ซึ่งเป็นเหตุการณ์เสี่ยง
+   ทุจริตแบบเดียวกับที่ audit log ข้อ 21 ตั้งใจครอบคลุมไว้ตั้งแต่แรก แต่ไม่เคยเรียก
+   `auditLogService.log()` เลยสักจุด
+2. `payment.service.js#pay()` — รับชำระเงิน (รวมการใช้แต้มสะสมลดยอด) ไม่ log ทั้งที่ `refund()` ใน
+   ไฟล์เดียวกัน log ทุกครั้ง — ทำให้ตรวจสอบย้อนหลังได้แค่ "เงินคืนเท่าไหร่" แต่ไม่มี "รับเข้าเท่าไหร่
+   ใครรับ"
+3. `order.service.js#redeemPromotionCode/removePromotion` — เขียน `updateTotals` ตรงๆ โดยไม่มีทั้ง
+   `getDb().transaction()` ห่อและไม่มี audit log ทั้งที่ method พี่น้องในไฟล์เดียวกัน
+   (`applyDiscount`) มีครบทั้งสองอย่าง — เสี่ยงทั้ง data integrity (เขียนไม่ atomic กับ log) และ
+   ตรวจสอบย้อนหลังไม่ได้ว่าใครกรอก/ถอดโค้ดส่วนลดออกจากบิล
+
+**ที่เลือก**
+
+- **เพิ่ม action type ใหม่ 4 รายการเข้า infrastructure เดิมของข้อ 21/25/27** ไม่สร้างระบบแยก:
+  `shift.open`, `shift.close`, `payment.pay`, `order.promotion_redeem`, `order.promotion_remove`
+  (จริง ๆ คือ 5 action แต่ `shift.open`/`shift.close` นับเป็นคู่เดียวกัน) — ทุกจุด log ทุกครั้งไม่มี
+  เงื่อนไขกรอง เพราะกระทบเงิน/ยอดขายโดยตรงทุกครั้งที่เกิด ต่างจาก `menu.price_change` (ข้อ 27) ที่
+  กรองเฉพาะตอนราคาเปลี่ยนจริง
+- **`shift.open/close` ห่อด้วย `getDb().transaction()` เพิ่มใหม่** (เดิมเป็นแค่ single UPDATE/INSERT
+  statement ไม่มี transaction เลยเพราะไม่เคยต้องเขียนคู่กับอะไร) ให้ atomic กับ audit log write
+  ตามหลักการเดียวกับทุก service อื่นที่มี audit log (ถ้า log ล้มเหลว การเปิด/ปิดกะต้องล้มเหลวด้วย)
+- **`redeemPromotionCode`/`removePromotion` ห่อด้วย transaction ตามแบบ `applyDiscount`** ในไฟล์
+  เดียวกันทุกประการ (ทั้งสองอยู่ใน `order.service.js`) แทนที่จะสร้าง pattern ใหม่ — ต้องแก้
+  `order.controller.js` ให้ส่ง `req.user` ผ่านไปด้วย (เดิมไม่เคยส่งเพราะไม่เคยต้องใช้)
+- **ไม่แตะ `customer.service.js`/`table.service.js`** แม้ตรวจพบว่าก็ไม่ log เหมือนกัน — พิจารณาแล้วว่า
+  ความเสี่ยงต่ำกว่ามาก (สร้างลูกค้าใหม่/เปลี่ยนสถานะโต๊ะไม่กระทบตัวเลขทางบัญชีโดยตรงเหมือน 3 จุดข้าง
+  ต้น) จึงไม่รวมในรอบนี้ ทิ้งไว้เป็นของที่พิจารณาเพิ่มได้ในอนาคตถ้าจำเป็น
+
+**ข้อเสียที่ยอมรับ** — ไม่มี ทุกจุดที่แก้เป็นการเติมของที่ขาดตาม pattern เดิมที่มีอยู่แล้วในโปรเจกต์
+ไม่ได้เปลี่ยน behavior หรือ trade-off ใหม่ใดๆ ที่ผู้ใช้จะสังเกตเห็น (audit log อ่านได้เฉพาะ admin
+เหมือนเดิม)
+
+## 29. แยกไฟล์ Flutter ที่โตเกิน 400 บรรทัดอีก 3 จุดที่เอกสารไม่เคย backfill
+
+**ปัญหา** — self code-review รอบเดียวกับข้อ 28 พบว่า `docs/CODING_STANDARDS.md` §2.2 ยังบันทึก
+`demo_store.dart` ว่าแยกเป็นแค่ 7 ไฟล์ (อัปเดตล่าสุด 2026-09-07) ทั้งที่ ticket ใหม่ๆ (05/06/08/09/10/
+14) เพิ่ม part file เข้าไปจนเป็น 15 ไฟล์แล้วจริง และ `demo_store_orders.dart` เองก็โตเป็น 825
+บรรทัด (เกิน threshold ไปเยอะ) — นอกจากนี้ยังพบอีก 2 ไฟล์ที่โตเกิน 400 บรรทัดแบบเดียวกันแต่ไม่เคย
+ถูกบันทึกไว้เลยสักครั้ง: `core/demo/demo_data_sources.dart` (846 บรรทัด รวม 14 คลาสไม่เกี่ยวข้องกัน)
+และ `app/di/initial_binding.dart` (644 บรรทัด ผูก data source/repository/use case ของ 14 โดเมนรวม
+กันในไฟล์เดียว)
+
+**ที่เลือก**
+
+- **`demo_store_orders.dart` แยกเพิ่มอีก 2 ไฟล์**: `demo_store_order_items.dart` (การเพิ่ม/แก้/ลบ/
+  เปลี่ยนสถานะรายการอาหารในออเดอร์) และ `demo_store_order_promotions.dart` (resolve/redeem/remove
+  โปรโมชันของออเดอร์) แยกตามความรับผิดชอบย่อยภายในโดเมนเดียวกัน (order) ไม่ใช่แยกข้ามโดเมน — ยัง
+  ใช้ `part`/`part of` + `extension ... on DemoStore` แบบเดิมทุกประการ เพราะยังเป็น state เดียวกัน
+  (`orders` list) ที่ต้องเข้าถึงข้ามไฟล์
+- **`demo_data_sources.dart` แยกเป็น 1 part file ต่อ 1 คลาส** ด้วย `part`/`part of` เหมือนกัน แม้
+  แต่ละคลาส `Demo*DataSource` จะเป็นอิสระต่อกัน ไม่ได้แชร์ state แบบ `DemoStore` — เลือก part/part-of
+  แทนการแยกเป็นไฟล์ import ปกติ (หรือ `export` barrel) เพราะทั้ง 14 คลาสแชร์ helper ส่วนกลางตัวเดียว
+  (`_delayed`) ที่อยากให้ยังเป็น library-private ไม่ต้อง expose เป็น public API — ใช้กลไกเดียวกับ
+  `demo_store.dart` ทำให้ผู้อ่านโค้ดในโปรเจกต์ไม่ต้องเรียนรู้ pattern ใหม่
+- **`initial_binding.dart` แยกตาม "ขั้นตอน" ไม่ใช่ตาม "โดเมน"** — ต่างจากอีก 2 ไฟล์ข้างต้น เพราะ
+  `_bindDataSources`/`_bindRepositories`/`_bindUseCases` แต่ละเมธอดวนลูปทุกโดเมนอยู่แล้วในตัวเอง
+  (แยกตามลำดับที่ต้องผูก: core → data source → repository → use case → global controller) แยก
+  ตามโดเมนแทนจะทำให้แต่ละไฟล์ต้องรู้ลำดับการผูกของทุกขั้นตอนซ้ำ 14 รอบ ซับซ้อนกว่าเดิม จึงแยกเป็น
+  ฟังก์ชัน top-level ธรรมดา (`bindCoreServices`/`bindDataSources`/`bindRepositories`/`bindUseCases`/
+  `bindGlobalControllers`) ใน `app/di/bindings/` แทน — ไม่ใช้ `part`/`part of` เพราะแต่ละฟังก์ชัน
+  พึ่งพากันผ่าน `Get.find<T>()` (service locator pattern ของ GetX) อยู่แล้ว ไม่มี private state ที่
+  ต้องแชร์ข้ามไฟล์แบบ `demo_store.dart`/`demo_data_sources.dart` — คนละแนวคิดกับ
+  `presentation/bindings/*_binding.dart` ที่มีอยู่แล้ว (`home_binding.dart` ฯลฯ) ซึ่งผูก controller
+  ระดับหน้าจอจาก use case ที่ `InitialBinding` ผูกไว้แล้ว ไม่ใช่ composition root ระดับแอป
+- **อัปเดต `docs/CODING_STANDARDS.md` §2.2 ให้ตรงกับจำนวนไฟล์/บรรทัดจริงทั้ง 3 จุด** พร้อมย้ำ
+  ในตัวเอกสารเองว่าต้องเช็คด้วย `wc -l` ก่อนแก้ทุกครั้ง ไม่ใช่เดาหรือคัดลอกเลขเก่า (ต้นเหตุที่ทำให้
+  เอกสารเพี้ยนไปจากโค้ดจริงในรอบนี้)
+
+**ข้อเสียที่ยอมรับ** — ไม่มี เป็นการจัดระเบียบไฟล์ล้วนๆ ไม่เปลี่ยน behavior เลยสักจุด ยืนยันด้วย
+`flutter analyze`/`dart format`/`flutter test` (311/311 ผ่านทุกครั้งหลังแยกแต่ละไฟล์) และ build
+web + smoke test ด้วย headless browser ยืนยันว่า DI wiring ยังทำงานถูกต้องหลังแยก
+`initial_binding.dart`
+
+## 30. Deploy landing page ขึ้น GitHub Pages แทน Vercel
+
+**ปัญหา** — `docs/landing/index.html` เป็นไฟล์ static เดี่ยว มีไว้ให้เปิดในเบราว์เซอร์ตรงๆ เท่านั้น
+ยังไม่มี URL จริงให้แชร์ ผู้ใช้ขอให้ deploy ให้เหมือนโปรเจกต์อื่น (ExcelToGo) ที่มี live demo URL
+จริงผ่าน Vercel
+
+**ที่เลือก**
+
+- **GitHub Pages แทน Vercel** — ต่างจาก ExcelToGo ที่เป็นแอป Next.js ต้อง build/runtime จริงจึงต้อง
+  ใช้ platform ระดับ Vercel, `docs/landing/index.html` เป็น static HTML ไฟล์เดียวไม่มี build step
+  เลย ไม่มี server-side logic — GitHub Pages (ฟรี ผูกกับ repo นี้โดยตรง ไม่ต้องเชื่อม account
+  ภายนอกเพิ่ม) จึงพอเพียงและตรงไปตรงมากว่า
+- **Deploy ผ่าน GitHub Actions (`actions/deploy-pages`) ไม่ใช้ "Deploy from a branch"** — เลือก
+  source แบบ Actions เพราะ deploy เฉพาะโฟลเดอร์ `docs/landing/` เป็น root ของเว็บไซต์ได้ตรงๆ
+  (URL ออกมาเป็น `https://suruchboss.github.io/PaynEat/` พอดี) ต่างจาก "Deploy from a branch →
+  /docs" ที่จะเอาทั้งโฟลเดอร์ `docs/` (รวมเอกสารอื่นๆ อย่าง `DECISIONS.md`/`tickets/`) มาเป็น root
+  ของเว็บไซต์ไปด้วย ซึ่งไม่ใช่สิ่งที่ตั้งใจให้คนทั่วไปเห็น
+- **Trigger เฉพาะ push เข้า `main` ที่แตะ `docs/landing/**`** — ต่างจาก `ci.yml` เดิมที่รันทุก branch
+  เพราะหน้านี้คือหน้าเว็บ "ที่ใช้งานจริง" ควรอัปเดตเฉพาะตอนงานถูก merge เข้า main แล้วเท่านั้น ไม่ใช่
+  ทุกครั้งที่ push branch ทดลอง — มี `workflow_dispatch` ให้กดรันเองได้ด้วยเผื่อ debug
+- **ต้องเปิด "Settings → Pages → Source: GitHub Actions" ด้วยมือครั้งเดียว** — GitHub REST API ไม่มี
+  endpoint ให้เปิดใช้งาน Pages แบบอัตโนมัติผ่าน workflow ได้ (ต่างจากการ deploy จริงที่อัตโนมัติทุก
+  ครั้งหลังจากนั้น) เป็นข้อจำกัดของแพลตฟอร์ม ไม่ใช่ทางเลือกออกแบบ
+
+**ข้อเสียที่ยอมรับ** — ไม่มี custom domain/preview URL ต่อ PR แบบที่ Vercel ให้ฟรี (ทุก push ไป PR
+ได้ preview URL แยก) — ยอมรับเพราะหน้านี้เป็นหน้าเดียวไม่มีหลายเวอร์ชันให้ preview พร้อมกันอยู่แล้ว

@@ -62,3 +62,15 @@ test('PATCH /settings — ค่านอกช่วงที่กำหนด
 
   assert.equal(res.status, 422);
 });
+
+test('PATCH /settings — ตั้งเลขพร้อมเพย์ (promptPayId) แล้วอ่านกลับมาต้องตรง (ดู ticket 16)', async () => {
+  const { token } = await login('admin', 'admin123');
+
+  const res = await patch('/api/v1/settings', token, { promptPayId: '0812345678' });
+
+  assert.equal(res.status, 200);
+  assert.equal(res.body.data.promptPayId, '0812345678');
+
+  const after = await get('/api/v1/settings', token);
+  assert.equal(after.body.data.promptPayId, '0812345678');
+});

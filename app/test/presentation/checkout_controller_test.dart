@@ -138,6 +138,7 @@ void main() {
       getCurrentShift: GetCurrentShiftUseCase(shiftRepository),
       getCustomer: GetCustomerUseCase(customerRepository),
       getSettings: GetSettingsUseCase(settingsRepository),
+      getPromptPayQr: GetPromptPayQrUseCase(paymentRepository),
     );
   });
 

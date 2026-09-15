@@ -44,3 +44,20 @@ class GetAuditLogsUseCase
     limit: params.limit,
   );
 }
+
+/// export audit log เป็น CSV ตาม filter เดียวกับหน้าจอ (ดู
+/// docs/tickets/14-financial-audit-trail.md) — ไม่มี page/limit เพราะดึงทุกแถวที่ตรงเงื่อนไข
+class ExportAuditLogsUseCase implements UseCase<String, AuditLogFilter> {
+  const ExportAuditLogsUseCase(this._repository);
+
+  final AuditLogRepository _repository;
+
+  @override
+  Future<Result<String>> call(AuditLogFilter params) => _repository.exportCsv(
+    actorUserId: params.actorUserId,
+    action: params.action,
+    entityType: params.entityType,
+    dateFrom: params.dateFrom,
+    dateTo: params.dateTo,
+  );
+}
