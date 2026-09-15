@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
-import 'package:payneat_pos/app/theme/app_colors.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
 
 import 'screenshot_harness.dart';
@@ -320,11 +319,12 @@ void main() {
   // โหมดคอนทราสต์สูง — ถ่ายหน้าเดียวกับโหมดปกติเพื่อให้เทียบกันตรง ๆ ได้
   // ---------------------------------------------------------------------
   group('โหมดคอนทราสต์สูง', () {
-    setUp(() => AppColors.contrast = AppContrast.high);
-    tearDown(() => AppColors.contrast = AppContrast.standard);
-
     testWidgets('26 จอครัวโหมดคอนทราสต์สูง', (tester) async {
-      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.tablet);
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        highContrast: true,
+      );
       await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(
@@ -334,7 +334,11 @@ void main() {
     });
 
     testWidgets('27 ผังโต๊ะโหมดคอนทราสต์สูง', (tester) async {
-      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        highContrast: true,
+      );
       await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-27-tables-high-contrast');

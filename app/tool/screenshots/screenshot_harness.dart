@@ -88,13 +88,28 @@ class ScreenshotHarness {
   /// เตรียม storage แล้ววางแอปจริงลงบน tester
   ///
   /// ปล่อยให้ GetMaterialApp เรียก InitialBinding เอง จะได้เป็นเส้นทางเดียวกับตอนใช้งานจริง
-  static Future<void> launchApp(WidgetTester tester, Size size) async {
+  ///
+  /// [highContrast] ต้องเซฟลง storage ก่อนสร้างแอป ไม่ใช่ตั้ง `AppColors.contrast`
+  /// ตรง ๆ หลังจากนี้ — `PaynEatApp.build()` เรียก `ContrastService.restore()` ทุกครั้ง
+  /// ที่ build ซึ่งจะอ่านค่าจาก storage แล้วตั้งทับ `AppColors.contrast` อยู่ดี
+  /// (นี่คือสาเหตุที่ภาพ `*-high-contrast.png` เคยออกมาเหมือนภาพโหมดปกติเป๊ะทุกไบต์
+  /// มาตลอด — เดิมโค้ดตั้ง `AppColors.contrast = AppContrast.high` ตรง ๆ ใน `setUp`
+  /// ก่อนเรียก [launchApp] แต่ storage ว่างเปล่าทำให้ restore() ตั้งค่ากลับเป็นปกติทันที)
+  static Future<void> launchApp(
+    WidgetTester tester,
+    Size size, {
+    bool highContrast = false,
+  }) async {
     setSurface(tester, size);
     Get.reset();
 
     // ใช้ storage แบบหน่วยความจำ เพราะใน testWidgets เวลาเป็นแบบจำลอง
     // การ await timeout ของ GetStorage.init() จะค้างตลอด
-    Get.put<StorageService>(StorageService.memory(), permanent: true);
+    final storage = StorageService.memory();
+    if (highContrast) {
+      await storage.saveContrast('high');
+    }
+    Get.put<StorageService>(storage, permanent: true);
 
     await tester.pumpWidget(const PaynEatApp());
     await settle(tester);
