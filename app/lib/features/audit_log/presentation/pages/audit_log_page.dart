@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/horizontal_fade.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../domain/entities/audit_log.dart';
@@ -30,30 +31,47 @@ class AuditLogPage extends GetView<AuditLogController> {
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
+          // แถบเลื่อนแนวนอนสูงคงที่ ไม่ใช่ Wrap — ชิป 11 ตัวใน Wrap กินความสูง
+          // 464px บนจอ 400px (52% ของจอ) ทำให้ต้องเลื่อนผ่านตัวกรองครึ่งจอ
+          // กว่าจะเห็น log บรรทัดแรก ใช้รูปแบบเดียวกับ CategoryFilterBar
           Container(
             color: AppColors.surface,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            child: Obx(
-              () => Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  _ActionChip(
-                    label: 'common_all'.tr,
-                    selected: controller.actionFilter.value == null,
-                    color: AppColors.textSecondary,
-                    onTap: () => controller.filterByAction(null),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            child: SizedBox(
+              height: 44,
+              child: Obx(() {
+                // ต้องอ่านค่า observable ตรงนี้ ไม่ใช่ใน itemBuilder —
+                // itemBuilder ถูกเรียกแบบ lazy นอกขอบเขตที่ Obx ติดตามอยู่
+                // ถ้าอ่านข้างในจะได้ error "improper use of a GetX"
+                final selected = controller.actionFilter.value;
+
+                return HorizontalFade(
+                  builder: (context, scrollController) => ListView.separated(
+                    controller: scrollController,
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: AuditLogAction.all.length + 1,
+                    separatorBuilder: (_, _) => const SizedBox(width: 8),
+                    itemBuilder: (context, index) {
+                      if (index == 0) {
+                        return _ActionChip(
+                          label: 'common_all'.tr,
+                          selected: selected == null,
+                          color: AppColors.textSecondary,
+                          onTap: () => controller.filterByAction(null),
+                        );
+                      }
+                      final action = AuditLogAction.all[index - 1];
+                      return _ActionChip(
+                        label: controller.actionLabel(action),
+                        selected: selected == action,
+                        color: actionColor(action),
+                        onTap: () => controller.filterByAction(action),
+                      );
+                    },
                   ),
-                  ...AuditLogAction.all.map(
-                    (action) => _ActionChip(
-                      label: controller.actionLabel(action),
-                      selected: controller.actionFilter.value == action,
-                      color: actionColor(action),
-                      onTap: () => controller.filterByAction(action),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              }),
             ),
           ),
           Expanded(
@@ -73,14 +91,20 @@ class AuditLogPage extends GetView<AuditLogController> {
                 );
               }
 
+              // +1 แถวท้ายสำหรับป้ายบอกจำนวน/ปุ่มโหลดเพิ่ม เพื่อไม่ให้ผู้ใช้
+              // เข้าใจผิดว่ารายการที่เห็นคือทั้งหมดที่มี
               return RefreshIndicator(
                 onRefresh: controller.load,
                 child: ListView.separated(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                  itemCount: logs.length,
+                  itemCount: logs.length + 1,
                   separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) =>
-                      _AuditLogRow(log: logs[index]),
+                  itemBuilder: (context, index) {
+                    if (index == logs.length) {
+                      return _ListFooter(controller: controller);
+                    }
+                    return _AuditLogRow(log: logs[index]);
+                  },
                 ),
               );
             }),
@@ -88,6 +112,53 @@ class AuditLogPage extends GetView<AuditLogController> {
         ],
       ),
     );
+  }
+}
+
+/// ท้ายรายการ — บอกว่าเห็นอยู่กี่จาก, มีต่อไหม, และปุ่มโหลดเพิ่ม
+class _ListFooter extends StatelessWidget {
+  const _ListFooter({required this.controller});
+
+  final AuditLogController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final shown = controller.logs.length;
+      final total = controller.total.value;
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          children: [
+            Text(
+              'audit_log_shown_count'.trParams({
+                'shown': '$shown',
+                'total': '$total',
+              }),
+              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            ),
+            if (controller.hasMore) ...[
+              const SizedBox(height: 8),
+              controller.isLoadingMore.value
+                  ? const Padding(
+                      padding: EdgeInsets.all(8),
+                      child: SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    )
+                  : OutlinedButton.icon(
+                      onPressed: controller.loadMore,
+                      icon: const Icon(Icons.expand_more_rounded, size: 18),
+                      label: Text('audit_log_load_more'.tr),
+                    ),
+            ],
+          ],
+        ),
+      );
+    });
   }
 }
 

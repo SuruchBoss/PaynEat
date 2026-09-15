@@ -14,6 +14,8 @@ const Map<String, String> auditLogTranslationsTh = {
   'audit_log_action_settings_update': 'แก้ไขค่า VAT/ค่าบริการ',
   'audit_log_action_payment_refund': 'คืนเงิน',
   'audit_log_action_tax_invoice_void': 'ยกเลิกใบกำกับภาษี',
+  'audit_log_shown_count': 'แสดง @shown จากทั้งหมด @total รายการ',
+  'audit_log_load_more': 'โหลดเพิ่ม',
 };
 
 const Map<String, String> auditLogTranslationsEn = {
@@ -31,4 +33,6 @@ const Map<String, String> auditLogTranslationsEn = {
   'audit_log_action_settings_update': 'Edit VAT/service charge',
   'audit_log_action_payment_refund': 'Refund',
   'audit_log_action_tax_invoice_void': 'Void tax invoice',
+  'audit_log_shown_count': 'Showing @shown of @total entries',
+  'audit_log_load_more': 'Load more',
 };

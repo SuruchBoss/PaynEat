@@ -156,6 +156,7 @@ class ScreenshotHarness {
     int kitchenOrderId,
     int paidOrderId,
     int takeawayOrderId,
+    int customerId,
   })
   seedScenario() {
     final store = DemoStore.instance;
@@ -286,7 +287,7 @@ class ScreenshotHarness {
       store.updateItemStatus(paidId, id, 'ready');
       store.updateItemStatus(paidId, id, 'served');
     }
-    store.applyDiscount(paidId, 'percent', 10);
+    store.applyDiscount(paidId, 'percent', 10, actorId: 2);
     final total = (store.findOrder(paidId)['total'] as num).toDouble();
     store.pay(
       orderId: paidId,
@@ -348,11 +349,50 @@ class ScreenshotHarness {
       payment['createdAt'] = paidStamp;
     }
 
+    // ---- ลูกค้า/แต้มสะสม (ticket 09) ----
+    // ไม่มีในข้อมูลสาธิตเดิม ทำให้หน้ารายชื่อลูกค้าและกล่องเลือกลูกค้าถ่ายภาพ
+    // ออกมาเป็นหน้าว่างเปล่า มองไม่เห็นว่าหน้าตาจริงเป็นยังไง
+    final regulars = [
+      (name: 'คุณสมหญิง ใจดี', phone: '0812345678', points: 240),
+      (name: 'คุณวิชัย ตั้งมั่น', phone: '0898765432', points: 85),
+      (name: 'คุณนภา ศรีสุข', phone: '0863334455', points: 1120),
+      (name: 'คุณธนกร พงษ์ไพศาล', phone: '0917778899', points: 0),
+    ];
+    var firstCustomerId = 0;
+    for (final regular in regulars) {
+      final created = store.createCustomer(
+        name: regular.name,
+        phone: regular.phone,
+      );
+      final id = created['id'] as int;
+      if (firstCustomerId == 0) firstCustomerId = id;
+      if (regular.points > 0) store.adjustCustomerPoints(id, regular.points);
+    }
+
+    // ---- เหตุการณ์ที่ทิ้งร่องรอยไว้ใน audit log (ticket 08) ----
+    // ใช้ปฏิบัติการจริงของ DemoStore ไม่ได้ยัด log ตรง ๆ เพื่อให้ภาพที่ได้
+    // ตรงกับสิ่งที่ระบบบันทึกจริงทุกฟิลด์
+    final voided = store.createOrder(
+      type: 'dine_in',
+      tableId: 8,
+      guestCount: 2,
+      waiterId: 4,
+      items: [
+        {'menuItemId': 3, 'quantity': 1},
+      ],
+    );
+    store.cancelOrder(
+      voided['id'] as int,
+      'ลูกค้าเปลี่ยนใจ ยังไม่ได้ส่งครัว',
+      actorId: 2,
+    );
+
     return (
       openOrderId: ready['id'] as int,
       kitchenOrderId: kitchenOrder['id'] as int,
       paidOrderId: paidId,
       takeawayOrderId: takeaway['id'] as int,
+      customerId: firstCustomerId,
     );
   }
 

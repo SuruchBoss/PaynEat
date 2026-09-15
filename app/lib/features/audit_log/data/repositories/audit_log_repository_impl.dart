@@ -10,12 +10,13 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
   final AuditLogRemoteDataSource _remote;
 
   @override
-  Future<Result<List<AuditLog>>> list({
+  Future<Result<({List<AuditLog> logs, int total})>> list({
     int? actorUserId,
     String? action,
     String? entityType,
     String? dateFrom,
     String? dateTo,
+    int page = 1,
     int limit = 50,
   }) => guard(
     () => _remote.list(
@@ -24,6 +25,7 @@ class AuditLogRepositoryImpl implements AuditLogRepository {
       entityType: entityType,
       dateFrom: dateFrom,
       dateTo: dateTo,
+      page: page,
       limit: limit,
     ),
   );

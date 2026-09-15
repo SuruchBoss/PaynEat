@@ -3,12 +3,13 @@ import '../../../../core/network/api_endpoints.dart';
 import '../models/audit_log_model.dart';
 
 abstract class AuditLogRemoteDataSource {
-  Future<List<AuditLogModel>> list({
+  Future<({List<AuditLogModel> logs, int total})> list({
     int? actorUserId,
     String? action,
     String? entityType,
     String? dateFrom,
     String? dateTo,
+    int page = 1,
     int limit = 50,
   });
 }
@@ -19,12 +20,13 @@ class AuditLogRemoteDataSourceImpl implements AuditLogRemoteDataSource {
   final ApiClient _client;
 
   @override
-  Future<List<AuditLogModel>> list({
+  Future<({List<AuditLogModel> logs, int total})> list({
     int? actorUserId,
     String? action,
     String? entityType,
     String? dateFrom,
     String? dateTo,
+    int page = 1,
     int limit = 50,
   }) async {
     final result = await _client.get(
@@ -35,9 +37,13 @@ class AuditLogRemoteDataSourceImpl implements AuditLogRemoteDataSource {
         'entityType': entityType,
         'dateFrom': dateFrom,
         'dateTo': dateTo,
+        'page': page,
         'limit': limit,
       },
     );
-    return result.asList.map(AuditLogModel.fromJson).toList(growable: false);
+    return (
+      logs: result.asList.map(AuditLogModel.fromJson).toList(growable: false),
+      total: result.total,
+    );
   }
 }

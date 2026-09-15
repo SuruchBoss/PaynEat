@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
+import 'package:payneat_pos/features/customer/presentation/widgets/customer_picker_dialog.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
 
 import 'screenshot_harness.dart';
@@ -25,6 +26,7 @@ void main() {
     int kitchenOrderId,
     int paidOrderId,
     int takeawayOrderId,
+    int customerId,
   })
   ids;
 
@@ -371,6 +373,68 @@ void main() {
       );
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-29-takeaway-order-detail');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // ลูกค้า/แต้มสะสม (ticket 09) และ audit log (ticket 08)
+  // สองฟีเจอร์นี้เพิ่มหน้าจอมา 4 หน้าแต่ยังไม่เคยมีภาพ golden คุม —
+  // ทั้งที่กลไกนี้เคยจับภาพเอกสารค้างได้มาแล้ว
+  // ---------------------------------------------------------------------
+  group('ลูกค้า/แต้มสะสม และ audit log', () {
+    Future<void> openAdminTab(WidgetTester tester, String label) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.desktop);
+      await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+      final controller = Get.find<HomeController>();
+      final index = controller.destinations.indexWhere(
+        (destination) => destination.label == label,
+      );
+      expect(
+        index,
+        isNonNegative,
+        reason:
+            'ไม่พบเมนู "$label" ในเมนูของแอดมิน — '
+            'ดู HomeBinding.destinationsForRole ว่า label เปลี่ยนไปหรือเปล่า',
+      );
+      controller.changeTab(index);
+      await ScreenshotHarness.settle(tester);
+    }
+
+    testWidgets('30 รายชื่อลูกค้าและแต้มสะสม', (tester) async {
+      await openAdminTab(tester, 'home_nav_customers');
+      await ScreenshotHarness.capture(tester, 'web-30-customers');
+    });
+
+    testWidgets('31 รายละเอียดลูกค้า/ประวัติการซื้อ', (tester) async {
+      await openAdminTab(tester, 'home_nav_customers');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.customerDetail,
+          arguments: {'customerId': ids.customerId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'web-31-customer-detail');
+    });
+
+    testWidgets('32 ประวัติการทำรายการ (audit log)', (tester) async {
+      await openAdminTab(tester, 'home_nav_audit_log');
+      await ScreenshotHarness.capture(tester, 'web-32-audit-log');
+    });
+
+    testWidgets('33 กล่องผูกลูกค้ากับออเดอร์บนมือถือ', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.orderDetail,
+          arguments: {'orderId': ids.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      unawaited(CustomerPickerDialog.show());
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-33-customer-picker');
     });
   });
 }
