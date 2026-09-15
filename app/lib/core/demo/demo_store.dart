@@ -15,6 +15,8 @@ part 'demo_store_menu.dart';
 part 'demo_store_ingredients.dart';
 part 'demo_store_tables.dart';
 part 'demo_store_orders.dart';
+part 'demo_store_order_items.dart';
+part 'demo_store_order_promotions.dart';
 part 'demo_store_payments.dart';
 part 'demo_store_promotions.dart';
 part 'demo_store_refunds.dart';

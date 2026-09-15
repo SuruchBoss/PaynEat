@@ -964,3 +964,44 @@ spaghetti risk ทั้ง backend และ Flutter) พบว่าแม้�
 **ข้อเสียที่ยอมรับ** — ไม่มี ทุกจุดที่แก้เป็นการเติมของที่ขาดตาม pattern เดิมที่มีอยู่แล้วในโปรเจกต์
 ไม่ได้เปลี่ยน behavior หรือ trade-off ใหม่ใดๆ ที่ผู้ใช้จะสังเกตเห็น (audit log อ่านได้เฉพาะ admin
 เหมือนเดิม)
+
+## 29. แยกไฟล์ Flutter ที่โตเกิน 400 บรรทัดอีก 3 จุดที่เอกสารไม่เคย backfill
+
+**ปัญหา** — self code-review รอบเดียวกับข้อ 28 พบว่า `docs/CODING_STANDARDS.md` §2.2 ยังบันทึก
+`demo_store.dart` ว่าแยกเป็นแค่ 7 ไฟล์ (อัปเดตล่าสุด 2026-09-07) ทั้งที่ ticket ใหม่ๆ (05/06/08/09/10/
+14) เพิ่ม part file เข้าไปจนเป็น 15 ไฟล์แล้วจริง และ `demo_store_orders.dart` เองก็โตเป็น 825
+บรรทัด (เกิน threshold ไปเยอะ) — นอกจากนี้ยังพบอีก 2 ไฟล์ที่โตเกิน 400 บรรทัดแบบเดียวกันแต่ไม่เคย
+ถูกบันทึกไว้เลยสักครั้ง: `core/demo/demo_data_sources.dart` (846 บรรทัด รวม 14 คลาสไม่เกี่ยวข้องกัน)
+และ `app/di/initial_binding.dart` (644 บรรทัด ผูก data source/repository/use case ของ 14 โดเมนรวม
+กันในไฟล์เดียว)
+
+**ที่เลือก**
+
+- **`demo_store_orders.dart` แยกเพิ่มอีก 2 ไฟล์**: `demo_store_order_items.dart` (การเพิ่ม/แก้/ลบ/
+  เปลี่ยนสถานะรายการอาหารในออเดอร์) และ `demo_store_order_promotions.dart` (resolve/redeem/remove
+  โปรโมชันของออเดอร์) แยกตามความรับผิดชอบย่อยภายในโดเมนเดียวกัน (order) ไม่ใช่แยกข้ามโดเมน — ยัง
+  ใช้ `part`/`part of` + `extension ... on DemoStore` แบบเดิมทุกประการ เพราะยังเป็น state เดียวกัน
+  (`orders` list) ที่ต้องเข้าถึงข้ามไฟล์
+- **`demo_data_sources.dart` แยกเป็น 1 part file ต่อ 1 คลาส** ด้วย `part`/`part of` เหมือนกัน แม้
+  แต่ละคลาส `Demo*DataSource` จะเป็นอิสระต่อกัน ไม่ได้แชร์ state แบบ `DemoStore` — เลือก part/part-of
+  แทนการแยกเป็นไฟล์ import ปกติ (หรือ `export` barrel) เพราะทั้ง 14 คลาสแชร์ helper ส่วนกลางตัวเดียว
+  (`_delayed`) ที่อยากให้ยังเป็น library-private ไม่ต้อง expose เป็น public API — ใช้กลไกเดียวกับ
+  `demo_store.dart` ทำให้ผู้อ่านโค้ดในโปรเจกต์ไม่ต้องเรียนรู้ pattern ใหม่
+- **`initial_binding.dart` แยกตาม "ขั้นตอน" ไม่ใช่ตาม "โดเมน"** — ต่างจากอีก 2 ไฟล์ข้างต้น เพราะ
+  `_bindDataSources`/`_bindRepositories`/`_bindUseCases` แต่ละเมธอดวนลูปทุกโดเมนอยู่แล้วในตัวเอง
+  (แยกตามลำดับที่ต้องผูก: core → data source → repository → use case → global controller) แยก
+  ตามโดเมนแทนจะทำให้แต่ละไฟล์ต้องรู้ลำดับการผูกของทุกขั้นตอนซ้ำ 14 รอบ ซับซ้อนกว่าเดิม จึงแยกเป็น
+  ฟังก์ชัน top-level ธรรมดา (`bindCoreServices`/`bindDataSources`/`bindRepositories`/`bindUseCases`/
+  `bindGlobalControllers`) ใน `app/di/bindings/` แทน — ไม่ใช้ `part`/`part of` เพราะแต่ละฟังก์ชัน
+  พึ่งพากันผ่าน `Get.find<T>()` (service locator pattern ของ GetX) อยู่แล้ว ไม่มี private state ที่
+  ต้องแชร์ข้ามไฟล์แบบ `demo_store.dart`/`demo_data_sources.dart` — คนละแนวคิดกับ
+  `presentation/bindings/*_binding.dart` ที่มีอยู่แล้ว (`home_binding.dart` ฯลฯ) ซึ่งผูก controller
+  ระดับหน้าจอจาก use case ที่ `InitialBinding` ผูกไว้แล้ว ไม่ใช่ composition root ระดับแอป
+- **อัปเดต `docs/CODING_STANDARDS.md` §2.2 ให้ตรงกับจำนวนไฟล์/บรรทัดจริงทั้ง 3 จุด** พร้อมย้ำ
+  ในตัวเอกสารเองว่าต้องเช็คด้วย `wc -l` ก่อนแก้ทุกครั้ง ไม่ใช่เดาหรือคัดลอกเลขเก่า (ต้นเหตุที่ทำให้
+  เอกสารเพี้ยนไปจากโค้ดจริงในรอบนี้)
+
+**ข้อเสียที่ยอมรับ** — ไม่มี เป็นการจัดระเบียบไฟล์ล้วนๆ ไม่เปลี่ยน behavior เลยสักจุด ยืนยันด้วย
+`flutter analyze`/`dart format`/`flutter test` (311/311 ผ่านทุกครั้งหลังแยกแต่ละไฟล์) และ build
+web + smoke test ด้วย headless browser ยืนยันว่า DI wiring ยังทำงานถูกต้องหลังแยก
+`initial_binding.dart`
