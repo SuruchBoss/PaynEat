@@ -73,6 +73,7 @@ control and 557 automated tests.
 > จึงสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน ([วิธีสร้าง](docs/generator/README.md))
 
 > 🌐 **หน้า Landing Page (HTML ไฟล์เดียว เปิดได้เลย ไม่ต้องติดตั้งอะไร)**
+> · [หน้าจริงบน GitHub Pages](https://suruchboss.github.io/PaynEat/)
 > · [`docs/landing/index.html`](docs/landing/index.html)
 >
 > เล่าเรื่องระบบจากเงื่อนไขหน้างานจริง — แสงจ้า ไอน้ำ มือเปื้อน เน็ตสะดุด — พร้อมภาพหน้าจอจริง

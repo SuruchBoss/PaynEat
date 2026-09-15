@@ -76,6 +76,7 @@ control and 557 automated tests.
 > ([how to regenerate](docs/generator/README.md))
 
 > 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
+> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/)
 > · [`docs/landing/index.html`](docs/landing/index.html)
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,

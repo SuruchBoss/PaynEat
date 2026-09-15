@@ -1005,3 +1005,30 @@ spaghetti risk ทั้ง backend และ Flutter) พบว่าแม้�
 `flutter analyze`/`dart format`/`flutter test` (311/311 ผ่านทุกครั้งหลังแยกแต่ละไฟล์) และ build
 web + smoke test ด้วย headless browser ยืนยันว่า DI wiring ยังทำงานถูกต้องหลังแยก
 `initial_binding.dart`
+
+## 30. Deploy landing page ขึ้น GitHub Pages แทน Vercel
+
+**ปัญหา** — `docs/landing/index.html` เป็นไฟล์ static เดี่ยว มีไว้ให้เปิดในเบราว์เซอร์ตรงๆ เท่านั้น
+ยังไม่มี URL จริงให้แชร์ ผู้ใช้ขอให้ deploy ให้เหมือนโปรเจกต์อื่น (ExcelToGo) ที่มี live demo URL
+จริงผ่าน Vercel
+
+**ที่เลือก**
+
+- **GitHub Pages แทน Vercel** — ต่างจาก ExcelToGo ที่เป็นแอป Next.js ต้อง build/runtime จริงจึงต้อง
+  ใช้ platform ระดับ Vercel, `docs/landing/index.html` เป็น static HTML ไฟล์เดียวไม่มี build step
+  เลย ไม่มี server-side logic — GitHub Pages (ฟรี ผูกกับ repo นี้โดยตรง ไม่ต้องเชื่อม account
+  ภายนอกเพิ่ม) จึงพอเพียงและตรงไปตรงมากว่า
+- **Deploy ผ่าน GitHub Actions (`actions/deploy-pages`) ไม่ใช้ "Deploy from a branch"** — เลือก
+  source แบบ Actions เพราะ deploy เฉพาะโฟลเดอร์ `docs/landing/` เป็น root ของเว็บไซต์ได้ตรงๆ
+  (URL ออกมาเป็น `https://suruchboss.github.io/PaynEat/` พอดี) ต่างจาก "Deploy from a branch →
+  /docs" ที่จะเอาทั้งโฟลเดอร์ `docs/` (รวมเอกสารอื่นๆ อย่าง `DECISIONS.md`/`tickets/`) มาเป็น root
+  ของเว็บไซต์ไปด้วย ซึ่งไม่ใช่สิ่งที่ตั้งใจให้คนทั่วไปเห็น
+- **Trigger เฉพาะ push เข้า `main` ที่แตะ `docs/landing/**`** — ต่างจาก `ci.yml` เดิมที่รันทุก branch
+  เพราะหน้านี้คือหน้าเว็บ "ที่ใช้งานจริง" ควรอัปเดตเฉพาะตอนงานถูก merge เข้า main แล้วเท่านั้น ไม่ใช่
+  ทุกครั้งที่ push branch ทดลอง — มี `workflow_dispatch` ให้กดรันเองได้ด้วยเผื่อ debug
+- **ต้องเปิด "Settings → Pages → Source: GitHub Actions" ด้วยมือครั้งเดียว** — GitHub REST API ไม่มี
+  endpoint ให้เปิดใช้งาน Pages แบบอัตโนมัติผ่าน workflow ได้ (ต่างจากการ deploy จริงที่อัตโนมัติทุก
+  ครั้งหลังจากนั้น) เป็นข้อจำกัดของแพลตฟอร์ม ไม่ใช่ทางเลือกออกแบบ
+
+**ข้อเสียที่ยอมรับ** — ไม่มี custom domain/preview URL ต่อ PR แบบที่ Vercel ให้ฟรี (ทุก push ไป PR
+ได้ preview URL แยก) — ยอมรับเพราะหน้านี้เป็นหน้าเดียวไม่มีหลายเวอร์ชันให้ preview พร้อมกันอยู่แล้ว
