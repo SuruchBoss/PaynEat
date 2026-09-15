@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/utils/app_clock.dart';
 import '../../../../core/utils/csv_download/csv_download.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
@@ -140,7 +141,7 @@ class AuditLogController extends GetxController {
     result.fold(
       onSuccess: (csv) {
         downloadCsv(
-          'audit-logs-${Formatters.isoDate(DateTime.now())}.csv',
+          'audit-logs-${Formatters.isoDate(AppClock.now())}.csv',
           csv,
         );
       },
