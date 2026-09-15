@@ -75,6 +75,14 @@ control and 460 automated tests.
 > [`app/tool/screenshots`](app/tool/screenshots), so they can be regenerated any time the code changes
 > ([how to regenerate](docs/generator/README.md))
 
+> 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
+> · [`docs/landing/index.html`](docs/landing/index.html)
+>
+> Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
+> a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
+> not a single line of JavaScript.
+> The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
+
 ---
 
 ## 📋 Table of contents
