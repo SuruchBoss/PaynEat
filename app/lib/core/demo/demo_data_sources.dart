@@ -286,6 +286,7 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
           _store.addItems(
             orderId,
             items.map((item) => item.toJson()).toList(growable: false),
+            actorId: _auth.currentUserId,
           ),
         ),
       );
@@ -298,13 +299,22 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
     String? note,
   }) => _delayed(
     () => OrderModel.fromJson(
-      _store.updateItem(orderId, itemId, quantity: quantity, note: note),
+      _store.updateItem(
+        orderId,
+        itemId,
+        quantity: quantity,
+        note: note,
+        actorId: _auth.currentUserId,
+      ),
     ),
   );
 
   @override
-  Future<OrderModel> removeItem(int orderId, int itemId) =>
-      _delayed(() => OrderModel.fromJson(_store.removeItem(orderId, itemId)));
+  Future<OrderModel> removeItem(int orderId, int itemId) => _delayed(
+    () => OrderModel.fromJson(
+      _store.removeItem(orderId, itemId, actorId: _auth.currentUserId),
+    ),
+  );
 
   @override
   Future<OrderModel> updateItemStatus(int orderId, int itemId, String status) =>
@@ -345,14 +355,20 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
 
   @override
   Future<OrderModel> moveTable(int orderId, int tableId) => _delayed(
-    () => OrderModel.fromJson(_store.moveOrderTable(orderId, tableId)),
+    () => OrderModel.fromJson(
+      _store.moveOrderTable(orderId, tableId, actorId: _auth.currentUserId),
+    ),
   );
 
   @override
   Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId) =>
       _delayed(
         () => OrderModel.fromJson(
-          _store.mergeOrders(targetOrderId, sourceOrderId),
+          _store.mergeOrders(
+            targetOrderId,
+            sourceOrderId,
+            actorId: _auth.currentUserId,
+          ),
         ),
       );
 

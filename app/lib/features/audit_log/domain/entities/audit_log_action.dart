@@ -4,6 +4,12 @@
 class AuditLogAction {
   const AuditLogAction._();
 
+  static const String orderCreate = 'order.create';
+  static const String orderItemAdd = 'order.item.add';
+  static const String orderItemEdit = 'order.item.edit';
+  static const String orderItemRemove = 'order.item.remove';
+  static const String orderMoveTable = 'order.move_table';
+  static const String orderMerge = 'order.merge';
   static const String orderCancel = 'order.cancel';
   static const String orderItemVoid = 'order_item.void';
   static const String orderDiscount = 'order.discount';
@@ -16,6 +22,12 @@ class AuditLogAction {
   static const String taxInvoiceVoid = 'tax_invoice.void';
 
   static const List<String> all = [
+    orderCreate,
+    orderItemAdd,
+    orderItemEdit,
+    orderItemRemove,
+    orderMoveTable,
+    orderMerge,
     orderCancel,
     orderItemVoid,
     orderDiscount,
@@ -29,6 +41,12 @@ class AuditLogAction {
   ];
 
   static const Map<String, String> _keys = {
+    orderCreate: 'audit_log_action_order_create',
+    orderItemAdd: 'audit_log_action_order_item_add',
+    orderItemEdit: 'audit_log_action_order_item_edit',
+    orderItemRemove: 'audit_log_action_order_item_remove',
+    orderMoveTable: 'audit_log_action_order_move_table',
+    orderMerge: 'audit_log_action_order_merge',
     orderCancel: 'audit_log_action_order_cancel',
     orderItemVoid: 'audit_log_action_order_item_void',
     orderDiscount: 'audit_log_action_order_discount',

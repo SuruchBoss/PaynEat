@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-507%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-513%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 460 automated tests.
+control and 510 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -325,7 +325,7 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 218 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 224 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 289 cases — domain / controller / widget
 ```
 
@@ -443,7 +443,10 @@ cd app && flutter test      # 289 cases — domain / controller / widget
   (no UI anywhere can edit or delete an entry): cancelling an order, voiding an order item after it's
   been sent to the kitchen, editing a discount, deactivating/deleting/changing the role of/resetting the
   password for a staff account, editing VAT/service charge, a refund, and voiding a tax invoice — each
-  with who did it, when, and the reason given; filterable by action type (see `docs/DECISIONS.md` #21)
+  with who did it, when, and the reason given; filterable by action type (see `docs/DECISIONS.md` #21).
+  It also records **who placed or edited each order**, so managers and finance can review the full
+  history: opening a new order (recording which waiter placed it), adding items, editing an item's
+  quantity, removing an item, moving a table, and merging bills (see `docs/DECISIONS.md` #25)
 - **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
   see their purchase history and current points balance (see `docs/DECISIONS.md` #22)
 
@@ -762,11 +765,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 218 cases
+cd backend && npm test      # 224 cases
 cd app && flutter test      # 289 cases
 ```
 
-**Backend (218 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (224 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -819,11 +822,16 @@ except `/docs` (Swagger UI needs inline script/style). `seed-production-safety.t
 confirms `NODE_ENV=production` refuses to seed accounts with the known demo passwords (`admin123` etc.) —
 each account's password must be set explicitly via `SEED_*_PASSWORD` first (see `docs/DECISIONS.md` #20).
 
-`audit-logs.test.js` (10 new cases) tests that every risky action is logged correctly: cancelling an
+`audit-logs.test.js` (16 cases) tests that every risky action is logged correctly: cancelling an
 order (with reason/actor), voiding an order item only after it's been sent to the kitchen (cancelling
 while still pending must not log), editing a discount, deactivating/resetting-password/changing-role/
 deleting a staff account (renaming alone must not log), editing VAT logs but editing the store name
-alone doesn't, a refund, voiding a tax invoice, and RBAC (admin-only) (see `docs/DECISIONS.md` #21).
+alone doesn't, a refund, voiding a tax invoice, and RBAC (admin-only) (see `docs/DECISIONS.md` #21) —
+plus 6 more cases (see `docs/tickets/13-order-audit-trail.md`, `docs/DECISIONS.md` #25) for
+"who placed/edited this order" audit trail that managers and finance can review (not just
+fraud-risk events like the group above): opening a new order (records which waiter placed it),
+adding items to an order, editing an item's quantity (editing only the note doesn't log), removing
+an item, moving a table, and merging bills.
 
 `customers.test.js` (11 new cases) covers the full customer/loyalty flow: creating a customer / rejecting
 a duplicate phone number (409), searching by partial name/phone, RBAC (kitchen staff can't call it),

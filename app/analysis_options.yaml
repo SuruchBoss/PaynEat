@@ -14,11 +14,6 @@ analyzer:
   # ขึ้นเส้นหยักใน IDE ให้เห็นตั้งแต่ตอนพิมพ์ และรันซ้ำใน CI ด้วย `dart run custom_lint`
   plugins:
     - custom_lint
-  errors:
-    # Dart รุ่นใหม่เตือนว่าระบบ plugin แบบเดิมกำลังจะเลิกใช้ แต่ custom_lint ยังไม่รองรับ
-    # ระบบใหม่ ปิดเสียงไว้ก่อนเพื่อไม่ให้ `flutter analyze` แดงทั้งที่ยังไม่มีทางเลือกอื่น
-    # ถ้าวันไหน custom_lint ออกเวอร์ชันที่รองรับแล้ว ให้ลบบรรทัดนี้ทิ้งแล้วย้ายไปใช้ของใหม่
-    analysis_options_deprecated_plugins: ignore
   exclude:
     - build/**
     - android/**

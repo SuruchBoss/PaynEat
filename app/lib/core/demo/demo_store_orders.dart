@@ -118,13 +118,55 @@ extension DemoStoreOrders on DemoStore {
     _appendItems(order, items);
     if (table != null) table['status'] = TableStatus.occupied;
 
+    // mirror ของ order.service.js#create — log ทุกครั้งที่เปิดออเดอร์ใหม่ ดู
+    // docs/tickets/13-order-audit-trail.md
+    _logAudit(
+      actorId: waiterId,
+      action: 'order.create',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary: 'เปิดออเดอร์ใหม่ #${order['code']} (${items.length} รายการ)',
+      metadata: {
+        'orderCode': order['code'],
+        'type': type,
+        'tableId': tableId,
+        'itemCount': items.length,
+      },
+    );
+
     return _recalculate(order);
   }
 
-  Map<String, dynamic> addItems(int orderId, List<Map<String, dynamic>> items) {
+  Map<String, dynamic> addItems(
+    int orderId,
+    List<Map<String, dynamic>> items, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     _assertMutable(order);
+    final before = (order['items'] as List).length;
     _appendItems(order, items);
+    final added = (order['items'] as List).cast<Map<String, dynamic>>().sublist(
+      before,
+    );
+
+    // mirror ของ order.service.js#addItems — ดู docs/tickets/13-order-audit-trail.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.item.add',
+      entityType: 'order',
+      entityId: order['id'] as int,
+      summary:
+          'เพิ่ม ${added.length} รายการเข้าออเดอร์ #${order['code']}: '
+          '${added.map((row) => '${row['name']} x${row['quantity']}').join(', ')}',
+      metadata: {
+        'orderCode': order['code'],
+        'items': added
+            .map((row) => {'name': row['name'], 'quantity': row['quantity']})
+            .toList(),
+      },
+    );
+
     return _recalculate(order);
   }
 
@@ -205,6 +247,7 @@ extension DemoStoreOrders on DemoStore {
     int itemId, {
     int? quantity,
     String? note,
+    int? actorId,
   }) {
     final order = findOrder(orderId);
     _assertMutable(order);
@@ -227,13 +270,31 @@ extension DemoStoreOrders on DemoStore {
       if (item['stockDeducted'] == true) {
         adjustIngredientsForQuantityChange(item, oldQuantity, quantity);
       }
+      if (quantity != oldQuantity) {
+        // mirror ของ order.service.js#updateItem — ดู docs/tickets/13-order-audit-trail.md
+        _logAudit(
+          actorId: actorId,
+          action: 'order.item.edit',
+          entityType: 'order_item',
+          entityId: itemId,
+          summary:
+              'แก้ไขจำนวน "${item['name']}" ในออเดอร์ #${order['code']} '
+              'จาก $oldQuantity เป็น $quantity',
+          metadata: {
+            'orderId': orderId,
+            'orderCode': order['code'],
+            'previousQuantity': oldQuantity,
+            'newQuantity': quantity,
+          },
+        );
+      }
     }
     if (note != null) item['note'] = note;
 
     return _recalculate(order);
   }
 
-  Map<String, dynamic> removeItem(int orderId, int itemId) {
+  Map<String, dynamic> removeItem(int orderId, int itemId, {int? actorId}) {
     final order = findOrder(orderId);
     _assertMutable(order);
     final item = _findItem(order, itemId);
@@ -250,6 +311,23 @@ extension DemoStoreOrders on DemoStore {
     }
 
     (order['items'] as List).removeWhere((row) => row['id'] == itemId);
+
+    // mirror ของ order.service.js#removeItem — ดู docs/tickets/13-order-audit-trail.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.item.remove',
+      entityType: 'order',
+      entityId: orderId,
+      summary:
+          'ลบรายการ "${item['name']}" (${item['quantity']} ชิ้น) '
+          'ออกจากออเดอร์ #${order['code']}',
+      metadata: {
+        'orderCode': order['code'],
+        'itemName': item['name'],
+        'quantity': item['quantity'],
+      },
+    );
+
     return _recalculate(order);
   }
 
@@ -395,7 +473,11 @@ extension DemoStoreOrders on DemoStore {
   }
 
   /// ย้ายออเดอร์ (ที่ยังไม่ปิดบิล) ไปโต๊ะอื่น เช่น ลูกค้าขอย้ายที่นั่ง
-  Map<String, dynamic> moveOrderTable(int orderId, int tableId) {
+  Map<String, dynamic> moveOrderTable(
+    int orderId,
+    int tableId, {
+    int? actorId,
+  }) {
     final order = findOrder(orderId);
     _assertMutable(order);
     final oldTableId = order['tableId'];
@@ -412,6 +494,7 @@ extension DemoStoreOrders on DemoStore {
       );
     }
 
+    final oldTableName = order['tableName'];
     final table = _findTable(tableId);
     order['tableId'] = tableId;
     order['tableName'] = table['name'];
@@ -424,11 +507,31 @@ extension DemoStoreOrders on DemoStore {
       item['tableName'] = table['name'];
     }
 
+    // mirror ของ order.service.js#moveTable — ดู docs/tickets/13-order-audit-trail.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.move_table',
+      entityType: 'order',
+      entityId: orderId,
+      summary:
+          'ย้ายออเดอร์ #${order['code']} จากโต๊ะ "$oldTableName" '
+          'ไปโต๊ะ "${table['name']}"',
+      metadata: {
+        'orderCode': order['code'],
+        'fromTableId': oldTableId,
+        'toTableId': tableId,
+      },
+    );
+
     return order;
   }
 
   /// รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล
-  Map<String, dynamic> mergeOrders(int targetOrderId, int sourceOrderId) {
+  Map<String, dynamic> mergeOrders(
+    int targetOrderId,
+    int sourceOrderId, {
+    int? actorId,
+  }) {
     if (targetOrderId == sourceOrderId) {
       throw ApiException(
         message: 'order_error_merge_same_order'.tr,
@@ -457,6 +560,19 @@ extension DemoStoreOrders on DemoStore {
     });
     source['closedAt'] = _now();
     _freeTable(source);
+
+    // mirror ของ order.service.js#mergeOrders — ดู docs/tickets/13-order-audit-trail.md
+    _logAudit(
+      actorId: actorId,
+      action: 'order.merge',
+      entityType: 'order',
+      entityId: target['id'] as int,
+      summary: 'รวมบิล #${source['code']} เข้ากับ #${target['code']}',
+      metadata: {
+        'targetOrderCode': target['code'],
+        'sourceOrderCode': source['code'],
+      },
+    );
 
     return _recalculate(target);
   }

@@ -24,18 +24,26 @@ export const orderController = {
   ),
 
   addItems: asyncHandler(async (req, res) =>
-    created(res, orderService.addItems(req.validated.params.id, req.body.items)),
+    created(res, orderService.addItems(req.validated.params.id, req.body.items, req.user)),
   ),
 
   updateItem: asyncHandler(async (req, res) =>
     ok(
       res,
-      orderService.updateItem(req.validated.params.id, req.validated.params.itemId, req.body),
+      orderService.updateItem(
+        req.validated.params.id,
+        req.validated.params.itemId,
+        req.body,
+        req.user,
+      ),
     ),
   ),
 
   removeItem: asyncHandler(async (req, res) =>
-    ok(res, orderService.removeItem(req.validated.params.id, req.validated.params.itemId)),
+    ok(
+      res,
+      orderService.removeItem(req.validated.params.id, req.validated.params.itemId, req.user),
+    ),
   ),
 
   updateItemStatus: asyncHandler(async (req, res) =>
@@ -51,11 +59,11 @@ export const orderController = {
   ),
 
   moveTable: asyncHandler(async (req, res) =>
-    ok(res, orderService.moveTable(req.validated.params.id, req.body.tableId)),
+    ok(res, orderService.moveTable(req.validated.params.id, req.body.tableId, req.user)),
   ),
 
   merge: asyncHandler(async (req, res) =>
-    ok(res, orderService.mergeOrders(req.validated.params.id, req.body.sourceOrderId)),
+    ok(res, orderService.mergeOrders(req.validated.params.id, req.body.sourceOrderId, req.user)),
   ),
 
   sendToKitchen: asyncHandler(async (req, res) =>
