@@ -2,6 +2,8 @@ import '../../features/audit_log/data/datasources/audit_log_remote_data_source.d
 import '../../features/audit_log/data/models/audit_log_model.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../features/auth/data/models/user_model.dart';
+import '../../features/customer/data/datasources/customer_remote_data_source.dart';
+import '../../features/customer/data/models/customer_model.dart';
 import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
 import '../../features/ingredient/data/models/ingredient_model.dart';
 import '../../features/menu/data/datasources/menu_remote_data_source.dart';
@@ -230,6 +232,7 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page = 1,
     int limit = 30,
   }) => _delayed(() {
@@ -237,6 +240,7 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
       status: status,
       activeOnly: activeOnly,
       dateFrom: dateFrom,
+      customerId: customerId,
     );
     return (
       orders: rows.take(limit).map(OrderModel.fromJson).toList(growable: false),
@@ -258,6 +262,7 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
   Future<OrderModel> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     int guestCount = 1,
     String? note,
     required List<OrderItemPayload> items,
@@ -266,6 +271,7 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
       _store.createOrder(
         type: type,
         tableId: tableId,
+        customerId: customerId,
         guestCount: guestCount,
         waiterId: _auth.currentUserId,
         items: items.map((item) => item.toJson()).toList(growable: false),
@@ -432,6 +438,7 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   }) => _delayed(() {
     final data = _store.pay(
       orderId: orderId,
@@ -441,6 +448,7 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
       received: received,
       reference: reference,
       cashierId: _auth.currentUserId,
+      pointsToRedeem: pointsToRedeem ?? 0,
     );
     return (
       result: PaymentResult(
@@ -685,6 +693,9 @@ class DemoSettingsDataSource implements SettingsRemoteDataSource {
     storeTaxId: json['storeTaxId'] as String?,
     storeAddress: json['storeAddress'] as String?,
     storeBranch: json['storeBranch'] as String?,
+    pointsEarnRateBaht: (json['pointsEarnRateBaht'] as num?)?.toDouble() ?? 25,
+    pointsRedeemValueBaht:
+        (json['pointsRedeemValueBaht'] as num?)?.toDouble() ?? 1,
   );
 
   @override
@@ -721,5 +732,44 @@ class DemoAuditLogDataSource implements AuditLogRemoteDataSource {
         )
         .map(AuditLogModel.fromJson)
         .toList(growable: false),
+  );
+}
+
+class DemoCustomerDataSource implements CustomerRemoteDataSource {
+  const DemoCustomerDataSource(this._store);
+
+  final DemoStore _store;
+
+  @override
+  Future<({List<CustomerModel> customers, int total})> search({
+    String? search,
+    int page = 1,
+    int limit = 20,
+  }) => _delayed(() {
+    final rows = _store.customerSearch(search: search);
+    final start = ((page - 1) * limit).clamp(0, rows.length);
+    final end = (start + limit).clamp(0, rows.length);
+    return (
+      customers: rows
+          .sublist(start, end)
+          .map(CustomerModel.fromJson)
+          .toList(growable: false),
+      total: rows.length,
+    );
+  });
+
+  @override
+  Future<CustomerModel> getById(int id) =>
+      _delayed(() => CustomerModel.fromJson(_store.findCustomer(id)));
+
+  @override
+  Future<CustomerModel> create({
+    required String name,
+    required String phone,
+    String? email,
+  }) => _delayed(
+    () => CustomerModel.fromJson(
+      _store.createCustomer(name: name, phone: phone, email: email),
+    ),
   );
 }

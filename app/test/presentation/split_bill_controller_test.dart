@@ -40,6 +40,7 @@ class _FakePaymentRepository implements PaymentRepository {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   }) async {
     payCallCount++;
     return nextPayResult!;

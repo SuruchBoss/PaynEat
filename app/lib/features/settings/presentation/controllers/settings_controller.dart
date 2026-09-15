@@ -28,6 +28,10 @@ class SettingsController extends GetxController {
   final TextEditingController storeTaxIdController = TextEditingController();
   final TextEditingController storeAddressController = TextEditingController();
   final TextEditingController storeBranchController = TextEditingController();
+  final TextEditingController pointsEarnRateController =
+      TextEditingController();
+  final TextEditingController pointsRedeemValueController =
+      TextEditingController();
 
   @override
   void onInit() {
@@ -43,6 +47,8 @@ class SettingsController extends GetxController {
     storeTaxIdController.dispose();
     storeAddressController.dispose();
     storeBranchController.dispose();
+    pointsEarnRateController.dispose();
+    pointsRedeemValueController.dispose();
     super.onClose();
   }
 
@@ -64,6 +70,11 @@ class SettingsController extends GetxController {
         storeTaxIdController.text = data.storeTaxId ?? '';
         storeAddressController.text = data.storeAddress ?? '';
         storeBranchController.text = data.storeBranch ?? '';
+        pointsEarnRateController.text = data.pointsEarnRateBaht.toStringAsFixed(
+          0,
+        );
+        pointsRedeemValueController.text = data.pointsRedeemValueBaht
+            .toStringAsFixed(2);
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -81,6 +92,20 @@ class SettingsController extends GetxController {
       AppDialogs.error('settings_service_charge_range_error'.tr);
       return;
     }
+    final pointsEarnRate = double.tryParse(
+      pointsEarnRateController.text.trim(),
+    );
+    final pointsRedeemValue = double.tryParse(
+      pointsRedeemValueController.text.trim(),
+    );
+    if (pointsEarnRate == null || pointsEarnRate <= 0) {
+      AppDialogs.error('settings_points_earn_rate_error'.tr);
+      return;
+    }
+    if (pointsRedeemValue == null || pointsRedeemValue < 0) {
+      AppDialogs.error('settings_points_redeem_value_error'.tr);
+      return;
+    }
 
     isSaving.value = true;
     final result = await _updateSettings(
@@ -92,6 +117,8 @@ class SettingsController extends GetxController {
         storeTaxId: storeTaxIdController.text.trim(),
         storeAddress: storeAddressController.text.trim(),
         storeBranch: storeBranchController.text.trim(),
+        pointsEarnRateBaht: pointsEarnRate,
+        pointsRedeemValueBaht: pointsRedeemValue,
       ),
     );
     isSaving.value = false;

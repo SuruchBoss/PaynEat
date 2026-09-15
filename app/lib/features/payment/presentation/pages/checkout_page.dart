@@ -286,6 +286,7 @@ class _PaymentForm extends GetView<CheckoutController> {
               suffixText: 'common_baht'.tr,
             ),
           ),
+          const _LoyaltySection(),
           Obx(
             () => controller.isCash
                 ? Column(
@@ -317,8 +318,9 @@ class _PaymentForm extends GetView<CheckoutController> {
                         children: [
                           ActionChip(
                             label: Text('payment_exact_amount_label'.tr),
-                            onPressed: () =>
-                                controller.setReceived(controller.amount.value),
+                            onPressed: () => controller.setReceived(
+                              controller.chargedAmount,
+                            ),
                           ),
                           if (controller.roundUpShortcut != null)
                             ActionChip(
@@ -401,7 +403,7 @@ class _PaymentForm extends GetView<CheckoutController> {
                   : const Icon(Icons.check_circle_rounded),
               label: Text(
                 'payment_submit_button'.trParams({
-                  'amount': Formatters.baht(controller.amount.value),
+                  'amount': Formatters.baht(controller.chargedAmount),
                 }),
                 style: const TextStyle(
                   fontSize: 16,
@@ -422,4 +424,133 @@ class _PaymentForm extends GetView<CheckoutController> {
     PaymentMethod.transfer => Icons.account_balance_rounded,
     _ => Icons.payment_rounded,
   };
+}
+
+/// แสดงข้อมูลลูกค้าที่ผูกกับออเดอร์นี้ + ให้เลือกใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้
+///
+/// ไม่แสดงอะไรเลยถ้าออเดอร์นี้ไม่ได้ผูกลูกค้าไว้ (ลูกค้าทั่วไปที่ไม่ได้เป็นสมาชิก)
+class _LoyaltySection extends GetView<CheckoutController> {
+  const _LoyaltySection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final customer = controller.customer.value;
+      if (customer == null) return const SizedBox.shrink();
+
+      final maxPoints = controller.maxRedeemablePoints;
+      final redeemed = controller.pointsToRedeem.value;
+
+      return Container(
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.primarySoft,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.card_giftcard_rounded,
+                  size: 16,
+                  color: AppColors.brandInk,
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'payment_loyalty_customer_label'.trParams({
+                      'name': customer.name,
+                    }),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  'payment_loyalty_points_balance'.trParams({
+                    'points': '${customer.pointsBalance}',
+                  }),
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    color: AppColors.brandInk,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            if (maxPoints > 0) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'payment_loyalty_redeem_label'.tr,
+                      style: const TextStyle(fontSize: 12.5),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: redeemed > 0
+                        ? () => controller.setPointsToRedeem(redeemed - 1)
+                        : null,
+                    icon: const Icon(Icons.remove_circle_outline_rounded),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  SizedBox(
+                    width: 32,
+                    child: Text(
+                      '$redeemed',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: redeemed < maxPoints
+                        ? () => controller.setPointsToRedeem(redeemed + 1)
+                        : null,
+                    icon: const Icon(Icons.add_circle_outline_rounded),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  TextButton(
+                    onPressed: redeemed == maxPoints
+                        ? null
+                        : () => controller.setPointsToRedeem(maxPoints),
+                    child: Text('payment_loyalty_redeem_max_button'.tr),
+                  ),
+                ],
+              ),
+              if (redeemed > 0)
+                Text(
+                  'payment_loyalty_redeem_value'.trParams({
+                    'value': Formatters.money(controller.pointsRedeemedValue),
+                  }),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.successInk,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+            ] else
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'payment_loyalty_no_points_available'.tr,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      );
+    });
+  }
 }

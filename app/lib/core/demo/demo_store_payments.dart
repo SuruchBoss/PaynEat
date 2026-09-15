@@ -149,6 +149,7 @@ extension DemoStorePayments on DemoStore {
     double? received,
     String? reference,
     int? cashierId,
+    int pointsToRedeem = 0,
   }) {
     final shift = _openShift;
     if (shift == null) {
@@ -196,11 +197,41 @@ extension DemoStorePayments on DemoStore {
       );
     }
 
+    // ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md) — resolvedAmount
+    // (ยอดที่นับเข้ายอดจ่ายของออเดอร์) ไม่เปลี่ยน มีแค่ยอดที่ต้องเก็บจริง (chargedAmount) ที่ลดลง
+    var pointsRedeemedValue = 0.0;
+    final customerId = order['customerId'] as int?;
+    if (pointsToRedeem > 0) {
+      if (customerId == null) {
+        throw ApiException(
+          message: 'payment_error_points_requires_customer'.tr,
+          statusCode: 400,
+        );
+      }
+      final customer = findCustomer(customerId);
+      if (pointsToRedeem > (customer['pointsBalance'] as int)) {
+        throw ApiException(
+          message: 'payment_error_points_insufficient'.tr,
+          statusCode: 400,
+        );
+      }
+      pointsRedeemedValue = _roundMoney(
+        pointsToRedeem * (settings['pointsRedeemValueBaht'] as num).toDouble(),
+      );
+      if (pointsRedeemedValue > resolvedAmount + 0.001) {
+        throw ApiException(
+          message: 'payment_error_points_value_exceeds_amount'.tr,
+          statusCode: 400,
+        );
+      }
+    }
+    final chargedAmount = resolvedAmount - pointsRedeemedValue;
+
     final actualReceived = method == PaymentMethod.cash
-        ? (received ?? resolvedAmount)
-        : resolvedAmount;
+        ? (received ?? chargedAmount)
+        : chargedAmount;
     if (method == PaymentMethod.cash &&
-        actualReceived + 0.001 < resolvedAmount) {
+        actualReceived + 0.001 < chargedAmount) {
       throw ApiException(
         message: 'payment_error_received_less_than_amount'.tr,
         statusCode: 400,
@@ -215,14 +246,20 @@ extension DemoStorePayments on DemoStore {
       'amount': resolvedAmount,
       'received': actualReceived,
       'change': method == PaymentMethod.cash
-          ? max(0, actualReceived - resolvedAmount)
+          ? max(0, actualReceived - chargedAmount)
           : 0.0,
       'reference': reference,
       'cashierId': cashierId,
       'cashierName': cashierId == null ? null : _findUser(cashierId)['name'],
+      'pointsRedeemed': pointsToRedeem,
+      'pointsRedeemedValue': pointsRedeemedValue,
       'createdAt': _now(),
     };
     payments.add(payment);
+
+    if (pointsToRedeem > 0) {
+      adjustCustomerPoints(customerId!, -pointsToRedeem);
+    }
 
     if (itemIds != null && itemIds.isNotEmpty) {
       for (final item
@@ -236,6 +273,15 @@ extension DemoStorePayments on DemoStore {
       order['status'] = OrderStatus.paid;
       order['closedAt'] = _now();
       _freeTable(order);
+      // สะสมแต้มให้ลูกค้าที่ผูกไว้ครั้งเดียวตอนออเดอร์นี้จ่ายครบ (ไม่ผูกลูกค้า = ไม่ได้แต้ม)
+      if (customerId != null) {
+        final earnRate = (settings['pointsEarnRateBaht'] as num).toDouble();
+        final pointsEarned = (total / earnRate).floor();
+        if (pointsEarned > 0) {
+          order['pointsEarned'] = pointsEarned;
+          adjustCustomerPoints(customerId, pointsEarned);
+        }
+      }
     }
 
     return {

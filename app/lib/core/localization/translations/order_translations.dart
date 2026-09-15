@@ -38,6 +38,8 @@ const Map<String, String> orderTranslationsTh = {
   'order_confirm_add_items_button': 'ยืนยันสั่งเพิ่ม (@count)',
   'order_confirm_send_kitchen_button': 'ยืนยันและส่งครัว (@count)',
   'order_save_draft_button': 'บันทึกไว้ก่อน (ยังไม่ส่งครัว)',
+  'order_cart_select_customer': 'ผูกลูกค้ากับออเดอร์นี้ (ไม่บังคับ)',
+  'order_cart_customer_selected': 'ลูกค้า: @name',
 
   // กล่องส่วนลด
   'order_discount_title': 'ส่วนลด',
@@ -166,6 +168,8 @@ const Map<String, String> orderTranslationsEn = {
   'order_confirm_add_items_button': 'Confirm add items (@count)',
   'order_confirm_send_kitchen_button': 'Confirm and send to kitchen (@count)',
   'order_save_draft_button': 'Save for later (not sent to kitchen)',
+  'order_cart_select_customer': 'Link a customer to this order (optional)',
+  'order_cart_customer_selected': 'Customer: @name',
 
   'order_discount_title': 'Discount',
   'order_discount_percent_option': 'Percent',

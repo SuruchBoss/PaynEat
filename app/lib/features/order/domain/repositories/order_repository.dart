@@ -10,6 +10,7 @@ abstract class OrderRepository {
     bool? activeOnly,
     String? dateFrom,
     String? dateTo,
+    int? customerId,
     int page,
     int limit,
   });
@@ -20,6 +21,7 @@ abstract class OrderRepository {
   Future<Result<Order>> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,

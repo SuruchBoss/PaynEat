@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
+import 'package:payneat_pos/features/customer/domain/entities/customer.dart';
+import 'package:payneat_pos/features/customer/domain/repositories/customer_repository.dart';
+import 'package:payneat_pos/features/customer/domain/usecases/customer_usecases.dart';
 import 'package:payneat_pos/features/order/domain/entities/order.dart';
 import 'package:payneat_pos/features/order/domain/repositories/order_repository.dart';
 import 'package:payneat_pos/features/order/domain/usecases/order_usecases.dart';
@@ -9,6 +12,9 @@ import 'package:payneat_pos/features/payment/domain/entities/payment.dart';
 import 'package:payneat_pos/features/payment/domain/repositories/payment_repository.dart';
 import 'package:payneat_pos/features/payment/domain/usecases/payment_usecases.dart';
 import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
+import 'package:payneat_pos/features/settings/domain/entities/store_settings.dart';
+import 'package:payneat_pos/features/settings/domain/repositories/settings_repository.dart';
+import 'package:payneat_pos/features/settings/domain/usecases/settings_usecases.dart';
 import 'package:payneat_pos/features/shift/domain/entities/shift.dart';
 import 'package:payneat_pos/features/shift/domain/repositories/shift_repository.dart';
 import 'package:payneat_pos/features/shift/domain/usecases/shift_usecases.dart';
@@ -40,6 +46,7 @@ class _FakePaymentRepository implements PaymentRepository {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   }) async {
     payCallCount++;
     return nextPayResult!;
@@ -58,6 +65,32 @@ class _FakeShiftRepository implements ShiftRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+class _FakeCustomerRepository implements CustomerRepository {
+  Result<Customer> nextGetByIdResult = Result.success(_customer());
+
+  @override
+  Future<Result<Customer>> getById(int id) async => nextGetByIdResult;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeSettingsRepository implements SettingsRepository {
+  @override
+  Future<Result<StoreSettings>> get() async =>
+      const Result.success(StoreSettings.fallback);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Customer _customer({int id = 1, int pointsBalance = 20}) => Customer(
+  id: id,
+  name: 'ลูกค้าทดสอบ',
+  phone: '0812345678',
+  pointsBalance: pointsBalance,
+);
 
 Shift _openShift() => const Shift(
   id: 1,
@@ -88,17 +121,23 @@ void main() {
   late _FakeOrderRepository orderRepository;
   late _FakePaymentRepository paymentRepository;
   late _FakeShiftRepository shiftRepository;
+  late _FakeCustomerRepository customerRepository;
+  late _FakeSettingsRepository settingsRepository;
   late CheckoutController controller;
 
   setUp(() {
     orderRepository = _FakeOrderRepository();
     paymentRepository = _FakePaymentRepository();
     shiftRepository = _FakeShiftRepository();
+    customerRepository = _FakeCustomerRepository();
+    settingsRepository = _FakeSettingsRepository();
     controller = CheckoutController(
       getOrder: GetOrderUseCase(orderRepository),
       getSummary: GetPaymentSummaryUseCase(paymentRepository),
       pay: PayOrderUseCase(paymentRepository),
       getCurrentShift: GetCurrentShiftUseCase(shiftRepository),
+      getCustomer: GetCustomerUseCase(customerRepository),
+      getSettings: GetSettingsUseCase(settingsRepository),
     );
   });
 

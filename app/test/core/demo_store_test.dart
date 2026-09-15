@@ -1071,4 +1071,249 @@ void main() {
       expect(logs.first['reason'], 'ออกผิดประเภท');
     });
   });
+
+  group('DemoStore customers/loyalty — ลูกค้า/แต้มสะสม (ticket 09)', () {
+    Map<String, dynamic> openOrder({int? customerId}) {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      final item = store.menuList().first;
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        customerId: customerId,
+        guestCount: 1,
+        items: [
+          {'menuItemId': item['id'], 'quantity': 2, 'optionIds': []},
+        ],
+      );
+    }
+
+    test('createCustomer สร้างลูกค้าใหม่ pointsBalance เริ่มต้นเป็น 0', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+
+      expect(customer['pointsBalance'], 0);
+      expect(store.customers, contains(customer));
+    });
+
+    test('createCustomer ด้วยเบอร์โทรซ้ำต้องถูกปฏิเสธ', () {
+      store.createCustomer(name: 'คุณสมหญิง', phone: '0812345678');
+
+      expect(
+        () => store.createCustomer(name: 'คุณสมชาย', phone: '0812345678'),
+        throwsException,
+      );
+    });
+
+    test('customerSearch ค้นหาได้ทั้งจากชื่อและเบอร์โทร (partial match)', () {
+      store.createCustomer(name: 'สมหญิง ใจดี', phone: '0899999999');
+      store.createCustomer(name: 'John Smith', phone: '0888888888');
+
+      expect(store.customerSearch(search: 'สมหญิง'), hasLength(1));
+      expect(store.customerSearch(search: '9999'), hasLength(1));
+      expect(store.customerSearch(search: 'ไม่มีจริง'), isEmpty);
+    });
+
+    test(
+      'createOrder ผูก customerId แล้ว order มี customerName/customerPhone',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+
+        final order = openOrder(customerId: customer['id'] as int);
+
+        expect(order['customerId'], customer['id']);
+        expect(order['customerName'], customer['name']);
+        expect(order['customerPhone'], customer['phone']);
+      },
+    );
+
+    test('createOrder ด้วย customerId ที่ไม่มีจริงต้องถูกปฏิเสธ', () {
+      expect(() => openOrder(customerId: 999999), throwsException);
+    });
+
+    test(
+      'จ่ายเงินครบเต็มจำนวนของออเดอร์ที่ผูกลูกค้า → ได้แต้มสะสมตามอัตราที่ตั้งค่า',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+        final order = openOrder(customerId: customer['id'] as int);
+        final total = (order['total'] as num).toDouble();
+        final earnRate = (store.settings['pointsEarnRateBaht'] as num)
+            .toDouble();
+        final expectedPoints = (total / earnRate).floor();
+
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          received: total,
+        );
+
+        expect(result['isFullyPaid'], isTrue);
+        expect((result['order'] as Map)['pointsEarned'], expectedPoints);
+        expect(
+          store.findCustomer(customer['id'] as int)['pointsBalance'],
+          expectedPoints,
+        );
+      },
+    );
+
+    test('ออเดอร์ที่ไม่ได้ผูกลูกค้า จ่ายครบแล้วไม่ได้แต้ม', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+      );
+
+      expect(store.findOrder(order['id'] as int)['pointsEarned'], 0);
+    });
+
+    test('แยกจ่ายหลายรอบ ลูกค้าได้แต้มแค่ครั้งเดียวตอนจ่ายครบ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+      final half = total / 2;
+
+      final firstResult = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: half,
+        received: half,
+      );
+      expect(firstResult['isFullyPaid'], isFalse);
+      expect(store.findCustomer(customer['id'] as int)['pointsBalance'], 0);
+
+      final remaining = total - half;
+      final secondResult = store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: remaining,
+        received: remaining,
+      );
+      expect(secondResult['isFullyPaid'], isTrue);
+
+      final earnRate = (store.settings['pointsEarnRateBaht'] as num).toDouble();
+      final expectedPoints = (total / earnRate).floor();
+      expect(
+        store.findCustomer(customer['id'] as int)['pointsBalance'],
+        expectedPoints,
+      );
+    });
+
+    test(
+      'ใช้แต้มสะสมแลกส่วนลด → ลดยอดที่ต้องเก็บจริง แต่ไม่กระทบยอดที่นับเข้าออเดอร์',
+      () {
+        final customer = store.createCustomer(
+          name: 'คุณสมหญิง',
+          phone: '0812345678',
+        );
+        store.adjustCustomerPoints(customer['id'] as int, 50);
+        final order = openOrder(customerId: customer['id'] as int);
+        final total = (order['total'] as num).toDouble();
+        final redeemRate = (store.settings['pointsRedeemValueBaht'] as num)
+            .toDouble();
+        const pointsToRedeem = 10;
+        final redeemedValue = pointsToRedeem * redeemRate;
+
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          received: total - redeemedValue,
+          pointsToRedeem: pointsToRedeem,
+        );
+
+        final payment = result['payment'] as Map<String, dynamic>;
+        // ยอดที่นับเข้าบัญชีจ่ายของออเดอร์ (amount) ต้องไม่ลดลงจากการใช้แต้ม —
+        // ลดแค่ยอดที่เก็บเงินจริง (received) เท่านั้น (ดู docs/DECISIONS.md)
+        expect(payment['amount'], total);
+        expect(payment['pointsRedeemed'], pointsToRedeem);
+        expect(payment['pointsRedeemedValue'], redeemedValue);
+        expect(payment['received'], total - redeemedValue);
+        expect(result['isFullyPaid'], isTrue);
+
+        final earnRate = (store.settings['pointsEarnRateBaht'] as num)
+            .toDouble();
+        final earnedThisOrder = (total / earnRate).floor();
+        expect(
+          store.findCustomer(customer['id'] as int)['pointsBalance'],
+          50 - pointsToRedeem + earnedThisOrder,
+        );
+      },
+    );
+
+    test('ใช้แต้มเกินยอดคงเหลือของลูกค้าต้องถูกปฏิเสธ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          pointsToRedeem: 1,
+        ),
+        throwsException,
+      );
+    });
+
+    test('ใช้แต้มโดยออเดอร์ไม่ได้ผูกลูกค้าต้องถูกปฏิเสธ', () {
+      final order = openOrder();
+      final total = (order['total'] as num).toDouble();
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: total,
+          pointsToRedeem: 1,
+        ),
+        throwsException,
+      );
+    });
+
+    test('ใช้แต้มที่มีมูลค่าเกินยอดที่ต้องชำระรอบนี้ต้องถูกปฏิเสธ', () {
+      final customer = store.createCustomer(
+        name: 'คุณสมหญิง',
+        phone: '0812345678',
+      );
+      store.adjustCustomerPoints(customer['id'] as int, 1000);
+      final order = openOrder(customerId: customer['id'] as int);
+      final total = (order['total'] as num).toDouble();
+      final redeemRate = (store.settings['pointsRedeemValueBaht'] as num)
+          .toDouble();
+      // แต้มพอ (1000) แต่มูลค่าเกินยอดที่จ่ายจริงรอบนี้ (จ่ายแค่บางส่วน)
+      final partialAmount = total / 4;
+      final tooManyPoints = (partialAmount / redeemRate).ceil() + 10;
+
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'cash',
+          amount: partialAmount,
+          pointsToRedeem: tooManyPoints,
+        ),
+        throwsException,
+      );
+    });
+  });
 }

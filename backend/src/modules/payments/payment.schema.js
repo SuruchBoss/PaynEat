@@ -12,6 +12,9 @@ export const createPaymentSchema = z
     itemIds: z.array(z.number().int().positive()).min(1, 'ต้องเลือกอย่างน้อย 1 รายการ').optional(),
     received: z.number().min(0).optional(),
     reference: z.string().max(80).optional(),
+    // ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md) — ต้องมีลูกค้าผูก
+    // กับออเดอร์อยู่แล้ว มูลค่าคำนวณจาก settings.pointsRedeemValueBaht ที่ service layer
+    pointsToRedeem: z.number().int().min(0).optional(),
   })
   .refine((data) => data.itemIds?.length || data.amount !== undefined, {
     message: 'ต้องระบุ amount หรือ itemIds อย่างใดอย่างหนึ่ง',
@@ -19,7 +22,10 @@ export const createPaymentSchema = z
   })
   .refine(
     (data) =>
-      data.itemIds?.length || data.method !== 'cash' || (data.received ?? 0) >= (data.amount ?? 0),
+      data.itemIds?.length ||
+      data.method !== 'cash' ||
+      data.pointsToRedeem ||
+      (data.received ?? 0) >= (data.amount ?? 0),
     {
       message: 'เงินที่รับมาต้องไม่น้อยกว่ายอดที่ชำระ',
       path: ['received'],

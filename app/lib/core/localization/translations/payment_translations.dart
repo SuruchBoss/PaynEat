@@ -86,6 +86,19 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_error_payment_not_found': 'ไม่พบรายการชำระเงินนี้',
   'payment_error_refund_exceeds_refundable':
       'คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด @amount บาท)',
+  'payment_error_points_requires_customer':
+      'ต้องผูกลูกค้ากับออเดอร์นี้ก่อนจึงใช้แต้มสะสมได้',
+  'payment_error_points_insufficient': 'แต้มสะสมของลูกค้าไม่พอ',
+  'payment_error_points_value_exceeds_amount':
+      'แต้มที่ใช้มีมูลค่าเกินยอดที่ต้องชำระรอบนี้',
+
+  // checkout_page — ส่วนแลกแต้มสะสม (ดู docs/tickets/09-customer-loyalty.md)
+  'payment_loyalty_customer_label': 'ลูกค้า: @name',
+  'payment_loyalty_points_balance': 'แต้มคงเหลือ @points',
+  'payment_loyalty_redeem_label': 'ใช้แต้มแลกส่วนลด',
+  'payment_loyalty_redeem_max_button': 'ใช้สูงสุด',
+  'payment_loyalty_redeem_value': 'ลด @value บาทจากแต้มสะสม',
+  'payment_loyalty_no_points_available': 'ยังใช้แต้มแลกส่วนลดไม่ได้ตอนนี้',
 };
 
 const Map<String, String> paymentTranslationsEn = {
@@ -179,4 +192,18 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_error_payment_not_found': 'This payment record was not found',
   'payment_error_refund_exceeds_refundable':
       'Refund amount exceeds what is refundable (maximum @amount THB)',
+  'payment_error_points_requires_customer':
+      'This order must be linked to a customer before redeeming points',
+  'payment_error_points_insufficient':
+      'The customer does not have enough points',
+  'payment_error_points_value_exceeds_amount':
+      'The value of the points redeemed exceeds the amount due this round',
+
+  // checkout_page — loyalty points redemption section
+  'payment_loyalty_customer_label': 'Customer: @name',
+  'payment_loyalty_points_balance': '@points points left',
+  'payment_loyalty_redeem_label': 'Redeem points for a discount',
+  'payment_loyalty_redeem_max_button': 'Use max',
+  'payment_loyalty_redeem_value': '@value THB off from redeemed points',
+  'payment_loyalty_no_points_available': 'Points cannot be redeemed right now',
 };

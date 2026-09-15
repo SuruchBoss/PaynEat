@@ -128,12 +128,28 @@ CREATE TABLE IF NOT EXISTS promotions (
 );
 CREATE INDEX IF NOT EXISTS idx_promotions_active ON promotions(is_active);
 
+-- ลูกค้า/สมาชิก + แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — ผูกกับออเดอร์แบบ optional
+-- เท่านั้น ลูกค้าทั่วไปไม่ต้องผูกก็สั่งอาหารได้ปกติ ค้นหาด้วยเบอร์โทร (unique) เป็นหลัก
+CREATE TABLE IF NOT EXISTS customers (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  name           TEXT    NOT NULL,
+  phone          TEXT    NOT NULL UNIQUE,
+  email          TEXT,
+  points_balance INTEGER NOT NULL DEFAULT 0 CHECK (points_balance >= 0),
+  created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS orders (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
   code              TEXT    NOT NULL UNIQUE,
   type              TEXT    NOT NULL DEFAULT 'dine_in' CHECK (type IN ('dine_in', 'takeaway', 'delivery')),
   table_id          INTEGER REFERENCES dining_tables(id) ON DELETE SET NULL,
   waiter_id         INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  -- ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md) — points_earned สะสมครั้งเดียว
+  -- ตอนออเดอร์จ่ายครบ (ดู payment.service.js#pay) ไม่ผูกซ้ำ/ไม่หักคืนอัตโนมัติถ้ามี refund ภายหลัง
+  customer_id       INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+  points_earned     INTEGER NOT NULL DEFAULT 0,
   guest_count       INTEGER NOT NULL DEFAULT 1,
   status            TEXT    NOT NULL DEFAULT 'open'
                     CHECK (status IN ('open', 'in_kitchen', 'served', 'paid', 'cancelled')),
@@ -158,6 +174,7 @@ CREATE TABLE IF NOT EXISTS orders (
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
 CREATE INDEX IF NOT EXISTS idx_orders_table ON orders(table_id);
 CREATE INDEX IF NOT EXISTS idx_orders_created ON orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_orders_customer ON orders(customer_id);
 
 CREATE TABLE IF NOT EXISTS order_items (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -196,16 +213,21 @@ CREATE TABLE IF NOT EXISTS shifts (
 CREATE INDEX IF NOT EXISTS idx_shifts_status ON shifts(status);
 
 CREATE TABLE IF NOT EXISTS payments (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  order_id      INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  shift_id      INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
-  method        TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
-  amount        INTEGER NOT NULL CHECK (amount >= 0),
-  received      INTEGER NOT NULL DEFAULT 0,
-  change_amount INTEGER NOT NULL DEFAULT 0,
-  reference     TEXT,
-  cashier_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
-  created_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  order_id              INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+  shift_id              INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  method                TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
+  amount                INTEGER NOT NULL CHECK (amount >= 0),
+  received              INTEGER NOT NULL DEFAULT 0,
+  change_amount         INTEGER NOT NULL DEFAULT 0,
+  reference             TEXT,
+  cashier_id            INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  -- แต้มสะสมที่ใช้แลกส่วนลดตอนจ่ายเงินรอบนี้ (ดู docs/tickets/09-customer-loyalty.md) —
+  -- points_redeemed_value คือมูลค่าส่วนลดเป็นสตางค์ที่คำนวณจาก settings ณ เวลานั้น (snapshot ไว้
+  -- เพราะ settings เปลี่ยนอัตราได้ภายหลัง)
+  points_redeemed       INTEGER NOT NULL DEFAULT 0,
+  points_redeemed_value INTEGER NOT NULL DEFAULT 0,
+  created_at            TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
 CREATE INDEX IF NOT EXISTS idx_payments_shift ON payments(shift_id);

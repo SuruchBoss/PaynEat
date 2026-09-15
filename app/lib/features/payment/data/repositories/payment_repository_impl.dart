@@ -18,6 +18,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   }) => guard(() async {
     final response = await _remote.pay(
       orderId: orderId,
@@ -26,6 +27,7 @@ class PaymentRepositoryImpl implements PaymentRepository {
       itemIds: itemIds,
       received: received,
       reference: reference,
+      pointsToRedeem: pointsToRedeem,
     );
     return (result: response.result, order: response.order as Order);
   });

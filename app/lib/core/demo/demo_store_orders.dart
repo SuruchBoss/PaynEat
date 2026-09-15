@@ -14,11 +14,15 @@ extension DemoStoreOrders on DemoStore {
     String? status,
     bool? activeOnly,
     String? dateFrom,
+    int? customerId,
   }) {
     final result = orders.where((order) {
       if (status != null && order['status'] != status) return false;
       if (activeOnly == true &&
           !OrderStatus.isActive(order['status'] as String)) {
+        return false;
+      }
+      if (customerId != null && order['customerId'] != customerId) {
         return false;
       }
       return true;
@@ -39,6 +43,7 @@ extension DemoStoreOrders on DemoStore {
   Map<String, dynamic> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     required List<Map<String, dynamic>> items,
     int? waiterId,
@@ -49,6 +54,8 @@ extension DemoStoreOrders on DemoStore {
         statusCode: 409,
       );
     }
+    // ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md)
+    final customer = customerId == null ? null : findCustomer(customerId);
 
     final table = tableId == null ? null : _findTable(tableId);
     final now = AppClock.now();
@@ -67,6 +74,10 @@ extension DemoStoreOrders on DemoStore {
       'tableZone': table?['zone'],
       'waiterId': waiterId,
       'waiterName': waiterId == null ? null : _findUser(waiterId)['name'],
+      'customerId': customerId,
+      'customerName': customer?['name'],
+      'customerPhone': customer?['phone'],
+      'pointsEarned': 0,
       'guestCount': guestCount,
       'status': OrderStatus.open,
       'note': null,

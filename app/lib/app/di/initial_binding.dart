@@ -21,6 +21,10 @@ import '../../features/auth/domain/usecases/get_profile_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/presentation/controllers/auth_controller.dart';
+import '../../features/customer/data/datasources/customer_remote_data_source.dart';
+import '../../features/customer/data/repositories/customer_repository_impl.dart';
+import '../../features/customer/domain/repositories/customer_repository.dart';
+import '../../features/customer/domain/usecases/customer_usecases.dart';
 import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
 import '../../features/ingredient/data/repositories/ingredient_repository_impl.dart';
 import '../../features/ingredient/domain/repositories/ingredient_repository.dart';
@@ -173,6 +177,10 @@ class InitialBinding extends Bindings {
       () => AuditLogRemoteDataSourceImpl(client),
       fenix: true,
     );
+    Get.lazyPut<CustomerRemoteDataSource>(
+      () => CustomerRemoteDataSourceImpl(client),
+      fenix: true,
+    );
   }
 
   /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -221,6 +229,10 @@ class InitialBinding extends Bindings {
     );
     Get.put<AuditLogRemoteDataSource>(
       DemoAuditLogDataSource(store),
+      permanent: true,
+    );
+    Get.put<CustomerRemoteDataSource>(
+      DemoCustomerDataSource(store),
       permanent: true,
     );
   }
@@ -279,6 +291,10 @@ class InitialBinding extends Bindings {
     );
     Get.lazyPut<AuditLogRepository>(
       () => AuditLogRepositoryImpl(Get.find<AuditLogRemoteDataSource>()),
+      fenix: true,
+    );
+    Get.lazyPut<CustomerRepository>(
+      () => CustomerRepositoryImpl(Get.find<CustomerRemoteDataSource>()),
       fenix: true,
     );
   }
@@ -489,6 +505,20 @@ class InitialBinding extends Bindings {
     // audit log
     Get.lazyPut(
       () => GetAuditLogsUseCase(Get.find<AuditLogRepository>()),
+      fenix: true,
+    );
+
+    // customer / loyalty
+    Get.lazyPut(
+      () => SearchCustomersUseCase(Get.find<CustomerRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => GetCustomerUseCase(Get.find<CustomerRepository>()),
+      fenix: true,
+    );
+    Get.lazyPut(
+      () => CreateCustomerUseCase(Get.find<CustomerRepository>()),
       fenix: true,
     );
 

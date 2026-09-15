@@ -10,6 +10,7 @@ abstract class PaymentRepository {
     List<int>? itemIds,
     double? received,
     String? reference,
+    int? pointsToRedeem,
   });
 
   Future<Result<PaymentSummary>> getSummary(int orderId);

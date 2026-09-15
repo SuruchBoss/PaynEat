@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
+import '../../features/customer/presentation/bindings/customer_bindings.dart';
+import '../../features/customer/presentation/pages/customer_detail_page.dart';
 import '../../features/home/presentation/bindings/home_binding.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/ingredient/presentation/pages/ingredient_form_page.dart';
@@ -64,5 +66,10 @@ class AppPages {
       page: () => const IngredientFormPage(),
     ),
     GetPage<void>(name: AppRoutes.shift, page: () => const ShiftPage()),
+    GetPage<void>(
+      name: AppRoutes.customerDetail,
+      page: () => const CustomerDetailPage(),
+      binding: CustomerDetailBinding(),
+    ),
   ];
 }

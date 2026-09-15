@@ -21,6 +21,7 @@ class _FakeOrderRepository implements OrderRepository {
   Future<Result<Order>> createOrder({
     required String type,
     int? tableId,
+    int? customerId,
     required int guestCount,
     String? note,
     required List<OrderItemPayload> items,
@@ -51,6 +52,8 @@ class _FakeSettingsRepository implements SettingsRepository {
     String? storeTaxId,
     String? storeAddress,
     String? storeBranch,
+    double? pointsEarnRateBaht,
+    double? pointsRedeemValueBaht,
   }) async => get();
 }
 

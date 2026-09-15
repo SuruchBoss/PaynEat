@@ -3,7 +3,12 @@ import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { settingsRepository } from './settings.repository.js';
 
-const NUMBER_KEYS = new Set(['vat_rate', 'service_charge_rate']);
+const NUMBER_KEYS = new Set([
+  'vat_rate',
+  'service_charge_rate',
+  'points_earn_rate_baht',
+  'points_redeem_value_baht',
+]);
 const BOOLEAN_KEYS = new Set(['vat_included']);
 
 export const settingsService = {
@@ -21,6 +26,11 @@ export const settingsService = {
       storeTaxId: raw.store_tax_id ?? null,
       storeAddress: raw.store_address ?? null,
       storeBranch: raw.store_branch ?? null,
+      // แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md)
+      pointsEarnRateBaht: Number(raw.points_earn_rate_baht ?? env.store.pointsEarnRateBaht),
+      pointsRedeemValueBaht: Number(
+        raw.points_redeem_value_baht ?? env.store.pointsRedeemValueBaht,
+      ),
     };
   },
 
@@ -34,6 +44,8 @@ export const settingsService = {
       storeTaxId: 'store_tax_id',
       storeAddress: 'store_address',
       storeBranch: 'store_branch',
+      pointsEarnRateBaht: 'points_earn_rate_baht',
+      pointsRedeemValueBaht: 'points_redeem_value_baht',
     };
     // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) ที่ต้อง log — ดู
     // docs/tickets/08-audit-log.md

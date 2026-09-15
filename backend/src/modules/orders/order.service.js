@@ -8,6 +8,7 @@ import { settingsService } from '../settings/settings.service.js';
 import { promotionRepository } from '../promotions/promotion.repository.js';
 import { ingredientService } from '../ingredients/ingredient.service.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
+import { customerRepository } from '../customers/customer.repository.js';
 import { orderRepository } from './order.repository.js';
 import { calculateBill } from './order.calculator.js';
 import {
@@ -193,6 +194,10 @@ export const orderService = {
         throw ApiError.conflict('โต๊ะนี้มีออเดอร์ที่เปิดอยู่แล้ว กรุณาเพิ่มรายการเข้าออเดอร์เดิม');
       }
     }
+    // ผูกลูกค้าแบบ optional (ดู docs/tickets/09-customer-loyalty.md) — ลูกค้าทั่วไปไม่ต้องผูกก็ได้
+    if (payload.customerId && !customerRepository.findById(payload.customerId)) {
+      throw ApiError.badRequest('ไม่พบลูกค้าที่ระบุ');
+    }
 
     const itemRows = (payload.items ?? []).map(buildItemRow);
 
@@ -202,6 +207,7 @@ export const orderService = {
         type: payload.type,
         tableId: payload.tableId,
         waiterId: user?.id,
+        customerId: payload.customerId,
         guestCount: payload.guestCount,
         note: payload.note,
       });

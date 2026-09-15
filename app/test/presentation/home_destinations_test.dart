@@ -53,5 +53,25 @@ void main() {
         ]),
       );
     });
+
+    // เมนูลูกค้า/แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — เห็นได้ทั้ง admin
+    // และ manager (ต่างจาก audit log ที่จำกัดแค่ admin) เพราะไม่ใช่ข้อมูลอ่อนไหวระดับเดียวกัน
+    test(
+      'แอดมินและผู้จัดการเห็นเมนูลูกค้า/แต้มสะสม แต่พนักงานเสิร์ฟไม่เห็น',
+      () {
+        expect(
+          HomeBinding.destinationsForRole(UserRole.admin).map((d) => d.label),
+          contains('home_nav_customers'),
+        );
+        expect(
+          HomeBinding.destinationsForRole(UserRole.manager).map((d) => d.label),
+          contains('home_nav_customers'),
+        );
+        expect(
+          HomeBinding.destinationsForRole(UserRole.waiter).map((d) => d.label),
+          isNot(contains('home_nav_customers')),
+        );
+      },
+    );
   });
 }

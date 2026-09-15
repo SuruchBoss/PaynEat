@@ -86,4 +86,8 @@ class ApiEndpoints {
 
   // Audit logs
   static const String auditLogs = '/audit-logs';
+
+  // Customers
+  static const String customers = '/customers';
+  static String customer(int id) => '/customers/$id';
 }

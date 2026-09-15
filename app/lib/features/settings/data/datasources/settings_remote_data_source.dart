@@ -21,6 +21,9 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     storeTaxId: json['storeTaxId'] as String?,
     storeAddress: json['storeAddress'] as String?,
     storeBranch: json['storeBranch'] as String?,
+    pointsEarnRateBaht: (json['pointsEarnRateBaht'] as num?)?.toDouble() ?? 25,
+    pointsRedeemValueBaht:
+        (json['pointsRedeemValueBaht'] as num?)?.toDouble() ?? 1,
   );
 
   @override

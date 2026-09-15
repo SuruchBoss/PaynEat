@@ -123,6 +123,42 @@ class SettingsPage extends GetView<SettingsController> {
                       hintText: 'settings_store_branch_hint'.tr,
                     ),
                   ),
+                  const SizedBox(height: 24),
+                  SectionHeader(
+                    title: 'settings_loyalty_title'.tr,
+                    subtitle: 'settings_loyalty_subtitle'.tr,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: controller.pointsEarnRateController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'settings_points_earn_rate_label'.tr,
+                            suffixText: 'settings_points_baht_per_point'.tr,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: controller.pointsRedeemValueController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: 'settings_points_redeem_value_label'.tr,
+                            suffixText: 'settings_points_baht_per_point'.tr,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   const SizedBox(height: 16),
                   Obx(
                     () => FilledButton(

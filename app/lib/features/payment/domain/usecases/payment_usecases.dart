@@ -12,6 +12,7 @@ class PayParams {
     this.itemIds,
     this.received,
     this.reference,
+    this.pointsToRedeem,
   });
 
   final int orderId;
@@ -23,6 +24,10 @@ class PayParams {
   final List<int>? itemIds;
   final double? received;
   final String? reference;
+
+  /// ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md) — ต้องมีลูกค้า
+  /// ผูกกับออเดอร์นี้อยู่แล้ว
+  final int? pointsToRedeem;
 }
 
 /// รับชำระเงิน (รองรับจ่ายบางส่วน / แยกช่องทาง / แยกบิลรายการอาหาร)
@@ -42,6 +47,7 @@ class PayOrderUseCase
     itemIds: params.itemIds,
     received: params.received,
     reference: params.reference,
+    pointsToRedeem: params.pointsToRedeem,
   );
 }
 

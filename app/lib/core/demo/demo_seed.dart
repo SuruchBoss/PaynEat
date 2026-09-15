@@ -471,5 +471,8 @@ class DemoSeed {
     'storeAddress':
         '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
     'storeBranch': 'สำนักงานใหญ่',
+    // แต้มสะสม (ดู docs/tickets/09-customer-loyalty.md) — ค่าเริ่มต้นตรงกับ backend
+    'pointsEarnRateBaht': 25.0,
+    'pointsRedeemValueBaht': 1.0,
   };
 }

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'translations/audit_log_translations.dart';
 import 'translations/auth_translations.dart';
 import 'translations/common_translations.dart';
+import 'translations/customer_translations.dart';
 import 'translations/home_translations.dart';
 import 'translations/ingredient_translations.dart';
 import 'translations/kitchen_translations.dart';
@@ -39,6 +40,7 @@ class AppTranslations extends Translations {
       ...statusTranslationsTh,
       ...auditLogTranslationsTh,
       ...authTranslationsTh,
+      ...customerTranslationsTh,
       ...homeTranslationsTh,
       ...ingredientTranslationsTh,
       ...kitchenTranslationsTh,
@@ -59,6 +61,7 @@ class AppTranslations extends Translations {
       ...statusTranslationsEn,
       ...auditLogTranslationsEn,
       ...authTranslationsEn,
+      ...customerTranslationsEn,
       ...homeTranslationsEn,
       ...ingredientTranslationsEn,
       ...kitchenTranslationsEn,

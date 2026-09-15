@@ -6,6 +6,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/quantity_stepper.dart';
 import '../../../../core/widgets/state_views.dart';
+import '../../../customer/presentation/widgets/customer_picker_dialog.dart';
 import '../controllers/cart_controller.dart';
 
 /// แผงตะกร้า — ใช้ทั้งเป็นคอลัมน์ขวาบนแท็บเล็ต/เว็บ และเป็น bottom sheet บนมือถือ
@@ -127,10 +128,83 @@ class _CartHeader extends GetView<CartController> {
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            const _CustomerRow(),
           ],
         ],
       ),
     );
+  }
+}
+
+class _CustomerRow extends GetView<CartController> {
+  const _CustomerRow();
+
+  Future<void> _openPicker() async {
+    final result = await CustomerPickerDialog.show(
+      currentCustomer: controller.selectedCustomer.value,
+    );
+    if (result == null) return;
+    if (result.isClear) {
+      controller.clearCustomer();
+    } else if (result.customer != null) {
+      controller.selectCustomer(result.customer!);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final customer = controller.selectedCustomer.value;
+      return InkWell(
+        onTap: _openPicker,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            color: customer != null
+                ? AppColors.primarySoft
+                : AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.person_outline_rounded,
+                size: 16,
+                color: customer != null
+                    ? AppColors.brandInk
+                    : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  customer != null
+                      ? 'order_cart_customer_selected'.trParams({
+                          'name': customer.name,
+                        })
+                      : 'order_cart_select_customer'.tr,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: customer != null
+                        ? AppColors.brandInk
+                        : AppColors.textSecondary,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 }
 

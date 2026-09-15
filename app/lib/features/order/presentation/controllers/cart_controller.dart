@@ -5,6 +5,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/services/offline_order_queue_service.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../../customer/domain/entities/customer.dart';
 import '../../../menu/domain/entities/menu_item.dart';
 import '../../../menu/domain/entities/menu_option.dart';
 import '../../../settings/domain/entities/store_settings.dart';
@@ -45,6 +46,14 @@ class CartController extends GetxController {
   int? tableId;
   String? tableName;
   int? existingOrderId;
+
+  /// ลูกค้าที่ผูกกับออเดอร์นี้ (optional) — ผูกได้เฉพาะตอนเปิดออเดอร์ใหม่เท่านั้น
+  /// เพราะ backend รับ customerId แค่ตอน create order ไม่รองรับตอนสั่งเพิ่ม
+  final Rxn<Customer> selectedCustomer = Rxn<Customer>();
+
+  void selectCustomer(Customer customer) => selectedCustomer.value = customer;
+
+  void clearCustomer() => selectedCustomer.value = null;
 
   @override
   void onInit() {
@@ -128,7 +137,10 @@ class CartController extends GetxController {
 
   void removeAt(int index) => lines.removeAt(index);
 
-  void clear() => lines.clear();
+  void clear() {
+    lines.clear();
+    selectedCustomer.value = null;
+  }
 
   void setGuestCount(int value) => guestCount.value = value.clamp(1, 50);
 
@@ -152,6 +164,7 @@ class CartController extends GetxController {
             CreateOrderParams(
               type: orderType.value,
               tableId: tableId,
+              customerId: selectedCustomer.value?.id,
               guestCount: guestCount.value,
               lines: lines.toList(),
             ),

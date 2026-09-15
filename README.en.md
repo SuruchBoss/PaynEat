@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-460%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-484%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -238,25 +238,34 @@ The login page has one-tap buttons for each account — no need to type anything
 2. **Tap table A1** → opens the order-taking screen
 3. **Tap "Stir-fried Pork with Basil"** → a sheet pops up to pick spice level and extras; try adding a
    "Fried Egg (+15)" and typing a note to the kitchen
-4. **Look at the cart on the right** → see the subtotal + 10% Service Charge + 7% VAT calculated instantly
-5. **Tap "Confirm & Send to Kitchen"** → lands on the order detail page with a bill number
-6. **Switch to the kitchen window** (`kitchen`) → the ticket appears on its own, no refresh needed.
+4. **Tap the "Link a customer to this order (optional)" bar above the cart** → search by phone number;
+   if none found, tap **"Add new customer"**, enter a name + phone, then tap **"Save and select"** →
+   the bar instantly switches to showing the customer's name
+5. **Look at the cart on the right** → see the subtotal + 10% Service Charge + 7% VAT calculated instantly
+6. **Tap "Confirm & Send to Kitchen"** → lands on the order detail page with a bill number
+7. **Switch to the kitchen window** (`kitchen`) → the ticket appears on its own, no refresh needed.
    Tap **"Start Cooking" → "Ready"** and watch the ticket move across columns
-7. **Back to the waiter window** → the status updates immediately; tap **"Served"**
-8. **Tap "Checkout / Close Bill"** → try a split payment: pay 100 THB by QR first, then the rest in cash
-   (the system tracks the remaining balance and calculates change)
-9. **You land on the receipt page** → see a **"Request tax invoice"** button — choose abbreviated
-   (issued instantly) or full (enter the customer's name + address) → get a document with a
-   continuous running number (e.g. `INV69-000001`) right away
-10. **Go back to the table map** → table A1 has already turned green again
-11. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
+8. **Back to the waiter window** → the status updates immediately; tap **"Served"**
+9. **Tap "Checkout / Close Bill"** → because you linked a customer in step 4, you'll see a **"Loyalty
+   points"** box showing their points balance (a brand-new customer has none to redeem yet). Try a split
+   payment: pay 100 THB by QR first, then the rest in cash (the system tracks the remaining balance and
+   calculates change) — once fully paid, the customer automatically earns points based on the purchase
+   amount (25 THB per point by default)
+10. **You land on the receipt page** → see a **"Request tax invoice"** button — choose abbreviated
+    (issued instantly) or full (enter the customer's name + address) → get a document with a
+    continuous running number (e.g. `INV69-000001`) right away
+11. **Go back to the table map** → table A1 has already turned green again
+12. **Log out and log back in as `admin`** → open **Dashboard**, and the sale you just made is already in the
     report, complete with the hourly chart and payment-method breakdown (best sellers are on the
     **Reports** page)
-12. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
+13. **Open the Customers/Loyalty page** (the 🎁 icon in the left nav — visible to both `admin` and
+    `manager`) → see the customer you created in step 4 with the points they just earned; tap their name
+    to see their purchase history (the order you just closed should be in there)
+14. **Open the Ingredients/Stock page** (the 📦 icon in the left nav) → "ปลาทับทิม" (tilapia — ingredient
     names aren't translated) is already highlighted with a low-stock alert straight out of the seed data
-13. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
+15. **Open the Audit Log page** (the 🕘 icon in the left nav — visible to `admin` only, not `manager`) →
     filter by action type with the chips at the top; it's empty for now — go void the tax invoice you
-    issued in step 9 first (tap **"Void this invoice"** on that receipt page), then come back here and
+    issued in step 10 first (tap **"Void this invoice"** on that receipt page), then come back here and
     you'll see a brand-new log entry with who did it, when, and the reason you typed
 
 **Want to try the hidden business rules?**
@@ -279,15 +288,20 @@ The login page has one-tap buttons for each account — no need to type anything
   sent to the kitchen, editing a discount, deactivating/deleting/changing the role of a staff account,
   editing VAT/service charge, a refund, voiding a tax invoice) is always recorded on the **Audit Log**
   page (`admin` only) with who did it, when, and why — try any of the above, then go check that page
-  (see step 13 in the tour and `docs/DECISIONS.md` #21)
+  (see step 15 in the tour and `docs/DECISIONS.md` #21)
+- Try redeeming more loyalty points than the customer has, or a points value greater than the amount
+  due this round → both are rejected outright (never silently capped), and if the order isn't linked to
+  a customer at all, the redeem control won't even show up — try paying part of a linked order's bill
+  with points and see how the "amount applied to the order" differs from the "amount actually collected"
+  (see `docs/DECISIONS.md` #22)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 195 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 265 cases — domain / controller / widget
+cd backend && npm test      # 206 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 278 cases — domain / controller / widget
 ```
 
 ---
@@ -330,6 +344,9 @@ cd app && flutter test      # 265 cases — domain / controller / widget
   cancelling and re-ordering
 - **Merge bills** — instantly combine two tables sitting together into a single bill (item list and kitchen
   status stay intact)
+- **Link a customer to the order**, optionally, when opening a new order — search by phone number or add a
+  new customer in the same window; leave it unlinked and the order still works as usual (see the 💰 Cashier
+  section for redeeming loyalty points)
 
 ### 🔥 Kitchen (KDS display)
 
@@ -365,6 +382,10 @@ cd app && flutter test      # 265 cases — domain / controller / widget
   instantly) or full (enter the customer's name + address), with a continuous, non-duplicate running
   number in the legally required format — can't issue a second one for the same bill until the earlier
   one is voided first (voiding requires manager role or above — see `docs/DECISIONS.md` #19)
+- **Redeem loyalty points for a discount** at checkout, if the order is linked to a customer — their
+  points balance shows right away on the checkout page; redeem up to what they have and never more than
+  the amount due this round (going over either limit is rejected outright, never silently capped — see
+  `docs/DECISIONS.md` #22)
 
 ### 🖥️ Admin (web)
 
@@ -374,7 +395,8 @@ cd app && flutter test      # 265 cases — domain / controller / widget
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
-  branch (for issuing tax invoices — optional if the store isn't VAT-registered)
+  branch (for issuing tax invoices — optional if the store isn't VAT-registered), and the loyalty
+  points exchange rate (baht spent per point earned / point value when redeemed)
 - **Receipt printer settings** — this device's IP/port/paper size, with a test-print button
 - **Conditional promotions/discounts** — create/edit/disable 3 promotion types (percent off, amount off,
   buy-one-get-one), with conditions for day/time window, eligible categories/menu items, minimum spend, and
@@ -391,6 +413,8 @@ cd app && flutter test      # 265 cases — domain / controller / widget
   been sent to the kitchen, editing a discount, deactivating/deleting/changing the role of/resetting the
   password for a staff account, editing VAT/service charge, a refund, and voiding a tax invoice — each
   with who did it, when, and the reason given; filterable by action type (see `docs/DECISIONS.md` #21)
+- **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
+  see their purchase history and current points balance (see `docs/DECISIONS.md` #22)
 
 ### 🔐 System
 
@@ -680,6 +704,8 @@ Open **http://localhost:3000/docs** for interactive, try-it-yourself documentati
 | GET/PATCH | `/settings` | Anyone / admin | Store settings |
 | GET/POST/PATCH/DELETE | `/users` | admin, manager | Staff management |
 | GET | `/audit-logs` | admin | Log of front-of-house-fraud-risk actions (filterable) |
+| GET/POST | `/customers` | waiter and up | Search/create customers (by name or phone) |
+| GET | `/customers/:id` | waiter and up | A single customer's details (including points balance) |
 
 </details>
 
@@ -705,11 +731,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 195 cases
-cd app && flutter test      # 265 cases
+cd backend && npm test      # 206 cases
+cd app && flutter test      # 278 cases
 ```
 
-**Backend (195 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (206 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -768,7 +794,17 @@ while still pending must not log), editing a discount, deactivating/resetting-pa
 deleting a staff account (renaming alone must not log), editing VAT logs but editing the store name
 alone doesn't, a refund, voiding a tax invoice, and RBAC (admin-only) (see `docs/DECISIONS.md` #21).
 
-**Flutter (265 cases)** — split into 3 levels:
+`customers.test.js` (11 new cases) covers the full customer/loyalty flow: creating a customer / rejecting
+a duplicate phone number (409), searching by partial name/phone, RBAC (kitchen staff can't call it),
+linking `customerId` at order creation + rejecting a `customerId` that doesn't exist, the
+`GET /orders?customerId=` filter, earning points automatically at the default rate (25 THB/point) only
+when the order becomes fully paid, an order with no linked customer earning nothing, a split payment
+across multiple rounds earning points exactly once (on the round that completes the bill), redeeming
+points for a discount leaving the `amount` applied to the order unchanged (only `chargedAmount` drops),
+and rejecting a redemption in both failure cases (no customer linked / value exceeding the amount due
+this round) (see `docs/DECISIONS.md` #22).
+
+**Flutter (278 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -776,7 +812,7 @@ alone doesn't, a refund, voiding a tax invoice, and RBAC (admin-only) (see `docs
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, and the audit-log flow covering every risky action (ticket 08) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), and the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
@@ -856,6 +892,14 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   changing the role of/resetting the password for a staff account, editing VAT/service charge, a refund,
   voiding a tax invoice) with who did it, when, and why; the log page is admin-only and filterable by
   action type (see the ✨ Features section and `docs/DECISIONS.md` #21)
+- [x] **Customer & Loyalty** — done: search a customer by phone or add a new one, then link them to an
+  order optionally when opening it; points are earned automatically off the purchase amount exactly once
+  when an order becomes fully paid (never double-counted across split-payment rounds); points can be
+  redeemed for a discount at checkout (rejected outright, never silently capped, if the amount exceeds
+  what the customer has or what's due this round); the exchange rate is configurable from Settings
+  (admin/manager); admin/manager can see any customer's purchase history and points balance from the
+  **Customers/Loyalty** tab (see the ✨ Features section and `docs/DECISIONS.md` #22) — **no redeem UI
+  on the split-bill-per-person page yet**, since that wasn't part of this ticket's acceptance criteria
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -873,7 +917,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 21 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 22 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

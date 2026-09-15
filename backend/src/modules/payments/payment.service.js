@@ -9,6 +9,7 @@ import { tableRepository } from '../tables/table.repository.js';
 import { settingsService } from '../settings/settings.service.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
+import { customerRepository } from '../customers/customer.repository.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
 import { toPaymentDto } from './payment.mapper.js';
@@ -121,12 +122,33 @@ export const paymentService = {
       throw ApiError.badRequest(`ยอดชำระเกินยอดคงเหลือ (คงเหลือ ${toBaht(remaining)} บาท)`);
     }
 
-    const receivedBaht = payload.received ?? toBaht(amount);
-    if (payload.method === 'cash' && toSatang(receivedBaht) < amount) {
+    // ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md) — amount (ยอดที่นับ
+    // เข้ายอดจ่ายของออเดอร์) ไม่เปลี่ยน มีแค่ยอดที่ต้องเก็บจริงผ่านช่องทางที่เลือก (chargedAmount)
+    // ที่ลดลง เพื่อไม่ให้บัญชี alreadyPaid/isFullyPaid ของออเดอร์คลาดเคลื่อน
+    const pointsToRedeem = payload.pointsToRedeem ?? 0;
+    const settings = settingsService.get();
+    let pointsRedeemedValue = 0;
+    if (pointsToRedeem > 0) {
+      if (!order.customer_id) {
+        throw ApiError.badRequest('ต้องผูกลูกค้ากับออเดอร์นี้ก่อนจึงใช้แต้มสะสมได้');
+      }
+      const customer = customerRepository.findById(order.customer_id);
+      if (!customer || pointsToRedeem > customer.points_balance) {
+        throw ApiError.badRequest('แต้มสะสมของลูกค้าไม่พอ');
+      }
+      pointsRedeemedValue = toSatang(pointsToRedeem * settings.pointsRedeemValueBaht);
+      if (pointsRedeemedValue > amount) {
+        throw ApiError.badRequest('แต้มที่ใช้มีมูลค่าเกินยอดที่ต้องชำระรอบนี้');
+      }
+    }
+    const chargedAmount = amount - pointsRedeemedValue;
+
+    const receivedBaht = payload.received ?? toBaht(chargedAmount);
+    if (payload.method === 'cash' && toSatang(receivedBaht) < chargedAmount) {
       throw ApiError.badRequest('เงินที่รับมาต้องไม่น้อยกว่ายอดที่ชำระ');
     }
-    const received = payload.method === 'cash' ? toSatang(receivedBaht) : amount;
-    const changeAmount = payload.method === 'cash' ? Math.max(received - amount, 0) : 0;
+    const received = payload.method === 'cash' ? toSatang(receivedBaht) : chargedAmount;
+    const changeAmount = payload.method === 'cash' ? Math.max(received - chargedAmount, 0) : 0;
     const isFullyPaid = alreadyPaid + amount >= order.total;
 
     const run = getDb().transaction(() => {
@@ -139,13 +161,27 @@ export const paymentService = {
         changeAmount,
         reference: payload.reference,
         cashierId: user?.id,
+        pointsRedeemed: pointsToRedeem,
+        pointsRedeemedValue,
       });
 
+      if (pointsToRedeem > 0) {
+        customerRepository.adjustPoints(order.customer_id, -pointsToRedeem);
+      }
       if (itemIds) orderRepository.markItemsPaid(itemIds);
 
       if (isFullyPaid) {
         orderRepository.updateStatus(order.id, 'paid', { closedAt: new Date().toISOString() });
         if (order.table_id) tableRepository.setStatus(order.table_id, 'available');
+        // สะสมแต้มให้ลูกค้าที่ผูกไว้ครั้งเดียวตอนออเดอร์นี้จ่ายครบ (ไม่ผูกลูกค้า = ไม่ได้แต้ม)
+        if (order.customer_id) {
+          const earnRateSatang = toSatang(settings.pointsEarnRateBaht);
+          const pointsEarned = Math.floor(order.total / earnRateSatang);
+          if (pointsEarned > 0) {
+            orderRepository.setPointsEarned(order.id, pointsEarned);
+            customerRepository.adjustPoints(order.customer_id, pointsEarned);
+          }
+        }
       }
       return payment.id;
     });
