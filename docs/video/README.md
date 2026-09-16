@@ -2,8 +2,8 @@
 
 | ไฟล์ | ภาษา | ความยาว | ขนาด |
 |---|---|---|---|
-| `PaynEat-POS-Demo-TH.mp4` | ไทย | 2:12 | ~15 MB |
-| `PaynEat-POS-Demo-EN.mp4` | อังกฤษ | 2:11 | ~16 MB |
+| `PaynEat-POS-Demo-TH.mp4` | ไทย | 1:53 | ~13 MB |
+| `PaynEat-POS-Demo-EN.mp4` | อังกฤษ | 1:53 | ~15 MB |
 
 1920×1080 · H.264 · 25 fps · ไม่มีเสียง (ตั้งใจให้เล่นแบบ mute ได้ในหน้าโปรไฟล์/LinkedIn)
 

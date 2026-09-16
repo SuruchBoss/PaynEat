@@ -173,7 +173,7 @@ STORYBOARD_TH = {
             "kicker": "เบื้องหลัง",
             "title": "สร้างมาให้ดูแลต่อได้",
             "items": [
-                ("557", "เทสต์อัตโนมัติ"),
+                ("558", "เทสต์อัตโนมัติ"),
                 ("3 ชั้น", "Clean Architecture"),
                 ("82", "API endpoints"),
                 ("1", "โค้ดเบส ทุกอุปกรณ์"),
@@ -364,7 +364,7 @@ STORYBOARD_EN = {
             "kicker": "UNDER THE HOOD",
             "title": "Built to be maintained",
             "items": [
-                ("557", "automated checks"),
+                ("558", "automated checks"),
                 ("3", "architectural layers"),
                 ("82", "API endpoints"),
                 ("1", "codebase, every device"),

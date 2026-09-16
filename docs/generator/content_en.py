@@ -473,7 +473,7 @@ CLOSING = {
          "Restricting a screen in the interface is only the first layer. Requests made directly "
          "to the system are checked again against the signed-in role."),
         ("Behaviour is checked automatically",
-         "557 automated checks run against the system, including audit-trail coverage for every "
+         "558 automated checks run against the system, including audit-trail coverage for every "
          "action that touches money and a full end-to-end walk from seating a table to the sale "
          "appearing in the daily report."),
     ],
