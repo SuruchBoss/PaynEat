@@ -65,7 +65,7 @@ control and 557 automated tests.
 > เดินตามเส้นทางการใช้งานจริงตั้งแต่เปิดผังโต๊ะจนปิดบิล ประกอบภาพหน้าจอจริงทั้ง 11 จอ
 > ([วิธีสร้างใหม่](docs/video/README.md))
 
-> 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 25 หน้าจอ (PDF 23 หน้า)**
+> 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 29 หน้าจอ (PDF 27–28 หน้า)**
 > · [ฉบับภาษาไทย](docs/PaynEat-POS-Features-TH.pdf) — อธิบายทีละหน้าจอว่าออกแบบยังไงและเบื้องหลังทำงานยังไง
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
@@ -75,6 +75,7 @@ control and 557 automated tests.
 > 🌐 **หน้า Landing Page (HTML ไฟล์เดียว เปิดได้เลย ไม่ต้องติดตั้งอะไร)**
 > · [หน้าจริงบน GitHub Pages](https://suruchboss.github.io/PaynEat/)
 > · [`docs/landing/index.html`](docs/landing/index.html)
+> · [English version](https://suruchboss.github.io/PaynEat/index.en.html) ([`docs/landing/index.en.html`](docs/landing/index.en.html))
 >
 > เล่าเรื่องระบบจากเงื่อนไขหน้างานจริง — แสงจ้า ไอน้ำ มือเปื้อน เน็ตสะดุด — พร้อมภาพหน้าจอจริง
 > 6 ใบที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วนไม่มี JavaScript สักบรรทัด

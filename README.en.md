@@ -67,7 +67,7 @@ control and 557 automated tests.
 > Walks through the real usage path from opening the table map to closing the bill, built from 11 real
 > screenshots ([how it's regenerated](docs/video/README.md))
 
-> 📄 **Full feature walkthrough — 25 screens (23-page PDF)**
+> 📄 **Full feature walkthrough — 29 screens (27–28 page PDF)**
 > · [Thai edition](docs/PaynEat-POS-Features-TH.pdf) — explains the design and mechanics behind every screen
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
@@ -76,8 +76,8 @@ control and 557 automated tests.
 > ([how to regenerate](docs/generator/README.md))
 
 > 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
-> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/)
-> · [`docs/landing/index.html`](docs/landing/index.html)
+> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
+> · [`docs/landing/index.en.html`](docs/landing/index.en.html) — [Thai version](docs/landing/index.html)
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
 > a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
