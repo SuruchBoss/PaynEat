@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
+import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/features/customer/presentation/widgets/customer_picker_dialog.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
+import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
 
 import 'screenshot_harness.dart';
 
@@ -435,6 +437,27 @@ void main() {
       unawaited(CustomerPickerDialog.show());
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-33-customer-picker');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // PromptPay QR จริง (ticket 16) — ยังไม่เคยมีภาพ golden คุมเลย
+  // ---------------------------------------------------------------------
+  group('PromptPay QR', () {
+    testWidgets('34 QR พร้อมเพย์ที่หน้าเก็บเงิน', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
+
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.checkout,
+          arguments: {'orderId': ids.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      Get.find<CheckoutController>().selectMethod(PaymentMethod.qr);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-34-promptpay-qr');
     });
   });
 }
