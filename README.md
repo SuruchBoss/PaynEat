@@ -966,9 +966,11 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flut
 
 ## 📚 อ่านเพิ่มเติม
 
-- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 23 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
+- [`docs/PORTFOLIO-SUMMARY.md`](docs/PORTFOLIO-SUMMARY.md) — สรุป 1 หน้าสำหรับแปะ portfolio/สมัครงาน
+  (ตัวเลขเด่นๆ + จุดขาย ไม่ยาวเท่า README นี้)
+- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 27 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 23 ข้อ พร้อมข้อเสียที่ยอมรับ
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 32 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้
