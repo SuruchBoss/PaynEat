@@ -939,8 +939,17 @@ on close), accepting a payment (`payment.pay`), and entering/removing a discount
 > the same id as before (because `Order.==` only compares id), leaving the screen showing stale data after
 > an edit or status change — now fixed (see `docs/CODING_STANDARDS.md` section 3.5).
 
-GitHub Actions CI runs `dart format` → `flutter analyze` → `flutter test` → `flutter build web` on the
-Flutter side, and `prettier --check` → `eslint` → `npm test` on the backend, on every push.
+GitHub Actions CI runs `dart format` → `flutter analyze` → `dart run custom_lint` → `flutter test` →
+`flutter build web` on the Flutter side, and `prettier --check` → `eslint` → `npm test` on the backend,
+on every push.
+
+A separate **Clean Architecture (layer rules)** job runs `tool/check-architecture.sh` — the five
+dependency-direction checks from [`CODING_STANDARDS.md` §4.3](docs/CODING_STANDARDS.md). Those rules
+had been written down as "run these before you commit", which means they only held as long as someone
+remembered. **The first CI run found a real violation**: `promotion_engine.dart`, in the domain layer,
+was calling GetX's `.tr` to translate user-facing strings — which §4.1 forbids outright. The domain now
+returns a **translation key** and the calling layer translates it, which is what the line immediately
+above it was already doing.
 
 ---
 

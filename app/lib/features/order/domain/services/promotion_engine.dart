@@ -1,4 +1,3 @@
-import 'package:get/get.dart';
 import '../../../../core/utils/app_clock.dart';
 
 /// ตรรกะจับคู่โปรโมชันกับออเดอร์ — พอร์ตจาก backend/src/modules/orders/promotion.engine.js
@@ -164,33 +163,37 @@ class PromotionEngine {
   }
 
   /// ใช้ตอนลูกค้ากรอกโค้ดเอง — บอกเหตุผลที่ชัดเจนว่าทำไมใช้ไม่ได้
-  /// คืน `null` ถ้าใช้ได้ปกติ หรือข้อความ (แปลแล้ว) อธิบายเหตุผลถ้าใช้ไม่ได้
+  ///
+  /// คืน `null` ถ้าใช้ได้ปกติ หรือ **คีย์คำแปล** ถ้าใช้ไม่ได้ — ไม่ใช่ข้อความที่แปลแล้ว
+  /// เพราะ domain ต้องเป็น pure Dart ไม่รู้จัก `package:get` (ดู `CODING_STANDARDS.md` §4.1)
+  /// คนเรียกเป็นคนแปลเอง ซึ่งเป็นสิ่งที่ `demo_store_order_promotions.dart` ทำอยู่แล้ว
+  /// กับข้อความ "ไม่พบโค้ดนี้" ที่อยู่ติดกัน
   static String? describeIneligibility(
     Map<String, dynamic> promotion, {
     required List<Map<String, dynamic>> items,
     DateTime? now,
   }) {
     final effectiveNow = now ?? AppClock.now();
-    if (promotion['isActive'] != true) return 'promotion_error_inactive'.tr;
+    if (promotion['isActive'] != true) return 'promotion_error_inactive';
     if (!_isWithinValidity(promotion, effectiveNow)) {
-      return 'promotion_error_expired'.tr;
+      return 'promotion_error_expired';
     }
 
     final conditions = _conditionsOf(promotion);
     if (!_isWithinDayTime(conditions, effectiveNow)) {
-      return 'promotion_error_not_in_time_window'.tr;
+      return 'promotion_error_not_in_time_window';
     }
 
     final minSubtotal = (conditions['minSubtotal'] as num?)?.toDouble() ?? 0;
     if (minSubtotal > 0 && _sumActiveSubtotal(items) < minSubtotal) {
-      return 'promotion_error_min_subtotal_not_met'.tr;
+      return 'promotion_error_min_subtotal_not_met';
     }
 
     final active = items
         .where((item) => item['status'] != 'cancelled')
         .toList();
     final matched = _matchingItems(active, conditions);
-    if (matched.isEmpty) return 'promotion_error_no_matching_items'.tr;
+    if (matched.isEmpty) return 'promotion_error_no_matching_items';
 
     return null;
   }

@@ -878,8 +878,15 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 > กลับมามี id เดิม (เพราะ `Order.==` เทียบแค่ id) ทำให้จอค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ — แก้แล้ว
 > (ดู `docs/CODING_STANDARDS.md` หัวข้อ 3.5)
 
-CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flutter test` → `flutter build web`
-ฝั่ง Flutter และ `prettier --check` → `eslint` → `npm test` ฝั่ง backend ทุกครั้งที่ push
+CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart run custom_lint` → `flutter test`
+→ `flutter build web` ฝั่ง Flutter และ `prettier --check` → `eslint` → `npm test` ฝั่ง backend ทุกครั้งที่ push
+
+และมี job แยกชื่อ **Clean Architecture (layer rules)** รัน `tool/check-architecture.sh` ซึ่งเป็น
+คำสั่งตรวจทิศทาง dependency 5 ข้อจาก [`CODING_STANDARDS.md` §4.3](docs/CODING_STANDARDS.md)
+— เดิมกฎพวกนี้เขียนไว้ว่า "ให้รันก่อน commit" ซึ่งแปลว่าต้องมีคนจำได้เอง ตอนเอามาแขวนใน CI
+**ครั้งแรกที่รันก็เจอของจริงทันที**: `promotion_engine.dart` ใน domain เรียก `.tr` ของ GetX
+แปลข้อความให้ผู้ใช้อยู่ ทั้งที่ §4.1 เขียนห้ามไว้ — ย้ายการแปลไปไว้ที่ชั้นที่เรียกใช้แล้ว
+โดย domain คืน**คีย์คำแปล**แทนข้อความ
 
 ---
 

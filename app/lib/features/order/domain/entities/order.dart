@@ -1,5 +1,3 @@
-import 'package:get/get.dart';
-
 import '../../../../core/constants/app_constants.dart';
 import 'order_item.dart';
 
