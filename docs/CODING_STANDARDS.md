@@ -266,17 +266,29 @@ routes → controller → service → repository → db
 ### 4.3 วิธีเช็คว่าไม่ผิดกฎ (รันก่อน commit ทุกครั้งที่แตะ domain/data layer)
 
 ```bash
+bash tool/check-architecture.sh
+```
+
+สคริปต์นี้รันกฎทั้ง 5 ข้อข้างล่าง (ทุกคำสั่งต้องไม่มี output) และ **CI รันให้ทุก push** ตั้งแต่
+job `architecture` ถูกเพิ่มเข้าไป — กฎที่ต้องอาศัยคนจำว่าต้องรันเอง ไม่ใช่กฎที่บังคับอะไรได้จริง
+§4.4 ข้างล่างคือหลักฐานว่าเคยผิดกฎแล้วกว่าจะเจอก็ตอนไล่ตรวจด้วยมือ
+
+```bash
 # Flutter: domain ต้องไม่ import จาก data/presentation
-grep -rn "import.*['\"].*\/data\/"         app/lib/features/*/domain/
-grep -rn "import.*['\"].*\/presentation\/" app/lib/features/*/domain/
-grep -rln "package:get"                    app/lib/features/*/domain/
+grep -rn "import.*['\"].*\/data\/"                    app/lib/features/*/domain/
+grep -rn "import.*['\"].*\/presentation\/"            app/lib/features/*/domain/
+grep -rnE "^\s*(import|export) .*package:get"        app/lib/features/*/domain/
 # ทั้ง 3 คำสั่งต้องไม่มี output ใดๆ
 
 # Backend: service ห้ามรู้จัก req/res, controller ห้าม import repository ตรงๆ
-grep -rln "req\.\|res\."                    backend/src/modules/*/*.service.js
-grep -rn "require.*\.repository"            backend/src/modules/*/*.routes.js backend/src/modules/*/*.controller.js
+grep -rln "req\.\|res\."                              backend/src/modules/*/*.service.js
+grep -rn "require.*\.repository"                      backend/src/modules/*/*.routes.js backend/src/modules/*/*.controller.js
 # ทั้ง 2 คำสั่งต้องไม่มี output ใดๆ
 ```
+
+> ข้อที่ 3 เดิมเขียนว่า `grep -rln "package:get"` (จับทุกที่ที่มีข้อความนี้) ตอนเอามาแขวนใน CI
+> ครั้งแรกมันสะดุด**คอมเมนต์ที่อธิบายว่าทำไมห้ามใช้ GetX ใน domain** ซึ่งไม่ใช่ dependency
+> เปลี่ยนเป็นเทียบเฉพาะบรรทัด `import`/`export` ให้ตรงกับเจตนาของกฎ
 
 ### 4.4 กรณีจริงที่เจอและแก้แล้ว: payload class อยู่ผิดชั้น
 

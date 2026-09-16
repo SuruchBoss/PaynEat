@@ -1,0 +1,78 @@
+name: Deploy Pages (landing + demo)
+
+# หน้าเดียวจบ: root ของ Pages คือ docs/landing (static HTML ไม่มี build step)
+# และ /app/ คือแอปตัวจริงที่ build จาก Flutter web ในโหมด DEMO_MODE=true
+# (ไม่ต้องมี backend เพราะ Demo Mode สลับ data source เป็นข้อมูลจำลองทั้งหมด — ดู README
+# หัวข้อ "Demo Mode") deploy ขึ้น GitHub Pages ทุกครั้งที่มีการแก้ landing หรือตัวแอปบน main
+# (หรือกดรันเองผ่าน workflow_dispatch)
+#
+# ต้องเปิดใช้งานครั้งเดียวก่อน: Settings → Pages → Build and deployment → Source:
+# "GitHub Actions" (ไม่ใช่ "Deploy from a branch") — GitHub API ไม่มี endpoint ให้เปิดผ่าน
+# workflow ได้เอง ต้องกดที่หน้า Settings ครั้งแรกเท่านั้น หลังจากนั้น workflow นี้ deploy อัตโนมัติ
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/landing/**'
+      - 'app/lib/**'
+      - 'app/web/**'
+      - 'app/pubspec.yaml'
+      - 'app/pubspec.lock'
+      - '.github/workflows/deploy-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# กันสอง deploy ชนกัน แต่ไม่ยกเลิกอันที่กำลังรันอยู่ (ต่างจาก CI) เพราะ deploy ค้างครึ่งทาง
+# ทำให้หน้าเว็บจริงพังได้ ปล่อยให้คิวต่อแทน
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: stable
+          cache: true
+
+      - name: ติดตั้ง dependencies ของแอป
+        working-directory: app
+        run: flutter pub get
+
+      # base-href ต้องเป็น path เต็มที่ Pages จะเสิร์ฟจริง (/<repo>/app/) ไม่ใช่แค่ /app/
+      # เพราะ project site ของ GitHub Pages อยู่ใต้ /<repo>/ เสมอ ไม่ใช่ root โดเมน
+      - name: build Flutter web โหมด Demo Mode (ไม่มี backend จริง)
+        working-directory: app
+        run: >
+          flutter build web --release
+          --dart-define=DEMO_MODE=true
+          --base-href=/PaynEat/app/
+
+      - uses: actions/configure-pages@v5
+
+      - name: ประกอบ Pages artifact (landing ที่ root + แอปที่ /app/)
+        run: |
+          mkdir -p _site
+          cp -r docs/landing/. _site/
+          mkdir -p _site/app
+          cp -r app/build/web/. _site/app/
+
+      - name: อัปโหลด Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

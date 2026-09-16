@@ -10,6 +10,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/payment.dart';
 import '../controllers/split_bill_controller.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// หน้าแยกบิลรายการอาหาร — เลือกเมนูที่จะจ่ายรอบนี้ ดูยอดล่วงหน้า แล้วชำระทีละก้อน
 ///

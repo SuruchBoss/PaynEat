@@ -7,6 +7,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../domain/entities/order.dart';
 import '../controllers/order_list_controller.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// รายการออเดอร์ทั้งหมด (ใช้ทั้งฝั่งพนักงานและผู้จัดการ)
 class OrdersPage extends GetView<OrderListController> {

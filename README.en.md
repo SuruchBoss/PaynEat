@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-557%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-558%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 557 automated tests.
+control and 558 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -939,8 +939,17 @@ on close), accepting a payment (`payment.pay`), and entering/removing a discount
 > the same id as before (because `Order.==` only compares id), leaving the screen showing stale data after
 > an edit or status change — now fixed (see `docs/CODING_STANDARDS.md` section 3.5).
 
-GitHub Actions CI runs `dart format` → `flutter analyze` → `flutter test` → `flutter build web` on the
-Flutter side, and `prettier --check` → `eslint` → `npm test` on the backend, on every push.
+GitHub Actions CI runs `dart format` → `flutter analyze` → `dart run custom_lint` → `flutter test` →
+`flutter build web` on the Flutter side, and `prettier --check` → `eslint` → `npm test` on the backend,
+on every push.
+
+A separate **Clean Architecture (layer rules)** job runs `tool/check-architecture.sh` — the five
+dependency-direction checks from [`CODING_STANDARDS.md` §4.3](docs/CODING_STANDARDS.md). Those rules
+had been written down as "run these before you commit", which means they only held as long as someone
+remembered. **The first CI run found a real violation**: `promotion_engine.dart`, in the domain layer,
+was calling GetX's `.tr` to translate user-facing strings — which §4.1 forbids outright. The domain now
+returns a **translation key** and the calling layer translates it, which is what the line immediately
+above it was already doing.
 
 ---
 

@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-557%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-558%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 557 automated tests.
+control and 558 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -877,8 +877,15 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 > กลับมามี id เดิม (เพราะ `Order.==` เทียบแค่ id) ทำให้จอค้างข้อมูลเก่าหลังแก้ไข/เปลี่ยนสถานะ — แก้แล้ว
 > (ดู `docs/CODING_STANDARDS.md` หัวข้อ 3.5)
 
-CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `flutter test` → `flutter build web`
-ฝั่ง Flutter และ `prettier --check` → `eslint` → `npm test` ฝั่ง backend ทุกครั้งที่ push
+CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart run custom_lint` → `flutter test`
+→ `flutter build web` ฝั่ง Flutter และ `prettier --check` → `eslint` → `npm test` ฝั่ง backend ทุกครั้งที่ push
+
+และมี job แยกชื่อ **Clean Architecture (layer rules)** รัน `tool/check-architecture.sh` ซึ่งเป็น
+คำสั่งตรวจทิศทาง dependency 5 ข้อจาก [`CODING_STANDARDS.md` §4.3](docs/CODING_STANDARDS.md)
+— เดิมกฎพวกนี้เขียนไว้ว่า "ให้รันก่อน commit" ซึ่งแปลว่าต้องมีคนจำได้เอง ตอนเอามาแขวนใน CI
+**ครั้งแรกที่รันก็เจอของจริงทันที**: `promotion_engine.dart` ใน domain เรียก `.tr` ของ GetX
+แปลข้อความให้ผู้ใช้อยู่ ทั้งที่ §4.1 เขียนห้ามไว้ — ย้ายการแปลไปไว้ที่ชั้นที่เรียกใช้แล้ว
+โดย domain คืน**คีย์คำแปล**แทนข้อความ
 
 ---
 
