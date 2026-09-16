@@ -12,6 +12,7 @@ import '../controllers/receipt_controller.dart';
 import '../widgets/refund_dialog.dart';
 import '../widgets/tax_invoice_document_dialog.dart';
 import '../widgets/tax_invoice_request_dialog.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// ใบเสร็จ — จัดวางแบบสลิปจริงเพื่อให้พิมพ์ออกเครื่องพิมพ์ความร้อนได้เลย
 class ReceiptPage extends GetView<ReceiptController> {

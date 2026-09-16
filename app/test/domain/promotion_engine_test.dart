@@ -252,27 +252,27 @@ void main() {
   });
 
   group('PromotionEngine.describeIneligibility', () {
-    test('บอกเหตุผลเฉพาะเจาะจงเมื่อโค้ดใช้ไม่ได้', () {
+    test('คืนคีย์คำแปลของเหตุผล ไม่ใช่ข้อความที่แปลแล้ว', () {
       expect(
         PromotionEngine.describeIneligibility(
           basePromotion(isActive: false),
           items: items,
         ),
-        'โค้ดนี้ถูกปิดใช้งานแล้ว',
+        'promotion_error_inactive',
       );
       expect(
         PromotionEngine.describeIneligibility(
           basePromotion(validTo: '2020-01-01'),
           items: items,
         ),
-        'โค้ดนี้หมดอายุหรือยังไม่เริ่มใช้งาน',
+        'promotion_error_expired',
       );
       expect(
         PromotionEngine.describeIneligibility(
           basePromotion(conditions: {'minSubtotal': 99999.0}),
           items: items,
         ),
-        'ยอดบิลยังไม่ถึงขั้นต่ำสำหรับโค้ดนี้',
+        'promotion_error_min_subtotal_not_met',
       );
       expect(
         PromotionEngine.describeIneligibility(
@@ -283,7 +283,7 @@ void main() {
           ),
           items: items,
         ),
-        'บิลนี้ไม่มีเมนูที่ร่วมรายการกับโค้ดนี้',
+        'promotion_error_no_matching_items',
       );
       expect(
         PromotionEngine.describeIneligibility(basePromotion(), items: items),

@@ -34,6 +34,17 @@ jobs:
       - name: รันเทสต์
         run: npm test
 
+  # ทิศทาง dependency ระหว่างชั้น (CODING_STANDARDS §4.1/§4.2) — เป็นแค่ grep ล้วน
+  # ไม่ต้องใช้ Node หรือ Flutter จึงแยก job ให้จบใน ~10 วินาที และเห็นผลก่อนอีกสอง job
+  architecture:
+    name: Clean Architecture (layer rules)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ตรวจทิศทาง dependency ระหว่างชั้น
+        run: bash tool/check-architecture.sh
+
   app:
     name: Flutter App
     runs-on: ubuntu-latest

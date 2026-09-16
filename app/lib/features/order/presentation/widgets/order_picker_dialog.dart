@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/order.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// กล่องเลือกออเดอร์ต้นทางที่จะรวมเข้ากับบิลนี้
 class OrderPickerDialog extends StatelessWidget {

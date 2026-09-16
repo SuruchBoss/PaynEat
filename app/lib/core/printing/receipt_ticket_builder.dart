@@ -6,6 +6,7 @@ import '../../features/payment/domain/entities/payment.dart';
 import '../../features/settings/domain/entities/printer_profile.dart';
 import '../utils/formatters.dart';
 import 'cp874_codec.dart';
+import '../localization/order_display.dart';
 
 /// แปลงข้อมูลออเดอร์/ใบเสร็จ (ก้อนเดียวกับที่ [ReceiptPage] ใช้แสดงบนจอ) เป็นชุดคำสั่ง
 /// ESC/POS สำหรับส่งให้เครื่องพิมพ์ความร้อนจริง — เทมเพลตพิมพ์แยกจาก widget บนจอ แต่ดึง
