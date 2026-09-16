@@ -10,6 +10,7 @@
 <meta property="og:url" content="https://github.com/SuruchBoss/PaynEat">
 <meta name="twitter:card" content="summary_large_image">
 <title>PaynEat POS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.3' fill='%23FF6B2C'/%3E%3Crect x='5.6' y='3.6' width='3.8' height='16.8' rx='1.9' fill='white'/%3E%3Cpath d='M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;800&family=Anuphan:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
   /* หน้านี้จงใจเป็นโลกภาพเดียว (ไล่สลับมืด-สว่างเป็นส่วนหนึ่งของงานออกแบบ)
@@ -32,6 +33,12 @@
     --body:clamp(1.02rem,1.35vw,1.2rem);
     --pad:clamp(20px,6vw,96px);
   }
+  /* .hero เป็น grid 2 คอลัมน์ตั้งแต่ 881px ขึ้นไป (ดู @media ด้านล่าง) แต่ --w1 คิดจาก
+     ความกว้างจอทั้งหน้าเสมอ — พอจอกว้างเกิน 880px h1 เลยได้แค่ครึ่งคอลัมน์แต่ตัวอักษรยังโตเท่าจอเต็ม
+     ทำให้ "ออกแบบมาเพื่อ" ตัดคำเองก่อนถึง <br> ที่ตั้งใจไว้ กลายเป็น 3 บรรทัดแทนที่จะเป็น 2
+     (ตรวจด้วย Playwright วัดจำนวนบรรทัดจริงตั้งแต่ 881px ถึง 2560px แล้วลดอัตราส่วนลงจนเหลือ 2
+     บรรทัดคงที่ทุกความกว้าง) */
+  @media(min-width:881px){:root{--w1:clamp(2.6rem,6.8vw,6rem)}}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
@@ -217,7 +224,7 @@
 
 
 <nav>
-  <span class="wordmark"><span class="glyph">✳</span>PaynEat</span>
+  <span class="wordmark"><span class="glyph"><svg viewBox="0 0 24 24" width="60%" height="60%" aria-hidden="true"><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="white"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="white"/></svg></span>PaynEat</span>
   <span class="links">
     <a href="#floor">หน้างาน</a>
     <a href="#kitchen">จอครัว</a>
@@ -235,7 +242,7 @@
       มือเปื้อนน้ำมัน และเน็ตที่สะดุดกลางมื้อเย็น</p>
     <div class="chips">
       <span class="chip">รับออเดอร์ · ครัว · เก็บเงิน · หลังร้าน</span>
-      <span class="chip">เทสต์อัตโนมัติ <b>504</b></span>
+      <span class="chip">เทสต์อัตโนมัติ <b>557</b></span>
       <span class="chip">ไทย / English</span>
     </div>
   </div>
@@ -359,7 +366,7 @@
   <p class="lede" style="margin-top:20px;color:var(--steel)">บั๊กที่เจ็บที่สุดในโปรเจกต์นี้คือบั๊กที่ดูด้วยตาแล้วสวยดี
     จึงเปลี่ยนจากการไล่ตรวจเอง มาเป็นกฎที่ CI บังคับทุกครั้งที่ push</p>
   <div class="tally" style="margin-top:clamp(34px,5vw,56px);border-color:var(--line-l)">
-    <div style="border-color:var(--line-l)"><div class="v" style="color:var(--ember)">504</div><div class="k">เทสต์อัตโนมัติ ผ่านทั้งหมด</div></div>
+    <div style="border-color:var(--line-l)"><div class="v" style="color:var(--ember)">557</div><div class="k">เทสต์อัตโนมัติ ผ่านทั้งหมด</div></div>
     <div style="border-color:var(--line-l)"><div class="v" style="color:var(--ember)">3</div><div class="k">กฎ lint เฉพาะโปรเจกต์ บังคับใน CI</div></div>
     <div style="border-color:var(--line-l)"><div class="v" style="color:var(--ember)">29</div><div class="k">ภาพหน้าจอ ถ่ายซ้ำได้ผลตรงทุกไบต์</div></div>
     <div style="border-color:var(--line-l)"><div class="v" style="color:var(--ember)">AAA</div><div class="k">เกณฑ์คอนทราสต์ในโหมดคอนทราสต์สูง</div></div>
@@ -367,7 +374,7 @@
 </section>
 
 <footer>
-  <h2 style="font-size:var(--w2);max-width:16ch">ลองกดเล่นได้เลย<br>ไม่ต้องติดตั้งเซิร์ฟเวอร์</h2>
+  <h2 style="font-size:var(--w2);max-width:17ch">ลองกดเล่นได้เลย<br>ไม่ต้องติดตั้งเซิร์ฟเวอร์</h2>
   <p class="lede" style="margin-top:18px">โหมดสาธิตมีข้อมูลร้านครบตั้งแต่เปิดแอป — โต๊ะ เมนู ออเดอร์ย้อนหลัง และยอดขายให้ดูรายงานได้ทันที</p>
   <a class="cta" href="https://github.com/SuruchBoss/PaynEat" target="_blank" rel="noopener">ดูโปรเจกต์บน GitHub →</a>
   <p class="fnote">PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · เผยแพร่ภายใต้
