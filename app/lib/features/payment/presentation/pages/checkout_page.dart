@@ -13,6 +13,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../order/presentation/widgets/bill_summary.dart';
 import '../controllers/checkout_controller.dart';
 import '../widgets/promptpay_qr_view.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// หน้าชำระเงิน
 class CheckoutPage extends GetView<CheckoutController> {

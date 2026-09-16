@@ -95,11 +95,6 @@ class Order {
   int get totalQuantity =>
       activeItems.fold(0, (sum, item) => sum + item.quantity);
 
-  /// ชื่อที่ใช้แสดงหัวออเดอร์ เช่น "โต๊ะ A3" หรือ "กลับบ้าน"
-  String get displayTarget => tableName != null
-      ? 'order_table_prefix'.trParams({'table': tableName!})
-      : OrderType.label(type);
-
   @override
   bool operator ==(Object other) =>
       identical(this, other) || (other is Order && other.id == id);

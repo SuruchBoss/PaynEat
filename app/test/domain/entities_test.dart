@@ -129,10 +129,6 @@ void main() {
         isFalse,
       );
     });
-
-    test('หัวออเดอร์แสดงชื่อโต๊ะเมื่อทานที่ร้าน', () {
-      expect(orderWith(status: OrderStatus.open).displayTarget, 'โต๊ะ A1');
-    });
   });
 
   group('DiningTable', () {
