@@ -19,6 +19,7 @@ import '../widgets/order_item_tile.dart';
 import '../widgets/order_picker_dialog.dart';
 import '../widgets/promotion_code_dialog.dart';
 import '../widgets/table_picker_dialog.dart';
+import '../../../../core/localization/order_display.dart';
 
 /// หน้ารายละเอียดออเดอร์ — ดูรายการ เดินสถานะ ให้ส่วนลด และไปหน้าชำระเงิน
 class OrderDetailPage extends GetView<OrderDetailController> {

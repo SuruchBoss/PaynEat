@@ -72,7 +72,8 @@ extension DemoStoreOrderPromotions on DemoStore {
       items: items,
     );
     if (reason != null) {
-      throw ApiException(message: reason, statusCode: 400);
+      // `reason` เป็นคีย์คำแปล ไม่ใช่ข้อความ — domain แปลเองไม่ได้ (CODING_STANDARDS §4.1)
+      throw ApiException(message: reason.tr, statusCode: 400);
     }
 
     order['promotionId'] = promotion['id'];
