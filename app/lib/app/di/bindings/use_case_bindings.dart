@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../../../core/services/offline_order_queue_service.dart';
 import '../../../core/services/storage_service.dart';
+import '../../../features/ai_assistant/domain/repositories/ai_assistant_repository.dart';
+import '../../../features/ai_assistant/domain/usecases/ask_ai_assistant_usecase.dart';
 import '../../../features/audit_log/domain/repositories/audit_log_repository.dart';
 import '../../../features/audit_log/domain/usecases/audit_log_usecases.dart';
 import '../../../features/auth/domain/repositories/auth_repository.dart';
@@ -246,6 +248,12 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => CreateCustomerUseCase(Get.find<CustomerRepository>()),
+    fenix: true,
+  );
+
+  // ai assistant
+  Get.lazyPut(
+    () => AskAiAssistantUseCase(Get.find<AiAssistantRepository>()),
     fenix: true,
   );
 

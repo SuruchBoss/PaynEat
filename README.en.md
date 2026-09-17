@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-558%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-574%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 558 automated tests.
+control and 574 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -296,6 +296,13 @@ The login page has one-tap buttons for each account — no need to type anything
     you'll see a brand-new log entry with who did it, when, and the reason you typed — try the
     **"Date range"** button to filter to just today, then tap the **download 📥** icon to export a
     CSV file (opens in the browser, web only — see the 💰 Cashier/🖥️ Admin sections)
+18. **Open the AI Assistant page** (the ✨ icon in the left nav — visible to both `admin` and `manager`) →
+    type or tap an example question like **"What are today's sales?"** — the assistant always calls a
+    tool to pull real data before answering (never guesses or makes up a number), which you can verify
+    from the **"Sources"** chip under every answer naming exactly which tool it used — a question about
+    plottable numbers (like best-selling items) comes back with a bar chart attached too (you need to set
+    `ANTHROPIC_API_KEY` first for it to actually answer — without it you get a clear "not enabled" message
+    instead of a crash; see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
 
 **Want to try the hidden business rules?**
 
@@ -338,8 +345,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 246 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 311 cases — domain / controller / widget
+cd backend && npm test      # 255 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 319 cases — domain / controller / widget
 ```
 
 ---
@@ -473,6 +480,14 @@ cd app && flutter test      # 311 cases — domain / controller / widget
   discount code (see `docs/DECISIONS.md` #28)
 - **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
   see their purchase history and current points balance (see `docs/DECISIONS.md` #22)
+- **AI assistant for store data** (`admin` and `manager`) — ask a question in Thai or English about
+  sales, best sellers, orders, customers, or (admin only) the audit log; the assistant answers only
+  through tool-calling against the system's own existing endpoints (never touches the database directly,
+  never makes up a number), and every answer carries a **"Sources"** chip naming exactly which tool
+  produced it, so it's always auditable, plus a chart when the question is about plottable numbers — a
+  daily per-user question quota (20 by default) keeps LLM spend under control; requires setting your own
+  `ANTHROPIC_API_KEY` (off by default, with a clear message instead of a crash when it isn't set — see
+  `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
 
 ### 🔐 System
 
@@ -764,6 +779,7 @@ Open **http://localhost:3000/docs** for interactive, try-it-yourself documentati
 | GET | `/audit-logs` | admin | Log of front-of-house-fraud-risk actions (filterable) |
 | GET/POST | `/customers` | waiter and up | Search/create customers (by name or phone) |
 | GET | `/customers/:id` | waiter and up | A single customer's details (including points balance) |
+| POST | `/ai/ask` | admin, manager | Ask a natural-language question about sales/menu/orders/customers — answered via tool-calling against real data only (daily quota) |
 
 </details>
 
@@ -789,11 +805,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 246 cases
-cd app && flutter test      # 311 cases
+cd backend && npm test      # 255 cases
+cd app && flutter test      # 319 cases
 ```
 
-**Backend (246 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (255 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -895,7 +911,20 @@ log gaps: opening/closing a shift (`shift.open`/`shift.close` — checking the c
 on close), accepting a payment (`payment.pay`), and entering/removing a discount code
 (`order.promotion_redeem`/`order.promotion_remove`).
 
-**Flutter (311 cases)** — split into 3 levels:
+`ai-assistant.test.js` (9 cases) tests the AI assistant against a fake Anthropic client (never hits the
+real API in tests — the client is swapped out with `setAnthropicClientForTests`): RBAC (waiters/kitchen/
+cashiers can't reach it), an empty question gets a 422, an unconfigured `ANTHROPIC_API_KEY` returns a 503
+with a dedicated error code, calling a real tool then answering with a chart and named sources, only
+`admin` is offered the `list_audit_log_entries` tool (managers never see it exists, at the level of what's
+offered to the model — not just filtered out of the result afterwards), a tool call with an out-of-schema
+parameter gets rejected and handed back to the model to retry instead of failing the whole request, a
+model that never calls `submit_answer` on its own gets forced to via `tool_choice` on the final round
+(so the loop always terminates), and a refusal (`stop_reason: refusal`) comes back as a polite message
+instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests the daily quota with
+`AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
+default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
+
+**Flutter (319 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -923,6 +952,7 @@ on close), accepting a payment (`payment.pay`), and entering/removing a discount
 | Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
 | Controller | `audit_log_controller_test.dart` | Sending filters (action/date range) correctly with `load`/`loadMore`, `setDateRange` converting to ISO dates and clearing filters, `hasMore`/pagination (ticket 14) |
+| Controller | `ai_assistant_controller_test.dart` | `ask` trims the question/clears the input/stores the answer+chart, guards against an empty/too-long question and sending while already waiting on one, and separates a `ServerFailure`'s `errorCode` (e.g. `AI_ASSISTANT_DISABLED`) from a generic error (ticket 15) |
 | Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |

@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../features/ai_assistant/data/datasources/ai_assistant_remote_data_source.dart';
+import '../../features/ai_assistant/data/models/ai_assistant_answer_model.dart';
 import '../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
 import '../../features/audit_log/data/models/audit_log_model.dart';
 import '../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -51,6 +53,7 @@ part 'demo_staff_data_source.dart';
 part 'demo_settings_data_source.dart';
 part 'demo_audit_log_data_source.dart';
 part 'demo_customer_data_source.dart';
+part 'demo_ai_assistant_data_source.dart';
 
 /// Data source ชุด "Demo Mode"
 ///

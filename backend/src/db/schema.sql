@@ -309,3 +309,23 @@ CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_actor ON audit_logs(actor_user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
+
+-- ผู้ช่วย AI ถามตอบข้อมูลร้าน (ดู docs/tickets/15-ai-ask-your-data.md) — เก็บทุกคำถาม/คำตอบไว้เพื่อ
+-- (1) จำกัดจำนวนคำถามต่อคนต่อวัน (นับจาก created_at ในตารางนี้เอง ไม่ต้องมีตารางตัวนับแยก) และ
+-- (2) ตรวจสอบย้อนหลังได้ว่า AI ใช้ tool ไหนตอบ กันข้อครหาว่าตอบมั่ว — แยกจาก audit_logs เพราะ
+-- คนละเรื่องกัน (audit_logs = ใครทำอะไรกับข้อมูลจริง, ตารางนี้ = ใครถาม AI อะไรและ AI ใช้ข้อมูลไหนตอบ)
+CREATE TABLE IF NOT EXISTS ai_assistant_queries (
+  id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  actor_user_id   INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  actor_name      TEXT    NOT NULL,
+  question        TEXT    NOT NULL,
+  answer          TEXT,
+  tool_calls_json TEXT,
+  input_tokens    INTEGER NOT NULL DEFAULT 0,
+  output_tokens   INTEGER NOT NULL DEFAULT 0,
+  is_error        INTEGER NOT NULL DEFAULT 0,
+  error_message   TEXT,
+  created_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_ai_assistant_queries_actor_date
+  ON ai_assistant_queries(actor_user_id, created_at);

@@ -33,6 +33,7 @@ tags:
   - name: TaxInvoices
   - name: AuditLogs
   - name: Customers
+  - name: AiAssistant
 
 components:
   securitySchemes:
@@ -1369,3 +1370,57 @@ paths:
                   success: { type: boolean }
                   data: { $ref: '#/components/schemas/Customer' }
         '404': { description: ไม่พบลูกค้านี้ }
+  /ai/ask:
+    post:
+      tags: [AiAssistant]
+      summary: >-
+        ถามคำถามภาษาธรรมชาติ (ไทย/อังกฤษ) เกี่ยวกับยอดขาย/เมนูขายดี/ออเดอร์/ลูกค้า/ประวัติการทำรายการ
+        (admin/manager เท่านั้น) — AI ตอบจากข้อมูลจริงผ่าน tool-calling เท่านั้น ไม่แต่งตัวเลขเอง (ดู
+        docs/tickets/15-ai-ask-your-data.md) จำกัดจำนวนคำถามต่อผู้ใช้ต่อวัน (AI_ASSISTANT_DAILY_LIMIT)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question: { type: string, maxLength: 500, example: เมนูไหนขายดีสุดอาทิตย์นี้ }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      answerText: { type: string }
+                      chart:
+                        type: object
+                        nullable: true
+                        properties:
+                          title: { type: string }
+                          points:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                label: { type: string }
+                                value: { type: number }
+                      sources:
+                        type: array
+                        description: tool ที่ AI เรียกจริงเพื่อตอบคำถามนี้ (ตรวจสอบย้อนหลังได้)
+                        items:
+                          type: object
+                          properties:
+                            tool: { type: string }
+                            args: { type: object }
+                      remainingToday: { type: integer }
+        '403': { description: สิทธิ์ไม่พอ (ต้องเป็น admin หรือ manager) }
+        '422': { description: คำถามว่างหรือยาวเกินไป }
+        '429': { description: ถามเกินโควตาต่อวันแล้ว }
+        '503': { description: ยังไม่ได้ตั้งค่า ANTHROPIC_API_KEY }

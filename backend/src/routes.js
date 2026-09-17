@@ -14,6 +14,7 @@ import shiftRoutes from './modules/shifts/shift.routes.js';
 import taxInvoiceRoutes from './modules/tax-invoices/tax-invoice.routes.js';
 import auditLogRoutes from './modules/audit-logs/audit-log.routes.js';
 import customerRoutes from './modules/customers/customer.routes.js';
+import aiAssistantRoutes from './modules/ai-assistant/ai-assistant.routes.js';
 
 const router = Router();
 
@@ -32,5 +33,6 @@ router.use('/shifts', shiftRoutes);
 router.use('/tax-invoices', taxInvoiceRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/customers', customerRoutes);
+router.use('/ai', aiAssistantRoutes);
 
 export default router;
