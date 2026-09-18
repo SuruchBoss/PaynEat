@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-574%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 574 automated tests.
+control and 580 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -83,6 +83,20 @@ control and 574 automated tests.
 > a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
 > not a single line of JavaScript.
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
+
+> 🤖 **Live demo of the AI ask-your-data assistant (real Claude API call, not a mock)**
+>
+> <img src="docs/ai-demo/ai-assistant-demo.gif" width="780"><br>
+> <sub>Full-resolution still: <a href="docs/ai-demo/ai-assistant-live.png">ai-assistant-live.png</a></sub>
+>
+> Recorded from a real session: log in as admin → open the "AI Assistant" tab → type a question in
+> Thai → Claude calls a tool that pulls real sales data straight from the database (no scripted
+> response) → it answers with a chart and "sources" chips citing the exact endpoint it called.
+> ⚠️ **Unlike the gallery above**: this asset is **not** produced by a frozen-clock golden test, so
+> it isn't byte-for-byte reproducible (it needs a real `ANTHROPIC_API_KEY` and the seeded sample
+> data, and the model's wording can vary run to run). How to re-capture it, and why it's kept
+> separate from the golden-test set, is documented in
+> [`docs/DECISIONS.md` #33](docs/DECISIONS.md)
 
 ---
 
@@ -346,7 +360,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 255 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 319 cases — domain / controller / widget
+cd app && flutter test      # 325 cases — domain / controller / widget
 ```
 
 ---
@@ -806,7 +820,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 255 cases
-cd app && flutter test      # 319 cases
+cd app && flutter test      # 325 cases
 ```
 
 **Backend (255 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -924,7 +938,7 @@ instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests
 `AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
 default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
 
-**Flutter (319 cases)** — split into 3 levels:
+**Flutter (325 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -949,7 +963,7 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Controller | `dashboard_controller_test.dart` | Loading today's sales summary + live counters |
 | Controller | `report_controller_test.dart` | Selecting a report date range, silently swallowing topItems/dailySales errors |
 | Controller | `split_bill_controller_test.dart` | Selecting/deselecting items, fetching the preview, `canPay`/`change` |
-| Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) |
+| Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) — also confirms waiters intentionally see the "Kitchen" tab (mirrors backend permissions) and that an unrecognized role fails safe to account-only access instead of silently inheriting a broad permission set from a wildcard case |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
 | Controller | `audit_log_controller_test.dart` | Sending filters (action/date range) correctly with `load`/`loadMore`, `setDateRange` converting to ISO dates and clearing filters, `hasMore`/pagination (ticket 14) |
 | Controller | `ai_assistant_controller_test.dart` | `ask` trims the question/clears the input/stores the answer+chart, guards against an empty/too-long question and sending while already waiting on one, and separates a `ServerFailure`'s `errorCode` (e.g. `AI_ASSISTANT_DISABLED`) from a generic error (ticket 15) |
@@ -961,6 +975,7 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |
 | Core | `promptpay_test.dart` | Mirrors the backend's PromptPay QR algorithm (EMV QR + CRC-16/CCITT-FALSE) in Dart for Demo Mode — includes a golden-value test that checks the payload matches the backend's output character-for-character (ticket 16) |
 | Core | `csv_test.dart` | Mirrors the backend's CSV builder in Dart — header, escaping comma/quote/newline, null values become an empty string, and the output is prefixed with a UTF-8 BOM (ticket 14) |
+| Core | `bold_markdown_test.dart` | Parses `**bold**` markdown from the AI assistant's answers into `TextSpan`s, correctly splitting bold vs. plain segments — including multiple bold runs in one string and an unpaired `**` (bug fix: the plain `Text` widget used to show raw `**` asterisks instead of rendering bold) |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is

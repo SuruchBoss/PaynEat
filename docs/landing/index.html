@@ -238,6 +238,7 @@
     <a href="#counter">เก็บเงิน</a>
     <a href="#back">หลังร้าน</a>
     <a href="#edge">จุดต่าง</a>
+    <a href="#ai">ผู้ช่วย AI</a>
     <a href="index.en.html" style="color:var(--steel-lt)">EN</a>
   </span>
 </nav>
@@ -250,7 +251,7 @@
       มือเปื้อนน้ำมัน และเน็ตที่สะดุดกลางมื้อเย็น</p>
     <div class="chips">
       <span class="chip">รับออเดอร์ · ครัว · เก็บเงิน · หลังร้าน</span>
-      <span class="chip">เทสต์อัตโนมัติ <b>574</b></span>
+      <span class="chip">เทสต์อัตโนมัติ <b>580</b></span>
       <span class="chip">ไทย / English</span>
     </div>
   </div>
@@ -374,6 +375,24 @@
   </div>
 </section>
 
+<section class="act" id="ai">
+  <div class="split">
+    <div class="slab drift"><img src="../ai-demo/ai-assistant-demo.gif" alt="ภาพเคลื่อนไหวสาธิตผู้ช่วย AI ถามยอดขายเป็นภาษาไทย แล้วได้คำตอบพร้อมกราฟและชิปแหล่งข้อมูลจากการเรียก Claude API จริง" width="800" height="500" loading="lazy"></div>
+    <div>
+      <span class="eyebrow rise">07 — ผู้ช่วย AI</span>
+      <h2 class="rise" style="font-size:var(--w2);max-width:17ch">ถามยอดขายด้วยคำพูด ไม่ต้องไล่เปิดหน้ารายงานเอง</h2>
+      <p class="lede rise" style="margin-top:20px">พิมพ์คำถามภาษาไทยหรืออังกฤษ ผู้ช่วย AI (ขับเคลื่อนด้วย Claude) เรียกเครื่องมือที่ต่อกับ
+        ฐานข้อมูลร้านจริงเพื่อดึงตัวเลขมาตอบ ไม่ใช่เดาจากความรู้ทั่วไปของโมเดล — ทุกคำตอบระบุที่มาของ
+        ข้อมูลกำกับไว้เสมอ</p>
+      <div class="feat">
+        <div><span class="dot"></span><span><b>ต่อ tool กับข้อมูลจริงเท่านั้น</b><br><span>ยอดขาย เมนูขายดี ลูกค้าประจำ ออเดอร์ล่าสุด — ทุกคำตอบตรวจสอบย้อนกลับได้ว่ามาจาก endpoint ไหน</span></span></div>
+        <div><span class="dot"></span><span><b>ไม่มีข้อมูลก็บอกตรงๆ ว่าไม่มี</b><br><span>ห้ามเดาหรือแต่งตัวเลขขึ้นเองถ้าคำถามอยู่นอกเหนือข้อมูลที่ระบบมี</span></span></div>
+        <div><span class="dot"></span><span><b>จำกัดสิทธิ์ตามบทบาท</b><br><span>เฉพาะเจ้าของร้าน/ผู้จัดการเท่านั้นที่ถามได้ พร้อมจำกัดจำนวนคำถามต่อวันเพื่อคุมค่าใช้จ่าย</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <h2 style="font-size:var(--w2);max-width:17ch">ลองกดเล่นได้เลย<br>ไม่ต้องติดตั้งเซิร์ฟเวอร์</h2>
   <p class="lede" style="margin-top:18px">โหมดสาธิตมีข้อมูลร้านครบตั้งแต่เปิดแอป — โต๊ะ เมนู ออเดอร์ย้อนหลัง และยอดขายให้ดูรายงานได้ทันที
@@ -382,9 +401,10 @@
     <a class="cta" href="app/" target="_blank" rel="noopener" style="margin-top:0">ลองใช้งานจริงได้เลย →</a>
     <a href="https://github.com/SuruchBoss/PaynEat" target="_blank" rel="noopener" style="color:var(--steel-lt);text-decoration:underline;font-size:.92rem">ดูโค้ดบน GitHub</a>
   </div>
-  <p class="fnote">ทดสอบอัตโนมัติกว่า 574 เคสก่อนปล่อยให้ลองเล่น · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · เผยแพร่ภายใต้
+  <p class="fnote">ทดสอบอัตโนมัติกว่า 580 เคสก่อนปล่อยให้ลองเล่น · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · เผยแพร่ภายใต้
     <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a><br>
-    ภาพหน้าจอทุกภาพในหน้านี้ถ่ายจากแอปจริงด้วย golden test ไม่ใช่ภาพจำลอง</p>
+    ภาพหน้าจอทุกภาพในหน้านี้ถ่ายจากแอปจริงด้วย golden test ไม่ใช่ภาพจำลอง (ยกเว้นภาพเคลื่อนไหวผู้ช่วย
+    AI ที่บันทึกจากการเรียก Claude API จริง ไม่ใช่ golden test — ดู <a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md" target="_blank" rel="noopener">docs/DECISIONS.md #33</a>)</p>
 </footer>
 </body>
 </html>

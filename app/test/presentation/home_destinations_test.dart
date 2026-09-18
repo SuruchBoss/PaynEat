@@ -28,6 +28,28 @@ void main() {
       expect(labels, isNot(contains('home_nav_settings')));
     });
 
+    // waiter เห็น "ครัว" ด้วยตั้งใจ (mirror สิทธิ์ backend ที่ authorize('kitchen', 'waiter')
+    // ให้แก้สถานะอาหารได้ทั้งคู่ ดู order.routes.js) — ต้องมีเทสต์ยืนยันไว้ชัดๆ ไม่ให้หลุดมาจาก
+    // wildcard case เงียบๆ เหมือนก่อนหน้านี้
+    test('พนักงานเสิร์ฟเห็นจอครัวด้วย', () {
+      final labels = HomeBinding.destinationsForRole(
+        UserRole.waiter,
+      ).map((d) => d.label).toList();
+
+      expect(labels, contains('home_nav_kitchen'));
+    });
+
+    test(
+      'role ที่ไม่รู้จักเห็นแค่บัญชีตัวเอง (fail-safe ไปทางจำกัดสิทธิ์)',
+      () {
+        final labels = HomeBinding.destinationsForRole(
+          'ไม่มี role นี้จริง',
+        ).map((d) => d.label).toList();
+
+        expect(labels, ['home_nav_profile']);
+      },
+    );
+
     test('แคชเชียร์เห็นรายงานแต่ไม่เห็นการจัดการเมนู', () {
       final labels = HomeBinding.destinationsForRole(
         UserRole.cashier,
