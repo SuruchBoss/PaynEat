@@ -2,6 +2,7 @@
 abstract class AppRoutes {
   static const String splash = '/';
   static const String login = '/login';
+  static const String branchSelection = '/login/select-branch';
   static const String home = '/home';
 
   static const String newOrder = '/orders/new';

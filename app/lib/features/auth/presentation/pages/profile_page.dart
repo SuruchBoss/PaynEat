@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/localization/locale_service.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/widgets/app_card.dart';
@@ -130,6 +131,15 @@ class ProfilePage extends GetView<AuthController> {
               ),
             ),
           ],
+          // โหมดสาธิตมีสาขาเดียวเท่านั้น (ดู docs/DECISIONS.md #36) สลับไปมาไม่มีความหมาย
+          // จึงซ่อนการ์ดนี้เมื่อ demoMode เหมือนกับการ์ดเชื่อมต่อด้านบน
+          if (!AppConfig.demoMode) ...[
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: const _BranchCard(),
+            ),
+          ],
           const SizedBox(height: 12),
           // ตัวสลับภาษาเคยอยู่แต่ในหน้าตั้งค่าซึ่งเป็นสิทธิ์ของแอดมิน แปลว่าพนักงานเสิร์ฟ
           // ครัว และแคชเชียร์ไม่มีทางเปลี่ยนภาษาได้เลยทั้งที่แอปรองรับสองภาษา
@@ -250,6 +260,117 @@ class _ContrastCardState extends State<_ContrastCard> {
             },
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// การ์ดสาขาปัจจุบัน + ปุ่มสลับสาขา (ดู docs/tickets/11-multi-branch.md) — เห็นเฉพาะโหมดที่ต่อ
+/// backend จริงเท่านั้น (โหมดสาธิตมีสาขาเดียว ซ่อนไปทั้งการ์ด ดู docs/DECISIONS.md #36)
+class _BranchCard extends GetView<AuthController> {
+  const _BranchCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final session = Get.find<SessionService>();
+
+    return Obx(() {
+      final user = session.currentUserRx.value;
+      final branchLabel = user?.branchName ?? 'branch_all_branches'.tr;
+      final switching = controller.isSwitchingBranch.value;
+
+      return AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SectionHeader(title: 'branch_current_label'.tr),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Icon(
+                  Icons.storefront_rounded,
+                  size: 18,
+                  color: AppColors.brandInk,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    branchLabel,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                if (switching)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2.2),
+                  )
+                else
+                  TextButton(
+                    onPressed: () => _openSwitcher(context, user?.role),
+                    child: Text('branch_switch_action'.tr),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Future<void> _openSwitcher(BuildContext context, String? role) async {
+    await controller.loadMyBranches();
+    if (!context.mounted) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) => SafeArea(
+        child: Obx(() {
+          if (controller.isLoadingMyBranches.value) {
+            return const Padding(
+              padding: EdgeInsets.all(32),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2.4),
+                ),
+              ),
+            );
+          }
+          final branches = controller.myBranches;
+          return ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.only(bottom: 12),
+            children: [
+              if (role == UserRole.admin)
+                ListTile(
+                  leading: const Icon(Icons.apartment_rounded),
+                  title: Text('branch_all_branches'.tr),
+                  onTap: () {
+                    Get.back<void>();
+                    controller.switchBranch(null);
+                  },
+                ),
+              ...branches.map(
+                (branch) => ListTile(
+                  leading: const Icon(Icons.storefront_rounded),
+                  title: Text(branch.name),
+                  subtitle: (branch.address?.isNotEmpty ?? false)
+                      ? Text(branch.address!)
+                      : null,
+                  onTap: () {
+                    Get.back<void>();
+                    controller.switchBranch(branch.id);
+                  },
+                ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }

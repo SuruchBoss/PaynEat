@@ -1317,3 +1317,37 @@ grill กับ PO ก่อนเริ่ม" (`docs/tickets/11-multi-branch.m
   `branchRepository.addUser`/`removeUser` มีแล้วฝั่ง backend (ใช้ตอนสร้างพนักงานใหม่อัตโนมัติ) แต่ยัง
   ไม่เปิด endpoint ให้แก้ไขสิทธิ์ของพนักงานที่มีอยู่แล้วภายหลัง (เช่น เพิ่มสาขาที่ 2 ให้พนักงานเก่า)
   ต้องแก้ตรงฐานข้อมูลเองถ้าจะทำตอนนี้
+
+**Flutter — เลือกสาขาตอน login + สลับสาขาที่หน้าโปรไฟล์**
+
+- **`AuthController.submitLogin()` ใช้ Dart 3 sealed class + pattern matching (`LoginSuccess` /
+  `LoginNeedsBranchSelection`) แทนการเช็ค flag แบบ `if (result.needsBranchSelection)`** — บังคับให้
+  ทุกจุดที่ consume ผลลัพธ์ login ต้องจัดการทั้ง 2 กรณีครบ (compile error ถ้าลืมเคสใดเคสหนึ่ง) —
+  `pendingToken` ตั้งใจเก็บไว้แค่ตัวแปรใน `AuthController` (ไม่ผ่าน `StorageService.saveSession`
+  เลย) เพราะถ้าเก็บเป็น session จริงจะเสี่ยงหลุดไปแนบเป็น `Authorization` header ของ request อื่น
+  โดยไม่ตั้งใจ (ดูหัวข้อ "JWT พก branchId" ด้านบน — pendingToken ใช้ได้แค่
+  `POST /auth/select-branch` เท่านั้น)
+- **`ApiClient` เปลี่ยนจาก overwrite header `Authorization` เสมอ เป็นเซ็ตเฉพาะตอนที่ request ยังไม่มี
+  header นี้มาก่อน** — จำเป็นเพราะการแลก pendingToken ต้องส่ง token ที่ยังไม่ใช่ session token
+  ปัจจุบัน (`storage.token` ตอนนั้นอาจเป็น null หรือ token เก่า) การ override เฉพาะ request ทำให้
+  เรียก `POST /auth/select-branch` ด้วย pendingToken/token ที่ระบุเองได้โดยไม่กระทบ request อื่นที่ยัง
+  ใช้ mechanism อัตโนมัติเดิม
+- **โหมดสาธิต (Demo Mode) ตั้งใจให้มีแค่สาขาเดียวเสมอ ไม่ทำ branch_id ให้ `demo_store_*` ทุกไฟล์เลย**
+  — `DemoAuthDataSource.login()` จึงคืน `LoginSuccess` เสมอ (ไม่มี user เดโมคนไหนเจอหน้าเลือกสาขา)
+  และ `listMyBranches()` คืนสาขาสมมติสาขาเดียว ("สาขาหลัก (สาธิต)") ไว้ให้ตรง interface เฉยๆ —
+  เหตุผลหลักคือขอบเขตงาน: การทำ branch_id ให้ครบทุกโดเมนของ demo store (เมนู/โต๊ะ/วัตถุดิบ/ออเดอร์/
+  รายงาน ทั้งหมดใน `lib/core/demo/`) เพื่อให้สลับสาขาแล้วเห็นข้อมูลเปลี่ยนจริงแบบ backend เป็นงานแยก
+  ต่างหากที่ใหญ่พอๆ กับทำทิกเก็ตนี้ซ้ำอีกรอบในโดเมนที่ไม่ต้องพึ่ง HTTP เลย และผู้ที่มาลองเดโมสาธารณะ
+  ไม่มีทางสร้าง user คนที่ 2 ที่มีสิทธิ์หลายสาขาเองได้อยู่แล้ว จึงไม่คุ้มที่จะสร้างภาพลวงตาสาขาที่ 2
+  ที่กดแล้วไม่มีอะไรเปลี่ยนจริง — ตามแบบแผนเดิมของโปรเจกต์ที่ซ่อนของที่ backend-only ออกจากโหมดสาธิต
+  (เทียบ ticket ก่อนหน้าที่ซ่อนการ์ด "การเชื่อมต่อ" ในหน้าโปรไฟล์เมื่อ demoMode)
+- **หน้าโปรไฟล์เพิ่มการ์ด "สาขาปัจจุบัน" พร้อมปุ่ม "สลับสาขา" (bottom sheet เลือกจาก
+  `AuthController.myBranches`) ซ่อนไปเลยเมื่อ `AppConfig.demoMode`** — เหตุผลเดียวกับข้อบนและกับ
+  การ์ดเชื่อมต่อเรียลไทม์ที่ซ่อนอยู่แล้ว — ตัวเลือก "ทุกสาขา" ในชีทนี้โชว์เฉพาะ role `admin` เท่านั้น
+  (ตรงกับกติกาฝั่ง backend ว่า `branchId: null` เลือกได้เฉพาะ admin)
+- **ไม่เขียนเทสต์แยกสำหรับ `DemoAuthDataSource`** — โปรเจกต์นี้ไม่เคยมี unit test ระดับ
+  `Demo*DataSource` เลยสักไฟล์ (เทสต์ demo mode ทั้งหมดอยู่ที่ระดับ `DemoStore` extension ใน
+  `test/core/demo_store_test.dart`) และ logic สาขาใน `DemoAuthDataSource` เป็นแค่ค่าคงที่ตายตัว
+  (ไม่มี state/เงื่อนไขให้ทดสอบ) จึงไม่สร้างรูปแบบเทสต์ใหม่ที่ไม่เคยมีมาก่อนสำหรับ coverage ที่แทบ
+  ไม่มีความหมาย — ทดสอบ `AuthController` (`submitBranchSelection`/`switchBranch` guard clause,
+  `loadMyBranches` success path) แทน ตาม `docs/CODING_STANDARDS.md` หัวข้อ 6.2

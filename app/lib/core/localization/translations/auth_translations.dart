@@ -30,6 +30,15 @@ const Map<String, String> authTranslationsTh = {
   'auth_demo_session_expired': 'เซสชันหมดอายุ',
   'auth_username_taken': 'username นี้ถูกใช้งานแล้ว',
   'auth_user_not_found': 'ไม่พบผู้ใช้งาน',
+
+  // เลือก/สลับสาขา (ดู docs/tickets/11-multi-branch.md)
+  'branch_selection_title': 'เลือกสาขา',
+  'branch_selection_subtitle':
+      'บัญชีนี้มีสิทธิ์เข้าใช้งานได้มากกว่า 1 สาขา เลือกสาขาที่จะเข้าทำงานตอนนี้',
+  'branch_switch_success': 'สลับไปยังสาขา @branch แล้ว',
+  'branch_all_branches': 'ทุกสาขา',
+  'branch_current_label': 'สาขาปัจจุบัน',
+  'branch_switch_action': 'สลับสาขา',
 };
 
 const Map<String, String> authTranslationsEn = {
@@ -67,4 +76,14 @@ const Map<String, String> authTranslationsEn = {
   'auth_demo_session_expired': 'Session expired',
   'auth_username_taken': 'This username is already taken',
   'auth_user_not_found': 'User not found',
+
+  // Branch selection / switching (ticket 11)
+  'branch_selection_title': 'Select branch',
+  'branch_selection_subtitle':
+      'This account has access to more than one branch. Choose which branch '
+      'to work in now.',
+  'branch_switch_success': 'Switched to @branch',
+  'branch_all_branches': 'All branches',
+  'branch_current_label': 'Current branch',
+  'branch_switch_action': 'Switch branch',
 };

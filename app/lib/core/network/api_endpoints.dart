@@ -6,6 +6,10 @@ class ApiEndpoints {
   static const String login = '/auth/login';
   static const String me = '/auth/me';
   static const String changePassword = '/auth/change-password';
+  static const String selectBranch = '/auth/select-branch';
+
+  // Branches (ดู docs/tickets/11-multi-branch.md)
+  static const String branchesMine = '/branches/mine';
 
   // Users
   static const String users = '/users';

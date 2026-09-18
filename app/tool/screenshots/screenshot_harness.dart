@@ -11,6 +11,7 @@ import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/utils/app_clock.dart';
+import 'package:payneat_pos/features/auth/domain/entities/login_result.dart';
 import 'package:payneat_pos/features/auth/domain/usecases/login_usecase.dart';
 
 /// เครื่องมือถ่ายภาพหน้าจอของแอปโดยไม่ต้องใช้เบราว์เซอร์หรืออุปกรณ์จริง
@@ -128,11 +129,14 @@ class ScreenshotHarness {
         LoginParams(username: username, password: password),
       ),
     );
-    final session = result?.dataOrNull;
-    if (session == null) {
+    final loginResult = result?.dataOrNull;
+    if (loginResult is! LoginSuccess) {
       throw StateError('ล็อกอินบัญชีสาธิต $username ไม่สำเร็จ');
     }
-    Get.find<SessionService>().start(user: session.user, token: session.token);
+    Get.find<SessionService>().start(
+      user: loginResult.user,
+      token: loginResult.token,
+    );
 
     // ไม่ await การนำทางของ GetX เพราะ Future จะ complete ตอน "หน้าถูกปิด" ไม่ใช่ตอนเปิดเสร็จ
     unawaited(Get.offAllNamed<void>(AppRoutes.home));

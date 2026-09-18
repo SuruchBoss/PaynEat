@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../features/auth/presentation/pages/branch_selection_page.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/splash_page.dart';
 import '../../features/customer/presentation/bindings/customer_bindings.dart';
@@ -26,6 +27,10 @@ class AppPages {
   static final List<GetPage<dynamic>> pages = [
     GetPage<void>(name: AppRoutes.splash, page: () => const SplashPage()),
     GetPage<void>(name: AppRoutes.login, page: () => const LoginPage()),
+    GetPage<void>(
+      name: AppRoutes.branchSelection,
+      page: () => const BranchSelectionPage(),
+    ),
     GetPage<void>(
       name: AppRoutes.home,
       page: () => const HomePage(),

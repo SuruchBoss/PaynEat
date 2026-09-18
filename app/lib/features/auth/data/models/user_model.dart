@@ -9,6 +9,8 @@ class UserModel extends User {
     required super.username,
     required super.role,
     required super.isActive,
+    super.branchId,
+    super.branchName,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -17,6 +19,8 @@ class UserModel extends User {
     username: json['username'] as String? ?? '',
     role: json['role'] as String? ?? '',
     isActive: json['isActive'] as bool? ?? true,
+    branchId: (json['branchId'] as num?)?.toInt(),
+    branchName: json['branchName'] as String?,
   );
 
   Map<String, dynamic> toJson() => {
@@ -25,5 +29,7 @@ class UserModel extends User {
     'username': username,
     'role': role,
     'isActive': isActive,
+    'branchId': branchId,
+    'branchName': branchName,
   };
 }

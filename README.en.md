@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-589%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-608%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 589 automated tests.
+control and 608 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -253,6 +253,7 @@ The login page has one-tap buttons for each account — no need to type anything
 | Waiter | `waiter1` | `waiter123` | Table map, orders, kitchen display |
 | Kitchen | `kitchen` | `kitchen123` | Kitchen display only |
 | Cashier | `cashier` | `cashier123` | Table map, orders, reports |
+| Waiter (2 branches) | `waiter2` | `waiter123` | Same as `waiter1` but has access to both the Sukhumvit and Thonglor branches — no quick-tap button on the login page, type it manually to try the branch picker (real backend only, see the tour below) |
 
 > ⚠️ **These accounts are for demo purposes only.** If you deploy this backend for real use (not just
 > running it locally), always change these passwords or disable `AUTO_SEED` first — see
@@ -330,6 +331,15 @@ The login page has one-tap buttons for each account — no need to type anything
     top-right of the bar after picking a date range → export **"Sales summary"**, **"Top items"**, or
     **"Sales by day"** → get a CSV file for the currently selected date range right away (browser only,
     same as exporting the audit log in step 17)
+21. **(Option A/B with a real backend only — Demo Mode has a single branch, so skip this step there)**
+    Log out and log back in as `waiter2`/`waiter123` (type it manually, no quick-tap button) → you land
+    straight on the **"Select branch"** page because this account has access to 2 branches → pick
+    **"Thonglor branch"** → the table map now shows a completely different set of table names/menu items
+    (a seafood/grill theme), with no overlap with the Sukhumvit branch you've used for the whole tour
+22. **Log out and log back in as `admin`** → open the **Profile** page (the person icon in the bottom
+    bar/rail) → see a **"Current branch"** card, tap **"Switch branch"** → pick **"All branches"** (only
+    `admin` gets this option) → go back to **Dashboard/Reports** and you'll see sales totals combined
+    across both branches immediately, without switching branch-by-branch to add them up yourself
 
 **Want to try the hidden business rules?**
 
@@ -372,8 +382,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 263 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 326 cases — domain / controller / widget
+cd backend && npm test      # 279 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 329 cases — domain / controller / widget
 ```
 
 ---
@@ -540,6 +550,12 @@ cd app && flutter test      # 326 cases — domain / controller / widget
   instead of waiting for its token to expire, a manager can't self-promote or touch an admin
   account, and a real deployment (`NODE_ENV=production`) refuses to seed accounts with the known
   demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
+- **Multi-branch support** — tables/menu items/orders/ingredients and every report are correctly
+  scoped per branch. An account with access to more than one branch lands on a **branch picker**
+  right after login, then can switch branch anytime from the **Profile** page — `admin` can switch
+  to an **"all branches"** mode to see combined reports across every branch. Promotions, customers/
+  loyalty, store settings, and shifts remain chain-wide by design (real backend only, option A/B —
+  Demo Mode has a single branch; see `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
 
 ---
 
@@ -838,11 +854,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 263 cases
-cd app && flutter test      # 326 cases
+cd backend && npm test      # 279 cases
+cd app && flutter test      # 329 cases
 ```
 
-**Backend (263 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (279 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -964,7 +980,19 @@ across a shift boundary) and per day (all shifts combined, no cash reconciliatio
 shifts/cashiers could be mixed together), a 404 when the shift doesn't exist, exporting a Z-report as
 CSV, and RBAC (a waiter can't call it) (see `docs/tickets/12-report-export.md`).
 
-**Flutter (326 cases)** — split into 3 levels:
+`branches.test.js` (16 new cases) fully tests multi-branch: login returns a `pendingToken` + the list
+of branches when the account has access to ≥2 branches (and isn't admin); login resolves immediately
+when there's a single branch or the user is admin (always auto-selecting the first branch); `POST
+/auth/select-branch` both exchanges a pendingToken for a real token and switches branch afterwards
+(but a pendingToken can't be used to call any other endpoint before a branch is chosen); only admin
+can pick "all branches" mode (`branchId: null`); `authenticate` re-checks branch access from the DB on
+every request (a disabled branch invalidates an old token immediately, even for admin); table/menu/
+order/ingredient lists are correctly filtered by `branch_id` (all-branches mode sees both branches
+combined); creating a new staff member auto-assigns them to the branch the creator is currently
+working in; and RBAC on `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id` is correct (see
+`docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36).
+
+**Flutter (329 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -974,7 +1002,7 @@ CSV, and RBAC (a waiter can't call it) (see `docs/tickets/12-report-export.md`).
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
 | Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10) |
-| Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
+| Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
 | Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables |
 | Controller | `home_controller_test.dart` | Per-role menu visibility, tab switching |
@@ -1107,6 +1135,15 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   Excel/PDF yet, since CSV already opens cleanly in Excel (with a UTF-8 BOM so Thai characters don't
   garble) and the ticket's acceptance criteria accept it as an equivalent format (see
   `docs/DECISIONS.md` #35)
+- [x] **Multi-branch/multi-store support** — done: added `branches`/`user_branches`, scoped
+  `branch_id` to the 4 entities that are genuinely branch-level data (tables/menu items/orders/
+  ingredients) including every report, accounts with access to multiple branches pick one at login
+  and can switch branch later from the Profile page, and admin can switch to an "all branches" mode
+  to see combined reports (see the ✨ Features section, `docs/tickets/11-multi-branch.md`,
+  `docs/DECISIONS.md` #36) — **no "manage branches" screen yet** in Flutter (the backend already has
+  the endpoints, but the acceptance criteria didn't require it), **no full cross-branch guard** for
+  update/delete/get-by-id (scoped to list/create only), and **Demo Mode deliberately still has a
+  single branch** (`branch_id` was not added to the demo store)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -1115,8 +1152,9 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   environment doesn't have (LAN/Wi-Fi is done, as noted above)
 - **Offline mode for opening new orders/taking payment** — higher conflict risk (order numbers and money
   correctness must come straight from the server)
-- **PostgreSQL for multi-branch support** — deliberately scoped to a single branch for now (the repository
-  layer is already isolated, so this wouldn't be a hard change if it's ever needed)
+- **PostgreSQL for multi-branch support** — multi-branch itself is done (see above), but it still runs
+  on a single SQLite file for now (the repository layer is already isolated, so this wouldn't be a
+  hard change if it's ever needed)
 - **PromptPay payment gateway/automatic payment-verification callback** — more than a single-branch
   restaurant like this needs (it requires signing up as a merchant with a bank/provider); generating a
   real, scannable QR code is enough for this scope (see `docs/tickets/16-promptpay-qr.md`)
@@ -1129,7 +1167,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   job application (headline numbers and highlights, much shorter than this README)
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 27-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences (28 pages)
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 32 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 36 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

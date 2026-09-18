@@ -22,11 +22,35 @@ layer ไว้รองรับ) และ data model (เพิ่มมิ�
   รายงานภาพรวมข้ามสาขาสำหรับ owner/admin ระดับองค์กร
 
 ## Acceptance Criteria
-- [ ] มี table branches และทุก entity หลักผูกกับ branch_id
-- [ ] User ที่มีสิทธิ์หลายสาขาเลือกสาขาที่จะทำงานได้ตอน login
-- [ ] ข้อมูล/รายงานแยกตามสาขาไม่ปนกัน
-- [ ] Owner/admin ระดับองค์กรดูรายงานสรุปรวมทุกสาขาได้
+- [x] มี table branches และทุก entity หลักผูกกับ branch_id — ทำแล้ว: `branches` +
+  `user_branches` (many-to-many) ใหม่, `branch_id` ผูกกับ 4 entity ที่เป็นข้อมูลระดับสาขาจริง
+  (`dining_tables`/`menu_items`/`orders`/`ingredients`) — ตั้งใจไม่ผูก entity ระดับเชน/องค์กร
+  (โปรโมชัน/ลูกค้า/หมวดหมู่/ตัวเลือกเสริม/ตั้งค่า/กะ/การชำระเงิน/คืนเงิน/ใบกำกับภาษี/audit log) ดู
+  เหตุผลเต็มใน `docs/DECISIONS.md` #36
+- [x] User ที่มีสิทธิ์หลายสาขาเลือกสาขาที่จะทำงานได้ตอน login — ทำแล้ว: login คืน `pendingToken`
+  + รายชื่อสาขาถ้ามีสิทธิ์ ≥2 สาขา (ไม่ใช่ admin) หน้าเลือกสาขาใหม่ (`BranchSelectionPage`) ให้เลือก
+  ก่อนเข้าใช้งาน — admin auto-select สาขาแรกเสมอเพื่อความเข้ากันได้ย้อนหลัง (เหตุผลดู DECISIONS #36)
+- [x] ข้อมูล/รายงานแยกตามสาขาไม่ปนกัน — ทำแล้ว: โต๊ะ/เมนู/ออเดอร์/วัตถุดิบ + รายงานทุกตัว (ยอดขาย/
+  เมนูขายดี/ยอดขายรายวัน-รายชั่วโมง/ตามหมวดหมู่/ตัวนับสด) กรองด้วย `branch_id` ของ token ปัจจุบัน
+- [x] Owner/admin ระดับองค์กรดูรายงานสรุปรวมทุกสาขาได้ — ทำแล้ว: admin สลับเป็นโหมด "ทุกสาขา"
+  (`branchId: null`) ผ่าน `POST /auth/select-branch` ได้ภายหลัง (หน้าโปรไฟล์ในแอปมีปุ่ม "สลับสาขา")
+  ทุก query ที่ `branchId` เป็น `null` จะไม่ filter เลย = เห็นข้อมูลรวมทุกสาขาทันที
 
-## หมายเหตุ
-ควร grill/ประเมิน scope นี้กับ PO ก่อนเริ่ม เพราะกระทบ architecture มากที่สุดในบรรดา
-ticket ทั้งหมด แนะนำให้ทำหลัง Critical + High priority เสร็จก่อน
+## สิ่งที่ตั้งใจเลื่อนไว้ก่อน (ดูรายละเอียดเหตุผลเต็มใน `docs/DECISIONS.md` #36)
+- ไม่ migrate SQLite → PostgreSQL (repository layer แยกไว้แล้วรองรับได้ถ้าต้องขยายจริง)
+- ไม่ทำ cross-branch guard เต็มรูปแบบสำหรับ update/delete/get-by-id (scope แค่ list/create)
+- ชื่อโต๊ะยังต้องไม่ซ้ำกันทั้งเชน ไม่ใช่แค่ในสาขาเดียวกัน (ต้องแก้ schema constraint เพิ่ม)
+- เลขที่ออเดอร์/เลขคิว takeaway ยังรันต่อเนื่องรวมทุกสาขา ไม่แยกตัวนับต่อสาขา
+- ยังไม่มีหน้าจอ "จัดการสาขา" (สร้าง/แก้ไข/มอบสิทธิ์พนักงาน) ใน Flutter — backend มี endpoint ครบ
+  (`GET/POST /branches`, `PATCH /branches/:id`) แต่ acceptance criteria ไม่ได้บังคับ
+- โหมดสาธิต (Demo Mode) ในแอปยังมีสาขาเดียวเสมอโดยตั้งใจ ไม่ได้ทำ `branch_id` ให้ demo store ทุก
+  โดเมน (เมนู/โต๊ะ/วัตถุดิบ/ออเดอร์/รายงาน) เพราะผู้ใช้เดโมสาธารณะสร้าง user คนที่ 2 ที่มีหลายสาขา
+  เองไม่ได้อยู่แล้ว
+
+## ไฟล์ที่เกี่ยวข้อง
+- Backend: `backend/src/modules/branches/`, `backend/src/middlewares/auth.js`,
+  `backend/src/core/branchScope.js`, `backend/src/db/schema.sql`, `backend/src/db/migrate.js`,
+  `backend/src/db/seed.js`, `backend/tests/branches.test.js`
+- Flutter: `app/lib/features/auth/` (entities/repositories/usecases/controllers/pages ที่เกี่ยวกับ
+  branch), `app/lib/features/auth/presentation/pages/branch_selection_page.dart`,
+  `app/lib/features/auth/presentation/pages/profile_page.dart` (การ์ดสลับสาขา)

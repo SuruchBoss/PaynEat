@@ -8,9 +8,11 @@ import '../../../features/audit_log/domain/repositories/audit_log_repository.dar
 import '../../../features/audit_log/domain/usecases/audit_log_usecases.dart';
 import '../../../features/auth/domain/repositories/auth_repository.dart';
 import '../../../features/auth/domain/usecases/change_password_usecase.dart';
+import '../../../features/auth/domain/usecases/get_my_branches_usecase.dart';
 import '../../../features/auth/domain/usecases/get_profile_usecase.dart';
 import '../../../features/auth/domain/usecases/login_usecase.dart';
 import '../../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../../features/auth/domain/usecases/select_branch_usecase.dart';
 import '../../../features/customer/domain/repositories/customer_repository.dart';
 import '../../../features/customer/domain/usecases/customer_usecases.dart';
 import '../../../features/ingredient/domain/repositories/ingredient_repository.dart';
@@ -41,6 +43,14 @@ import '../../../features/tax_invoice/domain/usecases/tax_invoice_usecases.dart'
 void bindUseCases() {
   // auth
   Get.lazyPut(() => LoginUseCase(Get.find<AuthRepository>()), fenix: true);
+  Get.lazyPut(
+    () => SelectBranchUseCase(Get.find<AuthRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetMyBranchesUseCase(Get.find<AuthRepository>()),
+    fenix: true,
+  );
   Get.lazyPut(() => GetProfileUseCase(Get.find<AuthRepository>()), fenix: true);
   Get.lazyPut(() => LogoutUseCase(Get.find<AuthRepository>()), fenix: true);
   Get.lazyPut(

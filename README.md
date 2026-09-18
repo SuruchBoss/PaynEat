@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-589%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-608%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 589 automated tests.
+control and 608 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -246,6 +246,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 | พนักงานเสิร์ฟ | `waiter1` | `waiter123` | ผังโต๊ะ, ออเดอร์, จอครัว |
 | ครัว | `kitchen` | `kitchen123` | จอครัวอย่างเดียว |
 | แคชเชียร์ | `cashier` | `cashier123` | ผังโต๊ะ, ออเดอร์, รายงาน |
+| พนักงานเสิร์ฟ (2 สาขา) | `waiter2` | `waiter123` | เหมือน `waiter1` แต่มีสิทธิ์เข้าได้ทั้งสาขาสุขุมวิท/ทองหล่อ — ไม่มีปุ่มลัดที่หน้า login ต้องพิมพ์เอง ใช้ลองหน้าเลือกสาขา (ต้องต่อ backend จริงเท่านั้น ดูหัวข้อทัวร์ด้านล่าง) |
 
 > ⚠️ **บัญชีเหล่านี้มีไว้สำหรับดูตัวอย่างเท่านั้น** ถ้าจะ deploy backend นี้ไปใช้งานจริง (ไม่ใช่แค่รันดูในเครื่อง)
 > ต้องเปลี่ยนรหัสผ่านเหล่านี้หรือปิด `AUTO_SEED` ก่อนเสมอ — ดูรายละเอียดและเช็คลิสต์ก่อน deploy ใน
@@ -313,6 +314,13 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     เลือกช่วงเวลา → เลือกส่งออก **"สรุปยอดขาย"**, **"เมนูขายดี"** หรือ **"ยอดขายรายวัน"** อย่างใดอย่างหนึ่ง
     → ได้ไฟล์ CSV ตามช่วงวันที่ที่กำลังดูอยู่ทันที (เปิดในเบราว์เซอร์บนเว็บเท่านั้น เหมือนการส่งออก
     ประวัติการทำรายการในขั้นตอน 17)
+21. **(เฉพาะทางเลือก A/B ที่ต่อ backend จริง — โหมดสาธิตมีสาขาเดียวจึงข้ามขั้นตอนนี้ได้)**
+    ออกจากระบบแล้วเข้าใหม่เป็น `waiter2`/`waiter123` (พิมพ์เอง ไม่มีปุ่มลัด) → เจอหน้า **"เลือกสาขา"**
+    ทันทีเพราะบัญชีนี้มีสิทธิ์เข้าได้ 2 สาขา → เลือก **"สาขาทองหล่อ"** → เข้าหน้าผังโต๊ะจะเห็นชื่อโต๊ะ/
+    เมนูเป็นชุดใหม่ทั้งหมด (ธีมซีฟู้ด/ปิ้งย่าง) ไม่ปนกับสาขาสุขุมวิทที่ใช้มาตลอดทัวร์นี้เลย
+22. **ออกจากระบบแล้วเข้าใหม่เป็น `admin`** → เปิดหน้า **บัญชี** (ไอคอนคนที่แถบล่าง/rail) → เห็นการ์ด
+    **"สาขาปัจจุบัน"** กด **"สลับสาขา"** → เลือก **"ทุกสาขา"** (ตัวเลือกนี้มีเฉพาะ `admin`) → กลับไป
+    หน้า **ภาพรวม/รายงาน** จะเห็นยอดขายรวมทั้ง 2 สาขาทันที ไม่ต้องสลับไปมาทีละสาขาเพื่อรวมยอดเอง
 
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
@@ -348,8 +356,8 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 263 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 326 เคส — domain / controller / widget
+cd backend && npm test      # 279 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 329 เคส — domain / controller / widget
 ```
 
 ---
@@ -494,6 +502,12 @@ cd app && flutter test      # 326 เคส — domain / controller / widget
   ไม่ต้องรอ token หมดอายุ, manager ยกระดับตัวเอง/แตะบัญชี admin ไม่ได้, และ deploy จริง
   (`NODE_ENV=production`) จะไม่ยอม seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้วให้เองด้วย
   (ดู `docs/DECISIONS.md` #20 และ `SECURITY.md`)
+- **รองรับหลายสาขา (Multi-branch)** — โต๊ะ/เมนู/ออเดอร์/วัตถุดิบ และรายงานทุกตัวแยกตามสาขาไม่ปนกัน
+  บัญชีที่มีสิทธิ์เข้าได้มากกว่า 1 สาขาจะเจอหน้า **เลือกสาขา** ทันทีหลัง login แล้วสลับสาขาได้ทุกเมื่อ
+  ที่หน้า **บัญชี** ภายหลัง — `admin` สลับไปโหมด **"ทุกสาขา"** เพื่อดูรายงานรวมทุกสาขาได้ด้วย ส่วน
+  โปรโมชัน/ลูกค้า-แต้มสะสม/ตั้งค่าร้าน/กะ ยังคงเป็นระดับเชนทั้งหมดตามที่ตั้งใจ (ต้องต่อ backend จริง
+  ทางเลือก A/B เท่านั้น โหมดสาธิตมีสาขาเดียว ดู `docs/tickets/11-multi-branch.md`,
+  `docs/DECISIONS.md` #36)
 
 ---
 
@@ -781,11 +795,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 263 เคส
-cd app && flutter test      # 326 เคส
+cd backend && npm test      # 279 เคส
+cd app && flutter test      # 329 เคส
 ```
 
-**Backend (263 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (279 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -894,7 +908,17 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 ไม่มีกระทบยอดเงินสดเพราะอาจมีหลายกะ/หลายแคชเชียร์ปนกัน), 404 เมื่อกะไม่มีจริง, export Z-report เป็น
 CSV, และ RBAC (พนักงานเสิร์ฟเรียกไม่ได้) (ดู `docs/tickets/12-report-export.md`)
 
-**Flutter (326 เคส)** — แบ่งเป็น 3 ระดับ:
+`branches.test.js` (16 เคสใหม่) เทสต์ multi-branch เต็มรูปแบบ: login คืน `pendingToken` +
+รายชื่อสาขาเมื่อมีสิทธิ์ ≥2 สาขา (ไม่ใช่ admin), login ตรงทันทีเมื่อมีสาขาเดียวหรือเป็น admin
+(auto-select สาขาแรกเสมอ), `POST /auth/select-branch` แลก pendingToken เป็น token จริง + ใช้สลับสาขา
+ภายหลังได้ทั้งคู่ (แต่ pendingToken ใช้เรียก endpoint อื่นก่อนเลือกสาขาไม่ได้), เฉพาะ admin เลือก
+โหมด "ทุกสาขา" (`branchId: null`) ได้, `authenticate` เช็คสิทธิ์สาขาจาก DB ทุก request (ปิดสาขาแล้ว
+token เก่าใช้ต่อไม่ได้ทันทีแม้แต่ของ admin), โต๊ะ/เมนู/ออเดอร์/วัตถุดิบ list ถูก filter ตาม
+`branch_id` ถูกต้อง (โหมดทุกสาขาเห็นของทั้งสองสาขารวมกัน), สร้างพนักงานใหม่ผูกสาขาอัตโนมัติจาก
+สาขาที่ผู้สร้างทำงานอยู่ และ `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id` RBAC
+ถูกต้อง (ดู `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
+
+**Flutter (329 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -904,7 +928,7 @@ CSV, และ RBAC (พนักงานเสิร์ฟเรียกไ�
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
 | Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 15 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน, flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08), flow ลูกค้า/แต้มสะสม: สร้าง/ค้นหาลูกค้า, ผูก customerId ตอนเปิดออเดอร์, สะสมแต้มครั้งเดียวตอนจ่ายครบ (รวมกรณีแยกจ่ายหลายรอบ), ใช้แต้มแลกส่วนลดโดยยอด amount ไม่เปลี่ยน และปฏิเสธการใช้แต้มที่ไม่ถูกต้องทุกกรณี (ticket 09) และเลขคิวรับอาหารมีเฉพาะ `type=takeaway`, รันต่อวันเรียงถูกต้องแม้มีออเดอร์ dine-in/delivery แทรกกลาง (ticket 10), flow audit ระดับบัญชี/การเงิน: แก้ราคาเมนู log เฉพาะตอนราคาเปลี่ยนจริง, สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบมือ, และ `auditLogExportCsv` คืน CSV ที่กรองตาม action ถูกต้อง (ticket 14) |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม รวมกรณีไม่มี `Get.arguments` เลย (มาจากปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" ตรงๆ) ต้องตกเป็นกลับบ้านเหมือนกัน ไม่ใช่ทานที่ร้าน (ticket 10) |
-| Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน |
+| Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน, `loadMyBranches` สำเร็จเติม `myBranches`, guard clause ของ `submitBranchSelection`/`switchBranch` เมื่อยังไม่มี pendingToken/session token (ticket 11) |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
 | Controller | `table_controller_test.dart` | กรองโซน/สถานะพร้อมกัน, นับโต๊ะว่าง/มีลูกค้า |
 | Controller | `home_controller_test.dart` | เมนูที่แต่ละบทบาทเห็น, การสลับแท็บ |
@@ -1028,6 +1052,13 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   ทั้งคู่ (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/12-report-export.md`) — **export เป็น CSV เท่านั้น**
   ยังไม่ทำ Excel/PDF เพราะ CSV เปิดกับ Excel ได้ตรงอยู่แล้ว (มี UTF-8 BOM กันอักษรไทยเพี้ยน)
   และเทียบเท่าตามที่ acceptance criteria ของทิกเก็ตยอมรับ (ดู `docs/DECISIONS.md` #35)
+- [x] **Multi-branch/multi-store** — ทำแล้ว: เพิ่ม `branches`/`user_branches`, ผูก `branch_id` ให้ 4
+  entity ที่เป็นข้อมูลระดับสาขาจริง (โต๊ะ/เมนู/ออเดอร์/วัตถุดิบ) รวมถึงรายงานทุกตัว, บัญชีที่มีสิทธิ์
+  หลายสาขาเลือกสาขาตอน login ได้ แล้วสลับสาขาที่หน้าบัญชีได้ภายหลัง, admin สลับเป็นโหมด "ทุกสาขา"
+  ดูรายงานรวมได้ (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
+  — **ยังไม่มีหน้าจอ "จัดการสาขา"** ใน Flutter (backend มี endpoint ครบแล้ว แต่ acceptance criteria
+  ไม่ได้บังคับ), **ไม่ทำ cross-branch guard เต็มรูปแบบ** สำหรับ update/delete/get-by-id (scope แค่
+  list/create), และ **โหมดสาธิตยังมีสาขาเดียวโดยตั้งใจ** (ไม่ได้ทำ `branch_id` ให้ demo store)
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 
@@ -1035,8 +1066,8 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   (LAN/WiFi ทำแล้วตามด้านบน)
 - **โหมดออฟไลน์สำหรับเปิดออเดอร์ใหม่/ชำระเงิน** — ความเสี่ยง conflict สูงกว่า (เลขที่ออเดอร์/
   ความถูกต้องของเงินต้องมาจากเซิร์ฟเวอร์โดยตรง)
-- **PostgreSQL สำหรับหลายสาขา** — ตั้งใจทำแค่สาขาเดียวก่อนตามสโคปปัจจุบัน (ชั้น repository
-  ถูกแยกไว้แล้วจึงเปลี่ยนได้ไม่ยากถ้าต้องขยายในอนาคต)
+- **PostgreSQL สำหรับหลายสาขา** — multi-branch เองทำแล้ว (ดูด้านบน) แต่ยังใช้ SQLite ไฟล์เดียวอยู่
+  ตามสโคปปัจจุบัน (ชั้น repository ถูกแยกไว้แล้วจึงเปลี่ยนได้ไม่ยากถ้าต้องขยายจริงในอนาคต)
 - **PromptPay payment gateway/callback ตรวจสอบการจ่ายอัตโนมัติ** — เกินความจำเป็นสำหรับร้านอาหาร
   สาขาเดียวขนาดนี้ (ต้องสมัคร merchant กับธนาคาร/ผู้ให้บริการ) generate QR จริงให้สแกนได้แล้วถือว่า
   พอสำหรับขอบเขตนี้ (ดู `docs/tickets/16-promptpay-qr.md`)
@@ -1049,7 +1080,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   (ตัวเลขเด่นๆ + จุดขาย ไม่ยาวเท่า README นี้)
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 27 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 32 ข้อ พร้อมข้อเสียที่ยอมรับ
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 36 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — มาตรฐานการเขียนโค้ดจากผลตรวจ Clean Code /
   State Management / Clean Architecture / Technical Debt / โครงสร้างโฟลเดอร์ ใช้เป็นแนวทางพัฒนาต่อจากนี้

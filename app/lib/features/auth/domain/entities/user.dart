@@ -8,6 +8,8 @@ class User {
     required this.username,
     required this.role,
     required this.isActive,
+    this.branchId,
+    this.branchName,
   });
 
   final int id;
@@ -15,6 +17,10 @@ class User {
   final String username;
   final String role;
   final bool isActive;
+  // สาขาที่ token ปัจจุบันทำงานอยู่ (ดู docs/tickets/11-multi-branch.md) — เป็นของ session ไม่ใช่
+  // property ถาวรของ user คนเดียวมีได้หลายสาขา — null ได้เฉพาะ admin โหมด "ทุกสาขา"
+  final int? branchId;
+  final String? branchName;
 
   String get roleLabel => UserRole.label(role);
 
