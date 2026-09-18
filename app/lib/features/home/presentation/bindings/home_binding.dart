@@ -316,7 +316,13 @@ class HomeBinding extends Bindings {
       ],
       UserRole.cashier => const [tables, orders, shift, reports, profile],
       UserRole.kitchen => const [kitchen, profile],
-      _ => const [tables, orders, kitchen, profile],
+      // ตั้งใจให้เห็น "ครัว" ด้วย — backend อนุญาตให้ waiter แก้สถานะอาหารได้เช่นกัน (ดู
+      // authorize('admin', 'manager', 'kitchen', 'waiter') ใน order.routes.js) สำหรับร้านเล็ก
+      // ที่พนักงานเสิร์ฟอาจต้องช่วยดู/กดสถานะในครัวเอง
+      UserRole.waiter => const [tables, orders, kitchen, profile],
+      // role ที่ไม่รู้จัก (ข้อมูลเพี้ยน/พิมพ์ผิด) ต้อง fail-safe ไปทางจำกัดสิทธิ์สุด ไม่ใช่เดา
+      // ชุดสิทธิ์กว้างๆ ให้เงียบๆ — เห็นได้แค่บัญชีตัวเอง
+      _ => const [profile],
     };
   }
 }

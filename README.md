@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-578%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 578 automated tests.
+control and 580 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -338,7 +338,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 255 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 323 เคส — domain / controller / widget
+cd app && flutter test      # 325 เคส — domain / controller / widget
 ```
 
 ---
@@ -766,7 +766,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 255 เคส
-cd app && flutter test      # 323 เคส
+cd app && flutter test      # 325 เคส
 ```
 
 **Backend (255 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -872,7 +872,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 `AI_ASSISTANT_DAILY_LIMIT=1` (ตั้ง env แยก process เพื่อไม่กระทบเทสต์ไฟล์อื่นที่ใช้ค่าเริ่มต้น 20)
 (ดู `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
 
-**Flutter (323 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (325 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -898,7 +898,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Controller | `dashboard_controller_test.dart` | โหลดสรุปยอดขายวันนี้ + ตัวนับสด |
 | Controller | `report_controller_test.dart` | เลือกช่วงเวลารายงาน, กลืน error ของ topItems/dailySales เงียบๆ |
 | Controller | `split_bill_controller_test.dart` | เลือก/ยกเลิกเลือกรายการ, ดึงพรีวิว, `canPay`/`change` |
-| Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) |
+| Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) — รวมยืนยันว่าพนักงานเสิร์ฟเห็นเมนู "ครัว" ด้วยตั้งใจ (mirror สิทธิ์ backend) และ role ที่ไม่รู้จักต้อง fail-safe เห็นแค่บัญชีตัวเอง ไม่ใช่ได้ชุดสิทธิ์กว้างๆ จาก wildcard เงียบๆ |
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
 | Controller | `audit_log_controller_test.dart` | ส่ง filter (action/ช่วงวันที่) ไปกับ `load`/`loadMore` ถูกต้อง, `setDateRange` แปลงเป็น ISO date และล้าง filter ได้, `hasMore`/pagination (ticket 14) |
 | Controller | `ai_assistant_controller_test.dart` | `ask` trim คำถาม/ล้างช่องพิมพ์/เก็บคำตอบ+กราฟ, กันคำถามว่าง/ยาวเกิน/ส่งซ้อนกันขณะรอคำตอบเดิม, แยก `errorCode` จาก `ServerFailure` (เช่น `AI_ASSISTANT_DISABLED`) ออกจาก error ทั่วไป (ticket 15) |
