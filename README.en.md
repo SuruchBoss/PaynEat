@@ -84,6 +84,20 @@ control and 574 automated tests.
 > not a single line of JavaScript.
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 
+> 🤖 **Live demo of the AI ask-your-data assistant (real Claude API call, not a mock)**
+>
+> <img src="docs/ai-demo/ai-assistant-demo.gif" width="780"><br>
+> <sub>Full-resolution still: <a href="docs/ai-demo/ai-assistant-live.png">ai-assistant-live.png</a></sub>
+>
+> Recorded from a real session: log in as admin → open the "AI Assistant" tab → type a question in
+> Thai → Claude calls a tool that pulls real sales data straight from the database (no scripted
+> response) → it answers with a chart and "sources" chips citing the exact endpoint it called.
+> ⚠️ **Unlike the gallery above**: this asset is **not** produced by a frozen-clock golden test, so
+> it isn't byte-for-byte reproducible (it needs a real `ANTHROPIC_API_KEY` and the seeded sample
+> data, and the model's wording can vary run to run). How to re-capture it, and why it's kept
+> separate from the golden-test set, is documented in
+> [`docs/DECISIONS.md` #33](docs/DECISIONS.md)
+
 ---
 
 ## 📋 Table of contents

@@ -81,6 +81,19 @@ control and 574 automated tests.
 > 6 ใบที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วนไม่มี JavaScript สักบรรทัด
 > ผลตรวจความถูกต้องของภาษาและตัวเลขอยู่ใน [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 
+> 🤖 **Demo จริงของผู้ช่วย AI ถามตอบข้อมูลร้าน (เรียก Claude API จริง ไม่ใช่ mock)**
+>
+> <img src="docs/ai-demo/ai-assistant-demo.gif" width="780"><br>
+> <sub>ภาพนิ่งความละเอียดเต็ม: <a href="docs/ai-demo/ai-assistant-live.png">ai-assistant-live.png</a></sub>
+>
+> คลิปนี้บันทึกจากการใช้งานจริง: ล็อกอิน admin → เปิดแท็บ "ผู้ช่วย AI" → พิมพ์คำถามภาษาไทย →
+> Claude เรียก tool ดึงข้อมูลยอดขายจริงจากฐานข้อมูล (ไม่ได้เขียนสคริปต์ตอบไว้ล่วงหน้า) → ตอบกลับ
+> พร้อมกราฟและชิป "แหล่งข้อมูล" อ้างอิง endpoint ที่เรียกจริง — ดู `docs/ai-demo/ai-assistant-demo.gif`
+> ⚠️ **ต่างจากภาพชุดด้านบน**: ภาพชุดนี้**ไม่ได้**มาจาก golden test ที่ freeze เวลาไว้ จึงไม่
+> reproducible แบบ byte-ต่อ-byte (ต้องมี `ANTHROPIC_API_KEY` จริงและข้อมูลตัวอย่างที่ seed ไว้
+> คำตอบจากโมเดลอาจเปลี่ยนคำพูดได้ทุกครั้งที่เรียกใหม่) รายละเอียดวิธี capture ใหม่และเหตุผลที่แยก
+> จากชุด golden test อยู่ใน [`docs/DECISIONS.md` #33](docs/DECISIONS.md)
+
 ---
 
 ## 📋 สารบัญ

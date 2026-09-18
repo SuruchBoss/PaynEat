@@ -238,6 +238,7 @@
     <a href="#counter">Checkout</a>
     <a href="#back">Back office</a>
     <a href="#edge">Edge</a>
+    <a href="#ai">AI assistant</a>
     <a href="index.html" style="color:var(--steel-lt)">TH</a>
   </span>
 </nav>
@@ -374,6 +375,24 @@
   </div>
 </section>
 
+<section class="act" id="ai">
+  <div class="split">
+    <div class="slab drift"><img src="../ai-demo/ai-assistant-demo.gif" alt="Animated demo of the AI assistant answering a Thai-language sales question, with a chart and source citations, from a real Claude API call" width="800" height="500" loading="lazy"></div>
+    <div>
+      <span class="eyebrow rise">07 — AI assistant</span>
+      <h2 class="rise" style="font-size:var(--w2);max-width:17ch">Ask about sales in plain language, skip the report screens</h2>
+      <p class="lede rise" style="margin-top:20px">Type a question in Thai or English and the AI assistant (powered by Claude) calls tools wired
+        to the real restaurant database to pull the numbers — it never guesses from the model's
+        general knowledge. Every answer always cites where its data came from.</p>
+      <div class="feat">
+        <div><span class="dot"></span><span><b>Tools wired to real data only</b><br><span>Sales, best sellers, repeat customers, recent orders — every answer traces back to the exact endpoint it called</span></span></div>
+        <div><span class="dot"></span><span><b>Says "no data" instead of guessing</b><br><span>It refuses to invent numbers for questions the system has no data for</span></span></div>
+        <div><span class="dot"></span><span><b>Role-scoped access</b><br><span>Only the owner/manager can ask, with a daily question cap to keep API costs under control</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <footer>
   <h2 style="font-size:var(--w2);max-width:17ch">Try it yourself<br>no server to set up</h2>
   <p class="lede" style="margin-top:18px">Demo Mode ships with a full restaurant already set up — tables, a menu, past orders, and sales data ready to explore from the moment you open it.
@@ -384,7 +403,9 @@
   </div>
   <p class="fnote">Backed by 574+ automated tests before it ever ships · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · released under
     <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a><br>
-    Every screenshot on this page is a golden-test capture from the real app, not a mockup</p>
+    Every screenshot on this page is a golden-test capture from the real app, not a mockup (except the
+    AI assistant animation, recorded from a real Claude API call, not a golden test — see
+    <a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md" target="_blank" rel="noopener">docs/DECISIONS.md #33</a>)</p>
 </footer>
 </body>
 </html>

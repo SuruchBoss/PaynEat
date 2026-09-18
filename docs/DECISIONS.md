@@ -1131,6 +1131,19 @@ LLM เดา/แต่งตัวเลขยอดขายเอง (halluci
   (admin/manager เท่านั้น) ก็ implement ได้ตรงไปตรงมากว่าด้วยรูปแบบเดิมที่มีอยู่แล้ว (`destinationsForRole`)
 - **โมเดลเริ่มต้น `claude-opus-5`** ตั้งค่าได้ผ่าน `AI_ASSISTANT_MODEL` — ผู้ดูแลระบบจริงปรับเป็นรุ่นอื่น
   ได้เองถ้าต้องการคุมค่าใช้จ่ายเพิ่มเติม โดยไม่ต้องแก้โค้ด
+- **เพิ่ม demo ภาพเคลื่อนไหวของฟีเจอร์นี้แยกออกจากชุด golden-test screenshot เดิมโดยเจตนา** —
+  `docs/ai-demo/ai-assistant-demo.gif` และ `docs/ai-demo/ai-assistant-live.png` capture มาจากการใช้งาน
+  จริงผ่าน `ANTHROPIC_API_KEY` จริง (ไม่ใช่ fake client แบบในเทสต์) จึง **ไม่ reproducible แบบ
+  byte-ต่อ-byte** เหมือนภาพใน `docs/screenshots/` ที่มาจาก golden test ที่ freeze เวลาไว้ — ตั้งใจไม่ปน
+  สองชุดนี้เข้าด้วยกัน (ไม่ใส่ในตาราง "📸 หน้าตาแอป" หลัก) แต่แยกเป็น callout ของตัวเองในหัวข้อเดียวกัน
+  ของ README ทั้งสองภาษา พร้อมคำเตือนชัดเจนว่าต่างจากภาพชุดอื่นยังไง วิธี regenerate ใหม่ในอนาคต: (1)
+  ตั้ง `ANTHROPIC_API_KEY` จริงใน `backend/.env`, (2) seed ออเดอร์ตัวอย่างย้อนหลังผ่าน HTTP API จริง
+  (ไม่ใช่เขียนแถวลง DB ตรงๆ เพื่อให้ business logic ที่คิดยอด/แต้มทำงานจริง) แล้วปรับ `created_at` ย้อน
+  หลังของออเดอร์/payment ที่ seed ไว้ให้กระจายหลายวันด้วย `better-sqlite3` (สคริปต์ตัวอย่างไม่ได้ commit
+  ไว้ในนี้เพราะเป็นสคริปต์ครั้งเดียวเฉพาะข้อมูลเดโม ไม่ใช่ tooling ถาวรของโปรเจกต์), (3) ใช้ Playwright
+  บันทึกหน้าจอ (`recordVideo`) เดินสคริปต์ล็อกอิน → เปิดแท็บผู้ช่วย AI → พิมพ์คำถามตัวอย่าง → รอคำตอบจริง
+  แล้วแคปหน้าจอสุดท้ายไว้เป็น PNG ด้วย, (4) ตัดคลิปด้วย `ffmpeg` เฉพาะช่วงที่เกี่ยวกับผู้ช่วย AI แล้ว
+  แปลงเป็น GIF ผ่าน palette generation (`palettegen`/`paletteuse`) เพื่อคุมขนาดไฟล์
 
 **ข้อเสียที่ยอมรับ** — `docs/PaynEat-POS-Features-*.pdf`, `docs/video/*.mp4`, `docs/landing/og-image*.png`
 และ `docs/landing/social-preview.png` **ไม่ได้ regenerate ในทิกเก็ตนี้** จึงยังโชว์เลขเก่า (558 เทสต์/
