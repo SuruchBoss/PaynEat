@@ -31,6 +31,26 @@ control and 608 automated tests.
 
 ---
 
+## 🌟 Highlights
+
+- **Multi-branch, one system** — tables/menu/orders/reports are scoped per branch and never mix; switch
+  branches or view combined totals across every branch from the same account (`docs/DECISIONS.md` #36)
+- **Real PromptPay QR codes** — generates a standards-compliant EMV QR customers can scan and pay
+  instantly, matched to the bill automatically, not just a button for staff to click "confirmed"
+- **AI assistant you can ask about sales in plain language** — powered by Claude via tool-calling
+  against the real restaurant data, never guessing or inventing numbers, every answer cites its source
+- **Keeps selling when the Wi-Fi drops** — orders keep going mid-service; once the connection is back,
+  everything syncs automatically with nothing lost
+- **Report export + Z-report (shift/day close)** — hand the accountant a CSV instantly, with cash
+  reconciliation and manual discounts split out from promotions
+- **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
+- **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
+  always with who/when/why, and nothing an admin can edit or delete from any UI
+- **608 automated tests** run before every release, from bill-calculation rules to a full 17-step
+  end-to-end restaurant walkthrough
+
+---
+
 ## 📸 Screenshots
 
 <table>
@@ -102,6 +122,7 @@ control and 608 automated tests.
 
 ## 📋 Table of contents
 
+- [Highlights](#-highlights)
 - [Screenshots](#-screenshots)
 - [Why this project](#-why-this-project)
 - [How to run it](#-how-to-run-it)
