@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-574%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-578%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 574 automated tests.
+control and 578 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -360,7 +360,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 255 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 319 cases — domain / controller / widget
+cd app && flutter test      # 323 cases — domain / controller / widget
 ```
 
 ---
@@ -820,7 +820,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 255 cases
-cd app && flutter test      # 319 cases
+cd app && flutter test      # 323 cases
 ```
 
 **Backend (255 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -938,7 +938,7 @@ instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests
 `AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
 default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
 
-**Flutter (319 cases)** — split into 3 levels:
+**Flutter (323 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -975,6 +975,7 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Core | `contrast_service_test.dart` | The real toggle path — switching the palette, persisting it, restoring it on next launch, and proving the theme rebuilds its colours instead of caching them once |
 | Core | `promptpay_test.dart` | Mirrors the backend's PromptPay QR algorithm (EMV QR + CRC-16/CCITT-FALSE) in Dart for Demo Mode — includes a golden-value test that checks the payload matches the backend's output character-for-character (ticket 16) |
 | Core | `csv_test.dart` | Mirrors the backend's CSV builder in Dart — header, escaping comma/quote/newline, null values become an empty string, and the output is prefixed with a UTF-8 BOM (ticket 14) |
+| Core | `bold_markdown_test.dart` | Parses `**bold**` markdown from the AI assistant's answers into `TextSpan`s, correctly splitting bold vs. plain segments — including multiple bold runs in one string and an unpaired `**` (bug fix: the plain `Text` widget used to show raw `**` asterisks instead of rendering bold) |
 
 > Methods that touch navigation (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) aren't covered at this unit
 > level — they need a real, pumped `GetMaterialApp`, so only the navigation-independent logic/state is

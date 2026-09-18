@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-574%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-578%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 574 automated tests.
+control and 578 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -338,7 +338,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 255 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 319 เคส — domain / controller / widget
+cd app && flutter test      # 323 เคส — domain / controller / widget
 ```
 
 ---
@@ -766,7 +766,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 255 เคส
-cd app && flutter test      # 319 เคส
+cd app && flutter test      # 323 เคส
 ```
 
 **Backend (255 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -872,7 +872,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 `AI_ASSISTANT_DAILY_LIMIT=1` (ตั้ง env แยก process เพื่อไม่กระทบเทสต์ไฟล์อื่นที่ใช้ค่าเริ่มต้น 20)
 (ดู `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
 
-**Flutter (319 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (323 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -910,6 +910,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Core | `contrast_service_test.dart` | เส้นทางกดสลับโหมดจริง — เปลี่ยนพาเลตต์ บันทึกลงเครื่อง อ่านกลับมาตอนเปิดแอปใหม่ และธีมต้องสร้างสีใหม่ทุกครั้งไม่ใช่คำนวณครั้งเดียวแล้วค้าง |
 | Core | `promptpay_test.dart` | mirror อัลกอริทึม QR พร้อมเพย์ (EMV QR + CRC-16/CCITT-FALSE) ของ backend มาที่ Dart สำหรับ Demo Mode — มี golden-value test เทียบ payload กับฝั่ง backend ให้ตรงกันเป๊ะทุกตัวอักษร (ticket 16) |
 | Core | `csv_test.dart` | mirror ตัวสร้าง CSV ของ backend มาที่ Dart — header, escape comma/quote/newline, ค่า null เป็นสตริงว่าง, ขึ้นต้นด้วย UTF-8 BOM (ticket 14) |
+| Core | `bold_markdown_test.dart` | parse `**ตัวหนา**` แบบ markdown จากคำตอบผู้ช่วย AI เป็น `TextSpan` แยกส่วนตัวหนา/ปกติถูกต้อง รวมกรณีมีหลายจุดในข้อความเดียวและกรณี `**` ไม่ครบคู่ (แก้บั๊ก: เดิม `Text` ธรรมดาโชว์ `**` ดิบๆ ไม่ตีความเป็นตัวหนา) |
 
 > เมธอดที่แตะการนำทาง (`Get.toNamed`, `Get.snackbar`, `Get.dialog`) ไม่ได้ครอบคลุมในเทสต์ระดับ
 > unit นี้ — ต้องมี `GetMaterialApp` ที่ pump จริง จึงทดสอบเฉพาะตรรกะ/state ที่ไม่พึ่งการนำทาง

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../controllers/ai_assistant_controller.dart';
+import '../utils/bold_markdown.dart';
 import '../widgets/ai_assistant_chart_card.dart';
 
 /// หน้าผู้ช่วย AI ถามตอบข้อมูลร้าน — admin/manager เท่านั้น (ดู
@@ -328,7 +329,10 @@ class _AnswerBubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(answer.answerText, style: const TextStyle(fontSize: 13.5)),
+          Text.rich(
+            TextSpan(children: parseBoldMarkdown(answer.answerText)),
+            style: const TextStyle(fontSize: 13.5),
+          ),
           if (answer.chart != null) ...[
             const SizedBox(height: 10),
             AiAssistantChartCard(chart: answer.chart!),
