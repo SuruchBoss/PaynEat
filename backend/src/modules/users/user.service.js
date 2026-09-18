@@ -37,9 +37,7 @@ export const userService = {
     }
     const resolvedBranchId = currentBranchId ?? branchId;
     if (!resolvedBranchId) {
-      throw ApiError.badRequest(
-        'ต้องระบุ branchId เพราะกำลังดูข้อมูลรวมทุกสาขาอยู่ (โหมดทุกสาขา)',
-      );
+      throw ApiError.badRequest('ต้องระบุ branchId เพราะกำลังดูข้อมูลรวมทุกสาขาอยู่ (โหมดทุกสาขา)');
     }
     if (!branchRepository.findById(resolvedBranchId)) {
       throw ApiError.badRequest('ไม่พบสาขานี้');

@@ -66,6 +66,17 @@ components:
         username: { type: string, example: waiter1 }
         role: { type: string, enum: [admin, manager, waiter, cashier, kitchen] }
         isActive: { type: boolean }
+        branchId: { type: integer, nullable: true, description: 'สาขาที่ token นี้ทำงานอยู่ — null เฉพาะ admin โหมด "ทุกสาขา" (ticket 11)' }
+        branchName: { type: string, nullable: true }
+    Branch:
+      type: object
+      description: สาขา (ดู ticket 11 — multi-branch)
+      properties:
+        id: { type: integer }
+        name: { type: string, example: สาขาสุขุมวิท }
+        code: { type: string, nullable: true, example: SUKHUMVIT }
+        address: { type: string, nullable: true }
+        isActive: { type: boolean }
     Category:
       type: object
       properties:
@@ -342,6 +353,43 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ApiError' }
+      description: >-
+        ถ้า user มีสิทธิ์เข้ามากกว่า 1 สาขา (ดู ticket 11) จะได้ `needsBranchSelection: true`,
+        `pendingToken`, และ `branches` แทน `token`/`user` — ต้องเรียก POST /auth/select-branch
+        ด้วย pendingToken ก่อนถึงจะได้ token ที่ใช้งานได้จริง (admin เข้าสาขาแรกอัตโนมัติเสมอ
+        ไม่ต้องเลือก)
+  /auth/select-branch:
+    post:
+      tags: [Auth]
+      summary: เลือก/สลับสาขาที่จะทำงาน (ticket 11)
+      description: >-
+        รับได้ทั้ง pendingToken จาก login ครั้งแรก (มีหลายสาขา) และ token ปกติที่ login แล้ว
+        (สลับสาขาภายหลัง) — branchId เป็น null ได้เฉพาะ admin เท่านั้น (โหมด "ทุกสาขา" ดูรายงาน
+        รวมทุกสาขา)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [branchId]
+              properties:
+                branchId: { type: integer, nullable: true }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      user: { $ref: '#/components/schemas/User' }
+        '403': { description: ไม่มีสิทธิ์เข้าถึงสาขานี้ (หรือไม่ใช่ admin แต่ขอโหมด "ทุกสาขา") }
   /auth/me:
     get:
       tags: [Auth]
@@ -352,6 +400,65 @@ paths:
     post:
       tags: [Auth]
       summary: เปลี่ยนรหัสผ่านของตัวเอง
+      responses:
+        '200': { description: สำเร็จ }
+
+  /branches:
+    get:
+      tags: [Branches]
+      summary: รายชื่อสาขาทั้งหมด (admin เท่านั้น — ดู ticket 11)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Branch' }
+    post:
+      tags: [Branches]
+      summary: สร้างสาขาใหม่ (admin เท่านั้น)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Branch' }
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /branches/mine:
+    get:
+      tags: [Branches]
+      summary: สาขาที่ผู้ใช้ปัจจุบันมีสิทธิ์เข้าถึง (ทุก role เรียกได้ — ใช้ตอนเลือก/สลับสาขา)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Branch' }
+  /branches/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Branches]
+      summary: รายละเอียดสาขา (admin เท่านั้น)
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Branches]
+      summary: แก้ไข/ปิดใช้งานสาขา (admin เท่านั้น) — ปิดแล้ว token ที่ผูกกับสาขานี้ใช้ต่อไม่ได้ทันที
       responses:
         '200': { description: สำเร็จ }
 

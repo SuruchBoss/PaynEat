@@ -3,10 +3,14 @@ import { ok, created, noContent } from '../../core/response.js';
 import { tableService } from './table.service.js';
 
 export const tableController = {
-  list: asyncHandler(async (req, res) => ok(res, tableService.list(req.validated?.query ?? {}))),
+  list: asyncHandler(async (req, res) =>
+    ok(res, tableService.list(req.validated?.query ?? {}, req.branchId)),
+  ),
   zones: asyncHandler(async (_req, res) => ok(res, tableService.zones())),
   detail: asyncHandler(async (req, res) => ok(res, tableService.getById(req.validated.params.id))),
-  create: asyncHandler(async (req, res) => created(res, tableService.create(req.body))),
+  create: asyncHandler(async (req, res) =>
+    created(res, tableService.create(req.body, req.branchId)),
+  ),
   update: asyncHandler(async (req, res) =>
     ok(res, tableService.update(req.validated.params.id, req.body)),
   ),

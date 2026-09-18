@@ -9,35 +9,51 @@ const sendCsv = (res, filename, csv) => {
 };
 
 export const reportController = {
-  summary: asyncHandler(async (req, res) => ok(res, reportService.summary(req.validated.query))),
-  topItems: asyncHandler(async (req, res) => ok(res, reportService.topItems(req.validated.query))),
-  salesByDay: asyncHandler(async (req, res) =>
-    ok(res, reportService.salesByDay(req.validated.query)),
+  summary: asyncHandler(async (req, res) =>
+    ok(res, reportService.summary(req.validated.query, req.branchId)),
   ),
-  dashboard: asyncHandler(async (_req, res) => ok(res, reportService.dashboard())),
+  topItems: asyncHandler(async (req, res) =>
+    ok(res, reportService.topItems(req.validated.query, req.branchId)),
+  ),
+  salesByDay: asyncHandler(async (req, res) =>
+    ok(res, reportService.salesByDay(req.validated.query, req.branchId)),
+  ),
+  dashboard: asyncHandler(async (req, res) => ok(res, reportService.dashboard(req.branchId))),
 
   exportSummary: asyncHandler(async (req, res) =>
-    sendCsv(res, 'sales-summary.csv', reportService.exportSummaryCsv(req.validated.query)),
+    sendCsv(
+      res,
+      'sales-summary.csv',
+      reportService.exportSummaryCsv(req.validated.query, req.branchId),
+    ),
   ),
   exportTopItems: asyncHandler(async (req, res) =>
-    sendCsv(res, 'top-items.csv', reportService.exportTopItemsCsv(req.validated.query)),
+    sendCsv(
+      res,
+      'top-items.csv',
+      reportService.exportTopItemsCsv(req.validated.query, req.branchId),
+    ),
   ),
   exportSalesByDay: asyncHandler(async (req, res) =>
-    sendCsv(res, 'sales-by-day.csv', reportService.exportSalesByDayCsv(req.validated.query)),
+    sendCsv(
+      res,
+      'sales-by-day.csv',
+      reportService.exportSalesByDayCsv(req.validated.query, req.branchId),
+    ),
   ),
 
   zReportByShift: asyncHandler(async (req, res) =>
     ok(res, reportService.zReportByShift(req.validated.params.shiftId)),
   ),
   zReportByDate: asyncHandler(async (req, res) =>
-    ok(res, reportService.zReportByDate(req.validated.query.date)),
+    ok(res, reportService.zReportByDate(req.validated.query.date, req.branchId)),
   ),
   exportZReportByShift: asyncHandler(async (req, res) => {
     const z = reportService.zReportByShift(req.validated.params.shiftId);
     sendCsv(res, `z-report-shift-${z.shift.id}.csv`, reportService.exportZReportCsv(z));
   }),
   exportZReportByDate: asyncHandler(async (req, res) => {
-    const z = reportService.zReportByDate(req.validated.query.date);
+    const z = reportService.zReportByDate(req.validated.query.date, req.branchId);
     sendCsv(res, `z-report-${z.date}.csv`, reportService.exportZReportCsv(z));
   }),
 };

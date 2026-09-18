@@ -39,6 +39,7 @@ export const toOrderDto = (row, items = []) => {
     id: row.id,
     code: row.code,
     type: row.type,
+    branchId: row.branch_id ?? null,
     tableId: row.table_id,
     tableName: row.table_name,
     tableZone: row.table_zone,

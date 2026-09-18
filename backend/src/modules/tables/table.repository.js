@@ -1,9 +1,14 @@
 import { getDb } from '../../db/index.js';
 
 export const tableRepository = {
-  findAll({ zone, status, activeOnly = true } = {}) {
+  findAll({ zone, status, activeOnly = true, branchId } = {}) {
     const clauses = [];
     const params = [];
+    // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    if (branchId) {
+      clauses.push('t.branch_id = ?');
+      params.push(branchId);
+    }
     if (activeOnly) clauses.push('t.is_active = 1');
     if (zone) {
       clauses.push('t.zone = ?');
@@ -52,10 +57,10 @@ export const tableRepository = {
       .map((row) => row.zone);
   },
 
-  create({ name, zone, seats }) {
+  create({ name, zone, seats, branchId }) {
     const info = getDb()
-      .prepare('INSERT INTO dining_tables (name, zone, seats) VALUES (?, ?, ?)')
-      .run(name, zone ?? 'main', seats ?? 4);
+      .prepare('INSERT INTO dining_tables (name, zone, seats, branch_id) VALUES (?, ?, ?, ?)')
+      .run(name, zone ?? 'main', seats ?? 4, branchId);
     return this.findById(info.lastInsertRowid);
   },
 

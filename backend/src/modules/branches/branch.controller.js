@@ -7,9 +7,7 @@ export const branchController = {
 
   mine: asyncHandler(async (req, res) => ok(res, branchService.listForUser(req.user))),
 
-  detail: asyncHandler(async (req, res) =>
-    ok(res, branchService.getById(req.validated.params.id)),
-  ),
+  detail: asyncHandler(async (req, res) => ok(res, branchService.getById(req.validated.params.id))),
 
   create: asyncHandler(async (req, res) => created(res, branchService.create(req.body))),
 

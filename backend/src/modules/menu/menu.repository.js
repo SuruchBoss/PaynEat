@@ -1,10 +1,24 @@
 import { getDb } from '../../db/index.js';
 
 export const menuRepository = {
-  findAll({ categoryId, search, availableOnly, recommendedOnly, page = 1, limit = 100 } = {}) {
+  findAll({
+    categoryId,
+    search,
+    availableOnly,
+    recommendedOnly,
+    branchId,
+    page = 1,
+    limit = 100,
+  } = {}) {
     const clauses = [];
     const params = [];
 
+    // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36) — ไม่กรอง
+    // เลย จึงเห็นเมนูของทุกสาขารวมกัน ผู้ใช้ทั่วไปมี branchId เสมอจาก req.branchId
+    if (branchId) {
+      clauses.push('m.branch_id = ?');
+      params.push(branchId);
+    }
     if (categoryId) {
       clauses.push('m.category_id = ?');
       params.push(categoryId);
@@ -124,8 +138,8 @@ export const menuRepository = {
       .prepare(
         `
         INSERT INTO menu_items
-          (category_id, name, name_en, description, price, image_url, is_available, is_recommended, prep_minutes, sort_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (category_id, name, name_en, description, price, image_url, is_available, is_recommended, prep_minutes, sort_order, branch_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -139,6 +153,7 @@ export const menuRepository = {
         payload.isRecommended ? 1 : 0,
         payload.prepMinutes ?? 10,
         payload.sortOrder ?? 0,
+        payload.branchId,
       );
     return this.findById(info.lastInsertRowid);
   },

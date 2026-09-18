@@ -11,13 +11,15 @@ const paymentMethodsDto = (rows) =>
   rows.map((row) => ({ method: row.method, count: row.count, amount: toBaht(row.amount) }));
 
 export const reportService = {
-  summary({ from, to } = {}) {
+  // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36) — ทุกเมธอด
+  // ด้านล่างส่งต่อให้ reportRepository ตรงๆ ไม่กรองเลยแปลว่าเห็นยอดรวมทุกสาขา
+  summary({ from, to } = {}, branchId) {
     const start = from ?? today();
     const end = to ?? start;
 
-    const summary = reportRepository.salesSummary(start, end);
+    const summary = reportRepository.salesSummary(start, end, branchId);
     const orderCount = summary.order_count;
-    const refundTotal = reportRepository.refundTotal(start, end);
+    const refundTotal = reportRepository.refundTotal(start, end, branchId);
 
     return {
       range: { from: start, to: end },
@@ -36,8 +38,8 @@ export const reportService = {
       netSales: toBaht(summary.total - refundTotal),
       averagePerOrder: orderCount > 0 ? toBaht(Math.round(summary.total / orderCount)) : 0,
       averagePerGuest: summary.guests > 0 ? toBaht(Math.round(summary.total / summary.guests)) : 0,
-      paymentMethods: paymentMethodsDto(reportRepository.byPaymentMethod(start, end)),
-      categories: reportRepository.byCategory(start, end).map((row) => ({
+      paymentMethods: paymentMethodsDto(reportRepository.byPaymentMethod(start, end, branchId)),
+      categories: reportRepository.byCategory(start, end, branchId).map((row) => ({
         category: row.category,
         quantity: row.quantity,
         revenue: toBaht(row.revenue),
@@ -45,10 +47,10 @@ export const reportService = {
     };
   },
 
-  topItems({ from, to, limit = 10 } = {}) {
+  topItems({ from, to, limit = 10 } = {}, branchId) {
     const start = from ?? today();
     const end = to ?? start;
-    return reportRepository.topItems(start, end, limit).map((row) => ({
+    return reportRepository.topItems(start, end, limit, branchId).map((row) => ({
       menuItemId: row.menu_item_id,
       name: row.name,
       quantity: row.quantity,
@@ -56,10 +58,10 @@ export const reportService = {
     }));
   },
 
-  salesByDay({ from, to } = {}) {
+  salesByDay({ from, to } = {}, branchId) {
     const start = from ?? today();
     const end = to ?? start;
-    return reportRepository.salesByDay(start, end).map((row) => ({
+    return reportRepository.salesByDay(start, end, branchId).map((row) => ({
       day: row.day,
       orderCount: row.order_count,
       total: toBaht(row.total),
@@ -67,17 +69,17 @@ export const reportService = {
   },
 
   /** ข้อมูลชุดเดียวสำหรับหน้า Dashboard ของแอดมิน */
-  dashboard() {
+  dashboard(branchId) {
     const day = today();
     return {
-      today: this.summary({ from: day, to: day }),
-      hourly: reportRepository.salesByHour(day).map((row) => ({
+      today: this.summary({ from: day, to: day }, branchId),
+      hourly: reportRepository.salesByHour(day, branchId).map((row) => ({
         hour: Number(row.hour),
         orderCount: row.order_count,
         total: toBaht(row.total),
       })),
-      topItems: this.topItems({ from: day, to: day, limit: 5 }),
-      live: reportRepository.liveCounters(),
+      topItems: this.topItems({ from: day, to: day, limit: 5 }, branchId),
+      live: reportRepository.liveCounters(branchId),
     };
   },
 
@@ -111,13 +113,13 @@ export const reportService = {
 
   /** Z-report แบบต่อวัน (รวมทุกกะของวันนั้น) — ไม่มีส่วนกระทบยอดเงินสดเพราะอาจมีหลายกะ/หลาย
    * แคชเชียร์ปะปนกัน (กระทบยอดเงินสดทำได้เฉพาะระดับกะเดียวเท่านั้น ดู zReportByShift) */
-  zReportByDate(date) {
+  zReportByDate(date, branchId) {
     const day = date ?? today();
-    return { type: 'date', date: day, ...this.summary({ from: day, to: day }) };
+    return { type: 'date', date: day, ...this.summary({ from: day, to: day }, branchId) };
   },
 
-  exportSummaryCsv({ from, to } = {}) {
-    const summary = this.summary({ from, to });
+  exportSummaryCsv({ from, to } = {}, branchId) {
+    const summary = this.summary({ from, to }, branchId);
     const rows = [
       { label: 'ช่วงวันที่', value: `${summary.range.from} ถึง ${summary.range.to}` },
       { label: 'จำนวนออเดอร์', value: summary.orderCount },
@@ -141,16 +143,16 @@ export const reportService = {
     ]);
   },
 
-  exportTopItemsCsv({ from, to, limit } = {}) {
-    return toCsv(this.topItems({ from, to, limit }), [
+  exportTopItemsCsv({ from, to, limit } = {}, branchId) {
+    return toCsv(this.topItems({ from, to, limit }, branchId), [
       { label: 'เมนู', value: (r) => r.name },
       { label: 'จำนวนที่ขายได้', value: (r) => r.quantity },
       { label: 'รายได้ (บาท)', value: (r) => r.revenue },
     ]);
   },
 
-  exportSalesByDayCsv({ from, to } = {}) {
-    return toCsv(this.salesByDay({ from, to }), [
+  exportSalesByDayCsv({ from, to } = {}, branchId) {
+    return toCsv(this.salesByDay({ from, to }, branchId), [
       { label: 'วันที่', value: (r) => r.day },
       { label: 'จำนวนออเดอร์', value: (r) => r.orderCount },
       { label: 'ยอดขายรวม (บาท)', value: (r) => r.total },

@@ -15,8 +15,20 @@ router.get('/mine', authenticate, branchController.mine);
 // จัดการสาขา — admin เท่านั้น (ดู docs/DECISIONS.md #36: ยังไม่มีหน้าจัดการสาขาใน Flutter ตอนนี้
 // endpoint พวกนี้เผื่อไว้สำหรับอนาคต ข้อมูลจริงตอนนี้มาจาก seed เท่านั้น)
 router.get('/', authenticate, admin, branchController.list);
-router.get('/:id', authenticate, admin, validate({ params: idParamSchema }), branchController.detail);
-router.post('/', authenticate, admin, validate({ body: createBranchSchema }), branchController.create);
+router.get(
+  '/:id',
+  authenticate,
+  admin,
+  validate({ params: idParamSchema }),
+  branchController.detail,
+);
+router.post(
+  '/',
+  authenticate,
+  admin,
+  validate({ body: createBranchSchema }),
+  branchController.create,
+);
 router.patch(
   '/:id',
   authenticate,

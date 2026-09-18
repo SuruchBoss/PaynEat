@@ -5,7 +5,7 @@ import { orderService } from './order.service.js';
 export const orderController = {
   list: asyncHandler(async (req, res) => {
     const query = req.validated.query;
-    const { orders, total } = orderService.list(query);
+    const { orders, total } = orderService.list(query, req.branchId);
     return paginated(res, orders, { page: query.page, limit: query.limit, total });
   }),
 
@@ -17,7 +17,9 @@ export const orderController = {
     ok(res, orderService.getOpenByTable(req.validated.params.id)),
   ),
 
-  create: asyncHandler(async (req, res) => created(res, orderService.create(req.body, req.user))),
+  create: asyncHandler(async (req, res) =>
+    created(res, orderService.create(req.body, req.user, req.branchId)),
+  ),
 
   update: asyncHandler(async (req, res) =>
     ok(res, orderService.updateMeta(req.validated.params.id, req.body)),

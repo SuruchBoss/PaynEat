@@ -55,7 +55,8 @@ export const authService = {
 
     // branchId ว่าง (โหมด "ทุกสาขา") เลือกได้เฉพาะ admin เท่านั้น
     if (branchId === null) {
-      if (user.role !== 'admin') throw ApiError.forbidden('เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้ทุกสาขา');
+      if (user.role !== 'admin')
+        throw ApiError.forbidden('เฉพาะผู้ดูแลระบบเท่านั้นที่ดูได้ทุกสาขา');
       return buildSessionResult(user, null);
     }
 

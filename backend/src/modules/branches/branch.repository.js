@@ -16,9 +16,7 @@ export const branchRepository = {
    * ชื่อมาก่อนตามตัวอักษรซึ่งไม่เกี่ยวกับลำดับความสำคัญเลย */
   listForUser(user) {
     if (user.role === 'admin') {
-      return getDb()
-        .prepare('SELECT * FROM branches WHERE is_active = 1 ORDER BY id')
-        .all();
+      return getDb().prepare('SELECT * FROM branches WHERE is_active = 1 ORDER BY id').all();
     }
     return getDb()
       .prepare(
@@ -33,20 +31,17 @@ export const branchRepository = {
       .all(user.id);
   },
 
-  /** admin ผ่านเสมอ (bypass) — คนอื่นต้องมีแถวใน user_branches กับสาขานั้นที่ยัง active อยู่
-   * เรียกทุก request ที่มี branchId (ดู middlewares/auth.js#attachBranch) ไม่ใช่เชื่อแค่ตอน login
-   * เพื่อให้ถอดสิทธิ์สาขาออกมีผลทันที เหมือนหลักการเดียวกับ is_active/role ของ user เอง */
+  /** สาขาต้อง active อยู่เสมอไม่ว่าใครก็ตาม (รวม admin ด้วย — ปิดสาขาแล้วต้องปิดจริง ไม่มีใครใช้
+   * ต่อได้จนกว่าจะเปิดกลับ) จากนั้น admin ผ่านเสมอ (bypass) ส่วนคนอื่นต้องมีแถวใน user_branches กับ
+   * สาขานั้นด้วย — เรียกทุก request ที่มี branchId (ดู middlewares/auth.js) ไม่ใช่เชื่อแค่ตอน login
+   * เพื่อให้ถอดสิทธิ์สาขา/ปิดสาขามีผลทันที เหมือนหลักการเดียวกับ is_active/role ของ user เอง */
   hasAccess(user, branchId) {
+    const branch = getDb().prepare('SELECT is_active FROM branches WHERE id = ?').get(branchId);
+    if (!branch || !branch.is_active) return false;
     if (user.role === 'admin') return true;
     return Boolean(
       getDb()
-        .prepare(
-          `
-          SELECT 1 FROM user_branches ub
-          JOIN branches b ON b.id = ub.branch_id
-          WHERE ub.user_id = ? AND ub.branch_id = ? AND b.is_active = 1
-        `,
-        )
+        .prepare('SELECT 1 FROM user_branches WHERE user_id = ? AND branch_id = ?')
         .get(user.id, branchId),
     );
   },

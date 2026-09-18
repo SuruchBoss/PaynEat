@@ -9,6 +9,7 @@ export const toTableDto = (row) => {
     seats: row.seats,
     status: row.status,
     isActive: Boolean(row.is_active),
+    branchId: row.branch_id ?? null,
     currentOrder: row.order_id
       ? {
           id: row.order_id,

@@ -18,6 +18,8 @@ export const createOrderSchema = z
     guestCount: z.number().int().min(1).max(50).default(1),
     note: z.string().max(300).optional(),
     items: z.array(orderItemInputSchema).default([]),
+    // ใช้เฉพาะตอนผู้เปิดออเดอร์เป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    branchId: z.number().int().positive().optional(),
   })
   .refine((data) => data.type !== 'dine_in' || data.tableId !== undefined, {
     message: 'ออเดอร์แบบทานที่ร้านต้องระบุโต๊ะ',

@@ -29,8 +29,8 @@ const BRANCH_SCOPED_TABLES = ['dining_tables', 'menu_items', 'orders', 'ingredie
  * เป็นคนสร้างสาขาจริงเอง 2 สาขาแทน
  */
 const backfillDefaultBranch = (db) => {
-  const hasUnscopedRows = BRANCH_SCOPED_TABLES.some(
-    (table) => db.prepare(`SELECT 1 FROM ${table} WHERE branch_id IS NULL LIMIT 1`).get(),
+  const hasUnscopedRows = BRANCH_SCOPED_TABLES.some((table) =>
+    db.prepare(`SELECT 1 FROM ${table} WHERE branch_id IS NULL LIMIT 1`).get(),
   );
   if (!hasUnscopedRows) return;
 

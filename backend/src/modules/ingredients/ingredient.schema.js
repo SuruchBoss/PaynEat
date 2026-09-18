@@ -5,6 +5,8 @@ export const createIngredientSchema = z.object({
   unit: z.string().min(1, 'กรุณากรอกหน่วยนับ').max(30),
   currentStock: z.number().min(0).default(0),
   lowStockThreshold: z.number().min(0).default(0),
+  // ใช้เฉพาะตอนผู้สร้างเป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+  branchId: z.number().int().positive().optional(),
 });
 
 // currentStock ไม่แก้ผ่านช่องทางนี้โดยตรง — ต้องผ่าน /ingredients/:id/adjust-stock เท่านั้น
