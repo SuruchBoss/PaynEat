@@ -200,6 +200,59 @@ const TABLES = [
   { name: 'VIP2', zone: 'ห้องส่วนตัว', seats: 12 },
 ];
 
+// สาขาตัวอย่าง (ดู docs/tickets/11-multi-branch.md) — สาขาแรก ("สุขุมวิท") คือข้อมูลเดิมทั้งหมดที่
+// เคยมีอยู่แล้วก่อนทิกเก็ตนี้ (เมนู/โต๊ะ/วัตถุดิบชุดใหญ่ด้านบน) ส่วนสาขาที่สอง ("ทองหล่อ") ตั้งใจให้
+// มีเมนู/โต๊ะ/วัตถุดิบเป็นชุดของตัวเองแยกต่างหาก (ธีมซีฟู้ด) เพื่อให้เห็นชัดว่าข้อมูลแยกกันจริงเวลา
+// สลับสาขาดู ไม่ใช่แค่ label เฉยๆ
+// prettier-ignore
+const BRANCHES = [
+  { name: 'สาขาสุขุมวิท', code: 'SUKHUMVIT', address: STORE_TAX_INFO.store_address },
+  { name: 'สาขาทองหล่อ', code: 'THONGLOR', address: '99 ซอยทองหล่อ 10 แขวงคลองตันเหนือ เขตวัฒนา กรุงเทพมหานคร 10110' },
+];
+
+// สิทธิ์เข้าถึงสาขาของผู้ใช้แต่ละคน (ดู docs/DECISIONS.md #36) — ทุกคนได้แค่สาขาสุขุมวิทเหมือนเดิม
+// (ไม่กระทบพฤติกรรม login เดิมที่เทสต์ทั้งหมดพึ่งอยู่) ยกเว้น waiter2 ที่ตั้งใจให้มีสิทธิ์ 2 สาขา
+// เป็นตัวอย่างเดียวที่จะเห็นหน้าเลือกสาขาตอน login (admin ไม่ต้องมีแถวในนี้ก็เข้าได้ทุกสาขาอยู่แล้ว)
+const USER_BRANCH_CODES = {
+  manager: ['SUKHUMVIT'],
+  waiter1: ['SUKHUMVIT'],
+  waiter2: ['SUKHUMVIT', 'THONGLOR'],
+  kitchen: ['SUKHUMVIT'],
+  cashier: ['SUKHUMVIT'],
+};
+
+// เมนูเฉพาะสาขาทองหล่อ (ธีมซีฟู้ด/ปิ้งย่าง) — ไม่มีตัวเลือกเสริม (option groups) เพื่อให้ seed ง่าย
+// prettier-ignore
+const MENU_BRANCH_2 = [
+  { cat: 'อาหารจานเดียว', name: 'ข้าวผัดปู', nameEn: 'Crab Fried Rice', price: 110, prep: 10, recommended: true },
+  { cat: 'กับข้าว', name: 'กุ้งเผา', nameEn: 'Grilled Prawns', price: 280, prep: 15, recommended: true, desc: 'กุ้งแม่น้ำตัวโตเผาเตาถ่าน' },
+  { cat: 'กับข้าว', name: 'หอยแมลงภู่อบสมุนไพร', nameEn: 'Herb-steamed Mussels', price: 190, prep: 15 },
+  { cat: 'ยำ / สลัด', name: 'ยำทะเลรวม', nameEn: 'Mixed Seafood Salad', price: 180, prep: 10 },
+  { cat: 'ของทานเล่น', name: 'ปลาหมึกทอดกระเทียม', nameEn: 'Garlic Fried Squid', price: 140, prep: 10 },
+  { cat: 'เครื่องดื่ม', name: 'น้ำมะพร้าวปั่น', nameEn: 'Coconut Smoothie', price: 70, prep: 3 },
+  { cat: 'ของหวาน', name: 'ทับทิมกรอบ', nameEn: 'Red Rubies', price: 65, prep: 5 },
+];
+
+// วัตถุดิบเฉพาะสาขาทองหล่อ — แยกสต๊อกจากสาขาสุขุมวิทโดยสิ้นเชิง (คนละร้าน คนละตู้เย็น)
+// prettier-ignore
+const INGREDIENTS_BRANCH_2 = [
+  { name: 'กุ้งแม่น้ำ', unit: 'กรัม', currentStock: 2000, lowStockThreshold: 400 },
+  { name: 'ปลาหมึก', unit: 'กรัม', currentStock: 1500, lowStockThreshold: 300 },
+  { name: 'หอยแมลงภู่', unit: 'กรัม', currentStock: 1000, lowStockThreshold: 200 },
+];
+
+const MENU_ITEM_INGREDIENTS_BRANCH_2 = {
+  กุ้งเผา: [{ ingredient: 'กุ้งแม่น้ำ', qtyPerUnit: 250 }],
+  ปลาหมึกทอดกระเทียม: [{ ingredient: 'ปลาหมึก', qtyPerUnit: 150 }],
+  หอยแมลงภู่อบสมุนไพร: [{ ingredient: 'หอยแมลงภู่', qtyPerUnit: 300 }],
+};
+
+// prettier-ignore
+const TABLES_BRANCH_2 = [
+  ...Array.from({ length: 6 }, (_, i) => ({ name: `D${i + 1}`, zone: 'โซนในร้าน', seats: 4 })),
+  { name: 'TL-VIP', zone: 'ห้องส่วนตัว', seats: 8 },
+];
+
 export const seed = () => {
   migrate();
   const db = getDb();
@@ -217,6 +270,40 @@ export const seed = () => {
           bcrypt.hashSync(resolveSeedPassword(user), 10),
           user.role,
         );
+      }
+    }
+
+    // ticket 11 (multi-branch) — สิทธิ์เข้าถึงสาขาของผู้ใช้ (ดู USER_BRANCH_CODES ด้านบน) ต้องรอทั้ง
+    // user และ branches มีอยู่ก่อน (ดูด้านล่าง) — ทำแยกทีหลัง — ต้องสร้างสาขาก่อนเมนู/โต๊ะ/วัตถุดิบเสมอ เพราะต้องใช้ branch_id
+    const branchCount = db.prepare('SELECT COUNT(*) AS c FROM branches').get().c;
+    if (branchCount === 0) {
+      const insertBranch = db.prepare(
+        'INSERT INTO branches (name, code, address) VALUES (?, ?, ?)',
+      );
+      for (const branch of BRANCHES) insertBranch.run(branch.name, branch.code, branch.address);
+    }
+    const branchIdByCode = new Map(
+      db
+        .prepare('SELECT id, code FROM branches')
+        .all()
+        .map((row) => [row.code, row.id]),
+    );
+
+    const membershipCount = db.prepare('SELECT COUNT(*) AS c FROM user_branches').get().c;
+    if (membershipCount === 0) {
+      const insertMembership = db.prepare(
+        'INSERT OR IGNORE INTO user_branches (user_id, branch_id) VALUES (?, ?)',
+      );
+      const userIdByUsername = new Map(
+        db
+          .prepare('SELECT id, username FROM users')
+          .all()
+          .map((row) => [row.username, row.id]),
+      );
+      for (const [username, codes] of Object.entries(USER_BRANCH_CODES)) {
+        const userId = userIdByUsername.get(username);
+        if (!userId) continue;
+        for (const code of codes) insertMembership.run(userId, branchIdByCode.get(code));
       }
     }
 
@@ -239,8 +326,8 @@ export const seed = () => {
           .map((row) => [row.name, row.id]),
       );
       const insertMenu = db.prepare(`
-        INSERT INTO menu_items (category_id, name, name_en, description, price, is_recommended, prep_minutes, sort_order)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO menu_items (category_id, name, name_en, description, price, is_recommended, prep_minutes, sort_order, branch_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const insertGroup = db.prepare(`
         INSERT INTO option_groups (menu_item_id, name, min_select, max_select, is_required, sort_order)
@@ -251,47 +338,52 @@ export const seed = () => {
       `);
 
       const menuItemIdByName = new Map();
-      MENU.forEach((item, index) => {
-        const result = insertMenu.run(
-          categoryIdByName.get(item.cat),
-          item.name,
-          item.nameEn,
-          item.desc ?? null,
-          toSatang(item.price),
-          item.recommended ? 1 : 0,
-          item.prep,
-          index,
-        );
-        const menuItemId = result.lastInsertRowid;
-        menuItemIdByName.set(item.name, menuItemId);
+      const seedMenu = (items, branchId) => {
+        items.forEach((item, index) => {
+          const result = insertMenu.run(
+            categoryIdByName.get(item.cat),
+            item.name,
+            item.nameEn,
+            item.desc ?? null,
+            toSatang(item.price),
+            item.recommended ? 1 : 0,
+            item.prep,
+            index,
+            branchId,
+          );
+          const menuItemId = result.lastInsertRowid;
+          menuItemIdByName.set(item.name, menuItemId);
 
-        (MENU_OPTIONS[item.name] ?? []).forEach((templateKey, groupIndex) => {
-          const template = OPTION_TEMPLATES[templateKey];
-          const groupId = insertGroup.run(
-            menuItemId,
-            template.name,
-            template.min,
-            template.max,
-            template.required,
-            groupIndex,
-          ).lastInsertRowid;
-          template.options.forEach((option, optionIndex) => {
-            insertOption.run(
-              groupId,
-              option.name,
-              toSatang(option.delta),
-              option.isDefault ?? 0,
-              optionIndex,
-            );
+          (MENU_OPTIONS[item.name] ?? []).forEach((templateKey, groupIndex) => {
+            const template = OPTION_TEMPLATES[templateKey];
+            const groupId = insertGroup.run(
+              menuItemId,
+              template.name,
+              template.min,
+              template.max,
+              template.required,
+              groupIndex,
+            ).lastInsertRowid;
+            template.options.forEach((option, optionIndex) => {
+              insertOption.run(
+                groupId,
+                option.name,
+                toSatang(option.delta),
+                option.isDefault ?? 0,
+                optionIndex,
+              );
+            });
           });
         });
-      });
+      };
+      seedMenu(MENU, branchIdByCode.get('SUKHUMVIT'));
+      seedMenu(MENU_BRANCH_2, branchIdByCode.get('THONGLOR'));
 
       const ingredientCount = db.prepare('SELECT COUNT(*) AS c FROM ingredients').get().c;
       if (ingredientCount === 0) {
         const insertIngredient = db.prepare(`
-          INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold, branch_id)
+          VALUES (?, ?, ?, ?, ?)
         `);
         for (const ingredient of INGREDIENTS) {
           insertIngredient.run(
@@ -299,6 +391,16 @@ export const seed = () => {
             ingredient.unit,
             ingredient.currentStock,
             ingredient.lowStockThreshold,
+            branchIdByCode.get('SUKHUMVIT'),
+          );
+        }
+        for (const ingredient of INGREDIENTS_BRANCH_2) {
+          insertIngredient.run(
+            ingredient.name,
+            ingredient.unit,
+            ingredient.currentStock,
+            ingredient.lowStockThreshold,
+            branchIdByCode.get('THONGLOR'),
           );
         }
 
@@ -312,22 +414,31 @@ export const seed = () => {
           INSERT INTO menu_item_ingredients (menu_item_id, ingredient_id, qty_per_unit)
           VALUES (?, ?, ?)
         `);
-        for (const [menuItemName, links] of Object.entries(MENU_ITEM_INGREDIENTS)) {
-          const menuItemId = menuItemIdByName.get(menuItemName);
-          if (!menuItemId) continue;
-          for (const link of links) {
-            insertLink.run(menuItemId, ingredientIdByName.get(link.ingredient), link.qtyPerUnit);
+        const seedLinks = (linkMap) => {
+          for (const [menuItemName, links] of Object.entries(linkMap)) {
+            const menuItemId = menuItemIdByName.get(menuItemName);
+            if (!menuItemId) continue;
+            for (const link of links) {
+              insertLink.run(menuItemId, ingredientIdByName.get(link.ingredient), link.qtyPerUnit);
+            }
           }
-        }
+        };
+        seedLinks(MENU_ITEM_INGREDIENTS);
+        seedLinks(MENU_ITEM_INGREDIENTS_BRANCH_2);
       }
     }
 
     const tableCount = db.prepare('SELECT COUNT(*) AS c FROM dining_tables').get().c;
     if (tableCount === 0) {
       const insertTable = db.prepare(
-        'INSERT INTO dining_tables (name, zone, seats) VALUES (?, ?, ?)',
+        'INSERT INTO dining_tables (name, zone, seats, branch_id) VALUES (?, ?, ?, ?)',
       );
-      for (const table of TABLES) insertTable.run(table.name, table.zone, table.seats);
+      for (const table of TABLES) {
+        insertTable.run(table.name, table.zone, table.seats, branchIdByCode.get('SUKHUMVIT'));
+      }
+      for (const table of TABLES_BRANCH_2) {
+        insertTable.run(table.name, table.zone, table.seats, branchIdByCode.get('THONGLOR'));
+      }
     }
 
     const hasStoreTaxId = db.prepare("SELECT 1 FROM settings WHERE key = 'store_tax_id'").get();

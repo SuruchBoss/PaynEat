@@ -11,6 +11,9 @@ export const createUserSchema = z.object({
     .regex(/^[a-zA-Z0-9_.-]+$/, 'username ใช้ได้เฉพาะ a-z 0-9 . _ -'),
   password: z.string().min(6, 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร').max(72),
   role: z.enum(ROLES),
+  // ใช้เฉพาะตอนผู้สร้างเป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36) — คนอื่นถูกกำหนด
+  // สาขาให้อัตโนมัติจากสาขาที่ตัวเองกำลังทำงานอยู่ (req.branchId) เสมอ ไม่ต้องส่งฟิลด์นี้มา
+  branchId: z.number().int().positive().optional(),
 });
 
 export const updateUserSchema = z.object({

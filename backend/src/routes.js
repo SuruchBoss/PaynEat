@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './modules/auth/auth.routes.js';
+import branchRoutes from './modules/branches/branch.routes.js';
 import userRoutes from './modules/users/user.routes.js';
 import categoryRoutes from './modules/categories/category.routes.js';
 import menuRoutes from './modules/menu/menu.routes.js';
@@ -19,6 +20,7 @@ import aiAssistantRoutes from './modules/ai-assistant/ai-assistant.routes.js';
 const router = Router();
 
 router.use('/auth', authRoutes);
+router.use('/branches', branchRoutes);
 router.use('/users', userRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/menu-items', menuRoutes);
