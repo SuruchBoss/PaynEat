@@ -29,6 +29,29 @@ export const customerRepository = {
     return this.findById(info.lastInsertRowid);
   },
 
+  /** ลูกค้าที่สั่งบ่อยสุดในช่วงเวลาที่กำหนด (นับเฉพาะออเดอร์จ่ายแล้ว) — ดู
+   * docs/tickets/15-ai-ask-your-data.md ใช้ตอบคำถามประเภท "ลูกค้าคนไหนซื้อบ่อยสุด" */
+  topByOrders({ from, to, limit = 10 } = {}) {
+    const start = from ?? '1970-01-01';
+    const end = to ?? '2999-12-31';
+    return getDb()
+      .prepare(
+        `
+        SELECT c.id, c.name, c.phone,
+               COUNT(o.id)            AS order_count,
+               IFNULL(SUM(o.total), 0) AS total_spent
+          FROM customers c
+          JOIN orders o ON o.customer_id = c.id
+         WHERE o.status = 'paid'
+           AND date(o.created_at) BETWEEN date(?) AND date(?)
+         GROUP BY c.id
+         ORDER BY order_count DESC, total_spent DESC
+         LIMIT ?
+      `,
+      )
+      .all(start, end, limit);
+  },
+
   /** บวก/ลบแต้มสะสม (delta ติดลบ = ใช้แต้ม, บวก = สะสมแต้ม) — ทางเดียวที่แก้ points_balance ได้ */
   adjustPoints(id, delta) {
     getDb()

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/demo/demo_data_sources.dart';
 import '../../../core/demo/demo_store.dart';
 import '../../../core/network/api_client.dart';
+import '../../../features/ai_assistant/data/datasources/ai_assistant_remote_data_source.dart';
 import '../../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
 import '../../../features/auth/data/datasources/auth_remote_data_source.dart';
 import '../../../features/customer/data/datasources/customer_remote_data_source.dart';
@@ -85,6 +86,10 @@ void bindDataSources() {
     () => CustomerRemoteDataSourceImpl(client),
     fenix: true,
   );
+  Get.lazyPut<AiAssistantRemoteDataSource>(
+    () => AiAssistantRemoteDataSourceImpl(client),
+    fenix: true,
+  );
 }
 
 /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -137,6 +142,10 @@ void _bindDemoDataSources() {
   );
   Get.put<CustomerRemoteDataSource>(
     DemoCustomerDataSource(store),
+    permanent: true,
+  );
+  Get.put<AiAssistantRemoteDataSource>(
+    const DemoAiAssistantDataSource(),
     permanent: true,
   );
 }

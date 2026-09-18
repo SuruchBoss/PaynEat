@@ -5,6 +5,9 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../ai_assistant/domain/usecases/ask_ai_assistant_usecase.dart';
+import '../../../ai_assistant/presentation/controllers/ai_assistant_controller.dart';
+import '../../../ai_assistant/presentation/pages/ai_assistant_page.dart';
 import '../../../audit_log/domain/usecases/audit_log_usecases.dart';
 import '../../../audit_log/presentation/controllers/audit_log_controller.dart';
 import '../../../audit_log/presentation/pages/audit_log_page.dart';
@@ -168,6 +171,12 @@ class HomeBinding extends Bindings {
       ),
       fenix: true,
     );
+    Get.lazyPut(
+      () => AiAssistantController(
+        askAiAssistant: Get.find<AskAiAssistantUseCase>(),
+      ),
+      fenix: true,
+    );
   }
 
   /// เมนูที่แต่ละบทบาทเห็น — เป็นฟังก์ชันบริสุทธิ์จึงเขียนเทสต์ได้ง่าย
@@ -262,6 +271,14 @@ class HomeBinding extends Bindings {
       selectedIcon: Icons.history_rounded,
       page: AuditLogPage(),
     );
+    // ผู้ช่วย AI ถามตอบข้อมูลร้าน — admin/manager เท่านั้น (ตรงกับ /ai/ask ที่จำกัด role เดียวกัน
+    // ฝั่ง backend ดู docs/tickets/15-ai-ask-your-data.md, docs/DECISIONS.md #33)
+    const aiAssistant = HomeDestination(
+      label: 'home_nav_ai_assistant',
+      icon: Icons.auto_awesome_outlined,
+      selectedIcon: Icons.auto_awesome_rounded,
+      page: AiAssistantPage(),
+    );
 
     return switch (role) {
       UserRole.admin => const [
@@ -276,6 +293,7 @@ class HomeBinding extends Bindings {
         customers,
         auditLog,
         reports,
+        aiAssistant,
         shift,
         settings,
         profile,
@@ -291,6 +309,7 @@ class HomeBinding extends Bindings {
         staff,
         customers,
         reports,
+        aiAssistant,
         shift,
         settings,
         profile,

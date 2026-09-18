@@ -50,6 +50,14 @@ export const env = {
     pointsEarnRateBaht: Number(process.env.POINTS_EARN_RATE_BAHT ?? 25),
     pointsRedeemValueBaht: Number(process.env.POINTS_REDEEM_VALUE_BAHT ?? 1),
   },
+  // ผู้ช่วย AI ถามตอบข้อมูลร้าน (ดู docs/tickets/15-ai-ask-your-data.md) — ปิดเองอัตโนมัติถ้าไม่ตั้ง
+  // ANTHROPIC_API_KEY (คืน 503 ที่ endpoint แทนที่จะ throw ตอน start เหมือน JWT_SECRET เพราะฟีเจอร์นี้
+  // เป็นของเสริมที่ปิดได้โดยไม่กระทบ POS หลัก ต่างจาก auth ที่ทั้งระบบพังถ้าไม่มี)
+  aiAssistant: {
+    apiKey: process.env.ANTHROPIC_API_KEY,
+    model: process.env.AI_ASSISTANT_MODEL ?? 'claude-opus-5',
+    dailyLimitPerUser: toInt(process.env.AI_ASSISTANT_DAILY_LIMIT, 20),
+  },
 };
 
 export default env;
