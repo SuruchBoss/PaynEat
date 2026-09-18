@@ -71,6 +71,39 @@ class ReportsPage extends GetView<ReportController> {
                     color: AppColors.textSecondary,
                   ),
                 ),
+                const SizedBox(width: 4),
+                Obx(
+                  () => controller.isExporting.value
+                      ? const Padding(
+                          padding: EdgeInsets.all(10),
+                          child: SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : PopupMenuButton<ReportExportKind>(
+                          tooltip: 'report_export_csv_button'.tr,
+                          icon: const Icon(Icons.file_download_rounded),
+                          onSelected: controller.exportCsv,
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                              value: ReportExportKind.summary,
+                              child: Text('report_export_summary_option'.tr),
+                            ),
+                            PopupMenuItem(
+                              value: ReportExportKind.topItems,
+                              child: Text('report_export_top_items_option'.tr),
+                            ),
+                            PopupMenuItem(
+                              value: ReportExportKind.salesByDay,
+                              child: Text(
+                                'report_export_sales_by_day_option'.tr,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ],
             ),
           ),

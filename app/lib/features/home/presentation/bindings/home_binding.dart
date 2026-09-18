@@ -100,6 +100,9 @@ class HomeBinding extends Bindings {
         getSummary: Get.find<GetSalesSummaryUseCase>(),
         getTopItems: Get.find<GetTopItemsUseCase>(),
         getSalesByDay: Get.find<GetSalesByDayUseCase>(),
+        exportSummaryCsv: Get.find<ExportSummaryCsvUseCase>(),
+        exportTopItemsCsv: Get.find<ExportTopItemsCsvUseCase>(),
+        exportSalesByDayCsv: Get.find<ExportSalesByDayCsvUseCase>(),
       ),
       fenix: true,
     );

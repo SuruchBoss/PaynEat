@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-589%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 580 automated tests.
+control and 589 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -302,6 +302,17 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     ตอบ — ถ้าคำถามเกี่ยวกับตัวเลขที่ plot เทียบกันได้ (เช่นเมนูขายดี) จะมีกราฟแท่งแนบมาด้วย
     (ต้องตั้งค่า `ANTHROPIC_API_KEY` ก่อนถึงจะตอบได้จริง — ไม่ตั้งค่าจะขึ้นข้อความแจ้งชัดเจนว่ายังไม่
     เปิดใช้งาน แทนที่จะพัง ดู `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
+19. **ออกจากระบบแล้วเข้าใหม่เป็น `cashier`** → เปิดเมนู **"กะ"** (ไอคอนแคชเชียร์ในเมนูด้านซ้าย) →
+    กรอกเงินตั้งต้นแล้วกด **"เปิดกะ"** → ไปรับออเดอร์และเก็บเงินสักบิล (ทำซ้ำขั้นตอน 2-9 แบบย่อ) →
+    กลับมาหน้า **"กะ"** กด **"ปิดกะ"** กรอกยอดเงินสดที่นับได้จริง → เห็นส่วนต่างเทียบกับยอดที่ระบบ
+    คาดไว้ทันที พร้อมปุ่ม **"ดูใบสรุปปิดกะ (Z-report)"** — กดดูสรุปยอดขาย/ภาษี/ส่วนลด (แยกส่วนลดมือ
+    กับโปรโมชัน)/ช่องทางชำระเงินของกะนั้นทั้งหมด แล้วกด **"ส่งออก CSV"** ดาวน์โหลดเป็นไฟล์ได้เลย —
+    กะเก่าในหัวข้อ **"ประวัติกะย้อนหลัง"** ด้านล่างก็กดดู Z-report ย้อนหลังได้เช่นกัน (กะที่ยังเปิดอยู่
+    กดไม่ได้ เพราะยอดกระทบเงินสดยังไม่ถูกคำนวณจนกว่าจะปิดกะ ดู `docs/tickets/12-report-export.md`)
+20. **เปิดเมนู "รายงาน"** (เห็นได้ตั้งแต่ `cashier` ขึ้นไป) → กดไอคอน **ดาวน์โหลด 📥** มุมขวาบนแถบ
+    เลือกช่วงเวลา → เลือกส่งออก **"สรุปยอดขาย"**, **"เมนูขายดี"** หรือ **"ยอดขายรายวัน"** อย่างใดอย่างหนึ่ง
+    → ได้ไฟล์ CSV ตามช่วงวันที่ที่กำลังดูอยู่ทันที (เปิดในเบราว์เซอร์บนเว็บเท่านั้น เหมือนการส่งออก
+    ประวัติการทำรายการในขั้นตอน 17)
 
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
@@ -337,8 +348,8 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 255 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 325 เคส — domain / controller / widget
+cd backend && npm test      # 263 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 326 เคส — domain / controller / widget
 ```
 
 ---
@@ -396,6 +407,9 @@ cd app && flutter test      # 325 เคส — domain / controller / widget
 
 - **เปิด-ปิดกะ** ใส่เงินทอนตั้งต้นตอนเปิดกะ นับเงินจริงตอนปิดกะแล้วเทียบส่วนต่างกับยอดที่ระบบ
   คาดไว้อัตโนมัติ (กระทบยอดเงินสด) — ต้องเปิดกะก่อนจึงรับชำระเงินได้
+- **ใบสรุปปิดกะ (Z-report)** ดูสรุปยอดขาย/ภาษี/ส่วนลด (แยกส่วนลดมือกับโปรโมชัน)/ช่องทางชำระเงิน
+  ของแต่ละกะได้ทั้งกะที่เพิ่งปิดและกะเก่าในประวัติ พร้อมกระทบยอดเงินสด (ตั้งต้น/คาดไว้/นับได้จริง/
+  ส่วนต่าง) ส่งออกเป็น CSV ให้ฝ่ายบัญชีได้ทันที (ดู `docs/tickets/12-report-export.md`)
 - รับชำระ 4 ช่องทาง: เงินสด, พร้อมเพย์/QR, บัตรเครดิต, โอนเงิน
 - **QR พร้อมเพย์จริง** เลือกช่องทาง "QR" ขึ้นภาพ QR ตามมาตรฐาน EMV QR ให้ลูกค้าสแกนจ่ายได้ทันที
   ผูกยอดเงินอัตโนมัติ (ตั้งเลขพร้อมเพย์ของร้านที่หน้าตั้งค่าก่อน) — ยังไม่เชื่อม payment
@@ -425,7 +439,9 @@ cd app && flutter test      # 325 เคส — domain / controller / widget
 
 - **แดชบอร์ด** ยอดขายวันนี้, กราฟรายชั่วโมง, สัดส่วนช่องทางชำระเงิน และตัวนับสถานะร้านแบบสด
   (ตั้งใจให้ตอบว่า "ตอนนี้ร้านเป็นยังไง" ส่วนการดูย้อนหลังและเมนูขายดีอยู่ที่หน้ารายงาน)
-- **รายงานย้อนหลัง** เลือกช่วงวันที่เอง ดูยอดรายวัน เมนูขายดี และยอดแยกตามหมวดหมู่
+- **รายงานย้อนหลัง** เลือกช่วงวันที่เอง ดูยอดรายวัน เมนูขายดี และยอดแยกตามหมวดหมู่ พร้อมปุ่ม
+  **ส่งออก CSV** แยกทีละแบบ (สรุปยอดขาย/เมนูขายดี/ยอดขายรายวัน) ตามช่วงวันที่ที่กำลังดูอยู่ (รองรับ
+  เฉพาะเว็บ ดู `docs/tickets/12-report-export.md`)
 - **จัดการเมนู** เพิ่ม/แก้ไข/ลบ พร้อมสร้างกลุ่มตัวเลือกเสริมเองได้
 - **จัดการพนักงาน** เพิ่มบัญชี เปลี่ยนบทบาท ปิดการใช้งาน
 - **ตั้งค่าร้าน** ชื่อร้าน, VAT, Service Charge, โหมดราคารวม VAT, เลขประจำตัวผู้เสียภาษี/ที่อยู่/
@@ -765,11 +781,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 255 เคส
-cd app && flutter test      # 325 เคส
+cd backend && npm test      # 263 เคส
+cd app && flutter test      # 326 เคส
 ```
 
-**Backend (255 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (263 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -872,7 +888,13 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 `AI_ASSISTANT_DAILY_LIMIT=1` (ตั้ง env แยก process เพื่อไม่กระทบเทสต์ไฟล์อื่นที่ใช้ค่าเริ่มต้น 20)
 (ดู `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
 
-**Flutter (325 เคส)** — แบ่งเป็น 3 ระดับ:
+`report-export.test.js` (8 เคสใหม่) เทสต์ export รายงานเป็น CSV (สรุปยอดขาย/เมนูขายดี/ยอดขายรายวัน
+— header/เนื้อหา + UTF-8 BOM ถูกต้อง) และ Z-report ทั้งต่อกะ (พร้อมกระทบยอดเงินสด คิดจาก
+`payments.shift_id` ไม่ใช่วันที่เปิดออเดอร์ กัน edge case ออเดอร์เปิดคาบเกี่ยวกะ) และต่อวัน (รวมทุกกะ
+ไม่มีกระทบยอดเงินสดเพราะอาจมีหลายกะ/หลายแคชเชียร์ปนกัน), 404 เมื่อกะไม่มีจริง, export Z-report เป็น
+CSV, และ RBAC (พนักงานเสิร์ฟเรียกไม่ได้) (ดู `docs/tickets/12-report-export.md`)
+
+**Flutter (326 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -897,6 +919,7 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 | Controller | `order_detail_controller_test.dart` | สิทธิ์จัดการออเดอร์, เดินสถานะรายการอาหาร |
 | Controller | `dashboard_controller_test.dart` | โหลดสรุปยอดขายวันนี้ + ตัวนับสด |
 | Controller | `report_controller_test.dart` | เลือกช่วงเวลารายงาน, กลืน error ของ topItems/dailySales เงียบๆ |
+| Controller | `shift_controller_test.dart` | โหลดกะปัจจุบัน+ประวัติพร้อมกัน, guard ปิดกะโดยไม่มีกะเปิดอยู่, `startNewShift` เคลียร์ผลปิดกะเดิม, `loadZReport` ดึง Z-report ของกะที่ระบุสำเร็จ (ticket 12) |
 | Controller | `split_bill_controller_test.dart` | เลือก/ยกเลิกเลือกรายการ, ดึงพรีวิว, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | เมนูที่แต่ละบทบาทเห็น (กันสิทธิ์รั่ว) — รวมยืนยันว่าพนักงานเสิร์ฟเห็นเมนู "ครัว" ด้วยตั้งใจ (mirror สิทธิ์ backend) และ role ที่ไม่รู้จักต้อง fail-safe เห็นแค่บัญชีตัวเอง ไม่ใช่ได้ชุดสิทธิ์กว้างๆ จาก wildcard เงียบๆ |
 | Controller | `storage_service_test.dart` | เก็บเซสชัน และการถอยไปใช้หน่วยความจำ |
@@ -998,6 +1021,13 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   ที่ค้างมาตั้งแต่ #21 (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/14-financial-audit-trail.md`,
   `docs/DECISIONS.md` #27) — **ส่งออก CSV รองรับเฉพาะเว็บ** เพราะหน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็น
   เว็บเท่านั้นตามที่ออกแบบไว้ตั้งแต่ ticket 08
+- [x] **Export รายงาน + Z-report ปิดกะ/ปิดวัน** — ทำแล้ว: ปุ่ม **ส่งออก CSV** แยกทีละแบบที่หน้า
+  รายงาน (สรุปยอดขาย/เมนูขายดี/ยอดขายรายวัน ตามช่วงวันที่ที่กำลังดูอยู่) และ **ใบสรุปปิดกะ
+  (Z-report)** ดูได้ทั้งต่อกะ (พร้อมกระทบยอดเงินสด คิดจาก `payments.shift_id` ไม่ใช่วันที่เปิดออเดอร์
+  กัน edge case ออเดอร์เปิดคาบเกี่ยวกะ) และต่อวัน (รวมทุกกะ ไม่มีกระทบยอดเงินสด) ส่งออกเป็น CSV ได้
+  ทั้งคู่ (ดูหัวข้อ ✨ ฟีเจอร์, `docs/tickets/12-report-export.md`) — **export เป็น CSV เท่านั้น**
+  ยังไม่ทำ Excel/PDF เพราะ CSV เปิดกับ Excel ได้ตรงอยู่แล้ว (มี UTF-8 BOM กันอักษรไทยเพี้ยน)
+  และเทียบเท่าตามที่ acceptance criteria ของทิกเก็ตยอมรับ (ดู `docs/DECISIONS.md` #35)
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 

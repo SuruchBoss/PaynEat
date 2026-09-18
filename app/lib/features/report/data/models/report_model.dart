@@ -13,6 +13,8 @@ class ReportMapper {
       guestCount: (json['guestCount'] as num?)?.toInt() ?? 0,
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
       discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      promotionDiscount: (json['promotionDiscount'] as num?)?.toDouble() ?? 0,
+      totalDiscount: (json['totalDiscount'] as num?)?.toDouble() ?? 0,
       serviceCharge: (json['serviceCharge'] as num?)?.toDouble() ?? 0,
       vat: (json['vat'] as num?)?.toDouble() ?? 0,
       netSales: (json['netSales'] as num?)?.toDouble() ?? 0,
@@ -81,6 +83,46 @@ class ReportMapper {
           .whereType<Map<String, dynamic>>()
           .map(topItemFromJson)
           .toList(growable: false),
+    );
+  }
+
+  static ZReport zReportFromJson(Map<String, dynamic> json) {
+    final isShift = json['type'] == 'shift';
+    final shift = json['shift'] as Map<String, dynamic>? ?? const {};
+    return ZReport(
+      isShiftReport: isShift,
+      orderCount: (json['orderCount'] as num?)?.toInt() ?? 0,
+      guestCount: (json['guestCount'] as num?)?.toInt() ?? 0,
+      subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
+      discount: (json['discount'] as num?)?.toDouble() ?? 0,
+      promotionDiscount: (json['promotionDiscount'] as num?)?.toDouble() ?? 0,
+      totalDiscount: (json['totalDiscount'] as num?)?.toDouble() ?? 0,
+      serviceCharge: (json['serviceCharge'] as num?)?.toDouble() ?? 0,
+      vat: (json['vat'] as num?)?.toDouble() ?? 0,
+      refundTotal: (json['refundTotal'] as num?)?.toDouble() ?? 0,
+      netSales: (json['netSales'] as num?)?.toDouble() ?? 0,
+      paymentMethods: (json['paymentMethods'] as List? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (item) => PaymentMethodSales(
+              method: item['method'] as String? ?? '',
+              count: (item['count'] as num?)?.toInt() ?? 0,
+              amount: (item['amount'] as num?)?.toDouble() ?? 0,
+            ),
+          )
+          .toList(growable: false),
+      shiftId: isShift ? (shift['id'] as num?)?.toInt() : null,
+      date: isShift ? null : json['date'] as String?,
+      openedByName: isShift ? shift['openedByName'] as String? : null,
+      openedAt: isShift ? shift['openedAt'] as String? : null,
+      closedByName: isShift ? shift['closedByName'] as String? : null,
+      closedAt: isShift ? shift['closedAt'] as String? : null,
+      openingCash: isShift ? (shift['openingCash'] as num?)?.toDouble() : null,
+      expectedCash: isShift
+          ? (shift['expectedCash'] as num?)?.toDouble()
+          : null,
+      countedCash: isShift ? (shift['countedCash'] as num?)?.toDouble() : null,
+      variance: isShift ? (shift['variance'] as num?)?.toDouble() : null,
     );
   }
 }

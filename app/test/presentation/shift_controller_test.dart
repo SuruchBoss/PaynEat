@@ -2,6 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
+import 'package:payneat_pos/features/report/domain/entities/report.dart';
+import 'package:payneat_pos/features/report/domain/repositories/report_repository.dart';
+import 'package:payneat_pos/features/report/domain/usecases/report_usecases.dart';
 import 'package:payneat_pos/features/shift/domain/entities/shift.dart';
 import 'package:payneat_pos/features/shift/domain/repositories/shift_repository.dart';
 import 'package:payneat_pos/features/shift/domain/usecases/shift_usecases.dart';
@@ -41,6 +44,35 @@ class _FakeShiftRepository implements ShiftRepository {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+/// ปลอมขั้นต่ำเฉพาะที่ ShiftController ใช้จริง (ดู docs/tickets/12-report-export.md) —
+/// GetZReportByShiftUseCase/ExportZReportByShiftCsvUseCase พึ่ง ReportRepository ไม่ใช่
+/// ShiftRepository
+class _FakeReportRepository implements ReportRepository {
+  Result<ZReport>? nextZReportResult;
+
+  @override
+  Future<Result<ZReport>> getZReportByShift(int shiftId) async =>
+      nextZReportResult!;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+ZReport _zReport({int orderCount = 3}) => ZReport(
+  isShiftReport: true,
+  orderCount: orderCount,
+  guestCount: 6,
+  subtotal: 1000,
+  discount: 0,
+  promotionDiscount: 0,
+  totalDiscount: 0,
+  serviceCharge: 0,
+  vat: 70,
+  refundTotal: 0,
+  netSales: 1070,
+  shiftId: 1,
+);
+
 Shift _openShift({double openingCash = 2000}) => Shift(
   id: 1,
   status: ShiftStatus.open,
@@ -52,15 +84,19 @@ Shift _openShift({double openingCash = 2000}) => Shift(
 
 void main() {
   late _FakeShiftRepository repository;
+  late _FakeReportRepository reportRepository;
   late ShiftController controller;
 
   setUp(() {
     repository = _FakeShiftRepository();
+    reportRepository = _FakeReportRepository();
     controller = ShiftController(
       getCurrent: GetCurrentShiftUseCase(repository),
       openShift: OpenShiftUseCase(repository),
       closeShift: CloseShiftUseCase(repository),
       getHistory: GetShiftHistoryUseCase(repository),
+      getZReportByShift: GetZReportByShiftUseCase(reportRepository),
+      exportZReportByShiftCsv: ExportZReportByShiftCsvUseCase(reportRepository),
     );
   });
 
@@ -137,6 +173,22 @@ void main() {
       controller.startNewShift();
 
       expect(controller.lastClosed.value, isNull);
+    });
+
+    // loadZReport เมื่อล้มเหลว และ exportZReportCsv() บนแพลตฟอร์มที่ไม่ใช่เว็บ (รวมถึง
+    // test runner) เรียก AppDialogs.error ตรงๆ ทันที เช่นเดียวกับ exportCsv() ของ
+    // audit log/report จึงไม่ครอบคลุมในเทสต์ระดับ unit นี้ (ดู
+    // docs/CODING_STANDARDS.md หัวข้อ 6.2)
+    test('loadZReport สำเร็จ → คืนค่า ZReport ของกะนั้น', () async {
+      reportRepository.nextZReportResult = Result.success(
+        _zReport(orderCount: 12),
+      );
+
+      final report = await controller.loadZReport(1);
+
+      expect(report, isNotNull);
+      expect(report!.orderCount, 12);
+      expect(controller.isLoadingZReport.value, isFalse);
     });
   });
 }

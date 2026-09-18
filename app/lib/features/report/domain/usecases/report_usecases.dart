@@ -50,3 +50,75 @@ class GetSalesByDayUseCase
   Future<Result<List<DailySales>>> call(DateRangeParams params) =>
       _repository.getSalesByDay(from: params.from, to: params.to);
 }
+
+/// export รายงานเป็น CSV ตามช่วงวันที่เดียวกับหน้าจอ (ดู docs/tickets/12-report-export.md)
+class ExportSummaryCsvUseCase implements UseCase<String, DateRangeParams> {
+  const ExportSummaryCsvUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<String>> call(DateRangeParams params) =>
+      _repository.exportSummaryCsv(from: params.from, to: params.to);
+}
+
+class ExportTopItemsCsvUseCase implements UseCase<String, DateRangeParams> {
+  const ExportTopItemsCsvUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<String>> call(DateRangeParams params) => _repository
+      .exportTopItemsCsv(from: params.from, to: params.to, limit: params.limit);
+}
+
+class ExportSalesByDayCsvUseCase implements UseCase<String, DateRangeParams> {
+  const ExportSalesByDayCsvUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<String>> call(DateRangeParams params) =>
+      _repository.exportSalesByDayCsv(from: params.from, to: params.to);
+}
+
+/// Z-report ต่อกะ (มีกระทบยอดเงินสด) หรือต่อวัน (รวมทุกกะ) — ดู docs/tickets/12-report-export.md
+class GetZReportByShiftUseCase implements UseCase<ZReport, int> {
+  const GetZReportByShiftUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<ZReport>> call(int shiftId) =>
+      _repository.getZReportByShift(shiftId);
+}
+
+class GetZReportByDateUseCase implements UseCase<ZReport, String?> {
+  const GetZReportByDateUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<ZReport>> call(String? date) =>
+      _repository.getZReportByDate(date);
+}
+
+class ExportZReportByShiftCsvUseCase implements UseCase<String, int> {
+  const ExportZReportByShiftCsvUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<String>> call(int shiftId) =>
+      _repository.exportZReportByShiftCsv(shiftId);
+}
+
+class ExportZReportByDateCsvUseCase implements UseCase<String, String?> {
+  const ExportZReportByDateCsvUseCase(this._repository);
+
+  final ReportRepository _repository;
+
+  @override
+  Future<Result<String>> call(String? date) =>
+      _repository.exportZReportByDateCsv(date);
+}

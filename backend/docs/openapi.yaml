@@ -1152,6 +1152,96 @@ paths:
       summary: ยอดขายรายวัน
       responses:
         '200': { description: สำเร็จ }
+  /reports/export/summary:
+    get:
+      tags: [Reports]
+      summary: >-
+        export สรุปยอดขาย (ตามช่วงวันที่) เป็น CSV ให้ฝ่ายบัญชี (ดู
+        docs/tickets/12-report-export.md) — ตัวเลขเดียวกับ GET /reports/summary เป๊ะ ต่างกันแค่
+        format ที่ตอบกลับ (แถวแบบ รายการ,มูลค่า)
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV (UTF-8 พร้อม BOM ให้ Excel เปิดแล้วอักษรไทยไม่เพี้ยน)
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/export/top-items:
+    get:
+      tags: [Reports]
+      summary: export เมนูขายดี (ตามช่วงวันที่) เป็น CSV
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: limit, schema: { type: integer, default: 10 } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/export/sales-by-day:
+    get:
+      tags: [Reports]
+      summary: export ยอดขายรายวัน (ตามช่วงวันที่) เป็น CSV
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/z-report/by-shift/{shiftId}:
+    get:
+      tags: [Reports]
+      summary: >-
+        Z-report ต่อกะ (ดู docs/tickets/12-report-export.md, docs/tickets/01-shift-cash-reconciliation.md)
+        — สรุปยอดขาย/ภาษี/ส่วนลด/ช่องทางชำระเงินเฉพาะออเดอร์ที่จ่ายจริงในกะนี้ (ผูกผ่าน
+        payments.shift_id ไม่ใช่วันที่เปิดออเดอร์) พร้อมกระทบยอดเงินสด (opening/expected/counted/variance)
+      parameters:
+        - { in: path, name: shiftId, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบกะนี้ }
+  /reports/z-report/by-shift/{shiftId}/export:
+    get:
+      tags: [Reports]
+      summary: export Z-report ต่อกะเป็น CSV
+      parameters:
+        - { in: path, name: shiftId, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        '404': { description: ไม่พบกะนี้ }
+  /reports/z-report/by-date:
+    get:
+      tags: [Reports]
+      summary: >-
+        Z-report ต่อวัน (รวมทุกกะของวันนั้น) — ไม่มีส่วนกระทบยอดเงินสด เพราะอาจมีหลายกะ/หลาย
+        แคชเชียร์ปะปนกันในวันเดียว (กระทบยอดเงินสดทำได้เฉพาะระดับกะเดียวเท่านั้น ดู by-shift)
+      parameters:
+        - { in: query, name: date, schema: { type: string, format: date } }
+      responses:
+        '200': { description: สำเร็จ }
+  /reports/z-report/by-date/export:
+    get:
+      tags: [Reports]
+      summary: export Z-report ต่อวันเป็น CSV
+      parameters:
+        - { in: query, name: date, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
 
   /settings:
     get:

@@ -271,19 +271,6 @@ void bindUseCases() {
     () => GetShiftHistoryUseCase(Get.find<ShiftRepository>()),
     fenix: true,
   );
-  // lazyPut (ไม่ eager) เพราะ onInit ของ controller นี้ยิง API ทันที
-  // ถ้าสร้างตอนแอปเริ่ม (ก่อนล็อกอิน) จะโดน 401 และอาจไปเข้าเงื่อนไข session
-  // หมดอายุใน ApiClient ทั้งที่ผู้ใช้ยังไม่เคยล็อกอินเลย — ต้องรอให้มีคนเรียกใช้จริง
-  // (เปิดแท็บ "กะ" หรือเข้าหน้าเก็บเงิน ซึ่งเกิดหลังล็อกอินเสมอ) ก่อนจะสร้าง
-  Get.lazyPut(
-    () => ShiftController(
-      getCurrent: Get.find<GetCurrentShiftUseCase>(),
-      openShift: Get.find<OpenShiftUseCase>(),
-      closeShift: Get.find<CloseShiftUseCase>(),
-      getHistory: Get.find<GetShiftHistoryUseCase>(),
-    ),
-    fenix: true,
-  );
 
   // report
   Get.lazyPut(
@@ -300,6 +287,50 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => GetSalesByDayUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportSummaryCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportTopItemsCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportSalesByDayCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetZReportByShiftUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetZReportByDateUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportZReportByShiftCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportZReportByDateCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+
+  // lazyPut (ไม่ eager) เพราะ onInit ของ controller นี้ยิง API ทันที
+  // ถ้าสร้างตอนแอปเริ่ม (ก่อนล็อกอิน) จะโดน 401 และอาจไปเข้าเงื่อนไข session
+  // หมดอายุใน ApiClient ทั้งที่ผู้ใช้ยังไม่เคยล็อกอินเลย — ต้องรอให้มีคนเรียกใช้จริง
+  // (เปิดแท็บ "กะ" หรือเข้าหน้าเก็บเงิน ซึ่งเกิดหลังล็อกอินเสมอ) ก่อนจะสร้าง
+  Get.lazyPut(
+    () => ShiftController(
+      getCurrent: Get.find<GetCurrentShiftUseCase>(),
+      openShift: Get.find<OpenShiftUseCase>(),
+      closeShift: Get.find<CloseShiftUseCase>(),
+      getHistory: Get.find<GetShiftHistoryUseCase>(),
+      getZReportByShift: Get.find<GetZReportByShiftUseCase>(),
+      exportZReportByShiftCsv: Get.find<ExportZReportByShiftCsvUseCase>(),
+    ),
     fenix: true,
   );
 

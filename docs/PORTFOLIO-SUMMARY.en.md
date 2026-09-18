@@ -8,7 +8,7 @@ not a CRUD demo. [Live demo](https://suruchboss.github.io/PaynEat/) · [Full sou
 
 | | |
 |---|---|
-| **580** | automated tests, all passing (255 backend + 325 Flutter) |
+| **589** | automated tests, all passing (263 backend + 326 Flutter) |
 | **33,300+** | lines of Dart |
 | **7,500+** | lines of JavaScript |
 | **83** | REST API endpoints |

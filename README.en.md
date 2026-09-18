@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-589%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 580 automated tests.
+control and 589 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -317,6 +317,19 @@ The login page has one-tap buttons for each account — no need to type anything
     plottable numbers (like best-selling items) comes back with a bar chart attached too (you need to set
     `ANTHROPIC_API_KEY` first for it to actually answer — without it you get a clear "not enabled" message
     instead of a crash; see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
+19. **Log out and log back in as `cashier`** → open the **"Shift"** menu (the cashier icon in the left
+    nav) → enter a starting cash amount and tap **"Open shift"** → go take an order and collect payment
+    for a bill (repeat a shortened version of steps 2-9) → come back to the **"Shift"** page and tap
+    **"Close shift"**, entering the actual cash counted → you'll immediately see the variance against
+    what the system expected, plus a **"View Z-report"** button — tap it to see a full breakdown of that
+    shift's sales/tax/discounts (manual vs. promotion, separately)/payment methods, then tap **"Export
+    CSV"** to download it right away — past shifts under **"Shift history"** below can have their
+    Z-report viewed the same way (an open shift can't, since its cash reconciliation isn't computed
+    until it's closed; see `docs/tickets/12-report-export.md`)
+20. **Open the "Reports" menu** (visible from `cashier` upward) → tap the **download 📥** icon in the
+    top-right of the bar after picking a date range → export **"Sales summary"**, **"Top items"**, or
+    **"Sales by day"** → get a CSV file for the currently selected date range right away (browser only,
+    same as exporting the audit log in step 17)
 
 **Want to try the hidden business rules?**
 
@@ -359,8 +372,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 255 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 325 cases — domain / controller / widget
+cd backend && npm test      # 263 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 326 cases — domain / controller / widget
 ```
 
 ---
@@ -426,6 +439,10 @@ cd app && flutter test      # 325 cases — domain / controller / widget
 - **Shift open/close** — enter a starting cash float when opening a shift; count the real cash when closing
   and the system automatically compares it against the expected total (cash drawer reconciliation) — a
   shift must be open before payments can be accepted
+- **Z-report (shift close report)** — view a breakdown of sales/tax/discounts (manual vs. promotion,
+  separately)/payment methods for any shift, past or just-closed, along with its cash reconciliation
+  (starting/expected/counted/variance) — export it as a CSV for accounting right away (see
+  `docs/tickets/12-report-export.md`)
 - Accepts 4 payment methods: cash, PromptPay/QR, credit card, bank transfer
 - **Real PromptPay QR** — picking "QR" shows a real, scannable QR code built to the EMV QR standard,
   bound to the amount automatically (set the store's PromptPay ID in Settings first) — no payment
@@ -460,7 +477,9 @@ cd app && flutter test      # 325 cases — domain / controller / widget
 
 - **Dashboard** — today's sales, an hourly chart, payment-method breakdown, and a live store status counter
   (answers "how's the store doing right now" — historical data and best sellers live on the **Reports** page)
-- **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns
+- **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns,
+  with an **Export CSV** button for each report type (sales summary/top items/sales by day) for the
+  currently selected date range (web only — see `docs/tickets/12-report-export.md`)
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
@@ -819,11 +838,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 255 cases
-cd app && flutter test      # 325 cases
+cd backend && npm test      # 263 cases
+cd app && flutter test      # 326 cases
 ```
 
-**Backend (255 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (263 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -938,7 +957,14 @@ instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests
 `AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
 default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
 
-**Flutter (325 cases)** — split into 3 levels:
+`report-export.test.js` (8 new cases) tests exporting reports as CSV (sales summary/top items/sales by
+day — correct header/content + UTF-8 BOM) and the Z-report both per shift (with cash reconciliation,
+computed from `payments.shift_id` rather than order creation date, to correctly handle orders opened
+across a shift boundary) and per day (all shifts combined, no cash reconciliation since multiple
+shifts/cashiers could be mixed together), a 404 when the shift doesn't exist, exporting a Z-report as
+CSV, and RBAC (a waiter can't call it) (see `docs/tickets/12-report-export.md`).
+
+**Flutter (326 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -962,6 +988,7 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Controller | `order_detail_controller_test.dart` | Order management permissions, moving item status forward |
 | Controller | `dashboard_controller_test.dart` | Loading today's sales summary + live counters |
 | Controller | `report_controller_test.dart` | Selecting a report date range, silently swallowing topItems/dailySales errors |
+| Controller | `shift_controller_test.dart` | Loading the current shift + history together, guarding closing a shift with none open, `startNewShift` clearing the previous close result, `loadZReport` fetching a shift's Z-report successfully (ticket 12) |
 | Controller | `split_bill_controller_test.dart` | Selecting/deselecting items, fetching the preview, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) — also confirms waiters intentionally see the "Kitchen" tab (mirrors backend permissions) and that an unrecognized role fails safe to account-only access instead of silently inheriting a broad permission set from a wildcard case |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
@@ -1071,6 +1098,15 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   picker** on the Audit Log page, both of which had been outstanding since #21 (see the ✨ Features
   section, `docs/tickets/14-financial-audit-trail.md`, `docs/DECISIONS.md` #27) — **CSV export is
   web-only**, since this page lives in the admin zone, which was designed as web-only back in ticket 08
+- [x] **Report export + Z-report (shift/day close)** — done: an **Export CSV** button per report type
+  on the Reports page (sales summary/top items/sales by day, for the currently selected date range),
+  and a **Z-report** viewable both per shift (with cash reconciliation, computed from
+  `payments.shift_id` rather than order creation date, to correctly handle orders opened across a
+  shift boundary) and per day (all shifts combined, no cash reconciliation) — both exportable as CSV
+  too (see the ✨ Features section, `docs/tickets/12-report-export.md`) — **CSV export only**, no
+  Excel/PDF yet, since CSV already opens cleanly in Excel (with a UTF-8 BOM so Thai characters don't
+  garble) and the ticket's acceptance criteria accept it as an equivalent format (see
+  `docs/DECISIONS.md` #35)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

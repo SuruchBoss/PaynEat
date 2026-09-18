@@ -10,6 +10,7 @@ class _FakeReportRepository implements ReportRepository {
   Result<SalesSummary> nextSummaryResult = Result.success(SalesSummary.empty);
   Result<List<TopItem>> nextTopItemsResult = const Result.success([]);
   Result<List<DailySales>> nextSalesByDayResult = const Result.success([]);
+  Result<String> nextExportResult = const Result.success('csv');
 
   @override
   Future<Result<SalesSummary>> getSummary({String? from, String? to}) async =>
@@ -27,6 +28,23 @@ class _FakeReportRepository implements ReportRepository {
     String? from,
     String? to,
   }) async => nextSalesByDayResult;
+
+  @override
+  Future<Result<String>> exportSummaryCsv({String? from, String? to}) async =>
+      nextExportResult;
+
+  @override
+  Future<Result<String>> exportTopItemsCsv({
+    String? from,
+    String? to,
+    int limit = 10,
+  }) async => nextExportResult;
+
+  @override
+  Future<Result<String>> exportSalesByDayCsv({
+    String? from,
+    String? to,
+  }) async => nextExportResult;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -56,10 +74,17 @@ void main() {
       getSummary: GetSalesSummaryUseCase(repository),
       getTopItems: GetTopItemsUseCase(repository),
       getSalesByDay: GetSalesByDayUseCase(repository),
+      exportSummaryCsv: ExportSummaryCsvUseCase(repository),
+      exportTopItemsCsv: ExportTopItemsCsvUseCase(repository),
+      exportSalesByDayCsv: ExportSalesByDayCsvUseCase(repository),
     );
   });
 
   tearDown(() => controller.onClose());
+
+  // exportCsv() บนแพลตฟอร์มที่ไม่ใช่เว็บ (รวมถึง test runner) เรียก AppDialogs.error
+  // ตรงๆ ทันทีโดยไม่มี guard อื่นให้ทดสอบได้เลยโดยไม่มี GetMaterialApp ที่ pump จริง
+  // (ดู docs/CODING_STANDARDS.md หัวข้อ 6.2, test/presentation/audit_log_controller_test.dart)
 
   group('ReportController', () {
     test('onInit เลือกช่วง "วันนี้" เป็นค่าเริ่มต้น และ from == to', () {

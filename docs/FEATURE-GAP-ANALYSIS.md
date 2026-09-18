@@ -61,7 +61,7 @@
 | 9 | ลูกค้า/สมาชิก/แต้มสะสม (Customer & Loyalty) | ไม่มี table customer ผูกประวัติซื้อ/สมาชิกไม่ได้ | ✅ เสร็จแล้ว (ดู `docs/tickets/09-customer-loyalty.md`, `docs/DECISIONS.md` #22) |
 | 10 | Takeaway/Delivery flow เต็มรูปแบบ | schema มี `type: dine_in/takeaway/delivery` แต่ UI/logic ทำแต่ dine-in ไม่มีคิวรับอาหาร ไม่เชื่อม Grab/LINE MAN | ✅ เสร็จแล้ว (เฉพาะ flow ในระบบ — ยังไม่เชื่อม Grab/LINE MAN ตามที่ตั้งใจแยกเป็นทิกเก็ตย่อย ดู `docs/tickets/10-takeaway-delivery-flow.md`, `docs/DECISIONS.md` #23) |
 | 11 | Multi-branch/multi-store | ตั้งใจ scope สาขาเดียวไว้ก่อน (repository layer แยกไว้รองรับ Postgres ในอนาคต) | — |
-| 12 | Export รายงาน (Excel/CSV/PDF) + End-of-day / Z-report | ปัจจุบันดูได้แค่ในแอป ยังส่งบัญชีไม่ได้ | — |
+| 12 | Export รายงาน (Excel/CSV/PDF) + End-of-day / Z-report | ปัจจุบันดูได้แค่ในแอป ยังส่งบัญชีไม่ได้ | ✅ เสร็จแล้ว (export CSV แยกทีละรายงาน + Z-report ต่อกะ/ต่อวัน — ดู `docs/tickets/12-report-export.md`, `docs/DECISIONS.md` #35) |
 
 ### 🟢 Nice-to-have
 

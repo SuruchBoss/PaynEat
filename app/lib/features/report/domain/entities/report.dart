@@ -83,6 +83,8 @@ class SalesSummary {
     required this.netSales,
     required this.averagePerOrder,
     required this.averagePerGuest,
+    this.promotionDiscount = 0,
+    this.totalDiscount = 0,
     this.paymentMethods = const [],
     this.categories = const [],
   });
@@ -93,6 +95,10 @@ class SalesSummary {
   final int guestCount;
   final double subtotal;
   final double discount;
+  // ส่วนลดจากโปรโมชันอัตโนมัติ แยกจาก discount (ที่พนักงานกรอกเอง) — รวมกันเป็น totalDiscount
+  // (ดู docs/tickets/12-report-export.md)
+  final double promotionDiscount;
+  final double totalDiscount;
   final double serviceCharge;
   final double vat;
   final double netSales;
@@ -114,6 +120,60 @@ class SalesSummary {
     averagePerOrder: 0,
     averagePerGuest: 0,
   );
+}
+
+/// Z-report ปิดกะ/ปิดวัน — สรุปยอดขาย/ภาษี/ส่วนลด/ช่องทางชำระเงิน พร้อมกระทบยอดเงินสดถ้าผูกกับกะ
+/// (ดู docs/tickets/12-report-export.md)
+class ZReport {
+  const ZReport({
+    required this.isShiftReport,
+    required this.orderCount,
+    required this.guestCount,
+    required this.subtotal,
+    required this.discount,
+    required this.promotionDiscount,
+    required this.totalDiscount,
+    required this.serviceCharge,
+    required this.vat,
+    required this.refundTotal,
+    required this.netSales,
+    this.paymentMethods = const [],
+    this.shiftId,
+    this.date,
+    this.openedByName,
+    this.openedAt,
+    this.closedByName,
+    this.closedAt,
+    this.openingCash,
+    this.expectedCash,
+    this.countedCash,
+    this.variance,
+  });
+
+  final bool isShiftReport;
+  final int orderCount;
+  final int guestCount;
+  final double subtotal;
+  final double discount;
+  final double promotionDiscount;
+  final double totalDiscount;
+  final double serviceCharge;
+  final double vat;
+  final double refundTotal;
+  final double netSales;
+  final List<PaymentMethodSales> paymentMethods;
+
+  // เฉพาะ Z-report ต่อกะ
+  final int? shiftId;
+  final String? date;
+  final String? openedByName;
+  final String? openedAt;
+  final String? closedByName;
+  final String? closedAt;
+  final double? openingCash;
+  final double? expectedCash;
+  final double? countedCash;
+  final double? variance;
 }
 
 /// ตัวนับสถานะสด ๆ ของร้าน

@@ -71,6 +71,15 @@ class ApiEndpoints {
   static const String reportSummary = '/reports/summary';
   static const String topItems = '/reports/top-items';
   static const String salesByDay = '/reports/sales-by-day';
+  static const String exportSummary = '/reports/export/summary';
+  static const String exportTopItems = '/reports/export/top-items';
+  static const String exportSalesByDay = '/reports/export/sales-by-day';
+  static String zReportByShift(int shiftId) =>
+      '/reports/z-report/by-shift/$shiftId';
+  static String zReportByShiftExport(int shiftId) =>
+      '/reports/z-report/by-shift/$shiftId/export';
+  static const String zReportByDate = '/reports/z-report/by-date';
+  static const String zReportByDateExport = '/reports/z-report/by-date/export';
 
   // Settings
   static const String settings = '/settings';

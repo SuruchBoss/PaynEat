@@ -38,6 +38,21 @@ const Map<String, String> shiftTranslationsTh = {
   'shift_error_already_open': 'มีกะที่เปิดอยู่แล้ว ต้องปิดกะเดิมก่อนเปิดกะใหม่',
   'shift_error_not_found': 'ไม่พบกะนี้',
   'shift_error_already_closed': 'กะนี้ปิดไปแล้ว',
+
+  // Z-report ปิดกะ (ดู docs/tickets/12-report-export.md)
+  'shift_z_report_view_button': 'ดูใบสรุปปิดกะ (Z-report)',
+  'shift_z_report_title': 'ใบสรุปปิดกะ (Z-report)',
+  'shift_z_report_guest_count_label': 'จำนวนลูกค้า',
+  'shift_z_report_discount_label': 'ส่วนลดที่กรอกเอง',
+  'shift_z_report_promotion_discount_label': 'ส่วนลดจากโปรโมชัน',
+  'shift_z_report_total_discount_label': 'ส่วนลดรวม',
+  'shift_z_report_service_charge_label': 'ค่าบริการ',
+  'shift_z_report_vat_label': 'ภาษีมูลค่าเพิ่ม',
+  'shift_z_report_refund_label': 'ยอดคืนเงิน',
+  'shift_z_report_cash_reconciliation_title': 'กระทบยอดเงินสด',
+  'shift_z_report_variance_label': 'ส่วนต่างเงินสด',
+  'shift_z_report_export_button': 'ส่งออก CSV',
+  'shift_z_report_export_unsupported_platform': 'ส่งออก CSV รองรับเฉพาะบนเว็บ',
 };
 
 const Map<String, String> shiftTranslationsEn = {
@@ -81,4 +96,20 @@ const Map<String, String> shiftTranslationsEn = {
       'A shift is already open. Close it before opening a new one.',
   'shift_error_not_found': 'Shift not found',
   'shift_error_already_closed': 'This shift is already closed',
+
+  // Z-report (see docs/tickets/12-report-export.md)
+  'shift_z_report_view_button': 'View Z-report',
+  'shift_z_report_title': 'Z-report',
+  'shift_z_report_guest_count_label': 'Guest count',
+  'shift_z_report_discount_label': 'Manual discount',
+  'shift_z_report_promotion_discount_label': 'Promotion discount',
+  'shift_z_report_total_discount_label': 'Total discount',
+  'shift_z_report_service_charge_label': 'Service charge',
+  'shift_z_report_vat_label': 'VAT',
+  'shift_z_report_refund_label': 'Refunds',
+  'shift_z_report_cash_reconciliation_title': 'Cash reconciliation',
+  'shift_z_report_variance_label': 'Cash variance',
+  'shift_z_report_export_button': 'Export CSV',
+  'shift_z_report_export_unsupported_platform':
+      'CSV export is only supported on the web',
 };

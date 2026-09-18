@@ -11,6 +11,7 @@ export const reportRepository = {
         SELECT COUNT(*)                      AS order_count,
                IFNULL(SUM(subtotal), 0)      AS subtotal,
                IFNULL(SUM(discount_amount), 0) AS discount,
+               IFNULL(SUM(promotion_discount_amount), 0) AS promotion_discount,
                IFNULL(SUM(service_charge), 0)  AS service_charge,
                IFNULL(SUM(vat), 0)           AS vat,
                IFNULL(SUM(total), 0)         AS total,
@@ -21,6 +22,54 @@ export const reportRepository = {
       `,
       )
       .get(start, end);
+  },
+
+  /** ยอดออเดอร์ที่ถูกจ่ายในกะนี้ (dedupe ผ่าน payments.shift_id เพราะแยกจ่ายได้หลาย payment
+   * ต่อออเดอร์เดียว) ใช้ประกอบ Z-report ต่อกะ — ดู docs/tickets/12-report-export.md */
+  shiftOrdersSummary(shiftId) {
+    return getDb()
+      .prepare(
+        `
+        SELECT COUNT(*)                      AS order_count,
+               IFNULL(SUM(subtotal), 0)      AS subtotal,
+               IFNULL(SUM(discount_amount), 0) AS discount,
+               IFNULL(SUM(promotion_discount_amount), 0) AS promotion_discount,
+               IFNULL(SUM(service_charge), 0)  AS service_charge,
+               IFNULL(SUM(vat), 0)           AS vat,
+               IFNULL(SUM(total), 0)         AS total,
+               IFNULL(SUM(guest_count), 0)   AS guests
+          FROM orders
+         WHERE id IN (SELECT DISTINCT order_id FROM payments WHERE shift_id = ?)
+      `,
+      )
+      .get(shiftId);
+  },
+
+  shiftRefundTotal(shiftId) {
+    return getDb()
+      .prepare(
+        `
+        SELECT IFNULL(SUM(r.amount), 0) AS total
+          FROM refunds r
+          JOIN payments p ON p.id = r.payment_id
+         WHERE p.shift_id = ?
+      `,
+      )
+      .get(shiftId).total;
+  },
+
+  byShiftPaymentMethod(shiftId) {
+    return getDb()
+      .prepare(
+        `
+        SELECT method, COUNT(*) AS count, IFNULL(SUM(amount), 0) AS amount
+          FROM payments
+         WHERE shift_id = ?
+         GROUP BY method
+         ORDER BY amount DESC
+      `,
+      )
+      .all(shiftId);
   },
 
   refundTotal(from, to) {

@@ -8,6 +8,7 @@ import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/shift.dart';
 import '../controllers/shift_controller.dart';
+import '../widgets/z_report_dialog.dart';
 
 /// หน้าจอเปิด/ปิดกะ — ใช้กระทบยอดเงินสดของแคชเชียร์ก่อน/หลังให้บริการ
 class ShiftPage extends GetView<ShiftController> {
@@ -266,7 +267,14 @@ class _ClosedShiftSummary extends GetView<ShiftController> {
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)),
+            onPressed: () => ZReportDialog.show(shift.id),
+            icon: const Icon(Icons.receipt_long_rounded),
+            label: Text('shift_z_report_view_button'.tr),
+          ),
+          const SizedBox(height: 12),
           FilledButton.icon(
             style: FilledButton.styleFrom(minimumSize: const Size(0, 52)),
             onPressed: controller.startNewShift,
@@ -361,6 +369,9 @@ class _HistoryTile extends StatelessWidget {
         Formatters.baht(shift.openingCash),
         style: const TextStyle(fontWeight: FontWeight.w700),
       ),
+      // ดู Z-report ย้อนหลังได้ทุกกะที่ปิดแล้ว (ดู docs/tickets/12-report-export.md) —
+      // ไม่เปิดให้กะที่ยังเปิดอยู่ เพราะยอดกระทบเงินสดยังไม่ถูกคำนวณจนกว่าจะปิดกะ
+      onTap: isOpen ? null : () => ZReportDialog.show(shift.id),
     );
   }
 }
