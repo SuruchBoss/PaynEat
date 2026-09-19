@@ -145,6 +145,37 @@ test('POST /ai/ask — ถ้าโมเดลไม่ยอมเรียก
   assert.deepEqual(client.calls[5].tool_choice, { type: 'tool', name: 'submit_answer' });
 });
 
+test('POST /ai/ask — โมเดลตอบข้อความเฉยๆ โดยไม่เรียก submit_answer ต้องไม่ถูกรับเป็นคำตอบสุดท้าย', async () => {
+  const manager = await login('manager', 'manager123');
+  // รอบแรกโมเดลตอบข้อความดิบเฉยๆ (ผิดกฎ #6) — ต้องไม่ถูกยอมรับเป็นคำตอบ ต้องถูกป้อนกลับเข้าลูป
+  // ให้ลองใหม่ รอบสองเรียก submit_answer ถูกต้อง คำตอบสุดท้ายต้องมาจากรอบสองเท่านั้น
+  const rawTextRound = {
+    content: [{ type: 'text', text: 'ยอดขายน่าจะประมาณ 5000 บาท' }],
+    stop_reason: 'end_turn',
+    usage: { input_tokens: 50, output_tokens: 20 },
+  };
+  const client = fakeClient([
+    rawTextRound,
+    submitAnswer('call_2', { answerText: 'จากข้อมูล get_sales_summary ยอดขายวันนี้ 0 บาท' }),
+  ]);
+  setAnthropicClientForTests(client);
+
+  const res = await post('/api/v1/ai/ask', manager.token, { question: 'ยอดขายวันนี้เท่าไร' });
+  assert.equal(res.status, 200, JSON.stringify(res.body));
+  assert.equal(res.body.data.answerText, 'จากข้อมูล get_sales_summary ยอดขายวันนี้ 0 บาท');
+  assert.doesNotMatch(
+    res.body.data.answerText,
+    /5000/,
+    'ห้ามหลุดคำตอบดิบที่ไม่ผ่าน submit_answer ออกไป',
+  );
+  assert.equal(client.calls.length, 2, 'ต้องเรียกโมเดลรอบสองแทนที่จะรับข้อความดิบจากรอบแรก');
+
+  const secondRequestMessages = client.calls[1].messages;
+  const correction = secondRequestMessages[secondRequestMessages.length - 1];
+  assert.equal(correction.role, 'user');
+  assert.match(correction.content, /submit_answer/);
+});
+
 test('POST /ai/ask — โมเดลถูกปฏิเสธ (refusal) ต้องตอบข้อความสุภาพแทนที่จะพัง', async () => {
   const manager = await login('manager', 'manager123');
   const client = fakeClient([
