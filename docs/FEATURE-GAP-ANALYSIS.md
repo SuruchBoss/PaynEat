@@ -1,11 +1,37 @@
 # PaynEat POS — Feature Gap Analysis (มุมมอง PO)
 
-วันที่วิเคราะห์: 2026-09-09
+วันที่วิเคราะห์: 2026-09-09 (re-verify ล่าสุด 2026-09-19 — ดู `docs/DECISIONS.md` #35)
 ผู้วิเคราะห์: PO review (ผ่าน Claude Code) โดยอ่านโค้ดจริง + README + `docs/DECISIONS.md`
 
 เอกสารนี้สรุปว่าฟีเจอร์ POS พื้นฐานอะไร **มีอยู่แล้ว** และอะไร **ยังขาด** เทียบกับสิ่งที่ POS
 ร้านอาหารทั่วไปต้องมีเพื่อใช้งานจริง (ไม่ใช่แค่ demo/portfolio) ใช้เป็น input สำหรับตัด ticket
 พัฒนาต่อ — ดู tickets ที่เกี่ยวข้องใน `docs/tickets/` (สร้างจากเอกสารนี้)
+
+## สรุปสำหรับ PO (2026-09-19): พร้อมให้คนโหลดไปใช้จริงหรือยัง แม้จะฟรี?
+
+**พร้อมแล้วสำหรับร้านอาหารเดี่ยว (ไม่ใช่เชนหลายสาขา)** — 🔴 Critical และ 🟠 High ทุกข้อ (ticket
+1-8, 16) ผ่านการตรวจโค้ดจริงซ้ำอย่างน้อย 2 รอบแล้วว่าทำจริงครบ (DB + backend + UI ที่ผู้ใช้กดได้จริง)
+ไม่ใช่แค่ป้ายชื่อ — ล่าสุดสุ่มตรวจ shift/refund/inventory/tax-invoice อิสระอีกรอบ (2026-09-19) ยืนยัน
+PASS ทั้งหมด ไม่พบร่องรอยของปลอม/cosmetic แบบที่เคยเจอใน ticket 16 (PromptPay QR) ตอนแรก บวกกับ
+ticket 15 (AI ถามตอบข้อมูลร้านด้วย LLM) ที่เป็นจุดขายที่คู่แข่งฟรี/เสียเงินส่วนใหญ่ในตลาดไทยยังไม่มี —
+ครบทั้งเรื่องพื้นฐานที่ POS ทุกตัวต้องมีและเรื่องที่ทำให้ "ฟรีแต่ไม่ด้อยกว่าของเสียเงิน"
+
+**อัปเดต (ยังวันเดียวกัน 2026-09-19):** ตอนแรกระบุว่า gap #12 (export รายงาน/Z-report) เป็นสิ่งเดียว
+ที่ยังเป็นแรงเสียดทานจริง แล้วเขียน full spec ให้ทันที — **หลังจากนั้นพบว่ามีอีก session ทำ #12 จริง
+เสร็จไปแล้วขนานกัน** บน branch `claude/pos-restaurant-project-3djpp6` (ยังไม่ merge เข้า main) และ
+พบเพิ่มว่า **#11 multi-branch ก็กำลังถูกทำอยู่ขนานกันเช่นกัน** (backend เสร็จ ยังไม่มี UI) ทั้งที่
+เพิ่งยืนยันไปว่า "ยัง out-of-scope ไม่มี drift" — บทเรียน: การ "ตรวจโค้ดจริง" ที่ทำมาตลอดเซสชันนี้
+ตรวจได้แค่โค้ดที่มองเห็น ณ ตอนนั้น (`main` + branch ของเซสชันนี้เอง) ไม่ครอบคลุม branch อื่นที่
+session อื่นกำลังทำขนานกันอยู่ในโปรเจกต์แบบ multi-session นี้ — ดูรายละเอียดที่
+`docs/tickets/12-report-export.md`, `docs/tickets/11-multi-branch.md`
+
+**สรุปที่ยังยืนอยู่**: 🔴 Critical + 🟠 High เดิม (ticket 1-8, 16) ครบและ verified จริง, ticket 15
+(AI) เป็นจุดขาย — เพียงพอสำหรับร้านเดี่ยวให้คนโหลดไปใช้จริงได้ ไม่มี gap ที่ยังค้างจริงในกลุ่มนี้แล้ว
+(12 เสร็จ, 11 กำลังทำ ทั้งคู่รอ merge เข้า main)
+
+ระหว่างตรวจซ้ำรอบนี้ยังพบบั๊กจริง 1 จุดใน ticket 15 (AI assistant เคยหลุดตอบข้อความดิบที่ไม่ผ่าน
+`submit_answer` ได้ในบางเงื่อนไข ขัดกับสัญญา "ห้ามเดา/แต่งคำตอบ" ของฟีเจอร์เอง) — **แก้แล้วในรอบนี้**
+พร้อมเทสต์คุม ไม่ใช่แค่บันทึกทิ้งไว้ ดู `docs/DECISIONS.md` #35
 
 ## สิ่งที่มีอยู่แล้ว (ยืนยันจากโค้ดจริง)
 
@@ -23,6 +49,10 @@
 - จัดการเมนู/หมวดหมู่, จัดการพนักงาน + RBAC 5 role (admin/manager/waiter/cashier/kitchen)
 - ตั้งค่าร้าน (VAT rate, service charge, VAT-inclusive toggle)
 - คำนวณ VAT + service charge ตรงกันทั้ง frontend/backend มี test คุม
+- สต๊อก/วัตถุดิบตัดอัตโนมัติตอนขาย + ใบกำกับภาษี (ย่อ/เต็มรูป) + audit log ครบทั้งระดับผู้จัดการร้าน
+  และบัญชี/การเงิน + ลูกค้า/แต้มสะสม + takeaway/delivery flow ในระบบ
+- **ผู้ช่วย AI ถามตอบข้อมูลร้านด้วยภาษาพูด** (admin/manager) ผ่าน Claude API + tool-calling ที่เรียก
+  endpoint จริงในระบบเท่านั้น กันตอบมั่ว/แต่งตัวเลข ดู `docs/tickets/15-ai-ask-your-data.md`
 
 ที่มา: `README.md`, `docs/DECISIONS.md`, `backend/src/db/schema.sql`,
 `app/lib/features/**`, `backend/src/modules/**`
@@ -60,8 +90,8 @@
 |---|---|---|---|
 | 9 | ลูกค้า/สมาชิก/แต้มสะสม (Customer & Loyalty) | ไม่มี table customer ผูกประวัติซื้อ/สมาชิกไม่ได้ | ✅ เสร็จแล้ว (ดู `docs/tickets/09-customer-loyalty.md`, `docs/DECISIONS.md` #22) |
 | 10 | Takeaway/Delivery flow เต็มรูปแบบ | schema มี `type: dine_in/takeaway/delivery` แต่ UI/logic ทำแต่ dine-in ไม่มีคิวรับอาหาร ไม่เชื่อม Grab/LINE MAN | ✅ เสร็จแล้ว (เฉพาะ flow ในระบบ — ยังไม่เชื่อม Grab/LINE MAN ตามที่ตั้งใจแยกเป็นทิกเก็ตย่อย ดู `docs/tickets/10-takeaway-delivery-flow.md`, `docs/DECISIONS.md` #23) |
-| 11 | Multi-branch/multi-store | ตั้งใจ scope สาขาเดียวไว้ก่อน (repository layer แยกไว้รองรับ Postgres ในอนาคต) | — |
-| 12 | Export รายงาน (Excel/CSV/PDF) + End-of-day / Z-report | ปัจจุบันดูได้แค่ในแอป ยังส่งบัญชีไม่ได้ | — |
+| 11 | Multi-branch/multi-store | ตั้งใจ scope สาขาเดียวไว้ก่อน (repository layer แยกไว้รองรับ Postgres ในอนาคต) | 🚧 **กำลังทำอยู่บน branch อื่น** (พบ 2026-09-19 หลังยืนยันผิดว่ายัง out-of-scope) backend scoping เสร็จแล้ว ยังไม่มี UI ดู `docs/tickets/11-multi-branch.md` |
+| 12 | Export รายงาน (Excel/CSV/PDF) + End-of-day / Z-report | ปัจจุบันดูได้แค่ในแอป ยังส่งบัญชีไม่ได้ | ✅ **เสร็จแล้ว** (บน branch อื่น, ยังไม่ merge เข้า main ณ ตอนเขียนบันทึกนี้ — 2026-09-19) ดู `docs/tickets/12-report-export.md`, `docs/DECISIONS.md` #35 |
 
 ### 🟢 Nice-to-have
 
@@ -77,13 +107,17 @@
    ทั้งคู่เจอระหว่างตรวจโค้ดซ้ำ (2026-09-15) เคยเป็น gap ที่เหลือใน 🔴 Critical/🟠 High ตอนนั้น
    ตอนนี้ audit ที่ผู้ใช้ขอไว้ตั้งแต่ต้นครบทั้งสองฝั่งแล้ว (ผู้จัดการร้าน ✅ / บัญชี ✅)
 3. ✅ **เฟส 2 (เสร็จแล้วทั้ง 4 รายการ)**: โปรโมชัน + สต๊อก + ใบกำกับภาษี + audit log — เพื่อแข่งขันกับ POS เจ้าอื่นได้
-4. **เฟส ขยายธุรกิจ**: 🟡 ลูกค้า/loyalty ✅ และ takeaway/delivery ✅ เสร็จแล้วทั้งคู่ — เหลือ
-   multi-branch, export รายงาน
-5. **Backlog**: 🟢 nice-to-have ตามความเหมาะสม
+4. ✅ **#33 AI ask-your-data** (เสร็จแล้ว, 2026-09-16) — จุดขายเพิ่มเติมนอกเหนือ gap เดิม ดู
+   `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33
+5. **เฟส ขยายธุรกิจ**: 🟡 ลูกค้า/loyalty ✅ และ takeaway/delivery ✅ เสร็จแล้วทั้งคู่ — เหลือ
+   multi-branch (ตั้งใจ out-of-scope)
+6. ✅ **`12-report-export.md`** (เสร็จแล้ว, ทำขนานบน branch อื่น) และ 🚧 **`11-multi-branch.md`**
+   (backend เสร็จ, ยังไม่มี UI, บน branch อื่นเช่นกัน) — ทั้งคู่รอ merge เข้า `main`
+7. **Backlog**: 🟢 nice-to-have ตามความเหมาะสม
 
 ---
 
-## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #16 / #17 / #20 / #21 / #22 / #23 / #25 / #26 / #27 / #28 / #33
+## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #16 / #17 / #20 / #21 / #22 / #23 / #25 / #26 / #27 / #28 / #33 / #35
 
 หกข้อ #16/#17/#20 เป็นการแก้ความถูกต้อง/เครื่องมือ/ความปลอดภัย ไม่ใช่ฟีเจอร์ใหม่ จึง **ไม่ได้ปิด
 gap ข้อใดในตารางด้านบนและไม่ได้เปิด gap ใหม่** ส่วน #21 (audit log) **ปิด gap ข้อ 8**, #22

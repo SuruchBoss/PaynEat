@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-581%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 580 automated tests.
+control and 581 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -67,7 +67,7 @@ control and 580 automated tests.
 > Walks through the real usage path from opening the table map to closing the bill, built from 11 real
 > screenshots ([how it's regenerated](docs/video/README.md))
 
-> 📄 **Full feature walkthrough — 29 screens (27–28 page PDF)**
+> 📄 **Full feature walkthrough — 25 screens (23-page PDF)**
 > · [Thai edition](docs/PaynEat-POS-Features-TH.pdf) — explains the design and mechanics behind every screen
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
@@ -76,8 +76,8 @@ control and 580 automated tests.
 > ([how to regenerate](docs/generator/README.md))
 
 > 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
-> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
-> · [`docs/landing/index.en.html`](docs/landing/index.en.html) — [Thai version](docs/landing/index.html)
+> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/)
+> · [`docs/landing/index.html`](docs/landing/index.html)
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
 > a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
@@ -359,7 +359,7 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 255 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 256 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 325 cases — domain / controller / widget
 ```
 
@@ -819,11 +819,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 255 cases
+cd backend && npm test      # 256 cases
 cd app && flutter test      # 325 cases
 ```
 
-**Backend (255 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (256 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -925,7 +925,7 @@ log gaps: opening/closing a shift (`shift.open`/`shift.close` — checking the c
 on close), accepting a payment (`payment.pay`), and entering/removing a discount code
 (`order.promotion_redeem`/`order.promotion_remove`).
 
-`ai-assistant.test.js` (9 cases) tests the AI assistant against a fake Anthropic client (never hits the
+`ai-assistant.test.js` (10 cases) tests the AI assistant against a fake Anthropic client (never hits the
 real API in tests — the client is swapped out with `setAnthropicClientForTests`): RBAC (waiters/kitchen/
 cashiers can't reach it), an empty question gets a 422, an unconfigured `ANTHROPIC_API_KEY` returns a 503
 with a dedicated error code, calling a real tool then answering with a chart and named sources, only
@@ -933,8 +933,10 @@ with a dedicated error code, calling a real tool then answering with a chart and
 offered to the model — not just filtered out of the result afterwards), a tool call with an out-of-schema
 parameter gets rejected and handed back to the model to retry instead of failing the whole request, a
 model that never calls `submit_answer` on its own gets forced to via `tool_choice` on the final round
-(so the loop always terminates), and a refusal (`stop_reason: refusal`) comes back as a polite message
-instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests the daily quota with
+(so the loop always terminates), a model that answers with plain text and never calls `submit_answer` at
+all must not be accepted as the final answer (fed back into the loop instead — a bug fix from a PO
+re-verification pass, see `docs/DECISIONS.md` #35), and a refusal (`stop_reason: refusal`) comes back as
+a polite message instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests the daily quota with
 `AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
 default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
 
@@ -1089,11 +1091,9 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 
 ## 📚 Further reading
 
-- [`docs/PORTFOLIO-SUMMARY.en.md`](docs/PORTFOLIO-SUMMARY.en.md) — a one-page summary for a portfolio or
-  job application (headline numbers and highlights, much shorter than this README)
-- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 27-page document covering every screen with explanations (Thai)
-- [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences (28 pages)
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 32 design decisions with their accepted trade-offs (e.g. why
+- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
+- [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 23 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

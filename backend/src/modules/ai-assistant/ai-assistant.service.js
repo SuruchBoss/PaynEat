@@ -117,13 +117,18 @@ const runConversation = async (client, model, tools, role, question) => {
     }
 
     if (toolUseBlocks.length === 0) {
-      const textBlock = response.content.find((block) => block.type === 'text');
-      return {
-        result: { answerText: textBlock?.text?.trim() || 'ไม่พบคำตอบ' },
-        sourcesUsed,
-        usage,
-        isError: false,
-      };
+      // โมเดิลตอบข้อความเฉยๆ โดยไม่เรียก submit_answer (ผิดกฎ #6) — ไม่ยอมรับข้อความดิบนี้เป็น
+      // คำตอบสุดท้ายเด็ดขาด เพราะยังไม่ผ่าน schema/zod และอาจมีตัวเลขที่ไม่ได้มาจาก tool เลยก็ได้
+      // (นี่คือช่องโหว่เดิมที่ทำให้ AI ตอบมั่วหลุดออกจากการบังคับ tool-calling ได้ — ดู
+      // docs/DECISIONS.md #35) ป้อนกลับเข้าลูปให้โมเดิลลองใหม่แทน รอบสุดท้ายจะถูกบังคับ
+      // tool_choice เป็น submit_answer เสมออยู่แล้วจึงไม่มีทางวนไม่จบ
+      if (forceSubmit) break; // ไม่ควรเกิดขึ้นได้จริงเพราะ tool_choice บังคับแล้ว แต่กันไว้เผื่อโมเดิลขัดคำสั่ง
+      messages.push({ role: 'assistant', content: response.content });
+      messages.push({
+        role: 'user',
+        content: 'กรุณาตอบผ่านเครื่องมือ submit_answer เท่านั้นตามกฎข้อ 6 ห้ามตอบเป็นข้อความเฉยๆ',
+      });
+      continue;
     }
 
     messages.push({ role: 'assistant', content: response.content });
