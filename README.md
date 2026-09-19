@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-580%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-581%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 580 automated tests.
+control and 581 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -336,7 +336,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 255 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 256 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 325 เคส — domain / controller / widget
 ```
 
@@ -764,11 +764,11 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 255 เคส
+cd backend && npm test      # 256 เคส
 cd app && flutter test      # 325 เคส
 ```
 
-**Backend (255 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (256 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -860,13 +860,15 @@ promptPayId, โครงสร้าง TLV self-consistent ครบทุก 
 (`shift.open`/`shift.close` — ตรวจ metadata ส่วนต่างเงินสดตอนปิดกะ), รับชำระเงิน (`payment.pay`),
 และกรอก/ถอดโค้ดส่วนลด (`order.promotion_redeem`/`order.promotion_remove`)
 
-`ai-assistant.test.js` (9 เคส) เทสต์ผู้ช่วย AI ผ่าน fake Anthropic client (ไม่เรียก API จริงในเทสต์ —
+`ai-assistant.test.js` (10 เคส) เทสต์ผู้ช่วย AI ผ่าน fake Anthropic client (ไม่เรียก API จริงในเทสต์ —
 สลับ client ด้วย `setAnthropicClientForTests`): RBAC (เสิร์ฟ/ครัว/แคชเชียร์เข้าไม่ได้), คำถามว่าง
 โดน 422, ยังไม่ตั้งค่า `ANTHROPIC_API_KEY` ตอบ 503 พร้อม error code เฉพาะ, เรียก tool จริงแล้วตอบ
 พร้อมกราฟและระบุแหล่งข้อมูล, `list_audit_log_entries` ยื่นให้เฉพาะ `admin` (manager ไม่เห็น tool นี้
 เลยตั้งแต่ระดับที่ส่งให้โมเดิลเลือก ไม่ใช่แค่กรองผลลัพธ์), พารามิเตอร์ tool ผิด schema ถูกปฏิเสธและ
 ให้โมเดลแก้ไขเองแทนที่จะล้มทั้งคำขอ, โมเดลไม่ยอมเรียก `submit_answer` เองถูกบังคับด้วย `tool_choice`
-ในรอบสุดท้ายเสมอ (กันวนไม่จบ), และโมเดลถูกปฏิเสธ (`stop_reason: refusal`) ตอบข้อความสุภาพแทนที่จะพัง
+ในรอบสุดท้ายเสมอ (กันวนไม่จบ), โมเดลตอบข้อความเฉยๆ โดยไม่เรียก `submit_answer` เลยต้องไม่ถูกรับเป็น
+คำตอบสุดท้าย (ป้อนกลับเข้าลูปแทน — แก้บั๊กที่พบระหว่าง PO re-verify ดู `docs/DECISIONS.md` #35), และ
+โมเดลถูกปฏิเสธ (`stop_reason: refusal`) ตอบข้อความสุภาพแทนที่จะพัง
 — แยกอีกไฟล์ `ai-assistant-rate-limit.test.js` (1 เคส) ทดสอบโควตาต่อวันด้วย
 `AI_ASSISTANT_DAILY_LIMIT=1` (ตั้ง env แยก process เพื่อไม่กระทบเทสต์ไฟล์อื่นที่ใช้ค่าเริ่มต้น 20)
 (ดู `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)

@@ -1,6 +1,8 @@
 # Ticket: Export รายงาน (Excel/CSV/PDF) + End-of-day / Z-report
 
-**Priority:** 🟡 Medium
+**Priority:** 🟠 High (ยกระดับจาก 🟡 Medium เดิม — ดู `docs/DECISIONS.md` #35: PO re-verify
+2026-09-19 ยืนยันว่าเป็นแรงเสียดทานจริงรายเดือนสำหรับร้านที่ต้องส่งบัญชี ไม่ใช่แค่ของเสริม และเป็น
+gap เดียวที่เหลืออยู่ที่กระทบการใช้งานจริงประจำวัน หลังจากรายการอื่นทั้งหมดตรวจสอบซ้ำแล้วว่าทำจริง)
 **Ref:** `docs/FEATURE-GAP-ANALYSIS.md` #12
 
 ## ปัญหา

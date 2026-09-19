@@ -17,12 +17,14 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - `06-inventory-stock.md`
 - `07-tax-invoice.md`
 - `08-audit-log.md`
+- `12-report-export.md` — ยกระดับจาก 🟡 Medium เดิม (2026-09-19) — gap ที่เหลือจริงจุดเดียวที่ยัง
+  กระทบการใช้งานประจำวัน (ส่งบัญชีรายเดือนไม่ได้เพราะ export ไม่ได้) ดู `docs/DECISIONS.md` #35
 
 ## 🟡 Medium (เฟสขยายธุรกิจ)
 - `09-customer-loyalty.md`
 - `10-takeaway-delivery-flow.md`
-- `11-multi-branch.md`
-- `12-report-export.md`
+- `11-multi-branch.md` — ตั้งใจ scope สาขาเดียวไว้ก่อน ยืนยันสถานะไม่เปลี่ยนอีกครั้งเมื่อ 2026-09-19
+  (ดู `docs/DECISIONS.md` #35)
 
 ## 🟢 Nice-to-have (backlog, ไม่ตัด ticket แยก)
 - ระบบจองโต๊ะ (reservation) ผูกกับผังโต๊ะ
@@ -47,3 +49,20 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
   spaghetti) พบว่า `14-financial-audit-trail.md` ยังเหลือรูอยู่ 3 จุด: เปิด/ปิดกะ, รับชำระเงิน,
   กรอก/ถอดโค้ดส่วนลด ไม่มี audit log (จุดหลังไม่มี transaction ห่อด้วย) — ปิดครบแล้ว
   ดู `docs/DECISIONS.md` #28 และหัวข้อ "ส่วนต่อขยาย" ใน `14-financial-audit-trail.md`
+
+## PO re-verify รอบใหม่ (2026-09-19) — ตอบคำถาม "พร้อมให้คนโหลดไปใช้จริงหรือยัง"
+
+ผู้ใช้ถามตรงๆ ว่าฟีเจอร์ตอนนี้ดีพอให้คนโหลดไปใช้จริงหรือยัง (กังวลว่าจะมีคนคิดว่า "ฟรีแต่ฟีเจอร์ไม่พอ
+ยอมเสียเงินดีกว่า") แทนที่จะเชื่อสถานะ ✅ เดิม แบ่งตรวจอิสระ 3 ทาง — รายละเอียดเต็มดู
+`docs/DECISIONS.md` #35:
+
+- ✅ สุ่มตรวจ 4 ticket ที่ติ๊ก ✅ ไว้ (01 shift, 02 refund, 06 inventory, 07 tax invoice) ยืนยันว่า
+  ทำจริงครบ DB+backend+UI ไม่มีจุดที่เป็นของปลอมแบบ ticket 16 เดิม
+- ✅ ยืนยัน `11-multi-branch.md` ยัง out-of-scope ตามที่ตั้งใจจริง ไม่มี drift
+- 🟠 ยกระดับ `12-report-export.md` เป็น High — ยืนยันว่ายังเป็น gap จริง (CSV export ผูกกับ
+  audit log module เดียว ไม่เคยขยายไปที่ reports/shift) และเป็นแรงเสียดทานจริงรายเดือนสำหรับร้านที่
+  ต้องส่งบัญชี
+- 🐛 **พบและแก้บั๊กจริงใน ticket 15 (AI assistant)**: โมเดิลตอบข้อความเฉยๆ โดยไม่เรียก
+  `submit_answer` เคยหลุดผ่านเป็นคำตอบสุดท้ายได้ (ขัดกฎ "ห้ามเดา/แต่งคำตอบ" ของทิกเก็ตเอง) — แก้แล้ว
+  พร้อมเทสต์ยืนยัน (`backend/src/modules/ai-assistant/ai-assistant.service.js`,
+  `backend/tests/ai-assistant.test.js`)
