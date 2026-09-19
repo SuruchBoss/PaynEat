@@ -24,3 +24,9 @@ __pycache__/
 
 # Video build workspace
 docs/video/.build/
+
+# PDF generator local prerequisites (see docs/generator/README.md) and intermediate HTML
+docs/generator/images
+docs/generator/node_modules
+docs/generator/document-th.html
+docs/generator/document-en.html

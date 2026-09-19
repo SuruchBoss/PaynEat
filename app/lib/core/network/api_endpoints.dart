@@ -92,4 +92,7 @@ class ApiEndpoints {
   // Customers
   static const String customers = '/customers';
   static String customer(int id) => '/customers/$id';
+
+  // AI assistant
+  static const String aiAssistantAsk = '/ai/ask';
 }

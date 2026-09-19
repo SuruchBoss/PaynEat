@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
 
+import 'translations/ai_assistant_translations.dart';
 import 'translations/audit_log_translations.dart';
 import 'translations/auth_translations.dart';
 import 'translations/common_translations.dart';
@@ -55,6 +56,7 @@ class AppTranslations extends Translations {
       ...staffTranslationsTh,
       ...tableTranslationsTh,
       ...taxInvoiceTranslationsTh,
+      ...aiAssistantTranslationsTh,
     },
     'en_US': {
       ...commonTranslationsEn,
@@ -76,6 +78,7 @@ class AppTranslations extends Translations {
       ...staffTranslationsEn,
       ...tableTranslationsEn,
       ...taxInvoiceTranslationsEn,
+      ...aiAssistantTranslationsEn,
     },
   };
 }

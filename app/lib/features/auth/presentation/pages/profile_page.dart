@@ -80,51 +80,56 @@ class ProfilePage extends GetView<AuthController> {
               ),
             ),
           ),
-          const SizedBox(height: 12),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  SectionHeader(title: 'auth_profile_connection_title'.tr),
-                  const SizedBox(height: 12),
-                  ValueListenableBuilder<bool>(
-                    valueListenable: session.socket.connected,
-                    builder: (context, connected, _) => Row(
-                      children: [
-                        Container(
-                          width: 9,
-                          height: 9,
-                          decoration: BoxDecoration(
-                            color: connected
-                                ? AppColors.success
-                                : AppColors.textDisabled,
-                            shape: BoxShape.circle,
+          // โหมดสาธิตไม่มี backend จริงให้เชื่อมต่อเลย — โชว์การ์ดนี้จะขึ้น "ไม่ได้เชื่อมต่อ"
+          // ค้างตลอดพร้อม URL localhost ที่ไม่มีความหมายอะไรกับคนมาลองเดโมสาธารณะ
+          // (เข้าใจผิดว่าแอปพังได้) จึงซ่อนไปเลยเมื่อ demoMode
+          if (!AppConfig.demoMode) ...[
+            const SizedBox(height: 12),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 560),
+              child: AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SectionHeader(title: 'auth_profile_connection_title'.tr),
+                    const SizedBox(height: 12),
+                    ValueListenableBuilder<bool>(
+                      valueListenable: session.socket.connected,
+                      builder: (context, connected, _) => Row(
+                        children: [
+                          Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: connected
+                                  ? AppColors.success
+                                  : AppColors.textDisabled,
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          connected
-                              ? 'auth_profile_realtime_connected'.tr
-                              : 'auth_profile_realtime_disconnected'.tr,
-                          style: const TextStyle(fontSize: 13.5),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          Text(
+                            connected
+                                ? 'auth_profile_realtime_connected'.tr
+                                : 'auth_profile_realtime_disconnected'.tr,
+                            style: const TextStyle(fontSize: 13.5),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    AppConfig.baseUrl,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
+                    const SizedBox(height: 8),
+                    Text(
+                      AppConfig.baseUrl,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
           const SizedBox(height: 12),
           // ตัวสลับภาษาเคยอยู่แต่ในหน้าตั้งค่าซึ่งเป็นสิทธิ์ของแอดมิน แปลว่าพนักงานเสิร์ฟ
           // ครัว และแคชเชียร์ไม่มีทางเปลี่ยนภาษาได้เลยทั้งที่แอปรองรับสองภาษา

@@ -1,9 +1,27 @@
 # Ticket: AI ถามตอบข้อมูลร้าน (Ask-Your-Data / Natural Language Analytics)
 
 **Priority:** นอกเหนือจาก gap analysis เดิม — ฟีเจอร์เชิงจุดขาย/นวัตกรรม (ผู้ใช้ร้องขอโดยตรง)
-**สถานะ:** ยังไม่ได้ทำ
+**สถานะ:** ✅ เสร็จแล้ว (ดู `docs/DECISIONS.md` #33 สำหรับรายละเอียดการตัดสินใจ)
 **Ref:** ต่อยอดจาก `backend/src/modules/reports/`, ดีไซน์ dashboard ที่ทำไว้ก่อนหน้า
 (Artifact "ยอดขายวันนี้"), และ `docs/tickets/14-financial-audit-trail.md` (เฟส 2 ของทิกเก็ตนี้)
+
+## สรุปสิ่งที่ทำจริง
+
+- **Backend** `backend/src/modules/ai-assistant/` — `POST /ai/ask` (admin/manager) ใช้ Claude API
+  (`@anthropic-ai/sdk`, ค่าเริ่มต้น `claude-opus-5` ตั้งค่าได้ผ่าน `AI_ASSISTANT_MODEL`) ผ่าน manual
+  tool loop ของตัวเอง (ไม่ใช้ beta Tool Runner) มี 6 tool: `get_sales_summary`, `get_top_selling_items`,
+  `get_sales_by_day`, `list_recent_orders`, `get_top_customers` (ทุก role ที่เข้าถึงได้ใช้ได้),
+  `list_audit_log_entries` (เฉพาะ admin) — ทุก tool ห่อ service/repository เดิมเท่านั้น ไม่แตะ DB ตรงๆ
+  บังคับให้จบด้วยการเรียก tool `submit_answer` เสมอ (บังคับด้วย `tool_choice` ในรอบสุดท้ายถ้าโมเดิลไม่
+  ยอมเรียกเอง) จำกัดโควตา `AI_ASSISTANT_DAILY_LIMIT` ต่อผู้ใช้ต่อวัน (ค่าเริ่มต้น 20) เก็บทุกคำถาม/
+  คำตอบ/tool ที่เรียกไว้ที่ตาราง `ai_assistant_queries` ปิดอัตโนมัติ (503) ถ้าไม่ตั้ง `ANTHROPIC_API_KEY`
+- **Flutter** `app/lib/features/ai_assistant/` — แท็บนำทางใหม่ "ผู้ช่วย AI" (admin/manager เท่านั้น)
+  หน้าแชทถาม-ตอบพร้อมกราฟแท่งประกอบและชิป "แหล่งข้อมูล" ต่อคำตอบ, โหมดเดโมคืน error เดียวกับตอน
+  backend ไม่ได้ตั้งค่า API key (ตั้งใจไม่ปลอมคำตอบ AI)
+- **เทสต์** backend 10 เคสใหม่ (`ai-assistant.test.js`, `ai-assistant-rate-limit.test.js`) ผ่าน fake
+  Anthropic client, Flutter 7 เคสใหม่ (`ai_assistant_controller_test.dart`)
+- **ขอบเขตที่ตั้งใจยังไม่ทำ** (ตามที่ระบุไว้ในทิกเก็ตนี้ตั้งแต่ต้น): AI สรุป audit log อัตโนมัติ,
+  chatbot ฝั่งลูกค้า, voice ordering
 
 ## ปัญหา
 
@@ -48,12 +66,12 @@
 
 ## Acceptance Criteria
 
-- [ ] Admin/manager พิมพ์คำถามภาษาไทย/อังกฤษเกี่ยวกับยอดขาย/เมนูขายดี/ลูกค้า/ช่วงเวลาเปรียบเทียบ
+- [x] Admin/manager พิมพ์คำถามภาษาไทย/อังกฤษเกี่ยวกับยอดขาย/เมนูขายดี/ลูกค้า/ช่วงเวลาเปรียบเทียบ
   แล้วได้คำตอบที่ตรงกับข้อมูลจริงในระบบ (ตรวจสอบย้อนกลับได้ว่าตัวเลขมาจาก endpoint ไหน)
-- [ ] คำตอบระบุช่วงเวลา/ที่มาของข้อมูลที่ใช้ชัดเจนทุกครั้ง (เช่น "จากข้อมูล 1–15 ก.ย.")
-- [ ] คำถามที่อยู่นอกเหนือข้อมูลที่ระบบมี ต้องตอบตรงไปตรงมาว่าไม่มีข้อมูล ห้ามเดา/แต่งคำตอบ
-- [ ] มี rate limit ต่อ user/วัน และ log การใช้งานเพื่อ monitor ค่าใช้จ่าย
-- [ ] ตอบได้ทั้งแบบข้อความล้วนและแบบมีกราฟประกอบเมื่อคำถามเกี่ยวกับตัวเลขที่ plot ได้
+- [x] คำตอบระบุช่วงเวลา/ที่มาของข้อมูลที่ใช้ชัดเจนทุกครั้ง (เช่น "จากข้อมูล 1–15 ก.ย.")
+- [x] คำถามที่อยู่นอกเหนือข้อมูลที่ระบบมี ต้องตอบตรงไปตรงมาว่าไม่มีข้อมูล ห้ามเดา/แต่งคำตอบ
+- [x] มี rate limit ต่อ user/วัน และ log การใช้งานเพื่อ monitor ค่าใช้จ่าย
+- [x] ตอบได้ทั้งแบบข้อความล้วนและแบบมีกราฟประกอบเมื่อคำถามเกี่ยวกับตัวเลขที่ plot ได้
 
 ## ไฟล์ที่เกี่ยวข้อง
 

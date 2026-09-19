@@ -1,6 +1,9 @@
 import 'package:get/get.dart';
 
 import '../../../core/services/storage_service.dart';
+import '../../../features/ai_assistant/data/datasources/ai_assistant_remote_data_source.dart';
+import '../../../features/ai_assistant/data/repositories/ai_assistant_repository_impl.dart';
+import '../../../features/ai_assistant/domain/repositories/ai_assistant_repository.dart';
 import '../../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
 import '../../../features/audit_log/data/repositories/audit_log_repository_impl.dart';
 import '../../../features/audit_log/domain/repositories/audit_log_repository.dart';
@@ -104,6 +107,10 @@ void bindRepositories(StorageService storage) {
   );
   Get.lazyPut<CustomerRepository>(
     () => CustomerRepositoryImpl(Get.find<CustomerRemoteDataSource>()),
+    fenix: true,
+  );
+  Get.lazyPut<AiAssistantRepository>(
+    () => AiAssistantRepositoryImpl(Get.find<AiAssistantRemoteDataSource>()),
     fenix: true,
   );
 }

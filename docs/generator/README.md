@@ -10,6 +10,14 @@
 
 ## ขั้นตอน
 
+> **ก่อนรันครั้งแรก**: `build.py` อ้างภาพผ่าน `docs/generator/images/` ตรง ๆ (ตัวแปร `IMG_DIR`
+> ในไฟล์) แต่โฟลเดอร์นี้ไม่มีอยู่จริงและไม่ commit ไว้ — ต้องสร้างเอง (symlink ไป `../screenshots`
+> ก็พอ: `ln -s ../screenshots images`) ไม่งั้น `<img>` ทุกแท็กจะพังเงียบ ๆ โดย `build.py`/`makepdf.mjs`
+> ไม่ error ให้เห็นเลย ได้ PDF ที่หน้าขาดหายไปครึ่งนึงแบบไม่รู้ตัว (เจอเองตอนแก้เลข 557→558:
+> ได้ PDF 14 หน้าแทนที่จะเป็น 27 หน้า ต้องเทียบขนาดไฟล์กับของเดิมถึงจะจับได้) — เช่นเดียวกับ
+> `makepdf.mjs` ที่ต้องมี `node_modules/playwright` แต่โฟลเดอร์นี้ไม่มี `package.json` ของตัวเอง
+> ถ้า `docs/video/` ติดตั้งไว้แล้วให้ symlink มาใช้ร่วมกัน: `ln -s ../video/node_modules node_modules`
+
 ```bash
 # 1) ถ่ายภาพหน้าจอจากแอปจริง (ผลลัพธ์ลง app/tool/screenshots/images/)
 cd app

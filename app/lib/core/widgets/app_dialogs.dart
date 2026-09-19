@@ -41,6 +41,21 @@ class AppDialogs {
     return result ?? false;
   }
 
+  // เว้น margin บนให้พ้นความสูง AppBar เสมอ (ไม่ให้ทับข้อความ/ไอคอนบน AppBar สายตา)
+  static const _topMargin = EdgeInsets.fromLTRB(
+    12,
+    kToolbarHeight + 12,
+    12,
+    12,
+  );
+
+  // GetX ห่อ snackbar ที่ isDismissible (ค่าเริ่มต้น) ด้วย Dismissible ซึ่งพื้นที่รับสัมผัส
+  // จริงคือกรอบนอกทั้งก้อนรวม margin ด้วย ไม่ใช่แค่ตัวการ์ดที่มองเห็น — ผลคือปุ่มย้อนกลับ/ไอคอน
+  // บน AppBar กดไม่ติดตลอดช่วงที่ snackbar ค้างอยู่ (2-3 วิ) ต่อให้เว้น margin ให้พ้นสายตาแล้วก็ตาม
+  // (พบจากการทดสอบจริง) ปิด isDismissible เพราะ toast พวกนี้ไม่ต้องให้ปัดปิดเองอยู่แล้ว
+  // (auto-dismiss ตาม duration) จึงไม่จำเป็นต้องมี gesture wrapper ดักสัมผัสไว้เลย
+  static const _dismissible = false;
+
   static void success(String message, {String? title}) {
     Get.snackbar(
       title ?? 'common_success_title'.tr,
@@ -48,7 +63,8 @@ class AppDialogs {
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.fillOf(AppColors.success),
       colorText: AppColors.onColor(AppColors.fillOf(AppColors.success)),
-      margin: const EdgeInsets.all(12),
+      margin: _topMargin,
+      isDismissible: _dismissible,
       icon: Icon(
         Icons.check_circle_rounded,
         color: AppColors.onColor(AppColors.fillOf(AppColors.success)),
@@ -64,7 +80,8 @@ class AppDialogs {
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.fillOf(AppColors.danger),
       colorText: AppColors.onColor(AppColors.fillOf(AppColors.danger)),
-      margin: const EdgeInsets.all(12),
+      margin: _topMargin,
+      isDismissible: _dismissible,
       icon: Icon(
         Icons.error_rounded,
         color: AppColors.onColor(AppColors.fillOf(AppColors.danger)),
@@ -80,7 +97,8 @@ class AppDialogs {
       snackPosition: SnackPosition.TOP,
       backgroundColor: AppColors.textPrimary,
       colorText: Colors.white,
-      margin: const EdgeInsets.all(12),
+      margin: _topMargin,
+      isDismissible: _dismissible,
       duration: const Duration(seconds: 2),
     );
   }
