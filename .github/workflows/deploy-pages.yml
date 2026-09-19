@@ -14,6 +14,7 @@ on:
     branches: [main]
     paths:
       - 'docs/landing/**'
+      - 'docs/ai-demo/**'
       - 'app/lib/**'
       - 'app/web/**'
       - 'app/pubspec.yaml'
@@ -66,6 +67,10 @@ jobs:
         run: |
           mkdir -p _site
           cp -r docs/landing/. _site/
+          # ภาพ/ภาพเคลื่อนไหวสาธิตผู้ช่วย AI อยู่นอก docs/landing (README ในรีโปก็ลิงก์ไฟล์ชุดนี้)
+          # ถ้าไม่ก๊อปเข้ามา หน้า landing จะขึ้นรูปแตกที่หัวข้อ "ผู้ช่วย AI" เพราะไฟล์ไม่เคยถูก deploy
+          mkdir -p _site/ai-demo
+          cp -r docs/ai-demo/. _site/ai-demo/
           mkdir -p _site/app
           cp -r app/build/web/. _site/app/
 
