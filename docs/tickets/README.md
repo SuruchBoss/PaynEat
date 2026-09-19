@@ -18,7 +18,9 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - `07-tax-invoice.md`
 - `08-audit-log.md`
 - `12-report-export.md` — ยกระดับจาก 🟡 Medium เดิม (2026-09-19) — gap ที่เหลือจริงจุดเดียวที่ยัง
-  กระทบการใช้งานประจำวัน (ส่งบัญชีรายเดือนไม่ได้เพราะ export ไม่ได้) ดู `docs/DECISIONS.md` #35
+  กระทบการใช้งานประจำวัน (ส่งบัญชีรายเดือนไม่ได้เพราะ export ไม่ได้) ดู `docs/DECISIONS.md` #35 —
+  **เขียนเป็น full spec แล้ว (2026-09-19, ผ่าน `/to-spec`)**: seam/interface/acceptance criteria
+  ที่กราวด์กับโค้ดจริงครบ พร้อมให้ dev/agent เริ่มได้ทันที
 
 ## 🟡 Medium (เฟสขยายธุรกิจ)
 - `09-customer-loyalty.md`
