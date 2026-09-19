@@ -27,6 +27,10 @@ import '../../../features/promotion/domain/repositories/promotion_repository.dar
 import '../../../features/promotion/domain/usecases/promotion_usecases.dart';
 import '../../../features/report/domain/repositories/report_repository.dart';
 import '../../../features/report/domain/usecases/report_usecases.dart';
+import '../../../features/self_order/domain/repositories/self_order_repository.dart';
+import '../../../features/self_order/domain/usecases/add_self_order_items_usecase.dart';
+import '../../../features/self_order/domain/usecases/get_self_order_menu_usecase.dart';
+import '../../../features/self_order/domain/usecases/get_self_order_table_usecase.dart';
 import '../../../features/settings/domain/repositories/settings_repository.dart';
 import '../../../features/settings/domain/usecases/settings_usecases.dart';
 import '../../../features/shift/domain/repositories/shift_repository.dart';
@@ -122,6 +126,10 @@ void bindUseCases() {
     fenix: true,
   );
   Get.lazyPut(() => GetZonesUseCase(Get.find<TableRepository>()), fenix: true);
+  Get.lazyPut(
+    () => RegenerateTableQrTokenUseCase(Get.find<TableRepository>()),
+    fenix: true,
+  );
 
   // order
   Get.lazyPut(() => GetOrdersUseCase(Get.find<OrderRepository>()), fenix: true);
@@ -384,6 +392,20 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => DeletePromotionUseCase(Get.find<PromotionRepository>()),
+    fenix: true,
+  );
+
+  // self order (ดู docs/tickets/17-qr-self-order.md)
+  Get.lazyPut(
+    () => GetSelfOrderTableUseCase(Get.find<SelfOrderRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetSelfOrderMenuUseCase(Get.find<SelfOrderRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => AddSelfOrderItemsUseCase(Get.find<SelfOrderRepository>()),
     fenix: true,
   );
 }

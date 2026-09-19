@@ -1351,3 +1351,74 @@ grill กับ PO ก่อนเริ่ม" (`docs/tickets/11-multi-branch.m
   (ไม่มี state/เงื่อนไขให้ทดสอบ) จึงไม่สร้างรูปแบบเทสต์ใหม่ที่ไม่เคยมีมาก่อนสำหรับ coverage ที่แทบ
   ไม่มีความหมาย — ทดสอบ `AuthController` (`submitBranchSelection`/`switchBranch` guard clause,
   `loadMyBranches` success path) แทน ตาม `docs/CODING_STANDARDS.md` หัวข้อ 6.2
+
+## 37. Ticket 17 — QR สั่งอาหารเอง (QR Self-Order)
+
+**ปัญหา** — ลูกค้าต้องเรียกพนักงานทุกครั้งที่จะสั่งเพิ่ม ไม่มีทาง "สแกน QR ที่โต๊ะแล้วสั่งเอง" แบบที่
+POS คู่แข่งในตลาดไทยส่วนใหญ่มีเป็นมาตรฐานแล้ว — ตัดสินใจทำ ticket นี้ทันทีหลังระบุเป็น 1 ใน 3 gap
+ที่เหลือเทียบกับตลาด (ดู `docs/FEATURE-GAP-ANALYSIS.md` #17) เพราะทำได้เร็วที่สุดโดยไม่ต้องพึ่ง
+บริการภายนอก ต่างจากเชื่อมแพลตฟอร์มเดลิเวอรีหรือ payment gateway อัตโนมัติ
+
+**ที่เลือก**
+
+- **Endpoint สาธารณะแยกโมดูลใหม่ทั้งหมด `backend/src/modules/public-order/` ไม่มี `authenticate`
+  middleware เลยแม้แต่ตัวเดียว** — ความปลอดภัยพึ่ง "การครอบครอง qrToken" ล้วนๆ (capability URL
+  pattern เดียวกับลิงก์แชร์ปฏิทิน) แทนการเช็คสิทธิ์แบบ role — เลือกแบบนี้แทนการเปิด endpoint เดิม
+  ให้ไม่ต้อง login เพราะ endpoint เดิมทุกตัวออกแบบมาให้พนักงานเห็นข้อมูลเต็ม (PII ลูกค้า/พนักงาน)
+  ซึ่งไม่เหมาะเปิดสาธารณะตรงๆ
+- **`qr_token` เป็น `crypto.randomUUID()` เก็บแยกคอลัมน์ ไม่ใช้ `dining_tables.id` ตรงๆ ในลิงก์** —
+  กัน enumeration attack (ไล่เดข `/order/1`, `/order/2`, ... เพื่อเห็นออเดอร์โต๊ะอื่น) — มี unique
+  index คุมที่ DB level และ endpoint `PATCH /tables/:id/qr-token/regenerate` (เฉพาะ
+  admin/manager) ให้ปิดลิงก์เก่าทันทีถ้าหลุด/ถูกถ่ายรูปแอบอ้างไป
+- **`public-order.service.js` เรียกใช้ `orderService.create()`/`orderService.addItems()`/
+  `categoryService.list()`/`menuService.list()` เดิมตรงๆ ไม่เขียน business logic ซ้ำเลย** — ได้
+  ตัดสต๊อกอัตโนมัติ/คำนวณโปรโมชัน/ยิง Socket.IO event (`ORDER_CREATED`, `KITCHEN_TICKET`,
+  `TABLE_UPDATED`) ฟรีโดยไม่ต้องแตะโค้ดเดิมแม้แต่บรรทัดเดียว — เหตุผลเดียวกับที่ทุก module เดิม
+  แยก service ออกจาก controller/route ไว้ตั้งแต่ต้น (`docs/CODING_STANDARDS.md` หัวข้อ 4.2)
+- **Actor สังเคราะห์ `SELF_ORDER_ACTOR = { id: null, name: 'ลูกค้า (สแกน QR สั่งเอง)' }` ส่งเป็น
+  `user` param ให้ `orderService`** — audit log (ดู `docs/DECISIONS.md` #21/#25) ต้องระบุที่มาของ
+  รายการที่ถูกเพิ่มเข้าออเดอร์เสมอ ไม่ปล่อยเป็น `null`/`undefined` เงียบๆ ซึ่งจะทำให้อ่าน log ย้อนหลัง
+  แล้วสับสนว่าใครเป็นคนสั่ง
+- **Rate limit เขียนเอง (`core/rateLimit.js`, fixed-window counter, 30 ครั้ง/5 นาทีต่อ qrToken)
+  แทนใช้ npm package (เช่น `express-rate-limit`)** — ตามปรัชญาเดิมของโปรเจกต์ที่เขียนเองสำหรับ
+  ปัญหาเล็ก (เทียบ `Result<T>` ข้อ 3, PromptPay TLV encoder ข้อ 26) endpoint นี้เป็นจุดเดียวในระบบ
+  ทั้งหมดที่ไม่มี auth คุมเลย จึงจำเป็นต้องกันสแปม/DoS ระดับพื้นฐานไว้ก่อน แต่ไม่ต้องซับซ้อนถึงขั้น
+  distributed rate limit (ระบบนี้รันเซิร์ฟเวอร์เดียว ไม่มี multi-instance ให้ sync state ข้ามเครื่อง)
+- **`toPublicOrderPreview()` ตัด field ที่เป็น PII ของพนักงาน/ลูกค้าออกก่อนส่งกลับ (waiterName,
+  customerName, customerPhone)** — DTO เดิมของ `orderService` ออกแบบมาให้พนักงานเห็นเต็ม
+  ไม่เหมาะส่งตรงๆ ให้หน้าเว็บสาธารณะที่ใครก็เปิดได้ถ้ามีลิงก์
+- **Flutter: โมดูลใหม่แยกทั้งหมด `features/self_order/` ไม่ผ่าน `SessionService`/`AuthController`
+  เลยแม้แต่จุดเดียว** — reuse widget เดิมที่แยก "dumb" อยู่แล้ว (`MenuItemCard`,
+  `CategoryFilterBar`, `OptionSelectionSheet`, `BillSummary`, `OrderItemTile`) และ model เดิมที่
+  parse `fromJson` แบบ tolerant อยู่แล้ว (`OrderModel`, `MenuItemModel`, `CategoryModel`) ตรงๆ
+  เพราะ response จาก public API เป็น subset/superset ของโครงสร้างเดิม
+- **Route ใช้ GetX path parameter `AppRoutes.selfOrder = '/order/:qrToken'` อ่านผ่าน
+  `Get.parameters['qrToken']` ใน `onInit()`** — ยืนยันแล้วว่า default hash-routing ของแอป (ไม่มี
+  `setUrlStrategy` override ที่ไหน) ทำให้ลูกค้าเข้าลิงก์ตรงจาก QR ได้โดยไม่ผ่าน `SplashPage`/
+  auth-gate เลย เพราะ GetX resolve URL fragment จาก browser ตรงๆ ตั้งแต่โหลดหน้าครั้งแรก
+  `InitialBinding` เป็น composition root เดียวของทั้งแอปอยู่แล้ว (ลงทะเบียนทุก
+  datasource/repository/usecase ตอน startup โดยไม่สนว่าหน้าไหนโหลดก่อน) จึง `Get.find()` ใน
+  `SelfOrderController` ได้ทันทีโดยไม่ต้องมี bootstrap แยก
+- **ลิงก์ QR สร้างจาก `AppConfig.selfOrderLink()` อ่าน `Uri.base` เองตอน build เป็นเว็บ (ไม่ต้อง
+  ตั้งค่าอะไรเพิ่ม)** — `Uri.base.origin + Uri.base.path` ให้ origin+path ของแอปที่รันอยู่จริง
+  (รวม base href ตอน deploy ขึ้น subpath เช่น GitHub Pages `/app/` โดยอัตโนมัติ เพราะ browser
+  resolve `<base href>` ให้แล้วก่อนที่ Dart จะอ่านค่า) ตัด query/fragment ทิ้งเองจึงไม่ปนกับ hash
+  route ปัจจุบันของหน้าที่กำลังเปิดอยู่ — เผื่อกรณี build เป็นแอป native (Android/iOS/desktop) ที่ไม่มี
+  `Uri.base` ที่มีความหมายไว้ด้วย ผ่าน `--dart-define=SELF_ORDER_BASE_URL=...` ตอน build
+- **หน้าจัดการโต๊ะเพิ่มปุ่ม "ดู QR สั่งอาหารเอง" ในชีทเดิม (bottom sheet ที่กดค้างที่การ์ดโต๊ะ) แทนสร้าง
+  หน้าแยกใหม่** — ตำแหน่งเดิมที่พนักงานคุ้นเคยอยู่แล้วสำหรับ action เกี่ยวกับโต๊ะ (เปลี่ยนสถานะ) ปุ่ม
+  "เปลี่ยน QR" ซ่อนไว้เฉพาะ `admin`/`manager` (`TableController.canManageQrToken`) mirror กับ
+  `manager` middleware ฝั่ง backend ตรงๆ กันพนักงานเสิร์ฟ/แคชเชียร์กดแล้วเจอ 403 เฉยๆ
+
+**ข้อเสียที่ยอมรับ**
+
+- **ไม่พิมพ์ QR standee/table tent จริงจากในแอป** — แสดงภาพ QR ขนาดใหญ่ + ปุ่มคัดลอกลิงก์บนจอ
+  เท่านั้น ร้านต้องถ่ายภาพหน้าจอ/ใช้เครื่องมือออกแบบภายนอกไปทำป้ายเอง ไม่เพิ่ม dependency ใหม่
+  (`printing`/`pdf`) สำหรับงานที่ไม่ใช่ core ของ POS
+- **ยังไม่มีการแจ้งเตือนพิเศษฝั่งพนักงานว่า "ออเดอร์นี้ลูกค้าสั่งเอง"** — ขึ้นที่ผังโต๊ะ/ครัวเหมือน
+  ออเดอร์ปกติทุกประการ (แยกได้จาก audit log ที่ actor เป็น "ลูกค้า (สแกน QR สั่งเอง)" เท่านั้น) —
+  acceptance criteria ต้องการแค่ "ขึ้นแบบ realtime" ไม่ได้บังคับ badge/แจ้งเตือนแยก
+- **โหมด native (non-web) ที่ไม่ได้ตั้งค่า `SELF_ORDER_BASE_URL` จะได้ลิงก์ที่ชี้ไป
+  `AppConfig.baseUrl` (backend API host) ซึ่งไม่ใช่หน้าเว็บลูกค้าเปิดได้จริง** — ยอมรับได้เพราะ
+  ช่องทางใช้งานหลักของโปรเจกต์นี้ (demo/portfolio + deploy จริง) คือ Flutter Web เพียงอย่างเดียว
+  ต้องตั้งค่า `--dart-define` เองถ้าจะสร้างแอป native ไปแสดง QR ให้ลูกค้าสแกนจริง

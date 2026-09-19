@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { getDb } from '../../db/index.js';
 
 export const tableRepository = {
@@ -59,9 +60,25 @@ export const tableRepository = {
 
   create({ name, zone, seats, branchId }) {
     const info = getDb()
-      .prepare('INSERT INTO dining_tables (name, zone, seats, branch_id) VALUES (?, ?, ?, ?)')
-      .run(name, zone ?? 'main', seats ?? 4, branchId);
+      .prepare(
+        'INSERT INTO dining_tables (name, zone, seats, branch_id, qr_token) VALUES (?, ?, ?, ?, ?)',
+      )
+      .run(name, zone ?? 'main', seats ?? 4, branchId, randomUUID());
     return this.findById(info.lastInsertRowid);
+  },
+
+  findByQrToken(qrToken) {
+    return getDb().prepare('SELECT * FROM dining_tables WHERE qr_token = ?').get(qrToken);
+  },
+
+  // ใช้ตอน QR หลุด/รั่ว — token เก่าใช้ไม่ได้ทันทีเพราะ UNIQUE INDEX บังคับให้เปลี่ยนจริง
+  // (ดู docs/tickets/17-qr-self-order.md)
+  regenerateQrToken(id) {
+    const qrToken = randomUUID();
+    getDb()
+      .prepare("UPDATE dining_tables SET qr_token = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(qrToken, id);
+    return this.findById(id);
   },
 
   update(id, { name, zone, seats, status, isActive }) {

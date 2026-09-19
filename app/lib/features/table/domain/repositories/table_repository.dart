@@ -12,4 +12,8 @@ abstract class TableRepository {
     int? seats,
   });
   Future<Result<void>> delete(int id);
+
+  /// ออก token ใหม่แทนอันเดิม — ใช้เมื่อ QR ที่พิมพ์ไว้หลุด/หายแล้วต้องการปิดลิงก์เก่าทันที (ดู
+  /// docs/tickets/17-qr-self-order.md)
+  Future<Result<DiningTable>> regenerateQrToken(int id);
 }

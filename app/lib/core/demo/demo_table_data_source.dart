@@ -32,4 +32,8 @@ class DemoTableDataSource implements TableRemoteDataSource {
 
   @override
   Future<void> delete(int id) => _delayed(() => _store.deleteTable(id));
+
+  @override
+  Future<DiningTableModel> regenerateQrToken(int id) =>
+      _delayed(() => DiningTableModel.fromJson(_store.regenerateQrToken(id)));
 }

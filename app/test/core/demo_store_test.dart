@@ -1506,4 +1506,52 @@ void main() {
       expect(secondTakeaway['queueNumber'], 2);
     });
   });
+
+  group('DemoStore self-order — สั่งอาหารเองผ่าน QR (ticket 17)', () {
+    test('โต๊ะทุกตัวมี qrToken ไม่ซ้ำกันตั้งแต่ seed มา', () {
+      final tokens = store.tableList().map((t) => t['qrToken']).toList();
+      expect(tokens, everyElement(isNotNull));
+      expect(tokens.toSet().length, tokens.length);
+    });
+
+    test('resolveTableByQrToken หาโต๊ะถูกตัวจาก token ที่ seed มา', () {
+      final table = store.tableList().first;
+      final resolved = store.resolveTableByQrToken(table['qrToken'] as String);
+      expect(resolved['id'], table['id']);
+    });
+
+    test('resolveTableByQrToken token ไม่มีจริง → ApiException 404', () {
+      expect(
+        () => store.resolveTableByQrToken('ไม่มีจริง'),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 404),
+        ),
+      );
+    });
+
+    test('resolveTableByQrToken โต๊ะถูกปิดใช้งานแล้ว → ApiException 404', () {
+      final table = store.tableList().first;
+      store.saveTable({'isActive': false}, id: table['id'] as int);
+
+      expect(
+        () => store.resolveTableByQrToken(table['qrToken'] as String),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('regenerateQrToken ออก token ใหม่ ปิด token เก่าทันที', () {
+      final table = store.tableList().first;
+      final oldToken = table['qrToken'] as String;
+
+      final updated = store.regenerateQrToken(table['id'] as int);
+      final newToken = updated['qrToken'] as String;
+
+      expect(newToken, isNot(oldToken));
+      expect(
+        () => store.resolveTableByQrToken(oldToken),
+        throwsA(isA<ApiException>()),
+      );
+      expect(store.resolveTableByQrToken(newToken)['id'], table['id']);
+    });
+  });
 }

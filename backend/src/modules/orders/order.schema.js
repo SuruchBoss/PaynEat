@@ -3,7 +3,9 @@ import { z } from 'zod';
 export const ORDER_STATUSES = ['open', 'in_kitchen', 'served', 'paid', 'cancelled'];
 export const ORDER_ITEM_STATUSES = ['pending', 'cooking', 'ready', 'served', 'cancelled'];
 
-const orderItemInputSchema = z.object({
+// export ไว้ให้ public-order.schema.js ใช้ซ้ำ (ดู docs/tickets/17-qr-self-order.md) — กฎตรวจสอบ
+// รายการอาหารต้องเหมือนกันทุกประการไม่ว่าใครเป็นคนเพิ่ม (พนักงานหรือลูกค้าสแกน QR เอง)
+export const orderItemInputSchema = z.object({
   menuItemId: z.number().int().positive(),
   quantity: z.number().int().min(1, 'จำนวนต้องมากกว่า 0').max(99),
   optionIds: z.array(z.number().int().positive()).default([]),

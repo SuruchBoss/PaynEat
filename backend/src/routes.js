@@ -16,6 +16,7 @@ import taxInvoiceRoutes from './modules/tax-invoices/tax-invoice.routes.js';
 import auditLogRoutes from './modules/audit-logs/audit-log.routes.js';
 import customerRoutes from './modules/customers/customer.routes.js';
 import aiAssistantRoutes from './modules/ai-assistant/ai-assistant.routes.js';
+import publicOrderRoutes from './modules/public-order/public-order.routes.js';
 
 const router = Router();
 
@@ -36,5 +37,6 @@ router.use('/tax-invoices', taxInvoiceRoutes);
 router.use('/audit-logs', auditLogRoutes);
 router.use('/customers', customerRoutes);
 router.use('/ai', aiAssistantRoutes);
+router.use('/public', publicOrderRoutes);
 
 export default router;

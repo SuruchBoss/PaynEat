@@ -63,6 +63,15 @@ export const tableService = {
     }
     tableRepository.remove(id);
   },
+
+  // เปลี่ยน QR ของโต๊ะ (เช่น QR สติกเกอร์หลุดหาย/ถูกถ่ายรูปแชร์ออกไป) — token เก่าใช้สั่งอาหารเองต่อ
+  // ไม่ได้ทันที (ดู docs/tickets/17-qr-self-order.md)
+  regenerateQrToken(id) {
+    this.getById(id);
+    const table = toTableDto(tableRepository.regenerateQrToken(id));
+    emit(EVENTS.TABLE_UPDATED, table);
+    return table;
+  },
 };
 
 export default tableService;

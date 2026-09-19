@@ -29,6 +29,8 @@ import '../../features/payment/domain/entities/payment.dart';
 import '../../features/report/data/datasources/report_remote_data_source.dart';
 import '../../features/report/data/models/report_model.dart';
 import '../../features/report/domain/entities/report.dart';
+import '../../features/self_order/data/datasources/self_order_remote_data_source.dart';
+import '../../features/self_order/data/models/self_order_table_model.dart';
 import '../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../features/settings/domain/entities/store_settings.dart';
 import '../../features/shift/data/datasources/shift_remote_data_source.dart';
@@ -56,6 +58,7 @@ part 'demo_settings_data_source.dart';
 part 'demo_audit_log_data_source.dart';
 part 'demo_customer_data_source.dart';
 part 'demo_ai_assistant_data_source.dart';
+part 'demo_self_order_data_source.dart';
 
 /// Data source ชุด "Demo Mode"
 ///

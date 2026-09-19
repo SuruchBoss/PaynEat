@@ -14,13 +14,16 @@ class TableController extends GetxController {
   TableController({
     required GetTablesUseCase getTables,
     required SetTableStatusUseCase setTableStatus,
+    required RegenerateTableQrTokenUseCase regenerateQrToken,
     required SessionService session,
   }) : _getTables = getTables,
        _setTableStatus = setTableStatus,
+       _regenerateQrToken = regenerateQrToken,
        _session = session;
 
   final GetTablesUseCase _getTables;
   final SetTableStatusUseCase _setTableStatus;
+  final RegenerateTableQrTokenUseCase _regenerateQrToken;
   final SessionService _session;
 
   final RxList<DiningTable> tables = <DiningTable>[].obs;
@@ -28,6 +31,13 @@ class TableController extends GetxController {
   final RxnString errorMessage = RxnString();
   final RxnString selectedZone = RxnString();
   final RxnString selectedStatus = RxnString();
+  final RxBool isRegeneratingQr = false.obs;
+
+  /// เฉพาะ admin/manager ที่ backend อนุญาตให้เปลี่ยน QR ได้ (ดู table.routes.js) — ฝั่ง UI
+  /// ซ่อนปุ่มไว้ก่อนเพื่อไม่ให้พนักงานเสิร์ฟ/แคชเชียร์กดแล้วเจอ 403 เฉยๆ
+  bool get canManageQrToken =>
+      _session.currentUser?.role == UserRole.admin ||
+      _session.currentUser?.role == UserRole.manager;
 
   final List<VoidCallback> _unsubscribers = [];
 
@@ -121,6 +131,33 @@ class TableController extends GetxController {
       );
     }
     await loadTables(showLoader: false);
+  }
+
+  /// เปลี่ยน QR token ของโต๊ะ (ดู docs/tickets/17-qr-self-order.md) — ต้องยืนยันก่อนเสมอเพราะ
+  /// QR เดิมที่พิมพ์/แปะไว้ที่โต๊ะจะใช้ไม่ได้ทันที
+  Future<void> regenerateQrToken(DiningTable table) async {
+    final confirmed = await AppDialogs.confirm(
+      title: 'table_qr_regenerate_confirm_title'.tr,
+      message: 'table_qr_regenerate_confirm_message'.trParams({
+        'name': table.name,
+      }),
+      confirmLabel: 'table_qr_regenerate_button'.tr,
+      destructive: true,
+    );
+    if (!confirmed) return;
+
+    isRegeneratingQr.value = true;
+    final result = await _regenerateQrToken(table.id);
+    isRegeneratingQr.value = false;
+
+    result.fold(
+      onSuccess: (updated) {
+        final index = tables.indexWhere((row) => row.id == updated.id);
+        if (index != -1) tables[index] = updated;
+        AppDialogs.success('table_qr_regenerate_success'.tr);
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
   }
 
   /// โต๊ะเปลี่ยนสถานะเมื่อมีคนเปิด/ปิดบิลจากเครื่องอื่น จึงต้องรีเฟรชตาม event

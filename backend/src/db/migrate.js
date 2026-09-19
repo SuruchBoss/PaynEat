@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 import { getDb } from './index.js';
 import { env } from '../config/env.js';
 
@@ -54,6 +55,18 @@ const backfillDefaultBranch = (db) => {
   for (const user of db.prepare('SELECT id FROM users').all()) {
     insertMembership.run(user.id, defaultBranch.id);
   }
+};
+
+/**
+ * ticket 17 (QR สั่งอาหารเอง) — โต๊ะที่สร้างก่อนทิกเก็ตนี้ยังไม่มี qr_token (คอลัมน์เพิ่งถูกเพิ่มจาก
+ * addColumnIfMissing ด้านล่าง ทุกแถวเดิมจึงเป็น NULL) เติมให้ครบทุกแถว ไม่งั้นโต๊ะเก่าจะไม่มี QR ให้
+ * สแกนเลย — โต๊ะที่สร้างใหม่หลังจากนี้ได้ token ตั้งแต่ตอน insert อยู่แล้ว (ดู
+ * table.repository.js#create) จึงไม่มีทาง NULL อีก ปลอดภัยที่จะสร้าง UNIQUE INDEX ต่อจากนี้ทันที
+ */
+const backfillTableQrTokens = (db) => {
+  const rows = db.prepare('SELECT id FROM dining_tables WHERE qr_token IS NULL').all();
+  const update = db.prepare('UPDATE dining_tables SET qr_token = ? WHERE id = ?');
+  for (const row of rows) update.run(randomUUID(), row.id);
 };
 
 export const migrate = () => {
@@ -119,6 +132,14 @@ export const migrate = () => {
     'INTEGER REFERENCES branches(id) ON DELETE SET NULL',
   );
   backfillDefaultBranch(db);
+
+  // Ticket 17 (QR สั่งอาหารเอง) — token สุ่มไม่ซ้ำต่อโต๊ะ ใช้แทนการเดา table id ตรงๆ ใน URL สาธารณะ
+  // (กัน enumeration attack) เปลี่ยนใหม่ได้ถ้า QR หลุด (ดู table.service.js#regenerateQrToken)
+  addColumnIfMissing(db, 'dining_tables', 'qr_token', 'TEXT');
+  backfillTableQrTokens(db);
+  db.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_dining_tables_qr_token ON dining_tables(qr_token)',
+  );
 
   const defaults = {
     store_name: env.store.name,

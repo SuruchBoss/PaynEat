@@ -31,6 +31,9 @@ import '../../../features/promotion/domain/repositories/promotion_repository.dar
 import '../../../features/report/data/datasources/report_remote_data_source.dart';
 import '../../../features/report/data/repositories/report_repository_impl.dart';
 import '../../../features/report/domain/repositories/report_repository.dart';
+import '../../../features/self_order/data/datasources/self_order_remote_data_source.dart';
+import '../../../features/self_order/data/repositories/self_order_repository_impl.dart';
+import '../../../features/self_order/domain/repositories/self_order_repository.dart';
 import '../../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../../features/settings/data/repositories/settings_repository_impl.dart';
 import '../../../features/settings/domain/repositories/settings_repository.dart';
@@ -111,6 +114,10 @@ void bindRepositories(StorageService storage) {
   );
   Get.lazyPut<AiAssistantRepository>(
     () => AiAssistantRepositoryImpl(Get.find<AiAssistantRemoteDataSource>()),
+    fenix: true,
+  );
+  Get.lazyPut<SelfOrderRepository>(
+    () => SelfOrderRepositoryImpl(Get.find<SelfOrderRemoteDataSource>()),
     fenix: true,
   );
 }

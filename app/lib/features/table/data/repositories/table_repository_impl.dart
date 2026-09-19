@@ -39,4 +39,8 @@ class TableRepositoryImpl implements TableRepository {
 
   @override
   Future<Result<void>> delete(int id) => guard(() => _remote.delete(id));
+
+  @override
+  Future<Result<DiningTable>> regenerateQrToken(int id) =>
+      guard(() => _remote.regenerateQrToken(id));
 }

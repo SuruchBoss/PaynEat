@@ -43,5 +43,12 @@ router.delete(
   validate({ params: idParamSchema }),
   tableController.remove,
 );
+router.patch(
+  '/:id/qr-token/regenerate',
+  authenticate,
+  manager,
+  validate({ params: idParamSchema }),
+  tableController.regenerateQrToken,
+);
 
 export default router;

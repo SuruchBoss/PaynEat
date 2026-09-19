@@ -19,6 +19,7 @@ servers:
   - url: http://localhost:3000/api/v1
 tags:
   - name: Auth
+  - name: Branches
   - name: Users
   - name: Categories
   - name: Menu
@@ -34,6 +35,7 @@ tags:
   - name: AuditLogs
   - name: Customers
   - name: AiAssistant
+  - name: PublicOrder
 
 components:
   securitySchemes:
@@ -210,6 +212,13 @@ components:
         zone: { type: string, example: โซนในร้าน }
         seats: { type: integer }
         status: { type: string, enum: [available, occupied, reserved, billing] }
+        branchId: { type: integer, nullable: true, description: 'ticket 11 — multi-branch' }
+        qrToken:
+          type: string
+          format: uuid
+          description: >-
+            token สุ่มสำหรับ URL สั่งอาหารเอง (ticket 17) — เห็นได้ทุก role ที่เข้าถึงหน้าผังโต๊ะ
+            เปลี่ยนใหม่ได้ด้วย PATCH /tables/{id}/qr-token/regenerate
         currentOrder:
           nullable: true
           type: object
@@ -234,6 +243,25 @@ components:
         note: { type: string, nullable: true }
         status: { type: string, enum: [pending, cooking, ready, served, cancelled] }
         isPaid: { type: boolean, description: จ่ายไปแล้วในรอบแยกบิลรายการอาหารหรือยัง }
+    PublicOrderPreview:
+      type: object
+      description: >-
+        ticket 17 — เวอร์ชันตัดฟิลด์ของ Order ที่ไม่ต้องให้ลูกค้าเห็น (ชื่อ/เบอร์โทรลูกค้าที่ผูกไว้,
+        ชื่อพนักงานเสิร์ฟ) เหลือแค่รายการ/ยอดที่ลูกค้าต้องใช้ตรวจสอบออเดอร์ตัวเอง
+      properties:
+        id: { type: integer }
+        code: { type: string, example: ORD-20260907-0001 }
+        status: { type: string, enum: [open, in_kitchen, served] }
+        subtotal: { type: number }
+        discountAmount: { type: number }
+        promotionName: { type: string, nullable: true }
+        promotionDiscountAmount: { type: number }
+        serviceCharge: { type: number }
+        vat: { type: number }
+        total: { type: number }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
     Order:
       type: object
       properties:
@@ -769,6 +797,28 @@ paths:
       summary: เปลี่ยนสถานะโต๊ะ (จอง/ว่าง/เรียกเก็บเงิน)
       responses:
         '200': { description: สำเร็จ }
+  /tables/{id}/qr-token/regenerate:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Tables]
+      summary: >-
+        เปลี่ยน QR ของโต๊ะ (admin/manager) — ticket 17. ใช้เมื่อ QR สติกเกอร์หลุดหาย/ถูกแชร์ออกไป
+        token เก่าใช้เรียก /public/tables/{qrToken} ต่อไม่ได้ทันที
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Table' }
+        '403': { description: ไม่ใช่ admin/manager }
 
   /orders:
     get:
@@ -1621,3 +1671,117 @@ paths:
         '422': { description: คำถามว่างหรือยาวเกินไป }
         '429': { description: ถามเกินโควตาต่อวันแล้ว }
         '503': { description: ยังไม่ได้ตั้งค่า ANTHROPIC_API_KEY }
+
+  /public/tables/{qrToken}:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [PublicOrder]
+      summary: >-
+        ลูกค้าสแกน QR ที่โต๊ะแล้วดูรายการที่สั่งไปแล้ว (ticket 17) — ไม่ต้อง login เลย
+        ไม่มี Authorization header
+      security: []
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      table:
+                        type: object
+                        properties:
+                          id: { type: integer }
+                          name: { type: string }
+                          zone: { type: string }
+                      branchName: { type: string, nullable: true }
+                      order:
+                        nullable: true
+                        allOf:
+                          - $ref: '#/components/schemas/PublicOrderPreview'
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+  /public/tables/{qrToken}/menu:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [PublicOrder]
+      summary: เมนูที่เปิดขายอยู่ของสาขาที่โต๊ะนี้สังกัด (ticket 17) — ไม่ต้อง login
+      security: []
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      categories:
+                        type: array
+                        items: { $ref: '#/components/schemas/Category' }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/MenuItem' }
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+  /public/tables/{qrToken}/items:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [PublicOrder]
+      summary: >-
+        ลูกค้าสั่งอาหารเองผ่าน QR (ticket 17) — เปิดออเดอร์ใหม่ให้อัตโนมัติถ้าโต๊ะนี้ยังไม่มี
+        ออเดอร์เปิดอยู่ ใช้ตรรกะเดียวกับที่พนักงานสั่งทุกประการ (ตัดสต๊อก/ประเมินโปรโมชัน/แจ้งเตือน
+        เข้าจอครัวแบบเรียลไทม์) เพิ่มได้อย่างเดียว แก้ไข/ยกเลิก/จ่ายเงินต้องให้พนักงานทำแทน จำกัด
+        ไม่เกิน 30 ครั้งต่อโต๊ะทุก 5 นาที (429 ถ้าเกิน)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 20
+                  items:
+                    type: object
+                    required: [menuItemId, quantity]
+                    properties:
+                      menuItemId: { type: integer }
+                      quantity: { type: integer, minimum: 1, maximum: 99 }
+                      optionIds: { type: array, items: { type: integer } }
+                      note: { type: string, maxLength: 200 }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/PublicOrderPreview' }
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+        '409': { description: เมนูปิดขายอยู่ / ตัวเลือกไม่ครบตามที่กำหนด }
+        '422': { description: ข้อมูลที่ส่งมาไม่ถูกต้อง }
+        '429': { description: ทำรายการถี่เกินไป }

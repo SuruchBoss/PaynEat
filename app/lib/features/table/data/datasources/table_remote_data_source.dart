@@ -9,6 +9,7 @@ abstract class TableRemoteDataSource {
   Future<DiningTableModel> create(Map<String, dynamic> body);
   Future<DiningTableModel> update(int id, Map<String, dynamic> body);
   Future<void> delete(int id);
+  Future<DiningTableModel> regenerateQrToken(int id);
 }
 
 class TableRemoteDataSourceImpl implements TableRemoteDataSource {
@@ -59,4 +60,10 @@ class TableRemoteDataSourceImpl implements TableRemoteDataSource {
 
   @override
   Future<void> delete(int id) => _client.delete(ApiEndpoints.table(id));
+
+  @override
+  Future<DiningTableModel> regenerateQrToken(int id) async {
+    final result = await _client.patch(ApiEndpoints.tableQrTokenRegenerate(id));
+    return DiningTableModel.fromJson(result.asMap);
+  }
 }

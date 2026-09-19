@@ -5,6 +5,7 @@ import 'package:payneat_pos/core/network/socket_client.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
+import 'package:payneat_pos/features/auth/domain/entities/user.dart';
 import 'package:payneat_pos/features/table/domain/entities/dining_table.dart';
 import 'package:payneat_pos/features/table/domain/repositories/table_repository.dart';
 import 'package:payneat_pos/features/table/domain/usecases/table_usecases.dart';
@@ -29,19 +30,29 @@ DiningTable _table(
   String status = TableStatus.available,
 }) => DiningTable(id: id, name: 'A$id', zone: zone, seats: 4, status: status);
 
+User _user(int id, {String role = UserRole.waiter}) => User(
+  id: id,
+  name: 'พนักงาน $id',
+  username: 'u$id',
+  role: role,
+  isActive: true,
+);
+
 void main() {
   late _FakeTableRepository repository;
+  late SessionService session;
   late TableController controller;
 
   setUp(() {
     repository = _FakeTableRepository();
-    final session = SessionService(
+    session = SessionService(
       storage: StorageService.memory(),
       socket: SocketClient(),
     );
     controller = TableController(
       getTables: GetTablesUseCase(repository),
       setTableStatus: SetTableStatusUseCase(repository),
+      regenerateQrToken: RegenerateTableQrTokenUseCase(repository),
       session: session,
     );
   });
@@ -117,6 +128,31 @@ void main() {
       expect(controller.availableCount, 2);
       expect(controller.occupiedCount, 1);
     });
+
+    test(
+      'canManageQrToken เฉพาะ admin/manager (mirror ของ manager middleware ฝั่ง backend)',
+      () {
+        expect(controller.canManageQrToken, isFalse); // ยังไม่ login
+
+        session.start(
+          user: _user(1, role: UserRole.waiter),
+          token: 't',
+        );
+        expect(controller.canManageQrToken, isFalse);
+
+        session.start(
+          user: _user(2, role: UserRole.manager),
+          token: 't',
+        );
+        expect(controller.canManageQrToken, isTrue);
+
+        session.start(
+          user: _user(3, role: UserRole.admin),
+          token: 't',
+        );
+        expect(controller.canManageQrToken, isTrue);
+      },
+    );
 
     test('onInit แล้ว onClose ต้องไม่โยน exception (unsubscribe ครบ)', () {
       // openTable/changeStatus แตะ Get.toNamed และ AppDialogs (Get.snackbar) จึงต้องมี

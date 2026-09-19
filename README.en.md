@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-608%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-634%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -37,6 +37,9 @@ control and 608 automated tests.
   branches or view combined totals across every branch from the same account (`docs/DECISIONS.md` #36)
 - **Real PromptPay QR codes** — generates a standards-compliant EMV QR customers can scan and pay
   instantly, matched to the bill automatically, not just a button for staff to click "confirmed"
+- **QR self-order** — customers scan the QR code at their table and order straight from their own
+  phone, no login required; orders reach the kitchen and deduct stock automatically, exactly as if
+  staff had placed them (`docs/tickets/17-qr-self-order.md`)
 - **AI assistant you can ask about sales in plain language** — powered by Claude via tool-calling
   against the real restaurant data, never guessing or inventing numbers, every answer cites its source
 - **Keeps selling when the Wi-Fi drops** — orders keep going mid-service; once the connection is back,
@@ -46,7 +49,7 @@ control and 608 automated tests.
 - **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
 - **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
   always with who/when/why, and nothing an admin can edit or delete from any UI
-- **608 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **634 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -361,6 +364,14 @@ The login page has one-tap buttons for each account — no need to type anything
     bar/rail) → see a **"Current branch"** card, tap **"Switch branch"** → pick **"All branches"** (only
     `admin` gets this option) → go back to **Dashboard/Reports** and you'll see sales totals combined
     across both branches immediately, without switching branch-by-branch to add them up yourself
+23. **Log in as `waiter1` (or `manager`)** → back on the table map, long-press table A1's card → pick
+    **"View self-order QR"** → see a real, scannable QR code for that table, then tap **"Copy link"**
+    and open it in a new tab/window (simulating a customer scanning it with their own phone) → you land
+    straight on table A1's menu, **no login at all** — add an item to the cart and tap **"Send to
+    Kitchen"** → switch back to the waiter/kitchen window and the item the customer just ordered shows
+    up in table A1's existing order immediately, exactly as if a staff member had entered it (stock
+    deduction/promotion calculation happen automatically too) — see
+    `docs/tickets/17-qr-self-order.md`
 
 **Want to try the hidden business rules?**
 
@@ -397,14 +408,21 @@ The login page has one-tap buttons for each account — no need to type anything
   — but if you only edit the name/description without touching the price, no new entry shows up
   (deliberately logs only what actually affects the numbers, the same principle as editing an order
   item's quantity — see `docs/DECISIONS.md` #27)
+- Copy table A1's QR link first (step 23), then log in as `admin`/`manager` and tap **"Regenerate
+  QR"** on that same sheet → open the old link you copied again → you immediately get a clear "table
+  not found" message (the old link stops working the instant you regenerate — no waiting for a token
+  to expire; see `docs/DECISIONS.md` #37)
+- Try typing a `/order/` link with a random string instead of a real token → same "table not found"
+  message — there's no way to guess another table's token from its plain numeric table id, since the
+  token is a separate random value, not a sequential id
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 279 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 329 cases — domain / controller / widget
+cd backend && npm test      # 292 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 342 cases — domain / controller / widget
 ```
 
 ---
@@ -454,6 +472,23 @@ cd app && flutter test      # 329 cases — domain / controller / widget
   attached at all; takeaway orders automatically get a daily-resetting queue number (delivery orders skip
   it — a rider references the order by its bill number instead, since nobody's standing around waiting to
   be called), shown both in the send-to-kitchen confirmation and on the order detail page
+- **View self-order QR** — long-press a table's card to see a real, scannable QR code for that table
+  plus a copy-link button; `admin`/`manager` get an extra **"Regenerate QR"** button for when a printed
+  QR gets lost or photographed by someone else (invalidates the old link immediately — see
+  `docs/tickets/17-qr-self-order.md`)
+
+### 🙋 Customers (scan the table QR — no login)
+
+- **Order from their own phone** — scan the QR code at the table and the menu loads instantly, no need
+  to flag down staff or sign up/log in at all
+- **See their table's current order** — if staff already opened an order (or someone else at the same
+  table ordered first), its items and running total show up right away
+- **Pick modifiers/leave a kitchen note, just like staff can** — add to the cart and tap "Send to
+  Kitchen" — the item shows up on the table map/kitchen display in real time exactly as if a staff
+  member had entered it, with the same automatic stock deduction and promotion calculation (no
+  duplicated business logic — it's the same service/endpoints staff use)
+- **Payment still goes through the cashier** — this feature is order-taking only, not self-checkout
+  (see `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37)
 
 ### 🔥 Kitchen (KDS display)
 
@@ -875,11 +910,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 279 cases
-cd app && flutter test      # 329 cases
+cd backend && npm test      # 292 cases
+cd app && flutter test      # 342 cases
 ```
 
-**Backend (279 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (292 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1013,7 +1048,16 @@ combined); creating a new staff member auto-assigns them to the branch the creat
 working in; and RBAC on `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id` is correct (see
 `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36).
 
-**Flutter (329 cases)** — split into 3 levels:
+`public-order.test.js` (13 new cases) tests the public, login-free QR self-order endpoints: every
+table has a unique `qrToken` from `GET /tables`, a bad token or a deactivated table returns 404,
+viewing the menu/current order for a table works correctly, adding the first item auto-opens a new
+order (later adds go into the same order), ordering a sold-out item returns 409, sending more than 20
+items in one call returns 422, `PATCH /tables/:id/qr-token/regenerate` invalidates the old token
+immediately with RBAC (admin/manager only — waiters can't call it), and `POST .../items` is rate
+limited to 30 requests/5 minutes per table, returning 429 past that (see
+`docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37).
+
+**Flutter (342 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1021,11 +1065,12 @@ working in; and RBAC on `GET /branches`/`GET /branches/mine`/`PATCH /branches/:i
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10) |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
-| Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables |
+| Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables, `canManageQrToken` restricted to admin/manager (mirrors the backend's RBAC — ticket 17) |
+| Controller | `self_order_controller_test.dart` | Loading a table + menu from a qrToken (success/failure), a link with no qrToken sets an error immediately without calling the repository, filtering the menu by category, adding/removing cart lines for items that don't require picking an option (ticket 17) |
 | Controller | `home_controller_test.dart` | Per-role menu visibility, tab switching |
 | Controller | `menu_browse_controller_test.dart` | Menu filtering/search (debounced), counts per category |
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |
@@ -1165,6 +1210,13 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   the endpoints, but the acceptance criteria didn't require it), **no full cross-branch guard** for
   update/delete/get-by-id (scoped to list/create only), and **Demo Mode deliberately still has a
   single branch** (`branch_id` was not added to the demo store)
+- [x] **QR self-order** — done: every table has a unique `qrToken`; customers scan the QR code and
+  order straight from their own phone through a public, login-free endpoint that reuses 100% of the
+  existing business logic (stock deduction/promotions/realtime); staff (`admin`/`manager`) can view/
+  copy the link/regenerate the QR from the table map (see the ✨ Features section,
+  `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37) — **no self-checkout** and **no
+  printing a physical QR standee from within the app**, deliberately kept out of scope (see "Deliberately
+  not doing" below)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -1179,6 +1231,13 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - **PromptPay payment gateway/automatic payment-verification callback** — more than a single-branch
   restaurant like this needs (it requires signing up as a merchant with a bank/provider); generating a
   real, scannable QR code is enough for this scope (see `docs/tickets/16-promptpay-qr.md`)
+- **Printing a physical QR standee/table tent from within the app** — no new dependency
+  (`printing`/`pdf`) for something that isn't core to a POS; shows a large QR image + a copy-link
+  button on screen instead, and the restaurant screenshots it or uses an external design tool to make
+  a physical sign (see `docs/tickets/17-qr-self-order.md`)
+- **Self-checkout through the QR order-taking flow** — QR self-order is order-taking only; payment
+  still goes through the cashier as before, to avoid the money-safety/fraud risk that comes with
+  self-checkout, which would also need a real payment gateway (not done, per the item above)
 
 ---
 
@@ -1188,7 +1247,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   job application (headline numbers and highlights, much shorter than this README)
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 27-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences (28 pages)
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 36 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 37 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

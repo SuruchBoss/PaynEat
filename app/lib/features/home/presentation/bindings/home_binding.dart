@@ -69,6 +69,7 @@ class HomeBinding extends Bindings {
       () => TableController(
         getTables: Get.find<GetTablesUseCase>(),
         setTableStatus: Get.find<SetTableStatusUseCase>(),
+        regenerateQrToken: Get.find<RegenerateTableQrTokenUseCase>(),
         session: Get.find<SessionService>(),
       ),
       fenix: true,

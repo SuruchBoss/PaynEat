@@ -21,6 +21,9 @@ export const tableController = {
     tableService.remove(req.validated.params.id);
     return noContent(res);
   }),
+  regenerateQrToken: asyncHandler(async (req, res) =>
+    ok(res, tableService.regenerateQrToken(req.validated.params.id)),
+  ),
 };
 
 export default tableController;

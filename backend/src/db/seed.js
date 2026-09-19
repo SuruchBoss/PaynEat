@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { randomUUID } from 'node:crypto';
 import { getDb } from './index.js';
 import { migrate } from './migrate.js';
 import { toSatang } from '../core/money.js';
@@ -431,13 +432,25 @@ export const seed = () => {
     const tableCount = db.prepare('SELECT COUNT(*) AS c FROM dining_tables').get().c;
     if (tableCount === 0) {
       const insertTable = db.prepare(
-        'INSERT INTO dining_tables (name, zone, seats, branch_id) VALUES (?, ?, ?, ?)',
+        'INSERT INTO dining_tables (name, zone, seats, branch_id, qr_token) VALUES (?, ?, ?, ?, ?)',
       );
       for (const table of TABLES) {
-        insertTable.run(table.name, table.zone, table.seats, branchIdByCode.get('SUKHUMVIT'));
+        insertTable.run(
+          table.name,
+          table.zone,
+          table.seats,
+          branchIdByCode.get('SUKHUMVIT'),
+          randomUUID(),
+        );
       }
       for (const table of TABLES_BRANCH_2) {
-        insertTable.run(table.name, table.zone, table.seats, branchIdByCode.get('THONGLOR'));
+        insertTable.run(
+          table.name,
+          table.zone,
+          table.seats,
+          branchIdByCode.get('THONGLOR'),
+          randomUUID(),
+        );
       }
     }
 

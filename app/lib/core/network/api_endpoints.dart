@@ -36,6 +36,9 @@ class ApiEndpoints {
   static const String tableZones = '/tables/zones';
   static String table(int id) => '/tables/$id';
   static String tableStatus(int id) => '/tables/$id/status';
+  // ดู docs/tickets/17-qr-self-order.md
+  static String tableQrTokenRegenerate(int id) =>
+      '/tables/$id/qr-token/regenerate';
 
   // Orders
   static const String orders = '/orders';
@@ -108,4 +111,11 @@ class ApiEndpoints {
 
   // AI assistant
   static const String aiAssistantAsk = '/ai/ask';
+
+  // ลูกค้าสั่งอาหารเองผ่าน QR ที่โต๊ะ (ดู docs/tickets/17-qr-self-order.md) — ไม่ต้อง login
+  static String publicTable(String qrToken) => '/public/tables/$qrToken';
+  static String publicTableMenu(String qrToken) =>
+      '/public/tables/$qrToken/menu';
+  static String publicTableItems(String qrToken) =>
+      '/public/tables/$qrToken/items';
 }

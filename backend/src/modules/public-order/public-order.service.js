@@ -1,0 +1,104 @@
+import { ApiError } from '../../core/ApiError.js';
+import { tableRepository } from '../tables/table.repository.js';
+import { branchRepository } from '../branches/branch.repository.js';
+import { categoryService } from '../categories/category.service.js';
+import { menuService } from '../menu/menu.service.js';
+import { orderService } from '../orders/order.service.js';
+
+// ใช้แทน req.user ปกติ (ดู order.service.js#create/#addItems — เดิมรับ user ของพนักงานเสมอ) เพื่อให้
+// audit log เห็นชัดว่ารายการนี้ลูกค้าสั่งเองผ่าน QR ไม่ใช่พนักงานคนไหนกดให้ (ดู
+// docs/tickets/17-qr-self-order.md, docs/DECISIONS.md #36) — id เป็น null เสมอ ไม่ผูกกับ user จริง
+const SELF_ORDER_ACTOR = { id: null, name: 'ลูกค้า (สแกน QR สั่งเอง)' };
+
+/**
+ * โต๊ะต้อง active และถ้ามีสาขาผูกอยู่ สาขานั้นต้อง active ด้วย (เหมือนกฎที่ authenticate เช็คให้
+ * พนักงานทุก request ดู middlewares/auth.js) — ปิดสาขา/ปิดโต๊ะแล้วต้องปิดจริง ลูกค้าสั่งเองต่อไม่ได้
+ * ทันทีเหมือนกัน ไม่ต้องรอเปลี่ยน QR สติกเกอร์ทิ้ง
+ */
+const resolveTable = (qrToken) => {
+  const table = tableRepository.findByQrToken(qrToken);
+  if (!table || !table.is_active) {
+    throw ApiError.notFound('ไม่พบโต๊ะนี้ หรือโต๊ะนี้ปิดใช้งานอยู่ กรุณาเรียกพนักงาน');
+  }
+  const branch = table.branch_id ? branchRepository.findById(table.branch_id) : null;
+  if (table.branch_id && (!branch || !branch.is_active)) {
+    throw ApiError.notFound('สาขานี้ปิดให้บริการอยู่ กรุณาเรียกพนักงาน');
+  }
+  return { table, branch };
+};
+
+/**
+ * ตัดฟิลด์ที่ลูกค้าไม่จำเป็นต้องเห็น (ชื่อ/เบอร์โทรลูกค้าที่ผูกไว้, ชื่อพนักงานเสิร์ฟ) ออกจาก
+ * order DTO เต็มที่พนักงานใช้ — คืนแค่รายการ/ยอดที่ลูกค้าต้องใช้ตรวจสอบออเดอร์ตัวเอง
+ */
+const toPublicOrderPreview = (order) => {
+  if (!order) return null;
+  return {
+    id: order.id,
+    code: order.code,
+    status: order.status,
+    subtotal: order.subtotal,
+    discountAmount: order.discountAmount,
+    promotionName: order.promotionName,
+    promotionDiscountAmount: order.promotionDiscountAmount,
+    serviceCharge: order.serviceCharge,
+    vat: order.vat,
+    total: order.total,
+    items: order.items
+      .filter((item) => item.status !== 'cancelled')
+      .map((item) => ({
+        id: item.id,
+        menuItemId: item.menuItemId,
+        name: item.name,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        options: item.options,
+        optionsPrice: item.optionsPrice,
+        lineTotal: item.lineTotal,
+        note: item.note,
+        status: item.status,
+      })),
+  };
+};
+
+export const publicOrderService = {
+  getTable(qrToken) {
+    const { table, branch } = resolveTable(qrToken);
+    const order = orderService.getOpenByTable(table.id);
+    return {
+      table: { id: table.id, name: table.name, zone: table.zone },
+      branchName: branch?.name ?? null,
+      order: toPublicOrderPreview(order),
+    };
+  },
+
+  getMenu(qrToken) {
+    const { table } = resolveTable(qrToken);
+    const categories = categoryService.list({ activeOnly: true });
+    const { items } = menuService.list({ availableOnly: true }, table.branch_id);
+    return { categories, items };
+  },
+
+  /**
+   * เพิ่มรายการเข้าออเดอร์ปัจจุบันของโต๊ะนี้ — เปิดออเดอร์ใหม่ให้อัตโนมัติถ้ายังไม่มีออเดอร์เปิดอยู่
+   * (ลูกค้าคนแรกของโต๊ะ) ใช้ orderService ตัวเดียวกับที่พนักงานใช้ทุกประการ (ไม่มี code path แยก)
+   * จึงได้ผลข้างเคียงที่ถูกต้องครบฟรี: ตัดสต๊อกถ้าส่งครัวไปแล้ว, ประเมินโปรโมชันอัตโนมัติใหม่,
+   * บันทึก audit log, และแจ้งเตือนแบบเรียลไทม์เข้าจอครัว/ผังโต๊ะของพนักงานทันที
+   */
+  addItems(qrToken, items) {
+    const { table } = resolveTable(qrToken);
+    const existingOrder = orderService.getOpenByTable(table.id);
+
+    const order = existingOrder
+      ? orderService.addItems(existingOrder.id, items, SELF_ORDER_ACTOR)
+      : orderService.create(
+          { type: 'dine_in', tableId: table.id, guestCount: 1, items },
+          SELF_ORDER_ACTOR,
+          table.branch_id,
+        );
+
+    return toPublicOrderPreview(order);
+  },
+};
+
+export default publicOrderService;
