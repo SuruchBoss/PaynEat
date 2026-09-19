@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-634%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-636%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -49,7 +49,7 @@ control and 608 automated tests.
 - **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
 - **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
   always with who/when/why, and nothing an admin can edit or delete from any UI
-- **634 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **636 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -422,7 +422,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 292 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 342 cases — domain / controller / widget
+cd app && flutter test      # 344 cases — domain / controller / widget
 ```
 
 ---
@@ -911,7 +911,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 292 cases
-cd app && flutter test      # 342 cases
+cd app && flutter test      # 344 cases
 ```
 
 **Backend (292 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -1057,7 +1057,7 @@ immediately with RBAC (admin/manager only — waiters can't call it), and `POST 
 limited to 30 requests/5 minutes per table, returning 429 past that (see
 `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37).
 
-**Flutter (342 cases)** — split into 3 levels:
+**Flutter (344 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1070,7 +1070,7 @@ limited to 30 requests/5 minutes per table, returning 429 past that (see
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
 | Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables, `canManageQrToken` restricted to admin/manager (mirrors the backend's RBAC — ticket 17) |
-| Controller | `self_order_controller_test.dart` | Loading a table + menu from a qrToken (success/failure), a link with no qrToken sets an error immediately without calling the repository, filtering the menu by category, adding/removing cart lines for items that don't require picking an option (ticket 17) |
+| Controller | `self_order_controller_test.dart` | Loading a table + menu from a qrToken (success/failure), a link with no qrToken sets an error immediately without calling the repository, filtering the menu by category, adding/removing cart lines, tapping the same dish again merging into one line with a higher quantity (same rule as the staff cart), and dropping a line's quantity to 0 removing it from the cart (ticket 17) |
 | Controller | `home_controller_test.dart` | Per-role menu visibility, tab switching |
 | Controller | `menu_browse_controller_test.dart` | Menu filtering/search (debounced), counts per category |
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |

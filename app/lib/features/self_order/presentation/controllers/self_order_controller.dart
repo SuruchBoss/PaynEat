@@ -3,13 +3,14 @@ import 'package:get/get.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../menu/domain/entities/category.dart';
 import '../../../menu/domain/entities/menu_item.dart';
+import '../../../order/domain/entities/cart_line.dart';
 import '../../../order/domain/entities/order.dart';
+import '../../../order/domain/entities/order_item_payload.dart';
 import '../../../order/presentation/widgets/option_selection_sheet.dart';
 import '../../domain/entities/self_order_table.dart';
 import '../../domain/usecases/add_self_order_items_usecase.dart';
 import '../../domain/usecases/get_self_order_menu_usecase.dart';
 import '../../domain/usecases/get_self_order_table_usecase.dart';
-import 'self_order_cart_line.dart';
 
 /// คุมหน้าสั่งอาหารเองผ่าน QR ทั้งหน้า (ดู docs/tickets/17-qr-self-order.md) — ไม่พึ่ง
 /// SessionService/AuthController เลยแม้แต่น้อย เพราะลูกค้าไม่ได้ login
@@ -36,7 +37,7 @@ class SelfOrderController extends GetxController {
   final RxList<MenuItem> items = <MenuItem>[].obs;
   final RxnInt selectedCategoryId = RxnInt();
 
-  final RxList<SelfOrderCartLine> cart = <SelfOrderCartLine>[].obs;
+  final RxList<CartLine> cart = <CartLine>[].obs;
   final RxBool isSubmitting = false.obs;
 
   @override
@@ -101,20 +102,46 @@ class SelfOrderController extends GetxController {
   /// order_taking_page.dart#_addToCart — ตรรกะเดียวกัน)
   Future<void> addToCart(MenuItem item) async {
     if (!item.requiresSelection) {
-      cart.add(SelfOrderCartLine(item: item, quantity: 1));
+      _addLine(CartLine(menuItem: item));
       return;
     }
 
     final result = await OptionSelectionSheet.show(item);
     if (result == null) return;
-    cart.add(
-      SelfOrderCartLine(
-        item: item,
+    final note = result.note?.trim();
+    _addLine(
+      CartLine(
+        menuItem: item,
         quantity: result.quantity,
-        options: result.options,
-        note: result.note,
+        selectedOptions: result.options,
+        note: (note?.isEmpty ?? true) ? null : note,
       ),
     );
+  }
+
+  /// รวมบรรทัดที่เมนู/ตัวเลือก/โน้ตเหมือนกันเข้าด้วยกันแทนที่จะขึ้นบรรทัดใหม่ซ้ำ ๆ — กฎเดียวกับ
+  /// ตะกร้าฝั่งพนักงาน (CartController.addItem) เพราะลูกค้ากดการ์ดเมนูเดิมซ้ำเป็นเรื่องปกติ
+  void _addLine(CartLine candidate) {
+    final index = cart.indexWhere(
+      (line) => line.signature == candidate.signature,
+    );
+    if (index >= 0) {
+      cart[index].quantity += candidate.quantity;
+      cart.refresh();
+    } else {
+      cart.add(candidate);
+    }
+  }
+
+  /// ลดเหลือ 0 = เอาออกจากตะกร้า (ปุ่ม − ที่จำนวน 1 จึงลบบรรทัดทิ้งไปเลย ไม่ต้องหาปุ่มลบแยก)
+  void updateCartQuantity(int index, int quantity) {
+    if (index < 0 || index >= cart.length) return;
+    if (quantity <= 0) {
+      cart.removeAt(index);
+      return;
+    }
+    cart[index].quantity = quantity;
+    cart.refresh();
   }
 
   void removeCartLine(int index) => cart.removeAt(index);
@@ -126,7 +153,16 @@ class SelfOrderController extends GetxController {
     final result = await _addItems(
       AddSelfOrderItemsParams(
         qrToken: qrToken,
-        items: cart.map((line) => line.toPayload()).toList(growable: false),
+        items: cart
+            .map(
+              (line) => OrderItemPayload(
+                menuItemId: line.menuItem.id,
+                quantity: line.quantity,
+                optionIds: line.optionIds,
+                note: line.note,
+              ),
+            )
+            .toList(growable: false),
       ),
     );
     isSubmitting.value = false;

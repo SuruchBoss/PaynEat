@@ -193,6 +193,45 @@ void main() {
       },
     );
 
+    test(
+      'กดเมนูเดิมซ้ำรวมเป็นบรรทัดเดียวแล้วบวกจำนวน ไม่ขึ้นบรรทัดใหม่ (กฎเดียวกับตะกร้าพนักงาน)',
+      () async {
+        _setRouteQrToken('t');
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+
+        await controller.addToCart(_menuItem(1, price: 40));
+        await controller.addToCart(_menuItem(1, price: 40));
+        await controller.addToCart(_menuItem(2, price: 60));
+
+        expect(controller.cart.length, 2);
+        expect(controller.cart.first.quantity, 2);
+        expect(controller.cartItemCount, 3);
+        expect(controller.cartSubtotalPreview, 140);
+      },
+    );
+
+    test('updateCartQuantity ลดเหลือ 0 = เอาบรรทัดออกจากตะกร้าไปเลย', () async {
+      _setRouteQrToken('t');
+      controller.onInit();
+      await Future<void>.delayed(Duration.zero);
+
+      await controller.addToCart(_menuItem(1, price: 40));
+      await controller.addToCart(_menuItem(2, price: 60));
+
+      controller.updateCartQuantity(0, 3);
+      expect(controller.cart.first.quantity, 3);
+      expect(controller.cartSubtotalPreview, 180);
+
+      controller.updateCartQuantity(0, 0);
+      expect(controller.cart.length, 1);
+      expect(controller.cart.first.menuItem.id, 2);
+
+      // index ที่ไม่มีจริงต้องไม่พังและไม่แตะตะกร้า
+      controller.updateCartQuantity(9, 5);
+      expect(controller.cart.length, 1);
+    });
+
     test('removeCartLine ลบเฉพาะรายการที่ระบุ index', () async {
       _setRouteQrToken('t');
       controller.onInit();
@@ -203,7 +242,7 @@ void main() {
       controller.removeCartLine(0);
 
       expect(controller.cart.length, 1);
-      expect(controller.cart.first.item.id, 2);
+      expect(controller.cart.first.menuItem.id, 2);
     });
   });
 }

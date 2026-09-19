@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-634%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-636%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -46,7 +46,7 @@ control and 608 automated tests.
 - **โหมดคอนทราสต์สูง** — อ่านออกชัดแม้แดดจ้าริมหน้าต่างหรือไอน้ำในครัว ตัวหนังสือผ่านเกณฑ์ WCAG AAA
 - **Audit log ครบทุกจุดเสี่ยงต่อการทุจริต** — ยกเลิกออเดอร์ ให้ส่วนลด แก้ VAT คืนเงิน บันทึกผู้ทำ/เวลา/
   เหตุผลไว้เสมอ แก้ไขลบไม่ได้จาก UI ไหนเลย
-- **ทดสอบอัตโนมัติ 634 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 636 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -391,7 +391,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 292 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 342 เคส — domain / controller / widget
+cd app && flutter test      # 344 เคส — domain / controller / widget
 ```
 
 ---
@@ -845,7 +845,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 292 เคส
-cd app && flutter test      # 342 เคส
+cd app && flutter test      # 344 เคส
 ```
 
 **Backend (292 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -975,7 +975,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 `POST .../items` ได้ 30 ครั้ง/5 นาทีต่อโต๊ะ เกินแล้วโดน 429 (ดู `docs/tickets/17-qr-self-order.md`,
 `docs/DECISIONS.md` #37)
 
-**Flutter (342 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (344 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -988,7 +988,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน, `loadMyBranches` สำเร็จเติม `myBranches`, guard clause ของ `submitBranchSelection`/`switchBranch` เมื่อยังไม่มี pendingToken/session token (ticket 11) |
 | Controller | `order_list_controller_test.dart` | ตัวกรองสถานะออเดอร์ ส่ง activeOnly/dateFrom ถูกเงื่อนไข |
 | Controller | `table_controller_test.dart` | กรองโซน/สถานะพร้อมกัน, นับโต๊ะว่าง/มีลูกค้า, `canManageQrToken` เฉพาะ admin/manager (mirror สิทธิ์ backend ticket 17) |
-| Controller | `self_order_controller_test.dart` | โหลดโต๊ะ+เมนูจาก qrToken สำเร็จ/ล้มเหลว, ลิงก์ไม่มี qrToken ตั้ง errorMessage ทันทีโดยไม่เรียก repository, กรองเมนูตามหมวด, เพิ่ม/ลบรายการในตะกร้าที่ไม่ต้องเลือกตัวเลือกเพิ่ม (ticket 17) |
+| Controller | `self_order_controller_test.dart` | โหลดโต๊ะ+เมนูจาก qrToken สำเร็จ/ล้มเหลว, ลิงก์ไม่มี qrToken ตั้ง errorMessage ทันทีโดยไม่เรียก repository, กรองเมนูตามหมวด, เพิ่ม/ลบรายการในตะกร้า, กดเมนูเดิมซ้ำรวมเป็นบรรทัดเดียวแล้วบวกจำนวน (กฎเดียวกับตะกร้าพนักงาน) และปรับจำนวนเหลือ 0 = เอาออกจากตะกร้า (ticket 17) |
 | Controller | `home_controller_test.dart` | เมนูที่แต่ละบทบาทเห็น, การสลับแท็บ |
 | Controller | `menu_browse_controller_test.dart` | กรอง/ค้นหาเมนู (มี debounce), นับตามหมวดหมู่ |
 | Controller | `menu_management_controller_test.dart` | กรองเมนูฝั่งจัดการ, นับเมนูที่ปิดขาย |

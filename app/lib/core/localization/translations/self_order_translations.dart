@@ -6,6 +6,7 @@ const Map<String, String> selfOrderTranslationsTh = {
   'self_order_table_unavailable':
       'ไม่พบโต๊ะนี้ หรือโต๊ะนี้ปิดใช้งานอยู่ กรุณาเรียกพนักงาน',
   'self_order_menu_empty': 'ยังไม่มีเมนูให้สั่งในหมวดนี้',
+  'self_order_hint': 'แตะเมนูเพื่อใส่ตะกร้า สั่งเองได้เลยไม่ต้องเรียกพนักงาน',
   'self_order_submit_success': 'ส่งออเดอร์เข้าครัวเรียบร้อยแล้ว',
   'self_order_current_order_title': 'ออเดอร์ของคุณ',
   'self_order_cart_title': 'ตะกร้าของคุณ',
@@ -23,6 +24,8 @@ const Map<String, String> selfOrderTranslationsEn = {
   'self_order_table_unavailable':
       'Table not found, or this table is deactivated. Please call a staff member.',
   'self_order_menu_empty': 'No items in this category yet',
+  'self_order_hint':
+      'Tap a dish to add it to your cart — no need to call staff',
   'self_order_submit_success': 'Your order has been sent to the kitchen',
   'self_order_current_order_title': 'Your order',
   'self_order_cart_title': 'Your cart',

@@ -5,13 +5,14 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/quantity_stepper.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../menu/presentation/widgets/category_filter_bar.dart';
 import '../../../menu/presentation/widgets/menu_item_card.dart';
+import '../../../order/domain/entities/cart_line.dart';
 import '../../../order/presentation/widgets/bill_summary.dart';
 import '../../../order/presentation/widgets/order_item_tile.dart';
 import '../controllers/self_order_controller.dart';
-import '../controllers/self_order_cart_line.dart';
 
 /// หน้าลูกค้าสั่งอาหารเองผ่าน QR ที่โต๊ะ (ดู docs/tickets/17-qr-self-order.md) — ไม่มี login เลย
 /// เข้าได้ตรงจากลิงก์ QR ทันที ต่างจากทุกหน้าอื่นในแอปที่ต้องผ่าน AuthController ก่อนเสมอ
@@ -22,9 +23,17 @@ class SelfOrderPage extends GetView<SelfOrderController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Obx(
-          () => Text(controller.table.value?.name ?? 'self_order_title'.tr),
-        ),
+        // ลูกค้าเปิดหน้านี้เป็นหน้าแรกจากการสแกน QR ไม่มีหน้าก่อนหน้าให้ย้อนกลับไป — ปุ่มย้อนกลับ
+        // จึงมีแต่จะพาหลุดออกไปหน้าเข้าสู่ระบบของพนักงาน ซึ่งไม่ใช่ที่ของลูกค้าเลย
+        automaticallyImplyLeading: false,
+        title: Obx(() {
+          final table = controller.table.value;
+          return Text(
+            table == null
+                ? 'self_order_title'.tr
+                : 'table_number_label'.trParams({'name': table.name}),
+          );
+        }),
         actions: [
           Obx(() {
             final order = controller.currentOrder.value;
@@ -53,20 +62,7 @@ class SelfOrderPage extends GetView<SelfOrderController> {
 
         return Column(
           children: [
-            if (controller.table.value?.branchName != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '${controller.table.value!.zone} · ${controller.table.value!.branchName}',
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
+            _TableHeader(),
             const SizedBox(height: 8),
             CategoryFilterBar(
               categories: controller.categories,
@@ -143,11 +139,12 @@ class SelfOrderPage extends GetView<SelfOrderController> {
         if (order == null) return const SizedBox.shrink();
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const _SheetHandle(),
                 Text(
                   'self_order_current_order_title'.tr,
                   style: const TextStyle(
@@ -183,10 +180,11 @@ class SelfOrderPage extends GetView<SelfOrderController> {
       isScrollControlled: true,
       builder: (sheetContext) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
           child: Obx(() {
             if (controller.cart.isEmpty) {
-              // ตะกร้าว่างระหว่างเปิดชีทอยู่ (เช่นกดส่งสำเร็จแล้ว) — ปิดชีทเองแทนโชว์ว่างเปล่า
+              // ตะกร้าว่างระหว่างเปิดชีทอยู่ (เช่นกดส่งสำเร็จแล้ว หรือลดจำนวนจนหมด) — ปิดชีทเองแทน
+              // โชว์ว่างเปล่า
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (Navigator.of(sheetContext).canPop()) {
                   Navigator.of(sheetContext).pop();
@@ -198,6 +196,7 @@ class SelfOrderPage extends GetView<SelfOrderController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                const _SheetHandle(),
                 Text(
                   'self_order_cart_title'.tr,
                   style: const TextStyle(
@@ -278,10 +277,73 @@ class SelfOrderPage extends GetView<SelfOrderController> {
   }
 }
 
+/// โซน/สาขาของโต๊ะ + บอกวิธีสั่งสั้น ๆ — ลูกค้าไม่เคยผ่านการอบรมเหมือนพนักงาน จึงต้องมีประโยคเดียว
+/// บอกว่ากดการ์ดเมนูแล้วเกิดอะไรขึ้น
+class _TableHeader extends GetView<SelfOrderController> {
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final table = controller.table.value;
+      if (table == null) return const SizedBox.shrink();
+      final branch = table.branchName;
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              branch == null ? table.zone : '${table.zone} · $branch',
+              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Icon(
+                  Icons.touch_app_rounded,
+                  size: 15,
+                  color: AppColors.brandInk,
+                ),
+                const SizedBox(width: 5),
+                Expanded(
+                  child: Text(
+                    'self_order_hint'.tr,
+                    style: TextStyle(fontSize: 12.5, color: AppColors.brandInk),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+/// ขีดจับลากหัวชีท — ให้รู้ว่าปัดลงปิดได้ (แบบเดียวกับ OptionSelectionSheet)
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 40,
+        height: 4,
+        margin: const EdgeInsets.only(bottom: 14),
+        decoration: BoxDecoration(
+          color: AppColors.border,
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+}
+
 class _CartLineTile extends GetView<SelfOrderController> {
   const _CartLineTile({required this.line, required this.index});
 
-  final SelfOrderCartLine line;
+  final CartLine line;
   final int index;
 
   @override
@@ -295,15 +357,15 @@ class _CartLineTile extends GetView<SelfOrderController> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${line.quantity}x ${line.item.displayName}',
+                  line.menuItem.displayName,
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13.5,
                   ),
                 ),
-                if (line.options.isNotEmpty)
+                if (line.selectedOptions.isNotEmpty)
                   Text(
-                    line.options.map((o) => o.name).join(', '),
+                    line.optionsSummary,
                     style: TextStyle(
                       fontSize: 12,
                       color: AppColors.textSecondary,
@@ -317,20 +379,23 @@ class _CartLineTile extends GetView<SelfOrderController> {
                       color: AppColors.textSecondary,
                     ),
                   ),
+                const SizedBox(height: 6),
+                Text(
+                  Formatters.baht(line.lineTotal),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
+                  ),
+                ),
               ],
             ),
           ),
-          Text(
-            Formatters.baht(line.lineTotal),
-            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-          ),
-          IconButton(
-            onPressed: () => controller.removeCartLine(index),
-            icon: Icon(
-              Icons.close_rounded,
-              size: 18,
-              color: AppColors.textSecondary,
-            ),
+          // จำนวน 1 แล้วกด − = เอาออกจากตะกร้า จึงไม่ต้องมีปุ่มถังขยะแยกอีกปุ่ม
+          QuantityStepper(
+            value: line.quantity,
+            min: 0,
+            onChanged: (quantity) =>
+                controller.updateCartQuantity(index, quantity),
           ),
         ],
       ),

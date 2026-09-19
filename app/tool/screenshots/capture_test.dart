@@ -11,6 +11,7 @@ import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/features/customer/presentation/widgets/customer_picker_dialog.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
+import 'package:payneat_pos/features/self_order/presentation/controllers/self_order_controller.dart';
 
 import 'screenshot_harness.dart';
 
@@ -458,6 +459,48 @@ void main() {
       Get.find<CheckoutController>().selectMethod(PaymentMethod.qr);
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-34-promptpay-qr');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // QR สั่งอาหารเอง (ticket 17) — หน้าเดียวในแอปที่ลูกค้าเปิดเองบนมือถือตัวเอง
+  // ไม่ผ่าน login จึงต้องคุมภาพไว้แยกจากหน้าพนักงานทุกหน้า
+  // ---------------------------------------------------------------------
+  group('QR สั่งอาหารเอง', () {
+    Future<void> openSelfOrder(WidgetTester tester, String qrToken) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      unawaited(Get.toNamed<void>('/order/$qrToken'));
+      await ScreenshotHarness.settle(tester);
+    }
+
+    testWidgets('35 หน้าเมนูที่ลูกค้าเห็นหลังสแกน QR', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      await ScreenshotHarness.capture(tester, 'phone-35-self-order-menu');
+    });
+
+    testWidgets('36 ตะกร้าของลูกค้าก่อนกดส่งครัว', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      final controller = Get.find<SelfOrderController>();
+      for (final item
+          in controller.items
+              .where((item) => !item.requiresSelection)
+              .take(2)) {
+        await controller.addToCart(item);
+      }
+      await ScreenshotHarness.settle(tester);
+      await tester.tap(find.byType(FilledButton).last);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-36-self-order-cart');
+    });
+
+    testWidgets('37 ออเดอร์ปัจจุบันของโต๊ะที่ลูกค้าเปิดดูได้', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      await tester.tap(find.byIcon(Icons.receipt_long_rounded));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(
+        tester,
+        'phone-37-self-order-current-order',
+      );
     });
   });
 }
