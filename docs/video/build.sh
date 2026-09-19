@@ -16,7 +16,9 @@ FFMPEG="${FFMPEG:-ffmpeg}"
 mkdir -p "$WORK"
 cp "$HERE"/build_video_html.py "$HERE"/storyboard.py "$HERE"/record.mjs "$WORK/"
 mkdir -p "$WORK/fonts" "$WORK/images"
-cp "$ROOT"/app/tool/fonts/*.ttf "$WORK/fonts/"
+# ฟอนต์อยู่ที่ assets/fonts (ที่เดียวกับที่ screenshot_harness.dart โหลด) — เดิมสคริปต์นี้ชี้ไป
+# app/tool/fonts ซึ่งมีแต่ README เหลืออยู่ ทำให้ build พังทันทีบนเครื่องที่ clone ใหม่
+cp "$ROOT"/app/assets/fonts/*.ttf "$WORK/fonts/"
 cp "$ROOT"/app/tool/screenshots/images/*.png "$WORK/images/"
 
 # ความยาว timeline คำนวณจาก storyboard.py ตรง ๆ ห้าม hardcode เลขไว้ในสคริปต์นี้
@@ -44,8 +46,31 @@ for LANG in ${@:-th en}; do
 
   # หาจุดที่ภาพนิ่งค้างยาว ๆ ครั้งสุดท้าย (freeze_start ที่ไม่มี freeze_end คู่กัน แปลว่านิ่งไปจนจบไฟล์)
   # นั่นคือจุดที่ฉากปิดเล่นจบจริง ๆ (progress bar ขึ้นเต็ม + ข้อความโผล่ครบ ไม่มีอะไรขยับอีก)
+  # freezedetect ตัดช่วงนิ่งท้ายวิดีโอเป็นหลายท่อนได้ (เฟรมเดียวต่างกันนิดเดียวก็ตัดแล้ว) การหยิบ
+  # freeze_start ตัวสุดท้ายตรง ๆ จึงได้จุดกลางของช่วงนิ่ง ไม่ใช่จุดที่เนื้อหาจบ — ภาษาอังกฤษเคยได้
+  # วิดีโอ 2:50 ทั้งที่ timeline ยาว 2:00 (ท้ายคลิปเป็นภาพนิ่ง 50 วินาที) จึงต้องรวมช่วงนิ่งที่ต่อกัน
+  # ให้เป็นท่อนเดียวก่อน แล้วค่อยเอาจุดเริ่มของท่อนสุดท้าย
   FREEZE_START=$("$FFMPEG" -v info -i "$SRC" -vf "freezedetect=n=-40dB:d=1.5" -an -f null - 2>&1 \
-    | grep -o 'freeze_start: [0-9.]*' | awk '{print $2}' | tail -1 || true)
+    | python3 -c "
+import re, sys
+events = []
+for line in sys.stdin:
+    for kind, value in re.findall(r'freeze_(start|end): ([0-9.]+)', line):
+        events.append((kind, float(value)))
+segments = []
+for kind, value in events:
+    if kind == 'start':
+        segments.append([value, None])
+    elif segments:
+        segments[-1][1] = value
+merged = []
+for start, end in segments:
+    if merged and merged[-1][1] is not None and start - merged[-1][1] <= 0.6:
+        merged[-1][1] = end
+    else:
+        merged.append([start, end])
+print(merged[-1][0] if merged else '')
+" || true)
 
   if [ -n "$FREEZE_START" ]; then
     FINAL_DURATION=$(python3 -c "print(max($TOTAL * 0.9, $FREEZE_START - $LEAD + 0.4))")

@@ -83,11 +83,11 @@ control and 608 automated tests.
 </tr>
 </table>
 
-> 🎬 **Demo presentation video (1:41 · 1080p)**
+> 🎬 **Demo presentation video (1:55 · 1080p)**
 > · [Thai edition](docs/video/PaynEat-POS-Demo-TH.mp4)
 > · [English edition](docs/video/PaynEat-POS-Demo-EN.mp4)
 >
-> Walks through the real usage path from opening the table map to closing the bill, built from 11 real
+> Walks through the real usage path from opening the table map to closing the bill, built from 14 real
 > screenshots ([how it's regenerated](docs/video/README.md))
 
 > 📄 **Full feature walkthrough — 29 screens (27–28 page PDF)**
