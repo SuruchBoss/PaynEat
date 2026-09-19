@@ -7,7 +7,9 @@ export const userController = {
 
   detail: asyncHandler(async (req, res) => ok(res, userService.getById(req.validated.params.id))),
 
-  create: asyncHandler(async (req, res) => created(res, userService.create(req.body, req.user))),
+  create: asyncHandler(async (req, res) =>
+    created(res, userService.create(req.body, req.user, req.branchId)),
+  ),
 
   update: asyncHandler(async (req, res) =>
     ok(res, userService.update(req.validated.params.id, req.body, req.user)),

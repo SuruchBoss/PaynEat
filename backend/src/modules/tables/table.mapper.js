@@ -9,6 +9,10 @@ export const toTableDto = (row) => {
     seats: row.seats,
     status: row.status,
     isActive: Boolean(row.is_active),
+    branchId: row.branch_id ?? null,
+    // token สุ่มสำหรับ URL สั่งอาหารเอง (ดู docs/tickets/17-qr-self-order.md) — เห็นได้ทุก role ที่
+    // เข้าถึงหน้าผังโต๊ะ เพราะเป็นแค่ capability token ไว้ให้พนักงานดู/พิมพ์ QR ไม่ใช่ความลับระดับสิทธิ์
+    qrToken: row.qr_token ?? null,
     currentOrder: row.order_id
       ? {
           id: row.order_id,

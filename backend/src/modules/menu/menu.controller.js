@@ -5,13 +5,15 @@ import { menuService } from './menu.service.js';
 export const menuController = {
   list: asyncHandler(async (req, res) => {
     const query = req.validated.query;
-    const { items, total } = menuService.list(query);
+    const { items, total } = menuService.list(query, req.branchId);
     return paginated(res, items, { page: query.page, limit: query.limit, total });
   }),
 
   detail: asyncHandler(async (req, res) => ok(res, menuService.getById(req.validated.params.id))),
 
-  create: asyncHandler(async (req, res) => created(res, menuService.create(req.body))),
+  create: asyncHandler(async (req, res) =>
+    created(res, menuService.create(req.body, req.branchId)),
+  ),
 
   update: asyncHandler(async (req, res) =>
     ok(res, menuService.update(req.validated.params.id, req.body, req.user)),

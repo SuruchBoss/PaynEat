@@ -8,6 +8,29 @@
 
 PRAGMA foreign_keys = ON;
 
+-- สาขา (ดู docs/tickets/11-multi-branch.md) — entity ระดับองค์กร ไม่ผูก branch_id กับตัวเอง
+-- (ผูกแค่ dining_tables/menu_items/orders/ingredients เท่านั้น — promotions/customers/categories/
+-- options/settings ตั้งใจให้เป็นของทั้งเชนเหมือนเดิม ดู docs/DECISIONS.md #36)
+CREATE TABLE IF NOT EXISTS branches (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  name       TEXT    NOT NULL,
+  code       TEXT    UNIQUE,
+  address    TEXT,
+  is_active  INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- สิทธิ์การเข้าถึงสาขาของผู้ใช้แต่ละคน (many-to-many) — admin ไม่ต้องมีแถวในนี้เลยก็เข้าได้ทุกสาขา
+-- เสมอ (bypass ที่ branch.repository.js#listForUser และ middlewares/auth.js#attachBranch)
+CREATE TABLE IF NOT EXISTS user_branches (
+  user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  branch_id  INTEGER NOT NULL REFERENCES branches(id) ON DELETE CASCADE,
+  created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (user_id, branch_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_branches_branch ON user_branches(branch_id);
+
 CREATE TABLE IF NOT EXISTS users (
   id            INTEGER PRIMARY KEY AUTOINCREMENT,
   name          TEXT    NOT NULL,

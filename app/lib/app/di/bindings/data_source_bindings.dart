@@ -13,6 +13,7 @@ import '../../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../../features/payment/data/datasources/payment_remote_data_source.dart';
 import '../../../features/promotion/data/datasources/promotion_remote_data_source.dart';
 import '../../../features/report/data/datasources/report_remote_data_source.dart';
+import '../../../features/self_order/data/datasources/self_order_remote_data_source.dart';
 import '../../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../../features/shift/data/datasources/shift_remote_data_source.dart';
 import '../../../features/staff/data/datasources/staff_remote_data_source.dart';
@@ -90,6 +91,12 @@ void bindDataSources() {
     () => AiAssistantRemoteDataSourceImpl(client),
     fenix: true,
   );
+  // ดู docs/tickets/17-qr-self-order.md — ใช้ ApiClient ตัวเดียวกับทุกโดเมน แต่ endpoint
+  // ปลายทางเป็น /public/* ที่ไม่เช็ค Authorization header เลย
+  Get.lazyPut<SelfOrderRemoteDataSource>(
+    () => SelfOrderRemoteDataSourceImpl(client),
+    fenix: true,
+  );
 }
 
 /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -146,6 +153,10 @@ void _bindDemoDataSources() {
   );
   Get.put<AiAssistantRemoteDataSource>(
     const DemoAiAssistantDataSource(),
+    permanent: true,
+  );
+  Get.put<SelfOrderRemoteDataSource>(
+    DemoSelfOrderDataSource(store),
     permanent: true,
   );
 }

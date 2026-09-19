@@ -47,6 +47,14 @@ const Map<String, String> reportTranslationsTh = {
   'report_pending_kitchen_label': 'รอครัวทำ',
 
   'report_dashboard_loading': 'กำลังโหลดข้อมูลภาพรวม...',
+
+  // export CSV (ดู docs/tickets/12-report-export.md)
+  'report_export_csv_button': 'ส่งออก CSV',
+  'report_export_summary_option': 'สรุปยอดขาย',
+  'report_export_top_items_option': 'เมนูขายดี',
+  'report_export_sales_by_day_option': 'ยอดขายรายวัน',
+  'report_export_unsupported_platform':
+      'ส่งออก CSV รองรับเฉพาะบนเว็บ (หน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็นเว็บเท่านั้น)',
 };
 
 const Map<String, String> reportTranslationsEn = {
@@ -97,4 +105,12 @@ const Map<String, String> reportTranslationsEn = {
   'report_pending_kitchen_label': 'Pending in kitchen',
 
   'report_dashboard_loading': 'Loading overview...',
+
+  // CSV export (see docs/tickets/12-report-export.md)
+  'report_export_csv_button': 'Export CSV',
+  'report_export_summary_option': 'Sales summary',
+  'report_export_top_items_option': 'Top items',
+  'report_export_sales_by_day_option': 'Sales by day',
+  'report_export_unsupported_platform':
+      'CSV export is only supported on the web (this page is admin/web-only)',
 };

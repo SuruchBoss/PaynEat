@@ -36,4 +36,23 @@ class AppConfig {
 
   /// เปิด log ของ HTTP request เฉพาะตอน debug
   static bool get enableApiLog => kDebugMode;
+
+  /// โดเมนสาธารณะที่ลูกค้าจะเปิดหน้าสั่งเองผ่าน QR (ดู docs/tickets/17-qr-self-order.md) — เว็บ
+  /// ปล่อยว่างได้เพราะอ่านจาก Uri.base เอง (origin+path ของแอปที่รันอยู่จริง รวม base href
+  /// ตอน deploy ขึ้น subpath เช่น GitHub Pages) ต้องตั้งค่านี้เฉพาะตอน build แอป native
+  /// (Android/iOS/desktop) ที่ไม่มี Uri.base ให้อ้างอิงโดเมนเว็บที่ลูกค้าจะเปิดจริง เช่น
+  /// `flutter build apk --dart-define=SELF_ORDER_BASE_URL=https://paynea.example.com/app/`
+  static const String _selfOrderBaseUrlFromEnv = String.fromEnvironment(
+    'SELF_ORDER_BASE_URL',
+  );
+
+  /// ลิงก์เต็มของหน้าสั่งเองผ่าน QR สำหรับโต๊ะหนึ่ง ๆ — เอาไปเข้ารหัสเป็นภาพ QR ให้ลูกค้าสแกน
+  /// (route จริงคือ AppRoutes.selfOrder = '/order/:qrToken' ใช้ hash routing ค่าเริ่มต้นของแอป)
+  static String selfOrderLink(String qrToken) {
+    final base = _selfOrderBaseUrlFromEnv.isNotEmpty
+        ? _selfOrderBaseUrlFromEnv
+        : (kIsWeb ? '${Uri.base.origin}${Uri.base.path}' : baseUrl);
+    final normalized = base.endsWith('/') ? base : '$base/';
+    return '$normalized#/order/$qrToken';
+  }
 }

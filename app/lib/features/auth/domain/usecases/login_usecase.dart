@@ -1,6 +1,6 @@
 import '../../../../core/usecases/result.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../entities/user.dart';
+import '../entities/login_result.dart';
 import '../repositories/auth_repository.dart';
 
 class LoginParams {
@@ -10,15 +10,15 @@ class LoginParams {
   final String password;
 }
 
-/// เข้าสู่ระบบด้วย username/password
-class LoginUseCase
-    implements UseCase<({String token, User user}), LoginParams> {
+/// เข้าสู่ระบบด้วย username/password — ดู [LoginResult] สำหรับกรณีที่ต้องเลือกสาขาก่อน
+/// (docs/tickets/11-multi-branch.md)
+class LoginUseCase implements UseCase<LoginResult, LoginParams> {
   const LoginUseCase(this._repository);
 
   final AuthRepository _repository;
 
   @override
-  Future<Result<({String token, User user})>> call(LoginParams params) {
+  Future<Result<LoginResult>> call(LoginParams params) {
     return _repository.login(
       username: params.username.trim(),
       password: params.password,

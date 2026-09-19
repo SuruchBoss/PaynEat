@@ -56,12 +56,18 @@ export const orderRepository = {
     customerId,
     dateFrom,
     dateTo,
+    branchId,
     page = 1,
     limit = 20,
   } = {}) {
     const clauses = [];
     const params = [];
 
+    // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    if (branchId) {
+      clauses.push('o.branch_id = ?');
+      params.push(branchId);
+    }
     if (status) {
       clauses.push('o.status = ?');
       params.push(status);
@@ -153,12 +159,12 @@ export const orderRepository = {
     return getDb().prepare('SELECT * FROM order_items WHERE id = ?').get(itemId);
   },
 
-  create({ code, type, tableId, waiterId, customerId, guestCount, note, queueNumber }) {
+  create({ code, type, tableId, waiterId, customerId, guestCount, note, queueNumber, branchId }) {
     const info = getDb()
       .prepare(
         `
-        INSERT INTO orders (code, type, table_id, waiter_id, customer_id, guest_count, note, queue_number)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (code, type, table_id, waiter_id, customer_id, guest_count, note, queue_number, branch_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -170,6 +176,7 @@ export const orderRepository = {
         guestCount ?? 1,
         note ?? null,
         queueNumber ?? null,
+        branchId,
       );
     return this.findById(info.lastInsertRowid);
   },

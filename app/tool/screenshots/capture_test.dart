@@ -7,8 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
+import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/features/customer/presentation/widgets/customer_picker_dialog.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
+import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
+import 'package:payneat_pos/features/self_order/presentation/controllers/self_order_controller.dart';
 
 import 'screenshot_harness.dart';
 
@@ -435,6 +438,90 @@ void main() {
       unawaited(CustomerPickerDialog.show());
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-33-customer-picker');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // PromptPay QR จริง (ticket 16) — ยังไม่เคยมีภาพ golden คุมเลย
+  // ---------------------------------------------------------------------
+  group('PromptPay QR', () {
+    testWidgets('34 QR พร้อมเพย์ที่หน้าเก็บเงิน', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
+
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.checkout,
+          arguments: {'orderId': ids.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      Get.find<CheckoutController>().selectMethod(PaymentMethod.qr);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-34-promptpay-qr');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // QR สั่งอาหารเอง (ticket 17) — หน้าเดียวในแอปที่ลูกค้าเปิดเองบนมือถือตัวเอง
+  // ไม่ผ่าน login จึงต้องคุมภาพไว้แยกจากหน้าพนักงานทุกหน้า
+  // ---------------------------------------------------------------------
+  group('QR สั่งอาหารเอง', () {
+    Future<void> openSelfOrder(WidgetTester tester, String qrToken) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      unawaited(Get.toNamed<void>('/order/$qrToken'));
+      await ScreenshotHarness.settle(tester);
+    }
+
+    testWidgets('35 หน้าเมนูที่ลูกค้าเห็นหลังสแกน QR', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      await ScreenshotHarness.capture(tester, 'phone-35-self-order-menu');
+    });
+
+    testWidgets('36 ตะกร้าของลูกค้าก่อนกดส่งครัว', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      final controller = Get.find<SelfOrderController>();
+      for (final item
+          in controller.items
+              .where((item) => !item.requiresSelection)
+              .take(2)) {
+        await controller.addToCart(item);
+      }
+      await ScreenshotHarness.settle(tester);
+      await tester.tap(find.byType(FilledButton).last);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-36-self-order-cart');
+    });
+
+    testWidgets('37 ออเดอร์ปัจจุบันของโต๊ะที่ลูกค้าเปิดดูได้', (tester) async {
+      await openSelfOrder(tester, 'demo-table-1');
+      await tester.tap(find.byIcon(Icons.receipt_long_rounded));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(
+        tester,
+        'phone-37-self-order-current-order',
+      );
+    });
+
+    testWidgets('38 ลิงก์ QR ที่ใช้ไม่ได้แล้ว (token ผิด/โต๊ะปิด)', (
+      tester,
+    ) async {
+      await openSelfOrder(tester, 'token-mua-mua-123');
+      await ScreenshotHarness.capture(tester, 'phone-38-self-order-invalid');
+    });
+
+    testWidgets('39 ชีท QR ฝั่งพนักงานที่ผังโต๊ะ', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      // ผู้จัดการเห็น "ภาพรวม" เป็นแท็บแรก ผังโต๊ะอยู่แท็บที่ 2 (ดู destinationsForRole)
+      await ScreenshotHarness.loginAs(tester, 'manager', 'manager123');
+      Get.find<HomeController>().changeTab(1);
+      await ScreenshotHarness.settle(tester);
+
+      await tester.longPress(find.text('A1').first);
+      await ScreenshotHarness.settle(tester);
+      await tester.tap(find.text('ดู QR สั่งอาหารเอง'));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-39-table-qr-sheet');
     });
   });
 }

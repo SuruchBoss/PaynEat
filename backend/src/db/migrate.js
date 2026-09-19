@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { randomUUID } from 'node:crypto';
 import { getDb } from './index.js';
 import { env } from '../config/env.js';
 
@@ -16,6 +17,56 @@ const addColumnIfMissing = (db, table, column, definition) => {
   const columns = db.prepare(`PRAGMA table_info(${table})`).all();
   if (columns.some((row) => row.name === column)) return;
   db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+};
+
+const BRANCH_SCOPED_TABLES = ['dining_tables', 'menu_items', 'orders', 'ingredients'];
+
+/**
+ * รองรับฐานข้อมูลเดี่ยวสาขาเดิม (ก่อน ticket 11) ที่เพิ่งได้คอลัมน์ branch_id ใหม่จาก
+ * addColumnIfMissing ด้านบน — ทุกแถวเดิมจะเป็น branch_id = NULL ต้องมีสาขาให้ข้อมูลเดิมอยู่ ไม่งั้น
+ * query ที่ scope ด้วย branch_id จะมองไม่เห็นข้อมูลเดิมเลย จึงสร้างสาขา fallback ("สาขาหลัก") ให้
+ * อัตโนมัติเฉพาะตอนพบข้อมูลเก่าที่ยัง branch_id เป็น NULL อยู่จริงเท่านั้น (ดู docs/DECISIONS.md #36)
+ * — ฐานข้อมูลใหม่ล้วน (ตารางทั้ง 4 ยังว่างเปล่า) จะไม่สร้างสาขานี้ขึ้นมาเลย ปล่อยให้ seed.js
+ * เป็นคนสร้างสาขาจริงเอง 2 สาขาแทน
+ */
+const backfillDefaultBranch = (db) => {
+  const hasUnscopedRows = BRANCH_SCOPED_TABLES.some((table) =>
+    db.prepare(`SELECT 1 FROM ${table} WHERE branch_id IS NULL LIMIT 1`).get(),
+  );
+  if (!hasUnscopedRows) return;
+
+  let defaultBranch = db.prepare('SELECT id FROM branches ORDER BY id LIMIT 1').get();
+  if (!defaultBranch) {
+    const info = db
+      .prepare('INSERT INTO branches (name, code) VALUES (?, ?)')
+      .run('สาขาหลัก', 'MAIN');
+    defaultBranch = { id: info.lastInsertRowid };
+  }
+
+  for (const table of BRANCH_SCOPED_TABLES) {
+    db.prepare(`UPDATE ${table} SET branch_id = ? WHERE branch_id IS NULL`).run(defaultBranch.id);
+  }
+
+  // ให้ผู้ใช้เดิมทุกคนเข้าสาขา fallback นี้ได้ทันที ไม่งั้นจะล็อกอินไม่ได้เลยหลังอัปเกรด (admin ไม่
+  // จำเป็นต้องมีแถวนี้ก็เข้าได้ทุกสาขาอยู่แล้ว แต่ใส่ให้ด้วยเพื่อความสม่ำเสมอของข้อมูล ไม่มีผลเสีย)
+  const insertMembership = db.prepare(
+    'INSERT OR IGNORE INTO user_branches (user_id, branch_id) VALUES (?, ?)',
+  );
+  for (const user of db.prepare('SELECT id FROM users').all()) {
+    insertMembership.run(user.id, defaultBranch.id);
+  }
+};
+
+/**
+ * ticket 17 (QR สั่งอาหารเอง) — โต๊ะที่สร้างก่อนทิกเก็ตนี้ยังไม่มี qr_token (คอลัมน์เพิ่งถูกเพิ่มจาก
+ * addColumnIfMissing ด้านล่าง ทุกแถวเดิมจึงเป็น NULL) เติมให้ครบทุกแถว ไม่งั้นโต๊ะเก่าจะไม่มี QR ให้
+ * สแกนเลย — โต๊ะที่สร้างใหม่หลังจากนี้ได้ token ตั้งแต่ตอน insert อยู่แล้ว (ดู
+ * table.repository.js#create) จึงไม่มีทาง NULL อีก ปลอดภัยที่จะสร้าง UNIQUE INDEX ต่อจากนี้ทันที
+ */
+const backfillTableQrTokens = (db) => {
+  const rows = db.prepare('SELECT id FROM dining_tables WHERE qr_token IS NULL').all();
+  const update = db.prepare('UPDATE dining_tables SET qr_token = ? WHERE id = ?');
+  for (const row of rows) update.run(randomUUID(), row.id);
 };
 
 export const migrate = () => {
@@ -54,6 +105,41 @@ export const migrate = () => {
   addColumnIfMissing(db, 'payments', 'points_redeemed', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing(db, 'payments', 'points_redeemed_value', 'INTEGER NOT NULL DEFAULT 0');
   addColumnIfMissing(db, 'orders', 'queue_number', 'INTEGER');
+
+  // Ticket 11 (multi-branch) — branch_id ผูกแค่ 4 entity นี้ (ดู docs/DECISIONS.md #36)
+  addColumnIfMissing(
+    db,
+    'dining_tables',
+    'branch_id',
+    'INTEGER REFERENCES branches(id) ON DELETE SET NULL',
+  );
+  addColumnIfMissing(
+    db,
+    'menu_items',
+    'branch_id',
+    'INTEGER REFERENCES branches(id) ON DELETE SET NULL',
+  );
+  addColumnIfMissing(
+    db,
+    'orders',
+    'branch_id',
+    'INTEGER REFERENCES branches(id) ON DELETE SET NULL',
+  );
+  addColumnIfMissing(
+    db,
+    'ingredients',
+    'branch_id',
+    'INTEGER REFERENCES branches(id) ON DELETE SET NULL',
+  );
+  backfillDefaultBranch(db);
+
+  // Ticket 17 (QR สั่งอาหารเอง) — token สุ่มไม่ซ้ำต่อโต๊ะ ใช้แทนการเดา table id ตรงๆ ใน URL สาธารณะ
+  // (กัน enumeration attack) เปลี่ยนใหม่ได้ถ้า QR หลุด (ดู table.service.js#regenerateQrToken)
+  addColumnIfMissing(db, 'dining_tables', 'qr_token', 'TEXT');
+  backfillTableQrTokens(db);
+  db.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_dining_tables_qr_token ON dining_tables(qr_token)',
+  );
 
   const defaults = {
     store_name: env.store.name,

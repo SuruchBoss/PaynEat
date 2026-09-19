@@ -3,7 +3,9 @@ import { z } from 'zod';
 export const ORDER_STATUSES = ['open', 'in_kitchen', 'served', 'paid', 'cancelled'];
 export const ORDER_ITEM_STATUSES = ['pending', 'cooking', 'ready', 'served', 'cancelled'];
 
-const orderItemInputSchema = z.object({
+// export ไว้ให้ public-order.schema.js ใช้ซ้ำ (ดู docs/tickets/17-qr-self-order.md) — กฎตรวจสอบ
+// รายการอาหารต้องเหมือนกันทุกประการไม่ว่าใครเป็นคนเพิ่ม (พนักงานหรือลูกค้าสแกน QR เอง)
+export const orderItemInputSchema = z.object({
   menuItemId: z.number().int().positive(),
   quantity: z.number().int().min(1, 'จำนวนต้องมากกว่า 0').max(99),
   optionIds: z.array(z.number().int().positive()).default([]),
@@ -18,6 +20,8 @@ export const createOrderSchema = z
     guestCount: z.number().int().min(1).max(50).default(1),
     note: z.string().max(300).optional(),
     items: z.array(orderItemInputSchema).default([]),
+    // ใช้เฉพาะตอนผู้เปิดออเดอร์เป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    branchId: z.number().int().positive().optional(),
   })
   .refine((data) => data.type !== 'dine_in' || data.tableId !== undefined, {
     message: 'ออเดอร์แบบทานที่ร้านต้องระบุโต๊ะ',

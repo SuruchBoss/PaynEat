@@ -82,3 +82,14 @@ class GetZonesUseCase implements NoParamsUseCase<List<String>> {
   @override
   Future<Result<List<String>>> call() => _repository.getZones();
 }
+
+/// ออก QR token ใหม่ให้โต๊ะ (ดู docs/tickets/17-qr-self-order.md) — ปิดลิงก์เก่าทันทีที่ออกใหม่
+class RegenerateTableQrTokenUseCase implements UseCase<DiningTable, int> {
+  const RegenerateTableQrTokenUseCase(this._repository);
+
+  final TableRepository _repository;
+
+  @override
+  Future<Result<DiningTable>> call(int params) =>
+      _repository.regenerateQrToken(params);
+}

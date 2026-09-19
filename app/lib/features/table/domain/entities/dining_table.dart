@@ -29,6 +29,7 @@ class DiningTable {
     required this.status,
     this.isActive = true,
     this.currentOrder,
+    this.qrToken,
   });
 
   final int id;
@@ -38,6 +39,10 @@ class DiningTable {
   final String status;
   final bool isActive;
   final TableOrderSummary? currentOrder;
+
+  /// ใช้สร้างลิงก์/ภาพ QR ให้ลูกค้าสแกนสั่งเอง (ดู docs/tickets/17-qr-self-order.md) — null ได้
+  /// เฉพาะข้อมูลเก่าก่อน migration เพิ่มคอลัมน์นี้ ของจริงหลัง migrate ต้องมีเสมอ
+  final String? qrToken;
 
   bool get isAvailable => status == TableStatus.available;
   bool get hasOpenOrder => currentOrder != null;

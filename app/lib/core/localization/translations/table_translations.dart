@@ -13,6 +13,21 @@ const Map<String, String> tableTranslationsTh = {
   'table_refresh_tooltip': 'รีเฟรช',
   'table_all_zones_filter': 'ทุกโซน',
   'table_new_takeaway_delivery_button': 'สั่งกลับบ้าน/เดลิเวอรี่',
+  // ดู docs/tickets/17-qr-self-order.md
+  'table_qr_action_label': 'ดู QR สั่งอาหารเอง',
+  'table_qr_sheet_title': 'QR สั่งอาหาร — โต๊ะ @name',
+  'table_qr_missing_message':
+      'โต๊ะนี้ยังไม่มี QR token (ข้อมูลเก่าก่อนอัปเดต) โหลดหน้านี้ใหม่อีกครั้ง',
+  'table_qr_scan_instruction':
+      'ให้ลูกค้าสแกนด้วยกล้องมือถือเพื่อสั่งอาหารเองที่โต๊ะนี้',
+  'table_qr_semantics': 'QR สั่งอาหารเองของโต๊ะ @name',
+  'table_qr_copy_link_button': 'คัดลอกลิงก์',
+  'table_qr_link_copied': 'คัดลอกลิงก์แล้ว',
+  'table_qr_regenerate_button': 'เปลี่ยน QR',
+  'table_qr_regenerate_confirm_title': 'เปลี่ยน QR โต๊ะนี้?',
+  'table_qr_regenerate_confirm_message':
+      'QR เดิมที่พิมพ์/แปะไว้ที่โต๊ะ @name จะใช้สั่งอาหารไม่ได้อีกทันที ต้องพิมพ์ QR ใหม่ไปติดแทน',
+  'table_qr_regenerate_success': 'เปลี่ยน QR โต๊ะแล้ว',
 };
 
 const Map<String, String> tableTranslationsEn = {
@@ -29,4 +44,19 @@ const Map<String, String> tableTranslationsEn = {
   'table_refresh_tooltip': 'Refresh',
   'table_all_zones_filter': 'All zones',
   'table_new_takeaway_delivery_button': 'New takeaway/delivery',
+  // ดู docs/tickets/17-qr-self-order.md
+  'table_qr_action_label': 'View self-order QR',
+  'table_qr_sheet_title': 'Self-order QR — Table @name',
+  'table_qr_missing_message':
+      'This table has no QR token yet (legacy data). Reload this page.',
+  'table_qr_scan_instruction':
+      'Have the customer scan with their phone camera to order for this table.',
+  'table_qr_semantics': 'Self-order QR for table @name',
+  'table_qr_copy_link_button': 'Copy link',
+  'table_qr_link_copied': 'Link copied',
+  'table_qr_regenerate_button': 'Regenerate QR',
+  'table_qr_regenerate_confirm_title': 'Regenerate this table\'s QR?',
+  'table_qr_regenerate_confirm_message':
+      'The QR code printed at table @name will stop working immediately. Print and place the new one.',
+  'table_qr_regenerate_success': 'Table QR regenerated',
 };

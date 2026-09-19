@@ -1,6 +1,8 @@
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../core/services/storage_service.dart';
 import '../../../../core/usecases/result.dart';
+import '../../domain/entities/branch.dart';
+import '../../domain/entities/login_result.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
@@ -17,14 +19,36 @@ class AuthRepositoryImpl implements AuthRepository {
   final StorageService _storage;
 
   @override
-  Future<Result<({String token, User user})>> login({
+  Future<Result<LoginResult>> login({
     required String username,
     required String password,
   }) => guard(() async {
     final result = await _remote.login(username, password);
+    // pendingToken ตั้งใจไม่เก็บลง storage เลย (ดู docs/tickets/11-multi-branch.md) — ใช้เรียกได้
+    // แค่ POST /auth/select-branch เท่านั้น ถ้าเก็บเป็น session จริงจะเสี่ยงหลุดไปแนบเป็น
+    // Authorization header ของ request อื่นโดยไม่ตั้งใจ
+    if (result is LoginSuccess) {
+      await _storage.saveSession(
+        token: result.token,
+        user: (result.user as UserModel).toJson(),
+      );
+    }
+    return result;
+  });
+
+  @override
+  Future<Result<({String token, User user})>> selectBranch({
+    required String token,
+    required int? branchId,
+  }) => guard(() async {
+    final result = await _remote.selectBranch(token: token, branchId: branchId);
     await _storage.saveSession(token: result.token, user: result.user.toJson());
     return (token: result.token, user: result.user as User);
   });
+
+  @override
+  Future<Result<List<Branch>>> listMyBranches() =>
+      guard(() => _remote.listMyBranches());
 
   @override
   Future<Result<User>> getProfile() => guard(() async {

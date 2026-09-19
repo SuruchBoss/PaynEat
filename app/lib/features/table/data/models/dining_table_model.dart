@@ -9,6 +9,7 @@ class DiningTableModel extends DiningTable {
     required super.status,
     super.isActive,
     super.currentOrder,
+    super.qrToken,
   });
 
   factory DiningTableModel.fromJson(Map<String, dynamic> json) {
@@ -20,6 +21,7 @@ class DiningTableModel extends DiningTable {
       seats: (json['seats'] as num?)?.toInt() ?? 0,
       status: json['status'] as String? ?? 'available',
       isActive: json['isActive'] as bool? ?? true,
+      qrToken: json['qrToken'] as String?,
       currentOrder: order is Map<String, dynamic>
           ? TableOrderSummary(
               id: (order['id'] as num).toInt(),

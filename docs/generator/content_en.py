@@ -459,6 +459,63 @@ SECTIONS = [
             },
         ],
     },
+    {
+        "id": "self-order",
+        "no": "06",
+        "title": "Customers ordering themselves",
+        "lead": "The one screen guests open on their own phone — with no login anywhere in sight",
+        "device": "phone",
+        "screens": [
+            {
+                "img": "phone-35-self-order-menu.png",
+                "name": "The menu a guest sees after scanning",
+                "lead": "Scan the code on the table and the menu is there — no app to install, no account to create",
+                "points": [
+                    "The header names the table and its zone, so a guest can confirm they scanned the right one",
+                    "There is deliberately no back button: guests arrive here first, and going back would drop them into the staff area",
+                    "A badge in the corner shows how many items this table has already ordered",
+                ],
+                "tech": "It is a separate module that never touches the staff session layer, yet it reuses the "
+                        "same menu cards, category bar and option sheet the waiter app is built from",
+            },
+            {
+                "img": "phone-36-self-order-cart.png",
+                "name": "The guest's cart",
+                "lead": "Quantities are adjustable before anything reaches the kitchen",
+                "points": [
+                    "Tapping the same dish again merges into one line and raises the quantity instead of repeating it",
+                    "Pressing minus at a quantity of one removes the line, so there is no separate delete button to mis-tap",
+                    "The total is clearly marked as excluding service charge and VAT, which are added once the order is sent",
+                ],
+                "tech": "It reuses the same cart-line type as the staff cart, so the merging rule "
+                        "(same dish, same options, same note) comes for free rather than being written twice",
+            },
+            {
+                "img": "phone-37-self-order-current-order.png",
+                "name": "What the table has ordered so far",
+                "lead": "Guests can check their own bill without flagging anyone down",
+                "points": [
+                    "Per-dish kitchen status (queued, cooking, ready) — the same status the staff see",
+                    "A full bill breakdown including service charge and VAT",
+                    "Items a waiter entered earlier appear in the same list, because it is genuinely the same order",
+                ],
+                "tech": "Staff and customer personal details (server name, customer name and phone) are stripped "
+                        "from the data before it is ever sent to the public page",
+            },
+            {
+                "img": "phone-39-table-qr-sheet.png",
+                "name": "Staff side — view and rotate a table's QR",
+                "lead": "Long-press a table on the floor plan and pick \u201cView self-order QR\u201d",
+                "points": [
+                    "Shows the real QR code for that table, with a copy-link button for producing table tents",
+                    "A \u201cRegenerate QR\u201d action (managers and admins only) for when a printed code leaks",
+                    "The moment it is regenerated the old link stops working — no waiting for an expiry",
+                ],
+                "tech": "The link is derived from the domain the app is actually served from, so it is correct "
+                        "both on a local machine and on a live domain with no extra configuration",
+            },
+        ],
+    },
 ]
 
 CLOSING = {
@@ -509,7 +566,7 @@ LABELS = {
                   "available on request.",
     "section_prefix": "SECTION",
     "tech_label": "In practice",
-    "closing_no": "06",
+    "closing_no": "07",
     "closing_title": "Why you can rely on it",
     "closing_lead": "How the system protects your revenue, and what is planned next",
     "closing_callout_title": "Designed around the places POS systems usually go wrong",
@@ -520,11 +577,11 @@ LABELS = {
     "tests_title": "Verified automatically",
     "tests_headers": ("Area", "Checks", "What is covered"),
     "tests_rows": [
-        ("Server", "246 checks",
+        ("Server", "292 checks",
          "Run against a real database, including full audit-trail coverage of every action that "
          "touches money (shift open/close, payments, promotion changes) and one check that walks "
          "a full service from seating a table through to the sale appearing in the daily report"),
-        ("Application", "311 checks",
+        ("Application", "346 checks",
          "Bill calculation (VAT, service charge, promotions), order handling, role permissions, "
          "screen behaviour, and a screenshot test for every screen shown in this document"),
     ],

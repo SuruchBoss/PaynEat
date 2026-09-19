@@ -34,4 +34,38 @@ class DemoReportDataSource implements ReportRemoteDataSource {
             .map(ReportMapper.dailyFromJson)
             .toList(growable: false),
       );
+
+  @override
+  Future<String> exportSummaryCsv({String? from, String? to}) =>
+      _delayed(() => _store.exportSummaryCsv(from: from, to: to));
+
+  @override
+  Future<String> exportTopItemsCsv({
+    String? from,
+    String? to,
+    int limit = 10,
+  }) => _delayed(
+    () => _store.exportTopItemsCsv(from: from, to: to, limit: limit),
+  );
+
+  @override
+  Future<String> exportSalesByDayCsv({String? from, String? to}) =>
+      _delayed(() => _store.exportSalesByDayCsv(from: from, to: to));
+
+  @override
+  Future<ZReport> getZReportByShift(int shiftId) => _delayed(
+    () => ReportMapper.zReportFromJson(_store.zReportByShift(shiftId)),
+  );
+
+  @override
+  Future<ZReport> getZReportByDate(String? date) =>
+      _delayed(() => ReportMapper.zReportFromJson(_store.zReportByDate(date)));
+
+  @override
+  Future<String> exportZReportByShiftCsv(int shiftId) =>
+      _delayed(() => _store.exportZReportByShiftCsv(shiftId));
+
+  @override
+  Future<String> exportZReportByDateCsv(String? date) =>
+      _delayed(() => _store.exportZReportByDateCsv(date));
 }

@@ -457,6 +457,9 @@ class DemoSeed {
     'status': 'available',
     'isActive': true,
     'currentOrder': null,
+    // ใช้แทนของจริงที่ backend สุ่มด้วย randomUUID() — โหมดสาธิตกำหนดตายตัวได้เลยเพราะข้อมูลไม่
+    // เปลี่ยนข้ามเซสชัน ไม่ต้องสุ่มจริงจัง (ดู docs/tickets/17-qr-self-order.md)
+    'qrToken': 'demo-table-$id',
   };
 
   static Map<String, dynamic> settings() => {

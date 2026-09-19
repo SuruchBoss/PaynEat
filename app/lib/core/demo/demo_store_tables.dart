@@ -62,14 +62,16 @@ extension DemoStoreTables on DemoStore {
 
   Map<String, dynamic> saveTable(Map<String, dynamic> body, {int? id}) {
     if (id == null) {
+      final newId = _nextId();
       final table = {
-        'id': _nextId(),
+        'id': newId,
         'name': body['name'],
         'zone': body['zone'] ?? 'main',
         'seats': body['seats'] ?? 4,
         'status': TableStatus.available,
         'isActive': true,
         'currentOrder': null,
+        'qrToken': 'demo-table-$newId',
       };
       tables.add(table);
       return table;
@@ -80,4 +82,28 @@ extension DemoStoreTables on DemoStore {
   }
 
   void deleteTable(int id) => tables.removeWhere((row) => row['id'] == id);
+
+  /// หาโต๊ะจาก qrToken สำหรับหน้าสั่งอาหารเอง (ดู docs/tickets/17-qr-self-order.md) — โยน 404 ถ้า
+  /// ไม่พบหรือโต๊ะปิดใช้งานอยู่ (โหมดสาธิตมีสาขาเดียวเสมอ ไม่ต้องเช็คสถานะสาขาซ้ำเหมือน backend จริง)
+  Map<String, dynamic> resolveTableByQrToken(String qrToken) {
+    final table = tables.firstWhere(
+      (row) => row['qrToken'] == qrToken,
+      orElse: () => const {},
+    );
+    if (table.isEmpty || table['isActive'] != true) {
+      throw ApiException(
+        message: 'self_order_table_unavailable'.tr,
+        statusCode: 404,
+      );
+    }
+    return table;
+  }
+
+  /// token ใหม่แทนอันเดิม — ใช้ตอนกด "เปลี่ยน QR" ที่หน้าจัดการโต๊ะ (ดู
+  /// docs/tickets/17-qr-self-order.md)
+  Map<String, dynamic> regenerateQrToken(int id) {
+    final table = _findTable(id);
+    table['qrToken'] = 'demo-table-$id-${_nextId()}';
+    return table;
+  }
 }

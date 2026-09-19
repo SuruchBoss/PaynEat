@@ -19,6 +19,7 @@ export class ApiError extends Error {
       404: 'NOT_FOUND',
       409: 'CONFLICT',
       422: 'UNPROCESSABLE_ENTITY',
+      429: 'TOO_MANY_REQUESTS',
     };
     return map[statusCode] ?? 'INTERNAL_ERROR';
   }
@@ -41,6 +42,10 @@ export class ApiError extends Error {
 
   static conflict(message, details) {
     return new ApiError(409, message, { details });
+  }
+
+  static tooManyRequests(message = 'ทำรายการถี่เกินไป กรุณาลองใหม่อีกครั้งในอีกสักครู่') {
+    return new ApiError(429, message);
   }
 }
 

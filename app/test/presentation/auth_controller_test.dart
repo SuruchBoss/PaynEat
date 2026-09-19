@@ -4,25 +4,49 @@ import 'package:payneat_pos/core/network/socket_client.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
+import 'package:payneat_pos/features/auth/domain/entities/branch.dart';
+import 'package:payneat_pos/features/auth/domain/entities/login_result.dart';
 import 'package:payneat_pos/features/auth/domain/entities/user.dart';
 import 'package:payneat_pos/features/auth/domain/repositories/auth_repository.dart';
+import 'package:payneat_pos/features/auth/domain/usecases/get_my_branches_usecase.dart';
 import 'package:payneat_pos/features/auth/domain/usecases/get_profile_usecase.dart';
 import 'package:payneat_pos/features/auth/domain/usecases/login_usecase.dart';
 import 'package:payneat_pos/features/auth/domain/usecases/logout_usecase.dart';
+import 'package:payneat_pos/features/auth/domain/usecases/select_branch_usecase.dart';
 import 'package:payneat_pos/features/auth/presentation/controllers/auth_controller.dart';
 
 /// repository ปลอมที่นับจำนวนครั้งที่แต่ละเมธอดถูกเรียก
 /// ใช้ยืนยันว่า controller "ไม่เรียก" use case เมื่อควรจะหยุดตั้งแต่ต้น (เช่น ฟอร์มไม่ผ่าน)
 class _FakeAuthRepository implements AuthRepository {
   int loginCallCount = 0;
+  int selectBranchCallCount = 0;
+  int listMyBranchesCallCount = 0;
+
+  Result<List<Branch>>? listMyBranchesResultToReturn;
 
   @override
-  Future<Result<({String token, User user})>> login({
+  Future<Result<LoginResult>> login({
     required String username,
     required String password,
   }) async {
     loginCallCount++;
     return Result.failure(UnexpectedFailure('ไม่ได้ใช้งานในเทสต์นี้'));
+  }
+
+  @override
+  Future<Result<({String token, User user})>> selectBranch({
+    required String token,
+    required int? branchId,
+  }) async {
+    selectBranchCallCount++;
+    return Result.failure(UnexpectedFailure('ไม่ได้ใช้งานในเทสต์นี้'));
+  }
+
+  @override
+  Future<Result<List<Branch>>> listMyBranches() async {
+    listMyBranchesCallCount++;
+    return listMyBranchesResultToReturn ??
+        Result.failure(UnexpectedFailure('ไม่ได้ใช้งานในเทสต์นี้'));
   }
 
   @override
@@ -49,6 +73,8 @@ void main() {
     );
     controller = AuthController(
       loginUseCase: LoginUseCase(repository),
+      selectBranchUseCase: SelectBranchUseCase(repository),
+      getMyBranchesUseCase: GetMyBranchesUseCase(repository),
       getProfileUseCase: GetProfileUseCase(repository),
       logoutUseCase: LogoutUseCase(repository),
       repository: repository,
@@ -118,6 +144,48 @@ void main() {
         // เมธอดนี้ควร return ทันทีโดยไม่แตะ Get.offAllNamed (ซึ่งจะพังถ้าไม่มี GetMaterialApp)
         await controller.handleSessionExpired();
         // ไม่ throw ก็ถือว่าผ่าน — คือหลักฐานว่า guard clause ทำงานถูกจุด
+      },
+    );
+
+    // submitBranchSelection ทุก path ที่ไปถึง _selectBranch สำเร็จ/ล้มเหลว เรียก
+    // Get.offAllNamed/AppDialogs.error ตรงๆ ทั้งคู่ (ดู docs/CODING_STANDARDS.md หัวข้อ 6.2)
+    // จึงเทสต์ได้แค่ guard clause ต้นเมธอด
+    test('submitBranchSelection ไม่เรียก use case ถ้ายังไม่เคย submitLogin '
+        'แบบที่ต้องเลือกสาขา (ไม่มี pendingToken ค้างอยู่)', () async {
+      await controller.submitBranchSelection(1);
+
+      expect(repository.selectBranchCallCount, 0);
+      expect(controller.isSelectingBranch.value, isFalse);
+    });
+
+    // switchBranch เช่นกัน — success เรียก AppDialogs.success, failure เรียก
+    // AppDialogs.error ตรงๆ ทั้งคู่ เทสต์ได้แค่ guard clause ต้นเมธอด
+    test(
+      'switchBranch ไม่เรียก use case ถ้ายังไม่ได้ login (session ไม่มี token)',
+      () async {
+        await controller.switchBranch(2);
+
+        expect(repository.selectBranchCallCount, 0);
+        expect(controller.isSwitchingBranch.value, isFalse);
+      },
+    );
+
+    test(
+      'loadMyBranches สำเร็จ → เติม myBranches และปิด isLoadingMyBranches',
+      () async {
+        repository.listMyBranchesResultToReturn = Result.success(const [
+          Branch(id: 1, name: 'สาขาสุขุมวิท'),
+          Branch(id: 2, name: 'สาขาทองหล่อ'),
+        ]);
+
+        await controller.loadMyBranches();
+
+        expect(controller.myBranches.length, 2);
+        expect(controller.myBranches.map((b) => b.name), [
+          'สาขาสุขุมวิท',
+          'สาขาทองหล่อ',
+        ]);
+        expect(controller.isLoadingMyBranches.value, isFalse);
       },
     );
   });

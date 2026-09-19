@@ -19,6 +19,7 @@ servers:
   - url: http://localhost:3000/api/v1
 tags:
   - name: Auth
+  - name: Branches
   - name: Users
   - name: Categories
   - name: Menu
@@ -34,6 +35,7 @@ tags:
   - name: AuditLogs
   - name: Customers
   - name: AiAssistant
+  - name: PublicOrder
 
 components:
   securitySchemes:
@@ -65,6 +67,17 @@ components:
         name: { type: string, example: น้องฝน (พนักงานเสิร์ฟ) }
         username: { type: string, example: waiter1 }
         role: { type: string, enum: [admin, manager, waiter, cashier, kitchen] }
+        isActive: { type: boolean }
+        branchId: { type: integer, nullable: true, description: 'สาขาที่ token นี้ทำงานอยู่ — null เฉพาะ admin โหมด "ทุกสาขา" (ticket 11)' }
+        branchName: { type: string, nullable: true }
+    Branch:
+      type: object
+      description: สาขา (ดู ticket 11 — multi-branch)
+      properties:
+        id: { type: integer }
+        name: { type: string, example: สาขาสุขุมวิท }
+        code: { type: string, nullable: true, example: SUKHUMVIT }
+        address: { type: string, nullable: true }
         isActive: { type: boolean }
     Category:
       type: object
@@ -199,6 +212,13 @@ components:
         zone: { type: string, example: โซนในร้าน }
         seats: { type: integer }
         status: { type: string, enum: [available, occupied, reserved, billing] }
+        branchId: { type: integer, nullable: true, description: 'ticket 11 — multi-branch' }
+        qrToken:
+          type: string
+          format: uuid
+          description: >-
+            token สุ่มสำหรับ URL สั่งอาหารเอง (ticket 17) — เห็นได้ทุก role ที่เข้าถึงหน้าผังโต๊ะ
+            เปลี่ยนใหม่ได้ด้วย PATCH /tables/{id}/qr-token/regenerate
         currentOrder:
           nullable: true
           type: object
@@ -223,6 +243,25 @@ components:
         note: { type: string, nullable: true }
         status: { type: string, enum: [pending, cooking, ready, served, cancelled] }
         isPaid: { type: boolean, description: จ่ายไปแล้วในรอบแยกบิลรายการอาหารหรือยัง }
+    PublicOrderPreview:
+      type: object
+      description: >-
+        ticket 17 — เวอร์ชันตัดฟิลด์ของ Order ที่ไม่ต้องให้ลูกค้าเห็น (ชื่อ/เบอร์โทรลูกค้าที่ผูกไว้,
+        ชื่อพนักงานเสิร์ฟ) เหลือแค่รายการ/ยอดที่ลูกค้าต้องใช้ตรวจสอบออเดอร์ตัวเอง
+      properties:
+        id: { type: integer }
+        code: { type: string, example: ORD-20260907-0001 }
+        status: { type: string, enum: [open, in_kitchen, served] }
+        subtotal: { type: number }
+        discountAmount: { type: number }
+        promotionName: { type: string, nullable: true }
+        promotionDiscountAmount: { type: number }
+        serviceCharge: { type: number }
+        vat: { type: number }
+        total: { type: number }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/OrderItem' }
     Order:
       type: object
       properties:
@@ -342,6 +381,43 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ApiError' }
+      description: >-
+        ถ้า user มีสิทธิ์เข้ามากกว่า 1 สาขา (ดู ticket 11) จะได้ `needsBranchSelection: true`,
+        `pendingToken`, และ `branches` แทน `token`/`user` — ต้องเรียก POST /auth/select-branch
+        ด้วย pendingToken ก่อนถึงจะได้ token ที่ใช้งานได้จริง (admin เข้าสาขาแรกอัตโนมัติเสมอ
+        ไม่ต้องเลือก)
+  /auth/select-branch:
+    post:
+      tags: [Auth]
+      summary: เลือก/สลับสาขาที่จะทำงาน (ticket 11)
+      description: >-
+        รับได้ทั้ง pendingToken จาก login ครั้งแรก (มีหลายสาขา) และ token ปกติที่ login แล้ว
+        (สลับสาขาภายหลัง) — branchId เป็น null ได้เฉพาะ admin เท่านั้น (โหมด "ทุกสาขา" ดูรายงาน
+        รวมทุกสาขา)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [branchId]
+              properties:
+                branchId: { type: integer, nullable: true }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      token: { type: string }
+                      user: { $ref: '#/components/schemas/User' }
+        '403': { description: ไม่มีสิทธิ์เข้าถึงสาขานี้ (หรือไม่ใช่ admin แต่ขอโหมด "ทุกสาขา") }
   /auth/me:
     get:
       tags: [Auth]
@@ -352,6 +428,65 @@ paths:
     post:
       tags: [Auth]
       summary: เปลี่ยนรหัสผ่านของตัวเอง
+      responses:
+        '200': { description: สำเร็จ }
+
+  /branches:
+    get:
+      tags: [Branches]
+      summary: รายชื่อสาขาทั้งหมด (admin เท่านั้น — ดู ticket 11)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Branch' }
+    post:
+      tags: [Branches]
+      summary: สร้างสาขาใหม่ (admin เท่านั้น)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Branch' }
+      responses:
+        '201': { description: สร้างสำเร็จ }
+  /branches/mine:
+    get:
+      tags: [Branches]
+      summary: สาขาที่ผู้ใช้ปัจจุบันมีสิทธิ์เข้าถึง (ทุก role เรียกได้ — ใช้ตอนเลือก/สลับสาขา)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Branch' }
+  /branches/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Branches]
+      summary: รายละเอียดสาขา (admin เท่านั้น)
+      responses:
+        '200': { description: สำเร็จ }
+    patch:
+      tags: [Branches]
+      summary: แก้ไข/ปิดใช้งานสาขา (admin เท่านั้น) — ปิดแล้ว token ที่ผูกกับสาขานี้ใช้ต่อไม่ได้ทันที
       responses:
         '200': { description: สำเร็จ }
 
@@ -662,6 +797,28 @@ paths:
       summary: เปลี่ยนสถานะโต๊ะ (จอง/ว่าง/เรียกเก็บเงิน)
       responses:
         '200': { description: สำเร็จ }
+  /tables/{id}/qr-token/regenerate:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+    patch:
+      tags: [Tables]
+      summary: >-
+        เปลี่ยน QR ของโต๊ะ (admin/manager) — ticket 17. ใช้เมื่อ QR สติกเกอร์หลุดหาย/ถูกแชร์ออกไป
+        token เก่าใช้เรียก /public/tables/{qrToken} ต่อไม่ได้ทันที
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/Table' }
+        '403': { description: ไม่ใช่ admin/manager }
 
   /orders:
     get:
@@ -1152,6 +1309,96 @@ paths:
       summary: ยอดขายรายวัน
       responses:
         '200': { description: สำเร็จ }
+  /reports/export/summary:
+    get:
+      tags: [Reports]
+      summary: >-
+        export สรุปยอดขาย (ตามช่วงวันที่) เป็น CSV ให้ฝ่ายบัญชี (ดู
+        docs/tickets/12-report-export.md) — ตัวเลขเดียวกับ GET /reports/summary เป๊ะ ต่างกันแค่
+        format ที่ตอบกลับ (แถวแบบ รายการ,มูลค่า)
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV (UTF-8 พร้อม BOM ให้ Excel เปิดแล้วอักษรไทยไม่เพี้ยน)
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/export/top-items:
+    get:
+      tags: [Reports]
+      summary: export เมนูขายดี (ตามช่วงวันที่) เป็น CSV
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+        - { in: query, name: limit, schema: { type: integer, default: 10 } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/export/sales-by-day:
+    get:
+      tags: [Reports]
+      summary: export ยอดขายรายวัน (ตามช่วงวันที่) เป็น CSV
+      parameters:
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+  /reports/z-report/by-shift/{shiftId}:
+    get:
+      tags: [Reports]
+      summary: >-
+        Z-report ต่อกะ (ดู docs/tickets/12-report-export.md, docs/tickets/01-shift-cash-reconciliation.md)
+        — สรุปยอดขาย/ภาษี/ส่วนลด/ช่องทางชำระเงินเฉพาะออเดอร์ที่จ่ายจริงในกะนี้ (ผูกผ่าน
+        payments.shift_id ไม่ใช่วันที่เปิดออเดอร์) พร้อมกระทบยอดเงินสด (opening/expected/counted/variance)
+      parameters:
+        - { in: path, name: shiftId, required: true, schema: { type: integer } }
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบกะนี้ }
+  /reports/z-report/by-shift/{shiftId}/export:
+    get:
+      tags: [Reports]
+      summary: export Z-report ต่อกะเป็น CSV
+      parameters:
+        - { in: path, name: shiftId, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
+        '404': { description: ไม่พบกะนี้ }
+  /reports/z-report/by-date:
+    get:
+      tags: [Reports]
+      summary: >-
+        Z-report ต่อวัน (รวมทุกกะของวันนั้น) — ไม่มีส่วนกระทบยอดเงินสด เพราะอาจมีหลายกะ/หลาย
+        แคชเชียร์ปะปนกันในวันเดียว (กระทบยอดเงินสดทำได้เฉพาะระดับกะเดียวเท่านั้น ดู by-shift)
+      parameters:
+        - { in: query, name: date, schema: { type: string, format: date } }
+      responses:
+        '200': { description: สำเร็จ }
+  /reports/z-report/by-date/export:
+    get:
+      tags: [Reports]
+      summary: export Z-report ต่อวันเป็น CSV
+      parameters:
+        - { in: query, name: date, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: ไฟล์ CSV
+          content:
+            text/csv:
+              schema: { type: string }
 
   /settings:
     get:
@@ -1424,3 +1671,117 @@ paths:
         '422': { description: คำถามว่างหรือยาวเกินไป }
         '429': { description: ถามเกินโควตาต่อวันแล้ว }
         '503': { description: ยังไม่ได้ตั้งค่า ANTHROPIC_API_KEY }
+
+  /public/tables/{qrToken}:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [PublicOrder]
+      summary: >-
+        ลูกค้าสแกน QR ที่โต๊ะแล้วดูรายการที่สั่งไปแล้ว (ticket 17) — ไม่ต้อง login เลย
+        ไม่มี Authorization header
+      security: []
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      table:
+                        type: object
+                        properties:
+                          id: { type: integer }
+                          name: { type: string }
+                          zone: { type: string }
+                      branchName: { type: string, nullable: true }
+                      order:
+                        nullable: true
+                        allOf:
+                          - $ref: '#/components/schemas/PublicOrderPreview'
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+  /public/tables/{qrToken}/menu:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [PublicOrder]
+      summary: เมนูที่เปิดขายอยู่ของสาขาที่โต๊ะนี้สังกัด (ticket 17) — ไม่ต้อง login
+      security: []
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      categories:
+                        type: array
+                        items: { $ref: '#/components/schemas/Category' }
+                      items:
+                        type: array
+                        items: { $ref: '#/components/schemas/MenuItem' }
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+  /public/tables/{qrToken}/items:
+    parameters:
+      - in: path
+        name: qrToken
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [PublicOrder]
+      summary: >-
+        ลูกค้าสั่งอาหารเองผ่าน QR (ticket 17) — เปิดออเดอร์ใหม่ให้อัตโนมัติถ้าโต๊ะนี้ยังไม่มี
+        ออเดอร์เปิดอยู่ ใช้ตรรกะเดียวกับที่พนักงานสั่งทุกประการ (ตัดสต๊อก/ประเมินโปรโมชัน/แจ้งเตือน
+        เข้าจอครัวแบบเรียลไทม์) เพิ่มได้อย่างเดียว แก้ไข/ยกเลิก/จ่ายเงินต้องให้พนักงานทำแทน จำกัด
+        ไม่เกิน 30 ครั้งต่อโต๊ะทุก 5 นาที (429 ถ้าเกิน)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 20
+                  items:
+                    type: object
+                    required: [menuItemId, quantity]
+                    properties:
+                      menuItemId: { type: integer }
+                      quantity: { type: integer, minimum: 1, maximum: 99 }
+                      optionIds: { type: array, items: { type: integer } }
+                      note: { type: string, maxLength: 200 }
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/PublicOrderPreview' }
+        '404': { description: ไม่พบโต๊ะนี้ / โต๊ะหรือสาขาปิดใช้งานอยู่ }
+        '409': { description: เมนูปิดขายอยู่ / ตัวเลือกไม่ครบตามที่กำหนด }
+        '422': { description: ข้อมูลที่ส่งมาไม่ถูกต้อง }
+        '429': { description: ทำรายการถี่เกินไป }

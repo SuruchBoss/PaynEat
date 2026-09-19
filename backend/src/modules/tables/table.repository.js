@@ -1,9 +1,15 @@
+import { randomUUID } from 'node:crypto';
 import { getDb } from '../../db/index.js';
 
 export const tableRepository = {
-  findAll({ zone, status, activeOnly = true } = {}) {
+  findAll({ zone, status, activeOnly = true, branchId } = {}) {
     const clauses = [];
     const params = [];
+    // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    if (branchId) {
+      clauses.push('t.branch_id = ?');
+      params.push(branchId);
+    }
     if (activeOnly) clauses.push('t.is_active = 1');
     if (zone) {
       clauses.push('t.zone = ?');
@@ -52,11 +58,27 @@ export const tableRepository = {
       .map((row) => row.zone);
   },
 
-  create({ name, zone, seats }) {
+  create({ name, zone, seats, branchId }) {
     const info = getDb()
-      .prepare('INSERT INTO dining_tables (name, zone, seats) VALUES (?, ?, ?)')
-      .run(name, zone ?? 'main', seats ?? 4);
+      .prepare(
+        'INSERT INTO dining_tables (name, zone, seats, branch_id, qr_token) VALUES (?, ?, ?, ?, ?)',
+      )
+      .run(name, zone ?? 'main', seats ?? 4, branchId, randomUUID());
     return this.findById(info.lastInsertRowid);
+  },
+
+  findByQrToken(qrToken) {
+    return getDb().prepare('SELECT * FROM dining_tables WHERE qr_token = ?').get(qrToken);
+  },
+
+  // ใช้ตอน QR หลุด/รั่ว — token เก่าใช้ไม่ได้ทันทีเพราะ UNIQUE INDEX บังคับให้เปลี่ยนจริง
+  // (ดู docs/tickets/17-qr-self-order.md)
+  regenerateQrToken(id) {
+    const qrToken = randomUUID();
+    getDb()
+      .prepare("UPDATE dining_tables SET qr_token = ?, updated_at = datetime('now') WHERE id = ?")
+      .run(qrToken, id);
+    return this.findById(id);
   },
 
   update(id, { name, zone, seats, status, isActive }) {

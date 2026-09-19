@@ -1,4 +1,5 @@
 import { ApiError } from '../../core/ApiError.js';
+import { resolveBranchIdForWrite } from '../../core/branchScope.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { menuRepository } from '../menu/menu.repository.js';
@@ -61,8 +62,10 @@ const applyDeltaForOrderItem = (item, factor) => {
 };
 
 export const ingredientService = {
-  list(filters) {
-    return ingredientRepository.findAll(filters).map(toIngredientDto);
+  list(filters, currentBranchId) {
+    return ingredientRepository
+      .findAll({ ...filters, branchId: currentBranchId })
+      .map(toIngredientDto);
   },
 
   getById(id) {
@@ -71,8 +74,9 @@ export const ingredientService = {
     return toIngredientDto(ingredient);
   },
 
-  create(payload) {
-    return toIngredientDto(ingredientRepository.create(payload));
+  create(payload, currentBranchId) {
+    const branchId = resolveBranchIdForWrite(currentBranchId, payload.branchId);
+    return toIngredientDto(ingredientRepository.create({ ...payload, branchId }));
   },
 
   update(id, payload) {

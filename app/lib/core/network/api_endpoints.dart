@@ -6,6 +6,10 @@ class ApiEndpoints {
   static const String login = '/auth/login';
   static const String me = '/auth/me';
   static const String changePassword = '/auth/change-password';
+  static const String selectBranch = '/auth/select-branch';
+
+  // Branches (ดู docs/tickets/11-multi-branch.md)
+  static const String branchesMine = '/branches/mine';
 
   // Users
   static const String users = '/users';
@@ -32,6 +36,9 @@ class ApiEndpoints {
   static const String tableZones = '/tables/zones';
   static String table(int id) => '/tables/$id';
   static String tableStatus(int id) => '/tables/$id/status';
+  // ดู docs/tickets/17-qr-self-order.md
+  static String tableQrTokenRegenerate(int id) =>
+      '/tables/$id/qr-token/regenerate';
 
   // Orders
   static const String orders = '/orders';
@@ -71,6 +78,15 @@ class ApiEndpoints {
   static const String reportSummary = '/reports/summary';
   static const String topItems = '/reports/top-items';
   static const String salesByDay = '/reports/sales-by-day';
+  static const String exportSummary = '/reports/export/summary';
+  static const String exportTopItems = '/reports/export/top-items';
+  static const String exportSalesByDay = '/reports/export/sales-by-day';
+  static String zReportByShift(int shiftId) =>
+      '/reports/z-report/by-shift/$shiftId';
+  static String zReportByShiftExport(int shiftId) =>
+      '/reports/z-report/by-shift/$shiftId/export';
+  static const String zReportByDate = '/reports/z-report/by-date';
+  static const String zReportByDateExport = '/reports/z-report/by-date/export';
 
   // Settings
   static const String settings = '/settings';
@@ -95,4 +111,11 @@ class ApiEndpoints {
 
   // AI assistant
   static const String aiAssistantAsk = '/ai/ask';
+
+  // ลูกค้าสั่งอาหารเองผ่าน QR ที่โต๊ะ (ดู docs/tickets/17-qr-self-order.md) — ไม่ต้อง login
+  static String publicTable(String qrToken) => '/public/tables/$qrToken';
+  static String publicTableMenu(String qrToken) =>
+      '/public/tables/$qrToken/menu';
+  static String publicTableItems(String qrToken) =>
+      '/public/tables/$qrToken/items';
 }

@@ -19,6 +19,13 @@ class HourlyBarChart extends StatelessWidget {
   /// จำนวนชั่วโมงอย่างน้อยที่ต้องแสดง เพื่อไม่ให้กราฟแท่งเดียวดูแปลก
   static const int minimumSpan = 6;
 
+  /// พื้นที่ที่กันไว้ให้ตัวเลขกำกับหัวแท่ง (สูงคงที่ + ระยะห่างถึงหัวแท่ง)
+  ///
+  /// ต้องหักออกจากความสูงที่ใช้คำนวณแท่งเสมอ ไม่งั้นแท่งที่สูงสุดบวกกับตัวเลขกำกับจะล้นกรอบ
+  /// (เดิมกันไว้ 20px แบบเหมารวม ซึ่งไม่พอสำหรับความสูงบรรทัดของฟอนต์ไทย — ล้น 7px บนมือถือ)
+  static const double _labelSlot = 22;
+  static const double _labelGap = 3;
+
   /// หาช่วงเวลาที่จะแสดงจากข้อมูลจริง
   ///
   /// ถ้าตรึงช่วงไว้ตายตัว ร้านที่เปิดเช้ากว่าหรือปิดดึกกว่านั้นจะมองไม่เห็นยอดของตัวเองเลย
@@ -74,7 +81,9 @@ class HourlyBarChart extends StatelessWidget {
                       .map((hour) {
                         final total = byHour[hour]?.total ?? 0;
                         final ratio = maxTotal == 0 ? 0.0 : total / maxTotal;
-                        final barHeight = (constraints.maxHeight - 20) * ratio;
+                        final barHeight =
+                            (constraints.maxHeight - _labelSlot - _labelGap) *
+                            ratio;
 
                         return Expanded(
                           child: Tooltip(
@@ -87,14 +96,21 @@ class HourlyBarChart extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   if (total > 0)
-                                    Text(
-                                      Formatters.compact(total),
-                                      style: TextStyle(
-                                        fontSize: 8.5,
-                                        color: AppColors.textSecondary,
+                                    SizedBox(
+                                      height: _labelSlot,
+                                      // FittedBox กันตัวเลขยาว/ผู้ใช้ขยายขนาดตัวอักษรดันจนล้น
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          Formatters.compact(total),
+                                          style: TextStyle(
+                                            fontSize: 8.5,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  const SizedBox(height: 3),
+                                  const SizedBox(height: _labelGap),
                                   AnimatedContainer(
                                     duration: const Duration(milliseconds: 350),
                                     curve: Curves.easeOutCubic,

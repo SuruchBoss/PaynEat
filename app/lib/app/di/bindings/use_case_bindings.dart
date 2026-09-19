@@ -8,9 +8,11 @@ import '../../../features/audit_log/domain/repositories/audit_log_repository.dar
 import '../../../features/audit_log/domain/usecases/audit_log_usecases.dart';
 import '../../../features/auth/domain/repositories/auth_repository.dart';
 import '../../../features/auth/domain/usecases/change_password_usecase.dart';
+import '../../../features/auth/domain/usecases/get_my_branches_usecase.dart';
 import '../../../features/auth/domain/usecases/get_profile_usecase.dart';
 import '../../../features/auth/domain/usecases/login_usecase.dart';
 import '../../../features/auth/domain/usecases/logout_usecase.dart';
+import '../../../features/auth/domain/usecases/select_branch_usecase.dart';
 import '../../../features/customer/domain/repositories/customer_repository.dart';
 import '../../../features/customer/domain/usecases/customer_usecases.dart';
 import '../../../features/ingredient/domain/repositories/ingredient_repository.dart';
@@ -25,6 +27,10 @@ import '../../../features/promotion/domain/repositories/promotion_repository.dar
 import '../../../features/promotion/domain/usecases/promotion_usecases.dart';
 import '../../../features/report/domain/repositories/report_repository.dart';
 import '../../../features/report/domain/usecases/report_usecases.dart';
+import '../../../features/self_order/domain/repositories/self_order_repository.dart';
+import '../../../features/self_order/domain/usecases/add_self_order_items_usecase.dart';
+import '../../../features/self_order/domain/usecases/get_self_order_menu_usecase.dart';
+import '../../../features/self_order/domain/usecases/get_self_order_table_usecase.dart';
 import '../../../features/settings/domain/repositories/settings_repository.dart';
 import '../../../features/settings/domain/usecases/settings_usecases.dart';
 import '../../../features/shift/domain/repositories/shift_repository.dart';
@@ -41,6 +47,14 @@ import '../../../features/tax_invoice/domain/usecases/tax_invoice_usecases.dart'
 void bindUseCases() {
   // auth
   Get.lazyPut(() => LoginUseCase(Get.find<AuthRepository>()), fenix: true);
+  Get.lazyPut(
+    () => SelectBranchUseCase(Get.find<AuthRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetMyBranchesUseCase(Get.find<AuthRepository>()),
+    fenix: true,
+  );
   Get.lazyPut(() => GetProfileUseCase(Get.find<AuthRepository>()), fenix: true);
   Get.lazyPut(() => LogoutUseCase(Get.find<AuthRepository>()), fenix: true);
   Get.lazyPut(
@@ -112,6 +126,10 @@ void bindUseCases() {
     fenix: true,
   );
   Get.lazyPut(() => GetZonesUseCase(Get.find<TableRepository>()), fenix: true);
+  Get.lazyPut(
+    () => RegenerateTableQrTokenUseCase(Get.find<TableRepository>()),
+    fenix: true,
+  );
 
   // order
   Get.lazyPut(() => GetOrdersUseCase(Get.find<OrderRepository>()), fenix: true);
@@ -271,19 +289,6 @@ void bindUseCases() {
     () => GetShiftHistoryUseCase(Get.find<ShiftRepository>()),
     fenix: true,
   );
-  // lazyPut (ไม่ eager) เพราะ onInit ของ controller นี้ยิง API ทันที
-  // ถ้าสร้างตอนแอปเริ่ม (ก่อนล็อกอิน) จะโดน 401 และอาจไปเข้าเงื่อนไข session
-  // หมดอายุใน ApiClient ทั้งที่ผู้ใช้ยังไม่เคยล็อกอินเลย — ต้องรอให้มีคนเรียกใช้จริง
-  // (เปิดแท็บ "กะ" หรือเข้าหน้าเก็บเงิน ซึ่งเกิดหลังล็อกอินเสมอ) ก่อนจะสร้าง
-  Get.lazyPut(
-    () => ShiftController(
-      getCurrent: Get.find<GetCurrentShiftUseCase>(),
-      openShift: Get.find<OpenShiftUseCase>(),
-      closeShift: Get.find<CloseShiftUseCase>(),
-      getHistory: Get.find<GetShiftHistoryUseCase>(),
-    ),
-    fenix: true,
-  );
 
   // report
   Get.lazyPut(
@@ -300,6 +305,50 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => GetSalesByDayUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportSummaryCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportTopItemsCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportSalesByDayCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetZReportByShiftUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetZReportByDateUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportZReportByShiftCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => ExportZReportByDateCsvUseCase(Get.find<ReportRepository>()),
+    fenix: true,
+  );
+
+  // lazyPut (ไม่ eager) เพราะ onInit ของ controller นี้ยิง API ทันที
+  // ถ้าสร้างตอนแอปเริ่ม (ก่อนล็อกอิน) จะโดน 401 และอาจไปเข้าเงื่อนไข session
+  // หมดอายุใน ApiClient ทั้งที่ผู้ใช้ยังไม่เคยล็อกอินเลย — ต้องรอให้มีคนเรียกใช้จริง
+  // (เปิดแท็บ "กะ" หรือเข้าหน้าเก็บเงิน ซึ่งเกิดหลังล็อกอินเสมอ) ก่อนจะสร้าง
+  Get.lazyPut(
+    () => ShiftController(
+      getCurrent: Get.find<GetCurrentShiftUseCase>(),
+      openShift: Get.find<OpenShiftUseCase>(),
+      closeShift: Get.find<CloseShiftUseCase>(),
+      getHistory: Get.find<GetShiftHistoryUseCase>(),
+      getZReportByShift: Get.find<GetZReportByShiftUseCase>(),
+      exportZReportByShiftCsv: Get.find<ExportZReportByShiftCsvUseCase>(),
+    ),
     fenix: true,
   );
 
@@ -343,6 +392,20 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => DeletePromotionUseCase(Get.find<PromotionRepository>()),
+    fenix: true,
+  );
+
+  // self order (ดู docs/tickets/17-qr-self-order.md)
+  Get.lazyPut(
+    () => GetSelfOrderTableUseCase(Get.find<SelfOrderRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetSelfOrderMenuUseCase(Get.find<SelfOrderRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => AddSelfOrderItemsUseCase(Get.find<SelfOrderRepository>()),
     fenix: true,
   );
 }

@@ -10,6 +10,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/dining_table.dart';
 import '../controllers/table_controller.dart';
 import '../widgets/table_card.dart';
+import '../widgets/table_qr_view.dart';
 
 /// ผังโต๊ะ — หน้าจอหลักของพนักงานเสิร์ฟ
 class TablesPage extends GetView<TableController> {
@@ -198,6 +199,15 @@ class _TableGrid extends StatelessWidget {
                 ),
               ),
               const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.qr_code_2_rounded),
+                title: Text('table_qr_action_label'.tr),
+                onTap: () {
+                  Get.back<void>();
+                  _showQrSheet(context, table);
+                },
+              ),
+              const Divider(height: 1),
               for (final status in TableStatus.all)
                 ListTile(
                   leading: Icon(
@@ -220,6 +230,22 @@ class _TableGrid extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  void _showQrSheet(BuildContext context, DiningTable table) {
+    Get.bottomSheet<void>(
+      SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: TableQrView(table: table),
+        ),
+      ),
+      isScrollControlled: true,
     );
   }
 }

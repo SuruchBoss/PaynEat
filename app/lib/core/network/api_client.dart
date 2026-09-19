@@ -24,9 +24,13 @@ class ApiClient {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
-          final token = tokenProvider?.call();
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
+          // header ที่ระบุมาตรงๆ ต่อ request (เช่น pendingToken ตอนเลือกสาขาครั้งแรก ดู
+          // features/auth) มาก่อนเสมอ ไม่ให้ tokenProvider (token ของ session ปัจจุบัน) ทับ
+          if (!options.headers.containsKey('Authorization')) {
+            final token = tokenProvider?.call();
+            if (token != null && token.isNotEmpty) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
           }
           return handler.next(options);
         },
@@ -51,8 +55,17 @@ class ApiClient {
   Future<ApiResult> get(String path, {Map<String, dynamic>? query}) =>
       _request(() => _dio.get(path, queryParameters: _clean(query)));
 
-  Future<ApiResult> post(String path, {Object? body}) =>
-      _request(() => _dio.post(path, data: body));
+  Future<ApiResult> post(
+    String path, {
+    Object? body,
+    Map<String, String>? headers,
+  }) => _request(
+    () => _dio.post(
+      path,
+      data: body,
+      options: headers == null ? null : Options(headers: headers),
+    ),
+  );
 
   Future<ApiResult> patch(String path, {Object? body}) =>
       _request(() => _dio.patch(path, data: body));

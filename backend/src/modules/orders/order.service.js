@@ -1,4 +1,5 @@
 import { ApiError } from '../../core/ApiError.js';
+import { resolveBranchIdForWrite } from '../../core/branchScope.js';
 import { toSatang, toBaht } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { emit, EVENTS, ROOMS } from '../../realtime/socket.js';
@@ -161,8 +162,8 @@ const loadOrder = (id) => {
 const buildDto = (orderRow) => toOrderDto(orderRow, orderRepository.findItems(orderRow.id));
 
 export const orderService = {
-  list(filters) {
-    const query = { ...filters };
+  list(filters, currentBranchId) {
+    const query = { ...filters, branchId: currentBranchId };
     if (query.activeOnly) {
       query.statuses = ['open', 'in_kitchen', 'served'];
       delete query.activeOnly;
@@ -186,7 +187,8 @@ export const orderService = {
     return order ? buildDto(order) : null;
   },
 
-  create(payload, user) {
+  create(payload, user, currentBranchId) {
+    const branchId = resolveBranchIdForWrite(currentBranchId, payload.branchId);
     if (payload.tableId) {
       const table = tableRepository.findById(payload.tableId);
       if (!table) throw ApiError.badRequest('ไม่พบโต๊ะที่ระบุ');
@@ -213,6 +215,7 @@ export const orderService = {
         // เลขคิวรับอาหารเฉพาะ takeaway (ดู docs/tickets/10-takeaway-delivery-flow.md) — delivery
         // ไม่มีคนมายืนรอคิวหน้าร้าน ไรเดอร์อ้างอิงจาก code แทน
         queueNumber: payload.type === 'takeaway' ? orderRepository.nextQueueNumber() : null,
+        branchId,
       });
       for (const item of itemRows) orderRepository.addItem(order.id, item);
       if (payload.tableId) tableRepository.setStatus(payload.tableId, 'occupied');

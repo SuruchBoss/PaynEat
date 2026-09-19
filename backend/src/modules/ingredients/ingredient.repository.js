@@ -1,9 +1,19 @@
 import { getDb } from '../../db/index.js';
 
 export const ingredientRepository = {
-  findAll({ lowStockOnly } = {}) {
-    const where = lowStockOnly ? 'WHERE current_stock <= low_stock_threshold' : '';
-    return getDb().prepare(`SELECT * FROM ingredients ${where} ORDER BY name`).all();
+  findAll({ lowStockOnly, branchId } = {}) {
+    const clauses = [];
+    const params = [];
+    // branchId เป็น null/undefined เฉพาะ admin โหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36)
+    if (branchId) {
+      clauses.push('branch_id = ?');
+      params.push(branchId);
+    }
+    if (lowStockOnly) clauses.push('current_stock <= low_stock_threshold');
+    const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+    return getDb()
+      .prepare(`SELECT * FROM ingredients ${where} ORDER BY name`)
+      .all(...params);
   },
 
   findById(id) {
@@ -31,12 +41,12 @@ export const ingredientRepository = {
       .get(ingredientId).c;
   },
 
-  create({ name, unit, currentStock, lowStockThreshold }) {
+  create({ name, unit, currentStock, lowStockThreshold, branchId }) {
     const info = getDb()
       .prepare(
-        'INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold) VALUES (?, ?, ?, ?)',
+        'INSERT INTO ingredients (name, unit, current_stock, low_stock_threshold, branch_id) VALUES (?, ?, ?, ?, ?)',
       )
-      .run(name, unit, currentStock ?? 0, lowStockThreshold ?? 0);
+      .run(name, unit, currentStock ?? 0, lowStockThreshold ?? 0, branchId);
     return this.findById(info.lastInsertRowid);
   },
 

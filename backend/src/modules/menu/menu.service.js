@@ -1,4 +1,5 @@
 import { ApiError } from '../../core/ApiError.js';
+import { resolveBranchIdForWrite } from '../../core/branchScope.js';
 import { toSatang } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
@@ -55,8 +56,8 @@ const saveOptionGroups = (menuItemId, optionGroups) => {
 };
 
 export const menuService = {
-  list(filters) {
-    const { items, total } = menuRepository.findAll(filters);
+  list(filters, currentBranchId) {
+    const { items, total } = menuRepository.findAll({ ...filters, branchId: currentBranchId });
     const groupsByItem = menuRepository.findOptionGroupsForItems(items.map((item) => item.id));
     const ingredientsByItem = menuRepository.findIngredientLinksForItems(
       items.map((item) => item.id),
@@ -79,14 +80,16 @@ export const menuService = {
     );
   },
 
-  create(payload) {
+  create(payload, currentBranchId) {
     assertCategoryExists(payload.categoryId);
     assertIngredientsExist(payload.ingredients);
+    const branchId = resolveBranchIdForWrite(currentBranchId, payload.branchId);
     const run = getDb().transaction(() => {
       const created = menuRepository.create({
         ...payload,
         price: toSatang(payload.price),
         imageUrl: payload.imageUrl || null,
+        branchId,
       });
       if (payload.optionGroups?.length) {
         saveOptionGroups(created.id, payload.optionGroups);

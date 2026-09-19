@@ -40,6 +40,9 @@ export const createMenuItemSchema = z.object({
   sortOrder: z.number().int().min(0).optional(),
   optionGroups: z.array(optionGroupSchema).optional(),
   ingredients: ingredientLinksSchema,
+  // ใช้เฉพาะตอนผู้สร้างเป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36) — คนอื่นถูกกำหนด
+  // สาขาให้อัตโนมัติจาก req.branchId เสมอ
+  branchId: z.number().int().positive().optional(),
 });
 
 export const updateMenuItemSchema = createMenuItemSchema.partial();

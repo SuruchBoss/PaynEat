@@ -5,11 +5,15 @@ import '../../../../app/routes/app_routes.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../domain/entities/branch.dart';
+import '../../domain/entities/login_result.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/usecases/get_my_branches_usecase.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
+import '../../domain/usecases/select_branch_usecase.dart';
 
 /// ควบคุมการเข้าสู่ระบบและอายุของเซสชัน
 ///
@@ -17,17 +21,23 @@ import '../../domain/usecases/logout_usecase.dart';
 class AuthController extends GetxController {
   AuthController({
     required LoginUseCase loginUseCase,
+    required SelectBranchUseCase selectBranchUseCase,
+    required GetMyBranchesUseCase getMyBranchesUseCase,
     required GetProfileUseCase getProfileUseCase,
     required LogoutUseCase logoutUseCase,
     required AuthRepository repository,
     required SessionService session,
   }) : _login = loginUseCase,
+       _selectBranch = selectBranchUseCase,
+       _getMyBranches = getMyBranchesUseCase,
        _getProfile = getProfileUseCase,
        _logout = logoutUseCase,
        _repository = repository,
        _session = session;
 
   final LoginUseCase _login;
+  final SelectBranchUseCase _selectBranch;
+  final GetMyBranchesUseCase _getMyBranches;
   final GetProfileUseCase _getProfile;
   final LogoutUseCase _logout;
   final AuthRepository _repository;
@@ -40,6 +50,17 @@ class AuthController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxBool obscurePassword = true.obs;
   final RxnString errorMessage = RxnString();
+
+  // เลือกสาขาตอน login ครั้งแรก (ดู docs/tickets/11-multi-branch.md) — pendingToken ไม่เก็บลง
+  // storage เลย อยู่แค่ในหน่วยความจำระหว่างขั้นตอนนี้เท่านั้น
+  final RxList<Branch> pendingBranches = <Branch>[].obs;
+  final RxBool isSelectingBranch = false.obs;
+  String? _pendingToken;
+
+  // สลับสาขาภายหลังตอน login แล้ว (เช่นจากหน้าบัญชี)
+  final RxList<Branch> myBranches = <Branch>[].obs;
+  final RxBool isLoadingMyBranches = false.obs;
+  final RxBool isSwitchingBranch = false.obs;
 
   User? get currentUser => _session.currentUser;
 
@@ -104,12 +125,79 @@ class AuthController extends GetxController {
     isLoading.value = false;
 
     result.fold(
-      onSuccess: (data) {
-        _session.start(user: data.user, token: data.token);
-        passwordController.clear();
-        Get.offAllNamed<void>(AppRoutes.home);
+      onSuccess: (loginResult) {
+        switch (loginResult) {
+          case LoginSuccess(:final token, :final user):
+            passwordController.clear();
+            _session.start(user: user, token: token);
+            Get.offAllNamed<void>(AppRoutes.home);
+          case LoginNeedsBranchSelection(:final pendingToken, :final branches):
+            _pendingToken = pendingToken;
+            pendingBranches.assignAll(branches);
+            Get.toNamed<void>(AppRoutes.branchSelection);
+        }
       },
       onFailure: (failure) => errorMessage.value = failure.message,
+    );
+  }
+
+  /// ยืนยันสาขาที่เลือกตอน login ครั้งแรก (หน้า [AppRoutes.branchSelection])
+  Future<void> submitBranchSelection(int branchId) async {
+    final token = _pendingToken;
+    if (token == null) return;
+
+    isSelectingBranch.value = true;
+    final result = await _selectBranch(
+      SelectBranchParams(token: token, branchId: branchId),
+    );
+    isSelectingBranch.value = false;
+
+    result.fold(
+      onSuccess: (data) {
+        _pendingToken = null;
+        pendingBranches.clear();
+        passwordController.clear();
+        _session.start(user: data.user, token: data.token);
+        Get.offAllNamed<void>(AppRoutes.home);
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
+  }
+
+  /// โหลดสาขาที่สลับได้ (หน้าบัญชี) — เรียกใหม่ทุกครั้งที่เปิด picker เพราะสิทธิ์อาจเปลี่ยนได้
+  Future<void> loadMyBranches() async {
+    isLoadingMyBranches.value = true;
+    final result = await _getMyBranches();
+    isLoadingMyBranches.value = false;
+
+    result.fold(
+      onSuccess: myBranches.assignAll,
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
+  }
+
+  /// สลับสาขาตอน login อยู่แล้ว (ต่างจาก [submitBranchSelection] ตรงใช้ token ของ session
+  /// ปัจจุบัน ไม่ใช่ pendingToken) — branchId เป็น null ได้เฉพาะ admin (โหมด "ทุกสาขา")
+  Future<void> switchBranch(int? branchId) async {
+    final token = _session.token;
+    if (token == null) return;
+
+    isSwitchingBranch.value = true;
+    final result = await _selectBranch(
+      SelectBranchParams(token: token, branchId: branchId),
+    );
+    isSwitchingBranch.value = false;
+
+    result.fold(
+      onSuccess: (data) {
+        _session.start(user: data.user, token: data.token);
+        AppDialogs.success(
+          'branch_switch_success'.trParams({
+            'branch': data.user.branchName ?? 'branch_all_branches'.tr,
+          }),
+        );
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
     );
   }
 

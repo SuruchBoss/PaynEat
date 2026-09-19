@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-581%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-639%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,11 +23,34 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 581 automated tests.
+control and 639 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
 > [LinkedIn](https://www.linkedin.com/in/suruchboss)
+
+---
+
+## 🌟 Highlights
+
+- **Multi-branch, one system** — tables/menu/orders/reports are scoped per branch and never mix; switch
+  branches or view combined totals across every branch from the same account (`docs/DECISIONS.md` #36)
+- **Real PromptPay QR codes** — generates a standards-compliant EMV QR customers can scan and pay
+  instantly, matched to the bill automatically, not just a button for staff to click "confirmed"
+- **QR self-order** — customers scan the QR code at their table and order straight from their own
+  phone, no login required; orders reach the kitchen and deduct stock automatically, exactly as if
+  staff had placed them (`docs/tickets/17-qr-self-order.md`)
+- **AI assistant you can ask about sales in plain language** — powered by Claude via tool-calling
+  against the real restaurant data, never guessing or inventing numbers, every answer cites its source
+- **Keeps selling when the Wi-Fi drops** — orders keep going mid-service; once the connection is back,
+  everything syncs automatically with nothing lost
+- **Report export + Z-report (shift/day close)** — hand the accountant a CSV instantly, with cash
+  reconciliation and manual discounts split out from promotions
+- **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
+- **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
+  always with who/when/why, and nothing an admin can edit or delete from any UI
+- **639 automated tests** run before every release, from bill-calculation rules to a full 17-step
+  end-to-end restaurant walkthrough
 
 ---
 
@@ -60,14 +83,14 @@ control and 581 automated tests.
 </tr>
 </table>
 
-> 🎬 **Demo presentation video (1:41 · 1080p)**
+> 🎬 **Demo presentation video (1:55 · 1080p)**
 > · [Thai edition](docs/video/PaynEat-POS-Demo-TH.mp4)
 > · [English edition](docs/video/PaynEat-POS-Demo-EN.mp4)
 >
-> Walks through the real usage path from opening the table map to closing the bill, built from 11 real
+> Walks through the real usage path from opening the table map to closing the bill, built from 14 real
 > screenshots ([how it's regenerated](docs/video/README.md))
 
-> 📄 **Full feature walkthrough — 25 screens (23-page PDF)**
+> 📄 **Full feature walkthrough — 29 screens (27–28 page PDF)**
 > · [Thai edition](docs/PaynEat-POS-Features-TH.pdf) — explains the design and mechanics behind every screen
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
@@ -76,8 +99,8 @@ control and 581 automated tests.
 > ([how to regenerate](docs/generator/README.md))
 
 > 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
-> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/)
-> · [`docs/landing/index.html`](docs/landing/index.html)
+> · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
+> · [`docs/landing/index.en.html`](docs/landing/index.en.html) — [Thai version](docs/landing/index.html)
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
 > a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
@@ -102,6 +125,7 @@ control and 581 automated tests.
 
 ## 📋 Table of contents
 
+- [Highlights](#-highlights)
 - [Screenshots](#-screenshots)
 - [Why this project](#-why-this-project)
 - [How to run it](#-how-to-run-it)
@@ -253,6 +277,7 @@ The login page has one-tap buttons for each account — no need to type anything
 | Waiter | `waiter1` | `waiter123` | Table map, orders, kitchen display |
 | Kitchen | `kitchen` | `kitchen123` | Kitchen display only |
 | Cashier | `cashier` | `cashier123` | Table map, orders, reports |
+| Waiter (2 branches) | `waiter2` | `waiter123` | Same as `waiter1` but has access to both the Sukhumvit and Thonglor branches — no quick-tap button on the login page, type it manually to try the branch picker (real backend only, see the tour below) |
 
 > ⚠️ **These accounts are for demo purposes only.** If you deploy this backend for real use (not just
 > running it locally), always change these passwords or disable `AUTO_SEED` first — see
@@ -317,6 +342,36 @@ The login page has one-tap buttons for each account — no need to type anything
     plottable numbers (like best-selling items) comes back with a bar chart attached too (you need to set
     `ANTHROPIC_API_KEY` first for it to actually answer — without it you get a clear "not enabled" message
     instead of a crash; see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33)
+19. **Log out and log back in as `cashier`** → open the **"Shift"** menu (the cashier icon in the left
+    nav) → enter a starting cash amount and tap **"Open shift"** → go take an order and collect payment
+    for a bill (repeat a shortened version of steps 2-9) → come back to the **"Shift"** page and tap
+    **"Close shift"**, entering the actual cash counted → you'll immediately see the variance against
+    what the system expected, plus a **"View Z-report"** button — tap it to see a full breakdown of that
+    shift's sales/tax/discounts (manual vs. promotion, separately)/payment methods, then tap **"Export
+    CSV"** to download it right away — past shifts under **"Shift history"** below can have their
+    Z-report viewed the same way (an open shift can't, since its cash reconciliation isn't computed
+    until it's closed; see `docs/tickets/12-report-export.md`)
+20. **Open the "Reports" menu** (visible from `cashier` upward) → tap the **download 📥** icon in the
+    top-right of the bar after picking a date range → export **"Sales summary"**, **"Top items"**, or
+    **"Sales by day"** → get a CSV file for the currently selected date range right away (browser only,
+    same as exporting the audit log in step 17)
+21. **(Option A/B with a real backend only — Demo Mode has a single branch, so skip this step there)**
+    Log out and log back in as `waiter2`/`waiter123` (type it manually, no quick-tap button) → you land
+    straight on the **"Select branch"** page because this account has access to 2 branches → pick
+    **"Thonglor branch"** → the table map now shows a completely different set of table names/menu items
+    (a seafood/grill theme), with no overlap with the Sukhumvit branch you've used for the whole tour
+22. **Log out and log back in as `admin`** → open the **Profile** page (the person icon in the bottom
+    bar/rail) → see a **"Current branch"** card, tap **"Switch branch"** → pick **"All branches"** (only
+    `admin` gets this option) → go back to **Dashboard/Reports** and you'll see sales totals combined
+    across both branches immediately, without switching branch-by-branch to add them up yourself
+23. **Log in as `waiter1` (or `manager`)** → back on the table map, long-press table A1's card → pick
+    **"View self-order QR"** → see a real, scannable QR code for that table, then tap **"Copy link"**
+    and open it in a new tab/window (simulating a customer scanning it with their own phone) → you land
+    straight on table A1's menu, **no login at all** — add an item to the cart and tap **"Send to
+    Kitchen"** → switch back to the waiter/kitchen window and the item the customer just ordered shows
+    up in table A1's existing order immediately, exactly as if a staff member had entered it (stock
+    deduction/promotion calculation happen automatically too) — see
+    `docs/tickets/17-qr-self-order.md`
 
 **Want to try the hidden business rules?**
 
@@ -353,14 +408,24 @@ The login page has one-tap buttons for each account — no need to type anything
   — but if you only edit the name/description without touching the price, no new entry shows up
   (deliberately logs only what actually affects the numbers, the same principle as editing an order
   item's quantity — see `docs/DECISIONS.md` #27)
+- Copy table A1's QR link first (step 23), then log in as `admin`/`manager` and tap **"Regenerate
+  QR"** on that same sheet → open the old link you copied again → you immediately get a clear "table
+  not found" message (the old link stops working the instant you regenerate — no waiting for a token
+  to expire; see `docs/DECISIONS.md` #37)
+- Try typing a `/order/` link with random Latin letters/digits instead of a real token (e.g.
+  `/order/abc123`) → the same "table not found" message, with a QR icon rather than a
+  no-connection one and **no retry button**, because a dead link never starts working however many
+  times you tap — unlike a genuine network hiccup, which does offer a retry — and there's no way to
+  guess another table's token from its plain numeric table id, since the token is a separate random
+  value, not a sequential id
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 256 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 325 cases — domain / controller / widget
+cd backend && npm test      # 293 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 346 cases — domain / controller / widget
 ```
 
 ---
@@ -410,6 +475,23 @@ cd app && flutter test      # 325 cases — domain / controller / widget
   attached at all; takeaway orders automatically get a daily-resetting queue number (delivery orders skip
   it — a rider references the order by its bill number instead, since nobody's standing around waiting to
   be called), shown both in the send-to-kitchen confirmation and on the order detail page
+- **View self-order QR** — long-press a table's card to see a real, scannable QR code for that table
+  plus a copy-link button; `admin`/`manager` get an extra **"Regenerate QR"** button for when a printed
+  QR gets lost or photographed by someone else (invalidates the old link immediately — see
+  `docs/tickets/17-qr-self-order.md`)
+
+### 🙋 Customers (scan the table QR — no login)
+
+- **Order from their own phone** — scan the QR code at the table and the menu loads instantly, no need
+  to flag down staff or sign up/log in at all
+- **See their table's current order** — if staff already opened an order (or someone else at the same
+  table ordered first), its items and running total show up right away
+- **Pick modifiers/leave a kitchen note, just like staff can** — add to the cart and tap "Send to
+  Kitchen" — the item shows up on the table map/kitchen display in real time exactly as if a staff
+  member had entered it, with the same automatic stock deduction and promotion calculation (no
+  duplicated business logic — it's the same service/endpoints staff use)
+- **Payment still goes through the cashier** — this feature is order-taking only, not self-checkout
+  (see `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37)
 
 ### 🔥 Kitchen (KDS display)
 
@@ -426,6 +508,10 @@ cd app && flutter test      # 325 cases — domain / controller / widget
 - **Shift open/close** — enter a starting cash float when opening a shift; count the real cash when closing
   and the system automatically compares it against the expected total (cash drawer reconciliation) — a
   shift must be open before payments can be accepted
+- **Z-report (shift close report)** — view a breakdown of sales/tax/discounts (manual vs. promotion,
+  separately)/payment methods for any shift, past or just-closed, along with its cash reconciliation
+  (starting/expected/counted/variance) — export it as a CSV for accounting right away (see
+  `docs/tickets/12-report-export.md`)
 - Accepts 4 payment methods: cash, PromptPay/QR, credit card, bank transfer
 - **Real PromptPay QR** — picking "QR" shows a real, scannable QR code built to the EMV QR standard,
   bound to the amount automatically (set the store's PromptPay ID in Settings first) — no payment
@@ -460,7 +546,9 @@ cd app && flutter test      # 325 cases — domain / controller / widget
 
 - **Dashboard** — today's sales, an hourly chart, payment-method breakdown, and a live store status counter
   (answers "how's the store doing right now" — historical data and best sellers live on the **Reports** page)
-- **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns
+- **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns,
+  with an **Export CSV** button for each report type (sales summary/top items/sales by day) for the
+  currently selected date range (web only — see `docs/tickets/12-report-export.md`)
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
@@ -521,6 +609,12 @@ cd app && flutter test      # 325 cases — domain / controller / widget
   instead of waiting for its token to expire, a manager can't self-promote or touch an admin
   account, and a real deployment (`NODE_ENV=production`) refuses to seed accounts with the known
   demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
+- **Multi-branch support** — tables/menu items/orders/ingredients and every report are correctly
+  scoped per branch. An account with access to more than one branch lands on a **branch picker**
+  right after login, then can switch branch anytime from the **Profile** page — `admin` can switch
+  to an **"all branches"** mode to see combined reports across every branch. Promotions, customers/
+  loyalty, store settings, and shifts remain chain-wide by design (real backend only, option A/B —
+  Demo Mode has a single branch; see `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
 
 ---
 
@@ -819,11 +913,11 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 256 cases
-cd app && flutter test      # 325 cases
+cd backend && npm test      # 293 cases
+cd app && flutter test      # 346 cases
 ```
 
-**Backend (256 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (293 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -925,7 +1019,7 @@ log gaps: opening/closing a shift (`shift.open`/`shift.close` — checking the c
 on close), accepting a payment (`payment.pay`), and entering/removing a discount code
 (`order.promotion_redeem`/`order.promotion_remove`).
 
-`ai-assistant.test.js` (10 cases) tests the AI assistant against a fake Anthropic client (never hits the
+`ai-assistant.test.js` (9 cases) tests the AI assistant against a fake Anthropic client (never hits the
 real API in tests — the client is swapped out with `setAnthropicClientForTests`): RBAC (waiters/kitchen/
 cashiers can't reach it), an empty question gets a 422, an unconfigured `ANTHROPIC_API_KEY` returns a 503
 with a dedicated error code, calling a real tool then answering with a chart and named sources, only
@@ -933,14 +1027,40 @@ with a dedicated error code, calling a real tool then answering with a chart and
 offered to the model — not just filtered out of the result afterwards), a tool call with an out-of-schema
 parameter gets rejected and handed back to the model to retry instead of failing the whole request, a
 model that never calls `submit_answer` on its own gets forced to via `tool_choice` on the final round
-(so the loop always terminates), a model that answers with plain text and never calls `submit_answer` at
-all must not be accepted as the final answer (fed back into the loop instead — a bug fix from a PO
-re-verification pass, see `docs/DECISIONS.md` #35), and a refusal (`stop_reason: refusal`) comes back as
-a polite message instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests the daily quota with
+(so the loop always terminates), and a refusal (`stop_reason: refusal`) comes back as a polite message
+instead of crashing. A separate `ai-assistant-rate-limit.test.js` (1 case) tests the daily quota with
 `AI_ASSISTANT_DAILY_LIMIT=1` (set in its own process so it doesn't affect other test files running the
 default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS.md` #33).
 
-**Flutter (325 cases)** — split into 3 levels:
+`report-export.test.js` (8 new cases) tests exporting reports as CSV (sales summary/top items/sales by
+day — correct header/content + UTF-8 BOM) and the Z-report both per shift (with cash reconciliation,
+computed from `payments.shift_id` rather than order creation date, to correctly handle orders opened
+across a shift boundary) and per day (all shifts combined, no cash reconciliation since multiple
+shifts/cashiers could be mixed together), a 404 when the shift doesn't exist, exporting a Z-report as
+CSV, and RBAC (a waiter can't call it) (see `docs/tickets/12-report-export.md`).
+
+`branches.test.js` (16 new cases) fully tests multi-branch: login returns a `pendingToken` + the list
+of branches when the account has access to ≥2 branches (and isn't admin); login resolves immediately
+when there's a single branch or the user is admin (always auto-selecting the first branch); `POST
+/auth/select-branch` both exchanges a pendingToken for a real token and switches branch afterwards
+(but a pendingToken can't be used to call any other endpoint before a branch is chosen); only admin
+can pick "all branches" mode (`branchId: null`); `authenticate` re-checks branch access from the DB on
+every request (a disabled branch invalidates an old token immediately, even for admin); table/menu/
+order/ingredient lists are correctly filtered by `branch_id` (all-branches mode sees both branches
+combined); creating a new staff member auto-assigns them to the branch the creator is currently
+working in; and RBAC on `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id` is correct (see
+`docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36).
+
+`public-order.test.js` (13 new cases) tests the public, login-free QR self-order endpoints: every
+table has a unique `qrToken` from `GET /tables`, a bad token or a deactivated table returns 404,
+viewing the menu/current order for a table works correctly, adding the first item auto-opens a new
+order (later adds go into the same order), ordering a sold-out item returns 409, sending more than 20
+items in one call returns 422, `PATCH /tables/:id/qr-token/regenerate` invalidates the old token
+immediately with RBAC (admin/manager only — waiters can't call it), and `POST .../items` is rate
+limited to 30 requests/5 minutes per table, returning 429 past that (see
+`docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37).
+
+**Flutter (346 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -948,11 +1068,12 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 15 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10) |
-| Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid |
+| Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
-| Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables |
+| Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables, `canManageQrToken` restricted to admin/manager (mirrors the backend's RBAC — ticket 17) |
+| Controller | `self_order_controller_test.dart` | Loading a table + menu from a qrToken (success/failure), a link with no qrToken sets an error immediately without calling the repository, filtering the menu by category, adding/removing cart lines, tapping the same dish again merging into one line with a higher quantity (same rule as the staff cart), and dropping a line's quantity to 0 removing it from the cart (ticket 17) |
 | Controller | `home_controller_test.dart` | Per-role menu visibility, tab switching |
 | Controller | `menu_browse_controller_test.dart` | Menu filtering/search (debounced), counts per category |
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |
@@ -964,6 +1085,7 @@ default limit of 20) (see `docs/tickets/15-ai-ask-your-data.md`, `docs/DECISIONS
 | Controller | `order_detail_controller_test.dart` | Order management permissions, moving item status forward |
 | Controller | `dashboard_controller_test.dart` | Loading today's sales summary + live counters |
 | Controller | `report_controller_test.dart` | Selecting a report date range, silently swallowing topItems/dailySales errors |
+| Controller | `shift_controller_test.dart` | Loading the current shift + history together, guarding closing a shift with none open, `startNewShift` clearing the previous close result, `loadZReport` fetching a shift's Z-report successfully (ticket 12) |
 | Controller | `split_bill_controller_test.dart` | Selecting/deselecting items, fetching the preview, `canPay`/`change` |
 | Controller | `home_destinations_test.dart` | Per-role menu visibility (guards against permission leaks) — also confirms waiters intentionally see the "Kitchen" tab (mirrors backend permissions) and that an unrecognized role fails safe to account-only access instead of silently inheriting a broad permission set from a wildcard case |
 | Controller | `storage_service_test.dart` | Storing the session, and falling back to in-memory storage |
@@ -1073,6 +1195,31 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   picker** on the Audit Log page, both of which had been outstanding since #21 (see the ✨ Features
   section, `docs/tickets/14-financial-audit-trail.md`, `docs/DECISIONS.md` #27) — **CSV export is
   web-only**, since this page lives in the admin zone, which was designed as web-only back in ticket 08
+- [x] **Report export + Z-report (shift/day close)** — done: an **Export CSV** button per report type
+  on the Reports page (sales summary/top items/sales by day, for the currently selected date range),
+  and a **Z-report** viewable both per shift (with cash reconciliation, computed from
+  `payments.shift_id` rather than order creation date, to correctly handle orders opened across a
+  shift boundary) and per day (all shifts combined, no cash reconciliation) — both exportable as CSV
+  too (see the ✨ Features section, `docs/tickets/12-report-export.md`) — **CSV export only**, no
+  Excel/PDF yet, since CSV already opens cleanly in Excel (with a UTF-8 BOM so Thai characters don't
+  garble) and the ticket's acceptance criteria accept it as an equivalent format (see
+  `docs/DECISIONS.md` #35)
+- [x] **Multi-branch/multi-store support** — done: added `branches`/`user_branches`, scoped
+  `branch_id` to the 4 entities that are genuinely branch-level data (tables/menu items/orders/
+  ingredients) including every report, accounts with access to multiple branches pick one at login
+  and can switch branch later from the Profile page, and admin can switch to an "all branches" mode
+  to see combined reports (see the ✨ Features section, `docs/tickets/11-multi-branch.md`,
+  `docs/DECISIONS.md` #36) — **no "manage branches" screen yet** in Flutter (the backend already has
+  the endpoints, but the acceptance criteria didn't require it), **no full cross-branch guard** for
+  update/delete/get-by-id (scoped to list/create only), and **Demo Mode deliberately still has a
+  single branch** (`branch_id` was not added to the demo store)
+- [x] **QR self-order** — done: every table has a unique `qrToken`; customers scan the QR code and
+  order straight from their own phone through a public, login-free endpoint that reuses 100% of the
+  existing business logic (stock deduction/promotions/realtime); staff (`admin`/`manager`) can view/
+  copy the link/regenerate the QR from the table map (see the ✨ Features section,
+  `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37) — **no self-checkout** and **no
+  printing a physical QR standee from within the app**, deliberately kept out of scope (see "Deliberately
+  not doing" below)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -1081,19 +1228,29 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   environment doesn't have (LAN/Wi-Fi is done, as noted above)
 - **Offline mode for opening new orders/taking payment** — higher conflict risk (order numbers and money
   correctness must come straight from the server)
-- **PostgreSQL for multi-branch support** — deliberately scoped to a single branch for now (the repository
-  layer is already isolated, so this wouldn't be a hard change if it's ever needed)
+- **PostgreSQL for multi-branch support** — multi-branch itself is done (see above), but it still runs
+  on a single SQLite file for now (the repository layer is already isolated, so this wouldn't be a
+  hard change if it's ever needed)
 - **PromptPay payment gateway/automatic payment-verification callback** — more than a single-branch
   restaurant like this needs (it requires signing up as a merchant with a bank/provider); generating a
   real, scannable QR code is enough for this scope (see `docs/tickets/16-promptpay-qr.md`)
+- **Printing a physical QR standee/table tent from within the app** — no new dependency
+  (`printing`/`pdf`) for something that isn't core to a POS; shows a large QR image + a copy-link
+  button on screen instead, and the restaurant screenshots it or uses an external design tool to make
+  a physical sign (see `docs/tickets/17-qr-self-order.md`)
+- **Self-checkout through the QR order-taking flow** — QR self-order is order-taking only; payment
+  still goes through the cashier as before, to avoid the money-safety/fraud risk that comes with
+  self-checkout, which would also need a real payment gateway (not done, per the item above)
 
 ---
 
 ## 📚 Further reading
 
-- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 23-page document covering every screen with explanations (Thai)
-- [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 23 design decisions with their accepted trade-offs (e.g. why
+- [`docs/PORTFOLIO-SUMMARY.en.md`](docs/PORTFOLIO-SUMMARY.en.md) — a one-page summary for a portfolio or
+  job application (headline numbers and highlights, much shorter than this README)
+- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 30-page document covering every screen with explanations (Thai)
+- [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences (30 pages)
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 37 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use

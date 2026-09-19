@@ -69,6 +69,7 @@ class HomeBinding extends Bindings {
       () => TableController(
         getTables: Get.find<GetTablesUseCase>(),
         setTableStatus: Get.find<SetTableStatusUseCase>(),
+        regenerateQrToken: Get.find<RegenerateTableQrTokenUseCase>(),
         session: Get.find<SessionService>(),
       ),
       fenix: true,
@@ -100,6 +101,9 @@ class HomeBinding extends Bindings {
         getSummary: Get.find<GetSalesSummaryUseCase>(),
         getTopItems: Get.find<GetTopItemsUseCase>(),
         getSalesByDay: Get.find<GetSalesByDayUseCase>(),
+        exportSummaryCsv: Get.find<ExportSummaryCsvUseCase>(),
+        exportTopItemsCsv: Get.find<ExportTopItemsCsvUseCase>(),
+        exportSalesByDayCsv: Get.find<ExportSalesByDayCsvUseCase>(),
       ),
       fenix: true,
     );
