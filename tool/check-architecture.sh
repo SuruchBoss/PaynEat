@@ -39,7 +39,19 @@ rule "domain ไม่ import package:get"      grep -rnE "^\s*(import|export) .
 
 echo
 echo "Backend — service ไม่รู้จัก HTTP, controller/routes ไม่ข้าม service (§4.2)"
-rule "service ไม่แตะ req/res ของ Express"  grep -rln "req\.\|res\." backend/src/modules/*/*.service.js
+# ตัดคอมเมนต์ // ออกก่อนเทียบ ด้วยเหตุผลเดียวกับกฎ package:get ด้านบน — เจตนาของกฎคือ
+# "service ต้องไม่ *พึ่ง* HTTP layer" ส่วนคอมเมนต์ที่อ้างถึง req.user/req.branchId เพื่ออธิบายว่า
+# ค่านั้นมาจากไหน (หรือว่าทำไม service ตัวนี้ถึงไม่มีให้ใช้) ไม่ใช่ dependency
+# (เจอตอน ticket 17: public-order.service.js กับ user.service.js มีแต่คอมเมนต์ ไม่มีโค้ดแตะ req/res
+#  แต่กฎเดิมจับทั้งไฟล์ ทำให้ CI แดงทั้งที่ไม่มีอะไรผิดจริง)
+services_touching_http() {
+  local f
+  for f in backend/src/modules/*/*.service.js; do
+    sed 's://.*::' "$f" | grep -q "req\.\|res\." && echo "$f"
+  done
+  return 0
+}
+rule "service ไม่แตะ req/res ของ Express"  services_touching_http
 rule "controller/routes ไม่ import repository ตรงๆ" \
   grep -rn "require.*\.repository" backend/src/modules/*/*.routes.js backend/src/modules/*/*.controller.js
 

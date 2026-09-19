@@ -281,7 +281,8 @@ grep -rnE "^\s*(import|export) .*package:get"        app/lib/features/*/domain/
 # ทั้ง 3 คำสั่งต้องไม่มี output ใดๆ
 
 # Backend: service ห้ามรู้จัก req/res, controller ห้าม import repository ตรงๆ
-grep -rln "req\.\|res\."                              backend/src/modules/*/*.service.js
+# (ตัดคอมเมนต์ // ออกก่อน — ดูหมายเหตุใต้บล็อกนี้)
+for f in backend/src/modules/*/*.service.js; do sed 's://.*::' "$f" | grep -q "req\.\|res\." && echo "$f"; done
 grep -rn "require.*\.repository"                      backend/src/modules/*/*.routes.js backend/src/modules/*/*.controller.js
 # ทั้ง 2 คำสั่งต้องไม่มี output ใดๆ
 ```
@@ -289,6 +290,11 @@ grep -rn "require.*\.repository"                      backend/src/modules/*/*.ro
 > ข้อที่ 3 เดิมเขียนว่า `grep -rln "package:get"` (จับทุกที่ที่มีข้อความนี้) ตอนเอามาแขวนใน CI
 > ครั้งแรกมันสะดุด**คอมเมนต์ที่อธิบายว่าทำไมห้ามใช้ GetX ใน domain** ซึ่งไม่ใช่ dependency
 > เปลี่ยนเป็นเทียบเฉพาะบรรทัด `import`/`export` ให้ตรงกับเจตนาของกฎ
+
+> ข้อที่ 4 สะดุดแบบเดียวกันอีกรอบตอน ticket 17 — `grep -rln "req\.\|res\."` จับ**คอมเมนต์ที่
+> อ้างถึง `req.user`/`req.branchId` เพื่ออธิบายว่าค่านั้นมาจากไหน** ใน `public-order.service.js`
+> และ `user.service.js` ทั้งที่ไม่มีโค้ดบรรทัดไหนแตะ Express เลย ทำให้ CI แดงโดยไม่มีอะไรผิดจริง
+> เปลี่ยนเป็นตัดคอมเมนต์ `//` ออกก่อนแล้วค่อยเทียบ ให้ตรงกับเจตนาของกฎเหมือนข้อที่ 3
 
 ### 4.4 กรณีจริงที่เจอและแก้แล้ว: payload class อยู่ผิดชั้น
 
