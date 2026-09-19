@@ -17,16 +17,12 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - `06-inventory-stock.md`
 - `07-tax-invoice.md`
 - `08-audit-log.md`
-- `12-report-export.md` — ยกระดับจาก 🟡 Medium เดิม (2026-09-19) — gap ที่เหลือจริงจุดเดียวที่ยัง
-  กระทบการใช้งานประจำวัน (ส่งบัญชีรายเดือนไม่ได้เพราะ export ไม่ได้) ดู `docs/DECISIONS.md` #35 —
-  **เขียนเป็น full spec แล้ว (2026-09-19, ผ่าน `/to-spec`)**: seam/interface/acceptance criteria
-  ที่กราวด์กับโค้ดจริงครบ พร้อมให้ dev/agent เริ่มได้ทันที
 
 ## 🟡 Medium (เฟสขยายธุรกิจ)
 - `09-customer-loyalty.md`
 - `10-takeaway-delivery-flow.md`
-- `11-multi-branch.md` — ตั้งใจ scope สาขาเดียวไว้ก่อน ยืนยันสถานะไม่เปลี่ยนอีกครั้งเมื่อ 2026-09-19
-  (ดู `docs/DECISIONS.md` #35)
+- `11-multi-branch.md` — 🚧 พบว่าอีก session กำลังทำอยู่จริงบน branch อื่น (ยังไม่ merge) —
+  backend scoping เสร็จแล้ว ยังไม่มี UI ดูรายละเอียดในไฟล์ ticket
 
 ## 🟢 Nice-to-have (backlog, ไม่ตัด ticket แยก)
 - ระบบจองโต๊ะ (reservation) ผูกกับผังโต๊ะ
@@ -43,6 +39,10 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - `15-ai-ask-your-data.md` — ✅ เสร็จแล้ว — **จุดขาย**: AI ถามตอบข้อมูลร้านด้วยภาษาพูด (ยอดขาย/
   เมนูขายดี/ลูกค้า) ผ่าน LLM tool-calling ที่เรียก endpoint จริงในระบบเท่านั้น (กัน hallucinate
   ตัวเลข) ต่อยอดจากดีไซน์ dashboard ที่ทำไว้ก่อนหน้า ดู `docs/DECISIONS.md` #33
+- `12-report-export.md` — ✅ เสร็จแล้ว — export รายงานยอดขาย/เมนูขายดี/ยอดขายรายวันเป็น CSV +
+  Z-report ต่อกะ/ต่อวัน (scope ด้วย `payments.shift_id` กันกะข้ามเที่ยงคืนนับผิด) — implement บน
+  branch `claude/pos-restaurant-project-3djpp6` (commit `4e2684d`) **ขนานกัน** กับตอนที่เซสชันนี้
+  เขียน full spec ให้ (`/to-spec`, ก่อนรู้ว่ามีอีก session ทำอยู่แล้ว) — ดู `docs/DECISIONS.md` #35
 
 ## พบระหว่างตรวจโค้ดจริงซ้ำ (2026-09-15) — ไม่เคยอยู่ใน gap analysis รอบแรก
 - `16-promptpay-qr.md` — ✅ เสร็จแล้ว — 🔴 Critical gap เดียวที่เหลืออยู่หลังจากรายการ 1-4 เดิม
@@ -60,10 +60,15 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 
 - ✅ สุ่มตรวจ 4 ticket ที่ติ๊ก ✅ ไว้ (01 shift, 02 refund, 06 inventory, 07 tax invoice) ยืนยันว่า
   ทำจริงครบ DB+backend+UI ไม่มีจุดที่เป็นของปลอมแบบ ticket 16 เดิม
-- ✅ ยืนยัน `11-multi-branch.md` ยัง out-of-scope ตามที่ตั้งใจจริง ไม่มี drift
-- 🟠 ยกระดับ `12-report-export.md` เป็น High — ยืนยันว่ายังเป็น gap จริง (CSV export ผูกกับ
-  audit log module เดียว ไม่เคยขยายไปที่ reports/shift) และเป็นแรงเสียดทานจริงรายเดือนสำหรับร้านที่
-  ต้องส่งบัญชี
+- ✅ ยืนยัน `11-multi-branch.md` ยัง out-of-scope ตามที่ตั้งใจจริง ไม่มี drift ณ ตอนตรวจ — **ภายหลัง
+  พบว่าไม่จริงแล้ว** อีก session เริ่มทำ multi-branch backend อยู่บนอีก branch ขนานกัน (ดูหมายเหตุ
+  ในไฟล์ `11-multi-branch.md`) บทเรียนซ้ำกับ #12 ด้านล่าง: "ยืนยันด้วยโค้ดจริง" ยังจำกัดอยู่แค่โค้ดที่
+  session นี้มองเห็น ณ ตอนนั้น ไม่ครอบคลุม branch อื่นที่ session อื่นกำลังทำขนานกันอยู่
+- 🟠 ยกระดับ `12-report-export.md` เป็น High แล้วเขียน full spec (`/to-spec`) — **ภายหลังพบว่าซ้ำกับ
+  งานที่อีก session ทำจริงไปแล้วบน branch อื่น** (`claude/pos-restaurant-project-3djpp6`, commit
+  `4e2684d`, ยังไม่ merge เข้า main) เป็นตัวอย่างของ concurrent session ทำงานซ้ำกันในโปรเจกต์นี้ —
+  spec ที่เขียนไว้ตรงกับของจริงมาก (โดยเฉพาะจุด scope ด้วย `payments.shift_id`) จึงเก็บไว้เป็น
+  reference ไม่ลบทิ้ง แต่ปิด ticket เป็น ✅ เสร็จแล้วตามของจริง ไม่ใช่ตามสเปกที่เขียนไว้
 - 🐛 **พบและแก้บั๊กจริงใน ticket 15 (AI assistant)**: โมเดิลตอบข้อความเฉยๆ โดยไม่เรียก
   `submit_answer` เคยหลุดผ่านเป็นคำตอบสุดท้ายได้ (ขัดกฎ "ห้ามเดา/แต่งคำตอบ" ของทิกเก็ตเอง) — แก้แล้ว
   พร้อมเทสต์ยืนยัน (`backend/src/modules/ai-assistant/ai-assistant.service.js`,

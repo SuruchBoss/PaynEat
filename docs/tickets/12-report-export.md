@@ -1,10 +1,16 @@
 # Ticket: Export รายงาน (CSV) + Z-report ปิดกะ
 
-**Priority:** 🟠 High (ยกระดับจาก 🟡 Medium เดิม — ดู `docs/DECISIONS.md` #35: PO re-verify
-2026-09-19 ยืนยันว่าเป็นแรงเสียดทานจริงรายเดือนสำหรับร้านที่ต้องส่งบัญชี ไม่ใช่แค่ของเสริม และเป็น
-gap เดียวที่เหลืออยู่ที่กระทบการใช้งานจริงประจำวัน หลังจากรายการอื่นทั้งหมดตรวจสอบซ้ำแล้วว่าทำจริง)
-**Status:** พร้อมให้ dev/agent เริ่มงานได้ทันที (ready-for-agent) — สร้างจาก `/to-spec` โดยสังเคราะห์
-จากความเข้าใจโค้ดจริงที่มีอยู่แล้ว ไม่ได้สัมภาษณ์ PO เพิ่ม
+**Priority:** 🟠 High (ยกระดับจาก 🟡 Medium เดิม — ดู `docs/DECISIONS.md` #35)
+**Status:** ✅ **ทำจริงแล้ว** — implement บน branch `claude/pos-restaurant-project-3djpp6`
+(commit `4e2684d`, ยังไม่ merge เข้า `main` ณ ตอนที่เขียนบันทึกนี้) **ขนานกัน** กับตอนที่เขียนสเปกนี้
+ในเซสชันนี้ (พบว่าอีก session หนึ่งทำ ticket 12 จริงอยู่ก่อนแล้วโดยไม่รู้ตัว — เรื่องปกติของโปรเจกต์
+ที่มีหลาย session ทำงานพร้อมกัน) สเปกด้านล่างนี้ยังเก็บไว้เป็น reference เพราะตรงกับของจริงมาก
+โดยเฉพาะจุด Z-report ต้อง scope ด้วย `payments.shift_id` ไม่ใช่วันที่ปฏิทิน — แต่ **ไม่ใช่งานที่ค้าง
+ให้ทำอีกแล้ว** ของจริงมี endpoint ครบ: `/reports/export/{summary,top-items,sales-by-day}` และ
+`/reports/z-report/{by-shift/:shiftId,by-date}` + `/export` ของทั้งคู่, Flutter มีปุ่ม export บนหน้า
+รายงานและ Z-report dialog บนหน้าปิดกะ, มี Demo Mode mirror, เทสต์ backend 8 เคสใหม่
+(`backend/tests/report-export.test.js`) — รายละเอียดดู `docs/DECISIONS.md` #35 (entry ของ session
+นั้น) และไฟล์นี้เองบน branch ดังกล่าวซึ่งเขียนสรุป "ที่ทำจริง" ไว้ละเอียดกว่านี้
 **Ref:** `docs/FEATURE-GAP-ANALYSIS.md` #12, `docs/DECISIONS.md` #35
 
 > หมายเหตุ: เอกสารนี้เขียนด้วย spec template ของสกิล `/to-spec` (หัวข้อภาษาอังกฤษตามสกิล เนื้อหา
