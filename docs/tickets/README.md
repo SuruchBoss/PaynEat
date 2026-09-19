@@ -22,7 +22,9 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 - `09-customer-loyalty.md`
 - `10-takeaway-delivery-flow.md`
 - `11-multi-branch.md`
-- `12-report-export.md`
+- `12-report-export.md` — ✅ เสร็จแล้ว — export รายงานขาย (สรุป/เมนูขายดี/รายวัน) เป็น CSV และ
+  Z-report ปิดกะ/ปิดวัน (ต่อกะมีกระทบยอดเงินสด คิดจาก `payments.shift_id` จึงถูกต้องแม้ออเดอร์
+  หรือกะจะข้ามวัน) ดู `docs/DECISIONS.md` #35
 
 ## 🟢 Nice-to-have (backlog, ไม่ตัด ticket แยก)
 - ระบบจองโต๊ะ (reservation) ผูกกับผังโต๊ะ
