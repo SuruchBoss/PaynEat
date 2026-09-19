@@ -33,6 +33,6 @@ not a CRUD demo. [Live demo](https://suruchboss.github.io/PaynEat/) · [Full sou
 
 ## More detail
 
-[28-page feature walkthrough with real screenshots](PaynEat-POS-Features-EN.pdf) ·
+[30-page feature walkthrough with real screenshots](PaynEat-POS-Features-EN.pdf) ·
 [2-minute demo video](video/PaynEat-POS-Demo-EN.mp4) ·
 [Full README](../README.en.md)

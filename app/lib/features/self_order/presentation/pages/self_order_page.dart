@@ -6,6 +6,7 @@ import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_card.dart';
 import '../../../../core/widgets/quantity_stepper.dart';
+import '../../../../core/widgets/sheet_handle.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../menu/presentation/widgets/category_filter_bar.dart';
 import '../../../menu/presentation/widgets/menu_item_card.dart';
@@ -57,7 +58,14 @@ class SelfOrderPage extends GetView<SelfOrderController> {
         }
         final error = controller.errorMessage.value;
         if (error != null) {
-          return ErrorView(message: error, onRetry: controller.load);
+          final linkProblem = controller.isLinkProblem.value;
+          return ErrorView(
+            message: error,
+            icon: linkProblem
+                ? Icons.qr_code_scanner_rounded
+                : Icons.wifi_off_rounded,
+            onRetry: linkProblem ? null : controller.load,
+          );
         }
 
         return Column(
@@ -144,7 +152,7 @@ class SelfOrderPage extends GetView<SelfOrderController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _SheetHandle(),
+                const SheetHandle(),
                 Text(
                   'self_order_current_order_title'.tr,
                   style: const TextStyle(
@@ -196,7 +204,7 @@ class SelfOrderPage extends GetView<SelfOrderController> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const _SheetHandle(),
+                const SheetHandle(),
                 Text(
                   'self_order_cart_title'.tr,
                   style: const TextStyle(
@@ -317,26 +325,6 @@ class _TableHeader extends GetView<SelfOrderController> {
         ),
       );
     });
-  }
-}
-
-/// ขีดจับลากหัวชีท — ให้รู้ว่าปัดลงปิดได้ (แบบเดียวกับ OptionSelectionSheet)
-class _SheetHandle extends StatelessWidget {
-  const _SheetHandle();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 40,
-        height: 4,
-        margin: const EdgeInsets.only(bottom: 14),
-        decoration: BoxDecoration(
-          color: AppColors.border,
-          borderRadius: BorderRadius.circular(2),
-        ),
-      ),
-    );
   }
 }
 

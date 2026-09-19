@@ -502,5 +502,26 @@ void main() {
         'phone-37-self-order-current-order',
       );
     });
+
+    testWidgets('38 ลิงก์ QR ที่ใช้ไม่ได้แล้ว (token ผิด/โต๊ะปิด)', (
+      tester,
+    ) async {
+      await openSelfOrder(tester, 'token-mua-mua-123');
+      await ScreenshotHarness.capture(tester, 'phone-38-self-order-invalid');
+    });
+
+    testWidgets('39 ชีท QR ฝั่งพนักงานที่ผังโต๊ะ', (tester) async {
+      await ScreenshotHarness.launchApp(tester, ScreenshotHarness.phone);
+      // ผู้จัดการเห็น "ภาพรวม" เป็นแท็บแรก ผังโต๊ะอยู่แท็บที่ 2 (ดู destinationsForRole)
+      await ScreenshotHarness.loginAs(tester, 'manager', 'manager123');
+      Get.find<HomeController>().changeTab(1);
+      await ScreenshotHarness.settle(tester);
+
+      await tester.longPress(find.text('A1').first);
+      await ScreenshotHarness.settle(tester);
+      await tester.tap(find.text('ดู QR สั่งอาหารเอง'));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'phone-39-table-qr-sheet');
+    });
   });
 }

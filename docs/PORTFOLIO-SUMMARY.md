@@ -33,6 +33,6 @@ Flutter (มือถือ/แท็บเล็ต/เว็บ) + Node.js/Exp
 
 ## เอกสารเพิ่มเติม
 
-[เอกสารรวมฟีเจอร์ 27 หน้า (ภาพหน้าจอจริง)](PaynEat-POS-Features-TH.pdf) ·
+[เอกสารรวมฟีเจอร์ 30 หน้า (ภาพหน้าจอจริง)](PaynEat-POS-Features-TH.pdf) ·
 [วิดีโอ demo 2 นาที](video/PaynEat-POS-Demo-TH.mp4) ·
 [README เต็ม](../README.md)

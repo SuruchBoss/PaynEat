@@ -132,8 +132,34 @@ void main() {
 
         expect(controller.errorMessage.value, 'ไม่พบโต๊ะนี้');
         expect(controller.table.value, isNull);
+        // 404 = ลิงก์ตายแล้ว กดลองใหม่ไม่มีวันสำเร็จ หน้าจอต้องรู้เพื่อซ่อนปุ่มลองใหม่
+        expect(controller.isLinkProblem.value, isTrue);
       },
     );
+
+    test(
+      'เน็ตสะดุด (ไม่ใช่ 404) ต้องไม่ถูกมองว่าเป็นลิงก์เสีย — ยังให้กดลองใหม่ได้',
+      () async {
+        repository.nextGetTableResult = Result.failure(
+          NetworkFailure('ต่อเซิร์ฟเวอร์ไม่ได้'),
+        );
+
+        _setRouteQrToken('demo-table-1');
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+
+        expect(controller.errorMessage.value, 'ต่อเซิร์ฟเวอร์ไม่ได้');
+        expect(controller.isLinkProblem.value, isFalse);
+      },
+    );
+
+    test('ลิงก์ไม่มี qrToken เลย ถือเป็นลิงก์เสียเช่นกัน', () async {
+      _setRouteQrToken('');
+      controller.onInit();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(controller.isLinkProblem.value, isTrue);
+    });
 
     test(
       'โหลดโต๊ะสำเร็จแต่โหลดเมนูล้มเหลว → ยังเห็นโต๊ะ แต่ตั้ง errorMessage จากเมนู',

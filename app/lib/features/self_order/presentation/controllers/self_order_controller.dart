@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 
+import '../../../../core/errors/failures.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../menu/domain/entities/category.dart';
 import '../../../menu/domain/entities/menu_item.dart';
@@ -31,6 +32,10 @@ class SelfOrderController extends GetxController {
 
   final RxBool isLoading = true.obs;
   final RxnString errorMessage = RxnString();
+
+  /// ลิงก์/โต๊ะใช้ไม่ได้จริง ๆ (ไม่ใช่เน็ตสะดุด) — กดลองใหม่กี่ครั้งก็ไม่มีวันสำเร็จ หน้าจอจึงต้อง
+  /// เปลี่ยนไอคอนและซ่อนปุ่มลองใหม่ ไม่งั้นลูกค้าจะนึกว่าเน็ตตัวเองมีปัญหาแล้วกดวนอยู่อย่างนั้น
+  final RxBool isLinkProblem = false.obs;
   final Rxn<SelfOrderTable> table = Rxn<SelfOrderTable>();
   final Rxn<Order> currentOrder = Rxn<Order>();
   final RxList<Category> categories = <Category>[].obs;
@@ -65,17 +70,22 @@ class SelfOrderController extends GetxController {
   Future<void> load() async {
     if (qrToken.isEmpty) {
       errorMessage.value = 'self_order_invalid_link'.tr;
+      isLinkProblem.value = true;
       isLoading.value = false;
       return;
     }
 
     isLoading.value = true;
     errorMessage.value = null;
+    isLinkProblem.value = false;
 
     final tableResult = await _getTable(qrToken);
     final failure = tableResult.failureOrNull;
     if (failure != null) {
       errorMessage.value = failure.message;
+      // 404 = token ไม่มีจริง/โต๊ะถูกปิดใช้งาน/QR ถูกเปลี่ยนไปแล้ว — ต่างจาก error อื่นที่ลองใหม่ได้
+      isLinkProblem.value =
+          failure is ServerFailure && failure.statusCode == 404;
       isLoading.value = false;
       return;
     }

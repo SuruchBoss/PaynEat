@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-636%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-638%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -46,7 +46,7 @@ control and 608 automated tests.
 - **โหมดคอนทราสต์สูง** — อ่านออกชัดแม้แดดจ้าริมหน้าต่างหรือไอน้ำในครัว ตัวหนังสือผ่านเกณฑ์ WCAG AAA
 - **Audit log ครบทุกจุดเสี่ยงต่อการทุจริต** — ยกเลิกออเดอร์ ให้ส่วนลด แก้ VAT คืนเงิน บันทึกผู้ทำ/เวลา/
   เหตุผลไว้เสมอ แก้ไขลบไม่ได้จาก UI ไหนเลย
-- **ทดสอบอัตโนมัติ 636 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 638 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -86,7 +86,7 @@ control and 608 automated tests.
 > เดินตามเส้นทางการใช้งานจริงตั้งแต่เปิดผังโต๊ะจนปิดบิล ประกอบภาพหน้าจอจริงทั้ง 11 จอ
 > ([วิธีสร้างใหม่](docs/video/README.md))
 
-> 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 29 หน้าจอ (PDF 27–28 หน้า)**
+> 📄 **เอกสารรวมฟีเจอร์และหน้าจอทั้งหมด 33 หน้าจอ (PDF 30 หน้า)**
 > · [ฉบับภาษาไทย](docs/PaynEat-POS-Features-TH.pdf) — อธิบายทีละหน้าจอว่าออกแบบยังไงและเบื้องหลังทำงานยังไง
 > · [English edition](docs/PaynEat-POS-Features-EN.pdf) — written for restaurant owners: what each screen solves for the business
 >
@@ -381,9 +381,11 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 - ลองคัดลอกลิงก์ QR ของโต๊ะ A1 ไว้ก่อน (ขั้นตอน 23) แล้วเข้าเป็น `admin`/`manager` กด **"เปลี่ยน QR"**
   ที่ชีทเดิม → เปิดลิงก์เก่าที่คัดลอกไว้อีกครั้ง → ขึ้นข้อความแจ้งชัดเจนว่าไม่พบโต๊ะนี้ทันที (ลิงก์เก่า
   ใช้ไม่ได้อีกเลยตั้งแต่วินาทีที่กดเปลี่ยน ไม่ต้องรอ token หมดอายุ ดู `docs/DECISIONS.md` #37)
-- ลองพิมพ์ลิงก์ `/order/` ตามด้วยตัวอักษรมั่วๆ เอง (ไม่ใช่ token จริง) → ขึ้นข้อความแจ้ง "ไม่พบโต๊ะนี้"
-  เหมือนกัน ไม่มีทางเดา token โต๊ะอื่นได้จากเลข table id ตรงๆ เพราะ token เป็นค่าสุ่มแยกเก็บต่างหาก
-  ไม่ใช่เลข id ที่ไล่ทีละ 1
+- ลองพิมพ์ลิงก์ `/order/` ตามด้วยตัวอักษร/ตัวเลขภาษาอังกฤษมั่วๆ เอง (เช่น `/order/abc123` — ไม่ใช่
+  token จริง) → ขึ้นข้อความแจ้ง "ไม่พบโต๊ะนี้" พร้อมไอคอน QR (ไม่ใช่ไอคอนเน็ตหลุด) และ**ไม่มีปุ่มลอง
+  ใหม่** เพราะลิงก์เสียแล้วกดกี่ครั้งก็ไม่สำเร็จ — ต่างจากตอนเน็ตสะดุดจริงที่ยังมีปุ่มให้กดลองใหม่ —
+  ไม่มีทางเดา token โต๊ะอื่นได้จากเลข table id ตรงๆ เพราะ token เป็นค่าสุ่มแยกเก็บต่างหาก ไม่ใช่เลข
+  id ที่ไล่ทีละ 1
 
 ---
 
@@ -391,7 +393,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 292 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 344 เคส — domain / controller / widget
+cd app && flutter test      # 346 เคส — domain / controller / widget
 ```
 
 ---
@@ -845,7 +847,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 292 เคส
-cd app && flutter test      # 344 เคส
+cd app && flutter test      # 346 เคส
 ```
 
 **Backend (292 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -975,7 +977,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 `POST .../items` ได้ 30 ครั้ง/5 นาทีต่อโต๊ะ เกินแล้วโดน 429 (ดู `docs/tickets/17-qr-self-order.md`,
 `docs/DECISIONS.md` #37)
 
-**Flutter (344 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (346 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1148,7 +1150,7 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
 
 - [`docs/PORTFOLIO-SUMMARY.md`](docs/PORTFOLIO-SUMMARY.md) — สรุป 1 หน้าสำหรับแปะ portfolio/สมัครงาน
   (ตัวเลขเด่นๆ + จุดขาย ไม่ยาวเท่า README นี้)
-- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 27 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
+- [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — เอกสาร 30 หน้า รวมทุกหน้าจอพร้อมคำอธิบาย
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — ฉบับภาษาอังกฤษ เขียนใหม่สำหรับลูกค้าธุรกิจ
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — บันทึกการตัดสินใจเชิงออกแบบ 37 ข้อ พร้อมข้อเสียที่ยอมรับ
   (เช่น ทำไมเก็บเงินเป็นสตางค์, ทำไมยอมเขียนตรรกะคิดบิล 2 ภาษา, ทำไมเลือก SQLite)

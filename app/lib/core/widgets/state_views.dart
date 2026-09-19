@@ -81,10 +81,19 @@ class EmptyView extends StatelessWidget {
 
 /// จอแสดงข้อผิดพลาดพร้อมปุ่มลองใหม่
 class ErrorView extends StatelessWidget {
-  const ErrorView({super.key, required this.message, this.onRetry});
+  const ErrorView({
+    super.key,
+    required this.message,
+    this.onRetry,
+    this.icon = Icons.wifi_off_rounded,
+  });
 
   final String message;
   final VoidCallback? onRetry;
+
+  /// ค่าเริ่มต้นคือไอคอนเน็ตหลุดเพราะเป็นสาเหตุที่พบบ่อยที่สุด — หน้าที่รู้สาเหตุแน่ชัดกว่านั้น
+  /// (เช่น ลิงก์ QR ใช้ไม่ได้) ควรส่งไอคอนของตัวเองมา ไม่งั้นผู้ใช้จะเข้าใจผิดว่าเน็ตตัวเองมีปัญหา
+  final IconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -101,11 +110,7 @@ class ErrorView extends StatelessWidget {
                 color: AppColors.danger.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                Icons.wifi_off_rounded,
-                size: 32,
-                color: AppColors.dangerInk,
-              ),
+              child: Icon(icon, size: 32, color: AppColors.dangerInk),
             ),
             const SizedBox(height: 16),
             Text(

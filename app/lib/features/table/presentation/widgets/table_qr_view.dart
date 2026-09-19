@@ -6,6 +6,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../app/config/app_config.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/widgets/app_dialogs.dart';
+import '../../../../core/widgets/sheet_handle.dart';
 import '../../domain/entities/dining_table.dart';
 import '../controllers/table_controller.dart';
 
@@ -32,6 +33,7 @@ class TableQrView extends GetView<TableController> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          const SheetHandle(bottomSpacing: 10),
           Text(
             'table_qr_sheet_title'.trParams({'name': current.name}),
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),

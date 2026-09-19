@@ -70,9 +70,18 @@ class StatCard extends StatelessWidget {
           ),
           if (caption != null) ...[
             const SizedBox(height: 2),
-            Text(
-              caption!,
-              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+            // การ์ดนี้ถูกวางในกริดที่ล็อกความสูงไว้ (childAspectRatio) คำอธิบายจึงต้องตัดบรรทัด
+            // ไม่ได้ ไม่งั้นข้อความยาว/ผู้ใช้ขยายขนาดตัวอักษรจะดันจนการ์ดล้น
+            Flexible(
+              child: Text(
+                caption!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
           ],
         ],
