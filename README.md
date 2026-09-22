@@ -93,14 +93,18 @@ control and 639 automated tests.
 > ภาพทั้งหมดเรนเดอร์จากโค้ดจริงด้วย golden test ที่เขียนไว้ใน [`app/tool/screenshots`](app/tool/screenshots)
 > จึงสร้างใหม่ได้ทุกครั้งที่โค้ดเปลี่ยน ([วิธีสร้าง](docs/generator/README.md))
 
-> 🌐 **หน้า Landing Page (HTML ไฟล์เดียว เปิดได้เลย ไม่ต้องติดตั้งอะไร)**
+> 🌐 **หน้า Landing Page — static HTML ไม่มี JavaScript สักบรรทัด**
 > · [หน้าจริงบน GitHub Pages](https://suruchboss.github.io/PaynEat/)
-> · [`docs/landing/index.html`](docs/landing/index.html)
-> · [English version](https://suruchboss.github.io/PaynEat/index.en.html) ([`docs/landing/index.en.html`](docs/landing/index.en.html))
+> · [English version](https://suruchboss.github.io/PaynEat/index.en.html)
 >
 > เล่าเรื่องระบบจากเงื่อนไขหน้างานจริง — แสงจ้า ไอน้ำ มือเปื้อน เน็ตสะดุด — พร้อมภาพหน้าจอจริง
-> 6 ใบที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วนไม่มี JavaScript สักบรรทัด
+> ที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วน
 > ผลตรวจความถูกต้องของภาษาและตัวเลขอยู่ใน [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
+>
+> ไฟล์ต้นทางคือ [`docs/landing/index.html`](docs/landing/index.html) / [`index.en.html`](docs/landing/index.en.html)
+> — ภาพหน้าจอฝังมาในไฟล์หมดแล้ว **ยกเว้น** GIF สาธิตผู้ช่วย AI ที่อยู่ใน `docs/ai-demo/`
+> (ไฟล์ 924 KB ใหญ่เกินจะ inline) ตัว workflow `deploy-pages.yml` ก๊อปโฟลเดอร์นั้นเข้า site ให้
+> ตอน deploy หน้าจริงจึงครบ แต่ถ้าเปิดไฟล์จากรีโปตรง ๆ หัวข้อ "ผู้ช่วย AI" จะขึ้นรูปแตก
 
 > 🤖 **Demo จริงของผู้ช่วย AI ถามตอบข้อมูลร้าน (เรียก Claude API จริง ไม่ใช่ mock)**
 >

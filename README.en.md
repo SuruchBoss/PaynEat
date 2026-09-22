@@ -98,14 +98,19 @@ control and 639 automated tests.
 > [`app/tool/screenshots`](app/tool/screenshots), so they can be regenerated any time the code changes
 > ([how to regenerate](docs/generator/README.md))
 
-> 🌐 **Landing page (a single HTML file — just open it, nothing to install)**
+> 🌐 **Landing page — static HTML, not a single line of JavaScript**
 > · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
-> · [`docs/landing/index.en.html`](docs/landing/index.en.html) — [Thai version](docs/landing/index.html)
+> · [Thai version](https://suruchboss.github.io/PaynEat/)
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
-> a Wi-Fi drop mid-service — with 6 real screenshots embedded in the file. The animation is pure CSS,
-> not a single line of JavaScript.
+> a Wi-Fi drop mid-service — with real screenshots embedded in the file. The animation is pure CSS.
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
+>
+> The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
+> [`index.html`](docs/landing/index.html) — every screenshot is embedded **except** the AI assistant
+> demo GIF, which lives in `docs/ai-demo/` (924 KB, too large to inline). `deploy-pages.yml` copies
+> that folder into the site at deploy time, so the live page is complete; opening the file straight
+> from the repo shows a broken image in the "AI assistant" section.
 
 > 🤖 **Live demo of the AI ask-your-data assistant (real Claude API call, not a mock)**
 >

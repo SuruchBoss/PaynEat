@@ -19,6 +19,19 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.3' fill='%23FF6B2C'/%3E%3Crect x='5.6' y='3.6' width='3.8' height='16.8' rx='1.9' fill='white'/%3E%3Cpath d='M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;800&family=Anuphan:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
+  /* reset เทียบเท่า skeleton ที่ Artifact ห่อให้ตอน publish
+     คัดมาไว้ตรงนี้เพื่อให้ไฟล์นี้เปิดเดี่ยว ๆ ได้ผลเหมือนกัน
+
+     ต้องอยู่ "ก่อน" <style> ของหน้าเว็บเสมอ — เหมือนที่ skeleton จริงถูกวางไว้ใน
+     <head> ก่อนเนื้อหา ถ้าวางไว้ทีหลัง body{background:#faf9f7} จะทับ
+     body{background:var(--ink)} ของหน้าเว็บ (specificity เท่ากัน ตัวหลังชนะ)
+     แล้วส่วนที่เป็นฉากมืดทั้งหมดจะกลายเป็นตัวหนังสือขาวบนพื้นขาว */
+  :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#faf9f7}
+  img{max-width:100%}
+  [hidden]{display:none!important}
+</style>
+<style>
   /* หน้านี้จงใจเป็นโลกภาพเดียว (ไล่สลับมืด-สว่างเป็นส่วนหนึ่งของงานออกแบบ)
      จึงไม่ทำสองธีม แต่ระบายสีทุกตัวชัดเจนเพื่อให้ยืนได้บนพื้นหลังของ host ทุกแบบ */
   :root{
@@ -129,7 +142,9 @@
     display:grid;grid-template-columns:auto 1fr auto;gap:clamp(14px,3vw,36px);align-items:baseline;
     padding:clamp(18px,2.6vw,26px) 0;border-bottom:1px solid var(--line-d);
   }
-  .cond .n{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--steel);letter-spacing:.1em}
+  /* --steel อ่านได้บนพื้นสว่างเท่านั้น (5.01 บน paper / 3.60 บน ink)
+     แถบนี้อยู่บนฉากมืด จึงต้องใช้ --steel-lt ซึ่งได้ 6.52 บน ink */
+  .cond .n{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--steel-lt);letter-spacing:.1em}
   .cond .t{font-family:'Kanit';font-weight:600;font-size:clamp(1.15rem,2.2vw,1.7rem);letter-spacing:-.02em}
   .cond .d{color:var(--steel-lt);font-size:.96rem;text-align:right;max-width:34ch;justify-self:end}
   @media(max-width:720px){
@@ -163,7 +178,8 @@
   .ratio .cap{font-family:'IBM Plex Mono';font-size:.78rem;color:var(--steel);letter-spacing:.12em;text-transform:uppercase;width:100%}
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,30px);margin-top:12px}
   .compare figure{margin:0;display:flex;flex-direction:column;gap:12px;align-items:center}
-  .compare figcaption{font-family:'IBM Plex Mono';font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel)}
+  /* ป้ายใต้ภาพเทียบอยู่บนฉากมืด จึงใช้ --steel-lt (6.52 บน ink) ไม่ใช่ --steel (3.60) */
+  .compare figcaption{font-family:'IBM Plex Mono';font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel-lt)}
   .compare .lit figcaption{color:var(--brand)}
   .pillcrop{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line-d)}
   @media(max-width:620px){.compare{grid-template-columns:1fr;gap:26px}}
@@ -190,7 +206,8 @@
 
   /* ---------- footer ---------- */
   footer{padding:clamp(56px,8vw,110px) var(--pad) clamp(40px,6vw,72px);border-top:1px solid var(--line-d);background:var(--ink)}
-  .fnote{color:var(--steel);font-size:.86rem;margin-top:26px;max-width:62ch}
+  /* footer พื้น --ink จึงใช้ --steel-lt ด้วยเหตุผลเดียวกับ .cond .n */
+  .fnote{color:var(--steel-lt);font-size:.86rem;margin-top:26px;max-width:62ch}
   .fnote a{color:var(--steel-lt)}
   .cta{
     display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:14px 26px;border-radius:999px;
@@ -216,14 +233,6 @@
   @keyframes drift{from{transform:translateY(26px)}to{transform:translateY(-26px)}}
   @keyframes pop{from{opacity:.2;transform:scale(.9)}to{opacity:1;transform:none}}
   @keyframes settle{from{opacity:.4;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
-</style>
-<style>
-  /* reset เทียบเท่า skeleton ที่ Artifact ห่อให้ตอน publish
-     คัดมาไว้ตรงนี้เพื่อให้ไฟล์นี้เปิดเดี่ยว ๆ ได้ผลเหมือนกัน */
-  :root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-  body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#faf9f7}
-  img{max-width:100%}
-  [hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -251,7 +260,7 @@
       มือเปื้อนน้ำมัน และเน็ตที่สะดุดกลางมื้อเย็น</p>
     <div class="chips">
       <span class="chip">รับออเดอร์ · ครัว · เก็บเงิน · หลังร้าน</span>
-      <span class="chip">เทสต์อัตโนมัติ <b>608</b></span>
+      <span class="chip">เทสต์อัตโนมัติ <b>639</b></span>
       <span class="chip">ไทย / English</span>
     </div>
   </div>
@@ -403,7 +412,7 @@
     <a class="cta" href="app/" target="_blank" rel="noopener" style="margin-top:0">ลองใช้งานจริงได้เลย →</a>
     <a href="https://github.com/SuruchBoss/PaynEat" target="_blank" rel="noopener" style="color:var(--steel-lt);text-decoration:underline;font-size:.92rem">ดูโค้ดบน GitHub</a>
   </div>
-  <p class="fnote">ทดสอบอัตโนมัติกว่า 608 เคสก่อนปล่อยให้ลองเล่น · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · เผยแพร่ภายใต้
+  <p class="fnote">ทดสอบอัตโนมัติกว่า 639 เคสก่อนปล่อยให้ลองเล่น · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · เผยแพร่ภายใต้
     <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a><br>
     ภาพหน้าจอทุกภาพในหน้านี้ถ่ายจากแอปจริงด้วย golden test ไม่ใช่ภาพจำลอง (ยกเว้นภาพเคลื่อนไหวผู้ช่วย
     AI ที่บันทึกจากการเรียก Claude API จริง ไม่ใช่ golden test — ดู <a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md" target="_blank" rel="noopener">docs/DECISIONS.md #33</a>)</p>
