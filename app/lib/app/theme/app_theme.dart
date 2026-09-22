@@ -12,6 +12,14 @@ class AppTheme {
   /// ภาพในเอกสารจึงตรงกับที่ผู้ใช้เห็นจริง
   static const String fontFamily = 'NotoSansThai';
 
+  /// ฟอนต์สำรองเมื่อ [fontFamily] ไม่มี glyph ของตัวอักษรนั้น
+  ///
+  /// NotoSansThai มีแค่ไทยกับละติน ตัวอักษรเกาหลีจึงขึ้นเป็นกล่องสี่เหลี่ยม
+  /// ถ้าไม่มี fallback ตัวนี้ — NotoSansKR ที่ฝังไว้เป็น subset เฉพาะอักษร
+  /// ที่คำแปลเกาหลีใช้จริง (ดู test/core/korean_font_coverage_test.dart
+  /// ที่กันไม่ให้มีอักษรหลุดออกนอก subset)
+  static const List<String> fontFamilyFallback = ['NotoSansKR'];
+
   /// ตัวเลขเงินก้อนใหญ่ที่ต้องอ่านให้ถูกในครั้งเดียว (เงินทอน / ยอดสุทธิ)
   /// รวมไว้ที่เดียวเพราะก่อนหน้านี้หน้าเก็บเงินกับหน้าแยกบิลใช้คนละขนาด (22 กับ 20)
   /// สีปล่อยให้ผู้เรียกกำหนดเอง แล้วแต่ว่าเป็นยอดรับหรือยอดทอน
@@ -48,6 +56,7 @@ class AppTheme {
       // ตั้งที่ ThemeData ชั้นนี้จุดเดียว ทุก TextStyle ที่ copyWith ต่อจาก textTheme
       // จะได้ฟอนต์นี้ไปด้วยอัตโนมัติ (ดูฟอนต์ที่ฝังไว้ใน pubspec.yaml)
       fontFamily: fontFamily,
+      fontFamilyFallback: fontFamilyFallback,
       textTheme: _textTheme,
     );
 

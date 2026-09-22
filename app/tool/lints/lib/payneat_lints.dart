@@ -31,10 +31,17 @@ class _PaynEatLints extends PluginBase {
 /// textStyle: Theme.of(context).textTheme.labelLarge?.copyWith(fontSize: 12.5)
 /// ```
 ///
-/// หรือระบุ fontFamily ตรง ๆ ถ้าอยู่ใน const context ที่เรียก Theme.of ไม่ได้:
+/// หรือระบุฟอนต์ตรง ๆ ถ้าอยู่ใน const context ที่เรียก Theme.of ไม่ได้ —
+/// ต้องใส่ **ทั้งคู่** เพราะ NotoSansThai ไม่มีกลิฟฮันกึล ถ้าใส่แค่ fontFamily
+/// ตัวอักษรเกาหลีจะกลายเป็นกล่องสี่เหลี่ยมแทน (กฎเดิมรับ fontFamily อย่างเดียว
+/// จึงปล่อยให้ป้าย NavigationRail ภาษาเกาหลีหลุดออกไปได้):
 ///
 /// ```dart
-/// selectedLabelTextStyle: const TextStyle(fontFamily: AppTheme.fontFamily, fontSize: 13)
+/// selectedLabelTextStyle: const TextStyle(
+///   fontFamily: AppTheme.fontFamily,
+///   fontFamilyFallback: AppTheme.fontFamilyFallback,
+///   fontSize: 13,
+/// )
 /// ```
 class TextStyleNeedsFontFamily extends DartLintRule {
   const TextStyleNeedsFontFamily() : super(code: _code);
@@ -43,11 +50,12 @@ class TextStyleNeedsFontFamily extends DartLintRule {
     name: 'text_style_needs_font_family',
     problemMessage:
         'TextStyle ตรงนี้จะถูกใช้ "แทนที่" สไตล์เดิมทั้งก้อน ไม่ใช่ merge '
-        'ถ้าไม่ระบุ fontFamily ฟอนต์จะหลุดไปใช้ค่า default ของแพลตฟอร์ม '
-        'แล้วอักษรไทยจะกลายเป็นกล่องสี่เหลี่ยม',
+        'ถ้าไม่ระบุทั้ง fontFamily และ fontFamilyFallback ฟอนต์จะหลุดไปใช้ '
+        'ค่า default ของแพลตฟอร์ม แล้วอักษรไทย/เกาหลีจะกลายเป็นกล่องสี่เหลี่ยม',
     correctionMessage:
         'ใช้ copyWith ต่อจาก Theme.of(context).textTheme.* '
-        'หรือใส่ fontFamily: AppTheme.fontFamily ลงไปตรง ๆ',
+        'หรือใส่ fontFamily: AppTheme.fontFamily '
+        'คู่กับ fontFamilyFallback: AppTheme.fontFamilyFallback ลงไปตรง ๆ',
   );
 
   /// จุดที่ Flutter เอา TextStyle ไปใช้ทั้งก้อนโดยไม่ merge กับธีม
@@ -117,14 +125,17 @@ class TextStyleNeedsFontFamily extends DartLintRule {
         return;
       }
 
-      final hasFontFamily = node.argumentList.arguments
+      // ต้องมีครบทั้งสองชื่อ ไม่ใช่อย่างใดอย่างหนึ่ง:
+      // fontFamily อย่างเดียว = ไทยรอด เกาหลีเป็นกล่อง
+      // fontFamilyFallback อย่างเดียว = เกาหลีรอด ไทยหลุดไป default ของแพลตฟอร์ม
+      final names = node.argumentList.arguments
           .whereType<NamedExpression>()
-          .any(
-            (argument) =>
-                argument.name.label.name == 'fontFamily' ||
-                argument.name.label.name == 'fontFamilyFallback',
-          );
-      if (hasFontFamily) return;
+          .map((argument) => argument.name.label.name)
+          .toSet();
+      if (names.contains('fontFamily') &&
+          names.contains('fontFamilyFallback')) {
+        return;
+      }
 
       reporter.atNode(node, _code);
     });

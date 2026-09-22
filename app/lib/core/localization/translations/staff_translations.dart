@@ -48,3 +48,28 @@ const Map<String, String> staffTranslationsEn = {
   'staff_delete_confirm': 'Remove @name\'s account?',
   'staff_deleted_success': 'Account deleted',
 };
+
+const Map<String, String> staffTranslationsKo = {
+  'staff_add_staff': '직원 추가',
+  'staff_empty_state': '이 역할에 해당하는 직원이 없습니다',
+  'staff_name_label': '이름',
+  'staff_name_required': '이름을 입력해 주세요',
+  'staff_username_label': '아이디',
+  'staff_username_min_length': '3자 이상 입력해 주세요',
+  'staff_password_label': '비밀번호',
+  'staff_password_min_length': '6자 이상 입력해 주세요',
+  'staff_role_label': '역할',
+  'staff_status_inactive': '사용 중지',
+  'staff_change_role_to': '@role(으)로 변경',
+  'staff_deactivate_action': '사용 중지',
+  'staff_activate_action': '사용 재개',
+  'staff_delete_account': '계정 삭제',
+  'staff_added_success': '직원을 추가했습니다',
+  'staff_role_changed_success': '@name 님의 역할을 변경했습니다',
+  'staff_deactivated_success': '계정을 사용 중지했습니다',
+  'staff_activated_success': '계정을 사용 재개했습니다',
+  'staff_cannot_delete_self': '본인 계정은 삭제할 수 없습니다',
+  'staff_delete_title': '직원 삭제',
+  'staff_delete_confirm': '@name 님의 계정을 삭제할까요?',
+  'staff_deleted_success': '계정을 삭제했습니다',
+};

@@ -60,3 +60,31 @@ const Map<String, String> tableTranslationsEn = {
       'The QR code printed at table @name will stop working immediately. Print and place the new one.',
   'table_qr_regenerate_success': 'Table QR regenerated',
 };
+
+const Map<String, String> tableTranslationsKo = {
+  'table_error_not_found': '테이블을 찾을 수 없습니다',
+  'table_error_has_open_order': '이 테이블에는 아직 결제되지 않은 주문이 있습니다',
+  'table_status_updated_success': '@name 테이블 상태를 변경했습니다',
+  'table_loading_message': '테이블 배치도를 불러오는 중...',
+  'table_empty_filtered_message': '선택한 조건에 맞는 테이블이 없습니다',
+  'table_count_in_zone': '@count개',
+  'table_number_label': '테이블 @name',
+  'table_seat_count': '@count석',
+  'table_available_count_label': '빈 테이블',
+  'table_occupied_count_label': '사용 중',
+  'table_refresh_tooltip': '새로고침',
+  'table_all_zones_filter': '전체 구역',
+  'table_new_takeaway_delivery_button': '포장/배달 주문',
+  'table_qr_action_label': '셀프 주문 QR 보기',
+  'table_qr_sheet_title': '셀프 주문 QR — 테이블 @name',
+  'table_qr_missing_message': '이 테이블에는 아직 QR 토큰이 없습니다(이전 데이터). 페이지를 새로고침해 주세요.',
+  'table_qr_scan_instruction': '손님이 휴대폰 카메라로 스캔하면 이 테이블로 주문할 수 있습니다.',
+  'table_qr_semantics': '@name 테이블 셀프 주문 QR',
+  'table_qr_copy_link_button': '링크 복사',
+  'table_qr_link_copied': '링크를 복사했습니다',
+  'table_qr_regenerate_button': 'QR 재발급',
+  'table_qr_regenerate_confirm_title': '이 테이블의 QR을 재발급할까요?',
+  'table_qr_regenerate_confirm_message':
+      '@name 테이블에 붙여 둔 QR 코드가 즉시 사용할 수 없게 됩니다. 새 QR을 출력해 교체해 주세요.',
+  'table_qr_regenerate_success': '테이블 QR을 재발급했습니다',
+};

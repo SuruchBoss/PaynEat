@@ -28,3 +28,17 @@ const Map<String, String> kitchenTranslationsEn = {
   'kitchen_column_empty': 'No @title items',
   'kitchen_table_label': 'Table @table',
 };
+
+const Map<String, String> kitchenTranslationsKo = {
+  'kitchen_header_title': '주방 대기열',
+  'kitchen_queue_count': '@count개',
+  'kitchen_late_count': '지연 @count',
+  'kitchen_refresh_tooltip': '새로고침',
+  'kitchen_loading_queue': '주방 대기열을 불러오는 중...',
+  'kitchen_offline_banner':
+      '연결이 끊겼습니다 — 새 주문이 표시되지 않을 수 있습니다. 30초마다 자동으로 다시 시도합니다.',
+  'kitchen_empty_queue_message': '아직 주방에 들어온 주문이 없습니다\n새 주문은 자동으로 표시됩니다',
+  'kitchen_column_count_label': '@title (@count)',
+  'kitchen_column_empty': '@title 항목이 없습니다',
+  'kitchen_table_label': '테이블 @table',
+};

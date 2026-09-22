@@ -32,3 +32,17 @@ const Map<String, String> printingTranslationsEn = {
       'If this prints correctly, setup was successful',
   'printing_test_thai_charset': 'ทดสอบอักษรไทย: ก-ฮ ๐-๙ ฿100.00',
 };
+
+const Map<String, String> printingTranslationsKo = {
+  'printing_receipt_subtitle': '영수증 / 간이 세금계산서',
+  'printing_receipt_no_label': '번호: @code',
+  'printing_receipt_date_label': '일시: @datetime',
+  'printing_receipt_target_label': '테이블/유형: @target',
+  'printing_receipt_waiter_label': '담당: @name',
+  'printing_receipt_guest_count_label': '인원: @count명',
+  'printing_refund_section_title': '환불',
+  'printing_thank_you': '이용해 주셔서 감사합니다',
+  'printing_test_page_title': 'PaynEat POS 프린터 테스트',
+  'printing_test_page_success_message': '이 내용이 정상 출력되면 설정이 완료된 것입니다',
+  'printing_test_thai_charset': 'ทดสอบอักษรไทย: ก-ฮ ๐-๙ ฿100.00',
+};

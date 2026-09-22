@@ -247,7 +247,6 @@ class _LanguageCard extends StatefulWidget {
 class _LanguageCardState extends State<_LanguageCard> {
   @override
   Widget build(BuildContext context) {
-    final isEnglish = LocaleService.isEnglish;
     return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -257,24 +256,28 @@ class _LanguageCardState extends State<_LanguageCard> {
             subtitle: 'settings_language_subtitle'.tr,
           ),
           const SizedBox(height: 16),
-          SegmentedButton<bool>(
+          SegmentedButton<String>(
+            // ป้ายแต่ละภาษาเขียนด้วยภาษานั้นเอง คนที่เปิดแอปมาเจอภาษาที่อ่านไม่ออก
+            // จะได้หาภาษาตัวเองเจอโดยไม่ต้องเดา
             segments: [
               ButtonSegment(
-                value: false,
+                value: 'th',
                 label: Text('settings_language_th'.tr),
               ),
               ButtonSegment(
-                value: true,
+                value: 'en',
                 label: Text('settings_language_en'.tr),
               ),
+              ButtonSegment(
+                value: 'ko',
+                label: Text('settings_language_ko'.tr),
+              ),
             ],
-            selected: {isEnglish},
+            selected: {LocaleService.languageCode},
+            showSelectedIcon: false,
             onSelectionChanged: (selection) async {
-              final wantsEnglish = selection.first;
               await LocaleService.change(
-                wantsEnglish
-                    ? const Locale('en', 'US')
-                    : const Locale('th', 'TH'),
+                LocaleService.localeOf(selection.first),
               );
               if (mounted) setState(() {});
             },

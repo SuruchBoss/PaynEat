@@ -23,7 +23,7 @@ import 'translations/status_translations.dart';
 import 'translations/table_translations.dart';
 import 'translations/tax_invoice_translations.dart';
 
-/// รวมคำแปลทั้งแอป — ไทย (ค่าเริ่มต้น) และอังกฤษ
+/// รวมคำแปลทั้งแอป — ไทย (ค่าเริ่มต้น) อังกฤษ และเกาหลี
 ///
 /// แต่ละฟีเจอร์มีไฟล์คำแปลของตัวเองใน translations/ เพื่อให้แก้ไขแยกกันได้
 /// โดยไม่ชนกัน ไฟล์นี้แค่รวมทุกอย่างเข้าด้วยกัน
@@ -31,6 +31,7 @@ class AppTranslations extends Translations {
   static const List<Locale> supportedLocales = [
     Locale('th', 'TH'),
     Locale('en', 'US'),
+    Locale('ko', 'KR'),
   ];
 
   static const Locale fallbackLocale = Locale('en', 'US');
@@ -82,6 +83,29 @@ class AppTranslations extends Translations {
       ...tableTranslationsEn,
       ...taxInvoiceTranslationsEn,
       ...aiAssistantTranslationsEn,
+    },
+    'ko_KR': {
+      ...commonTranslationsKo,
+      ...statusTranslationsKo,
+      ...auditLogTranslationsKo,
+      ...authTranslationsKo,
+      ...customerTranslationsKo,
+      ...homeTranslationsKo,
+      ...ingredientTranslationsKo,
+      ...kitchenTranslationsKo,
+      ...menuTranslationsKo,
+      ...orderTranslationsKo,
+      ...paymentTranslationsKo,
+      ...printingTranslationsKo,
+      ...promotionTranslationsKo,
+      ...reportTranslationsKo,
+      ...selfOrderTranslationsKo,
+      ...settingsTranslationsKo,
+      ...shiftTranslationsKo,
+      ...staffTranslationsKo,
+      ...tableTranslationsKo,
+      ...taxInvoiceTranslationsKo,
+      ...aiAssistantTranslationsKo,
     },
   };
 }

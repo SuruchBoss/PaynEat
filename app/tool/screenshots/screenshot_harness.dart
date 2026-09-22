@@ -79,6 +79,17 @@ class ScreenshotHarness {
     await load('NotoSansThai', thaiFaces);
     await load('Roboto', thaiFaces);
 
+    // ฟอนต์เกาหลีต้องลงทะเบียนด้วยชื่อเดียวกับที่ `AppTheme.fontFamilyFallback`
+    // ระบุไว้ ไม่งั้นภาพภาษาเกาหลีจะได้กล่องสี่เหลี่ยมแทนตัวอักษรทุกตัว
+    // (NotoSansThai ไม่มี glyph ฮันกึลเลยสักตัว)
+    const koreanFaces = [
+      '$fontDir/NotoSansKR-400.ttf',
+      '$fontDir/NotoSansKR-500.ttf',
+      '$fontDir/NotoSansKR-700.ttf',
+      '$fontDir/NotoSansKR-800.ttf',
+    ];
+    await load('NotoSansKR', koreanFaces);
+
     const materialIcons =
         '/opt/fl/flutter/bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf';
     if (File(materialIcons).existsSync()) {
@@ -96,10 +107,15 @@ class ScreenshotHarness {
   /// (นี่คือสาเหตุที่ภาพ `*-high-contrast.png` เคยออกมาเหมือนภาพโหมดปกติเป๊ะทุกไบต์
   /// มาตลอด — เดิมโค้ดตั้ง `AppColors.contrast = AppContrast.high` ตรง ๆ ใน `setUp`
   /// ก่อนเรียก [launchApp] แต่ storage ว่างเปล่าทำให้ restore() ตั้งค่ากลับเป็นปกติทันที)
+  ///
+  /// [locale] เซฟลง storage ด้วยเหตุผลเดียวกับ [highContrast] — `PaynEatApp`
+  /// อ่านภาษาที่เคยเลือกไว้จาก storage ตอน build ถ้าเรียก `Get.updateLocale()`
+  /// หลังวาง widget ค่านั้นจะถูกตั้งทับกลับเป็นไทยทันทีในเฟรมถัดไป
   static Future<void> launchApp(
     WidgetTester tester,
     Size size, {
     bool highContrast = false,
+    Locale? locale,
   }) async {
     setSurface(tester, size);
     Get.reset();
@@ -109,6 +125,9 @@ class ScreenshotHarness {
     final storage = StorageService.memory();
     if (highContrast) {
       await storage.saveContrast('high');
+    }
+    if (locale != null) {
+      await storage.saveLocale(locale.languageCode);
     }
     Get.put<StorageService>(storage, permanent: true);
 

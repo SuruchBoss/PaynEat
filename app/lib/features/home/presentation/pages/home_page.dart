@@ -84,14 +84,21 @@ class _NavigationRailSection extends GetView<HomeController> {
             // NavigationRail ใช้ TextStyle สองตัวนี้ "แทนที่" สไตล์เดิมทั้งก้อน ไม่ได้ merge
             // จึงต้องระบุ fontFamily เองด้วย ไม่งั้นฟอนต์หลุดไปใช้ค่า default ของแพลตฟอร์ม
             // แล้วอักษรไทยจะกลายเป็นกล่องสี่เหลี่ยม (บั๊กเดียวกับที่เคยเจอในปุ่มเดินสถานะ)
+            //
+            // ต้องใส่ fontFamilyFallback คู่กันเสมอ ไม่ใช่ fontFamily อย่างเดียว —
+            // NotoSansThai ไม่มีกลิฟฮันกึลสักตัว ป้ายเมนูภาษาเกาหลีเลยขึ้นเป็น
+            // กล่องสี่เหลี่ยมทั้งแถบ ทั้งที่ส่วนอื่นของหน้าเดียวกันแสดงผลปกติ
+            // (จับได้ตอนถ่ายภาพ ko-41-tablet-kitchen รอบแรก)
             selectedLabelTextStyle: TextStyle(
               fontFamily: AppTheme.fontFamily,
+              fontFamilyFallback: AppTheme.fontFamilyFallback,
               color: AppColors.brandInk,
               fontWeight: FontWeight.w700,
               fontSize: 13,
             ),
             unselectedLabelTextStyle: TextStyle(
               fontFamily: AppTheme.fontFamily,
+              fontFamilyFallback: AppTheme.fontFamilyFallback,
               color: AppColors.textSecondary,
               fontSize: 13,
             ),
