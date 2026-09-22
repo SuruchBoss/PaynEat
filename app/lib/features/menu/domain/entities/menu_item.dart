@@ -1,4 +1,4 @@
-import '../../../../core/localization/locale_service.dart';
+import '../../../../core/localization/localized_name.dart';
 import '../../../ingredient/domain/entities/ingredient.dart';
 import 'menu_option.dart';
 
@@ -11,6 +11,7 @@ class MenuItem {
     required this.price,
     this.categoryName,
     this.nameEn,
+    this.nameKo,
     this.description,
     this.imageUrl,
     this.isAvailable = true,
@@ -26,6 +27,7 @@ class MenuItem {
   final String? categoryName;
   final String name;
   final String? nameEn;
+  final String? nameKo;
   final String? description;
   final double price;
   final String? imageUrl;
@@ -39,11 +41,12 @@ class MenuItem {
   /// (ดู docs/tickets/06-inventory-stock.md)
   final List<MenuItemIngredientUsage> ingredients;
 
-  /// ชื่อที่จะแสดงตามภาษาปัจจุบัน — ถอยกลับไปใช้ [name] (ไทย) ถ้าไม่มี [nameEn]
+  /// ชื่อที่จะแสดงตามภาษาปัจจุบัน
+  ///
+  /// ลำดับการถอย: ชื่อในภาษานั้น → ชื่ออังกฤษ → ชื่อไทย
+  /// ข้อมูลที่ร้านจริงกรอกเองมักมีแค่ชื่อไทย จึงต้องไม่คืนค่าว่างเด็ดขาด
   String get displayName =>
-      LocaleService.prefersLatinNames && (nameEn?.isNotEmpty ?? false)
-      ? nameEn!
-      : name;
+      LocalizedName.pick(name: name, nameEn: nameEn, nameKo: nameKo);
 
   bool get hasOptions => optionGroups.isNotEmpty;
 

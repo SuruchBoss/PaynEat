@@ -92,7 +92,7 @@ class _TableGrid extends StatelessWidget {
     // จัดกลุ่มตามโซน เพื่อให้พนักงานหาโต๊ะได้เหมือนเดินในร้านจริง
     final grouped = <String, List<DiningTable>>{};
     for (final table in tables) {
-      grouped.putIfAbsent(table.zone, () => []).add(table);
+      grouped.putIfAbsent(table.displayZone, () => []).add(table);
     }
 
     return LayoutBuilder(
@@ -192,7 +192,7 @@ class _TableGrid extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
+                        '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.displayZone}',
                         style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 12.5,
@@ -305,9 +305,9 @@ class _TableSummaryBar extends StatelessWidget {
                     ),
                     for (final zone in controller.zones)
                       _FilterChipItem(
-                        label: zone,
-                        selected: controller.selectedZone.value == zone,
-                        onTap: () => controller.filterByZone(zone),
+                        label: zone.label,
+                        selected: controller.selectedZone.value == zone.key,
+                        onTap: () => controller.filterByZone(zone.key),
                       ),
                   ],
                 ),

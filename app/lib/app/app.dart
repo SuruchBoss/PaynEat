@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../core/demo/demo_names.dart';
 import '../core/localization/app_translations.dart';
 import '../core/localization/locale_service.dart';
 import '../core/services/contrast_service.dart';
@@ -31,6 +32,13 @@ class PaynEatApp extends StatelessWidget {
     // ต้องคืนค่าคอนทราสต์ก่อนสร้างธีม ไม่งั้นเฟรมแรกจะวาดด้วยโหมดปกติแล้วค่อยกระพริบ
     ContrastService.restore();
 
+    final locale = _initialLocale;
+    // ต้องบอกชั้นข้อมูลสาธิตตั้งแต่ก่อน build เฟรมแรก — `Get.locale` ยังไม่ถูกตั้ง
+    // ตรงนี้ (GetMaterialApp เป็นคนตั้งให้ทีหลัง) ถ้ารอ `syncDemoNames()` ใน
+    // `LocaleService.change` อย่างเดียว คนที่เปิดแอปมาเป็นภาษาเกาหลีอยู่แล้ว
+    // โดยไม่ได้กดสลับภาษาจะได้ชื่อเมนูภาษาไทยไปทั้งกะ
+    DemoNames.language = locale.languageCode;
+
     return GetMaterialApp(
       title: AppConfig.appName,
       debugShowCheckedModeBanner: false,
@@ -42,7 +50,7 @@ class PaynEatApp extends StatelessWidget {
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 220),
       translations: AppTranslations(),
-      locale: _initialLocale,
+      locale: locale,
       fallbackLocale: AppTranslations.fallbackLocale,
       // ล็อกขนาดตัวอักษรไม่ให้ใหญ่เกินจนผังโต๊ะเพี้ยนบนแท็บเล็ตร้าน
       builder: (context, child) => MediaQuery.withClampedTextScaling(

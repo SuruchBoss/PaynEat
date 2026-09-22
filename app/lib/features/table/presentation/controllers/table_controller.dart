@@ -56,10 +56,22 @@ class TableController extends GetxController {
     super.onClose();
   }
 
-  /// โต๊ะทุกโซนที่มีอยู่ (ใช้ทำแถบตัวกรอง)
-  List<String> get zones {
-    final unique = tables.map((table) => table.zone).toSet().toList()..sort();
-    return unique;
+  /// โซนทั้งหมดที่มีโต๊ะอยู่ (ใช้ทำแถบตัวกรอง)
+  ///
+  /// คืนทั้ง `key` (ชื่อดิบจากฐานข้อมูล ใช้เทียบตอนกรอง) และ `label`
+  /// (ชื่อที่แปลตามภาษาแล้ว ใช้โชว์บนชิป) — ถ้าเอา label ไปกรองด้วย
+  /// พอสลับเป็นภาษาเกาหลีชิปจะกรองไม่เจอโต๊ะสักตัว เพราะ `table.zone`
+  /// ยังเป็นชื่อไทยอยู่เสมอ
+  List<({String key, String label})> get zones {
+    final seen = <String, String>{};
+    for (final table in tables) {
+      seen.putIfAbsent(table.zone, () => table.displayZone);
+    }
+    final result = seen.entries
+        .map((entry) => (key: entry.key, label: entry.value))
+        .toList();
+    result.sort((a, b) => a.label.compareTo(b.label));
+    return result;
   }
 
   List<DiningTable> get filteredTables {

@@ -537,11 +537,25 @@ void main() {
   // ข้อมูลเมนูในฐานข้อมูลมีแค่สองภาษา ส่วนที่แปลคือ UI ของระบบ
   // ---------------------------------------------------------------------
   group('ภาษาเกาหลี', () {
+    late final ({
+      int openOrderId,
+      int kitchenOrderId,
+      int paidOrderId,
+      int takeawayOrderId,
+      int customerId,
+    })
+    koIds;
+
+    // สร้างข้อมูลสาธิตใหม่เป็นภาษาเกาหลีทั้งชุด แล้วคืนเป็นภาษาไทยให้กลุ่มอื่น
+    // (กลุ่มนี้อยู่ท้ายไฟล์ แต่ไม่พึ่งลำดับการรัน — คืนค่าเองเสมอ)
+    setUpAll(() => koIds = ScreenshotHarness.reseedIn('ko'));
+    tearDownAll(() => ids = ScreenshotHarness.reseedIn('th'));
     testWidgets('40 ผังโต๊ะภาษาเกาหลี', (tester) async {
       await ScreenshotHarness.launchApp(
         tester,
         ScreenshotHarness.phone,
         locale: LocaleService.korean,
+        pixelRatio: 3,
       );
       await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
       await ScreenshotHarness.capture(tester, 'ko-40-phone-tables');
@@ -577,13 +591,14 @@ void main() {
         tester,
         ScreenshotHarness.phone,
         locale: LocaleService.korean,
+        pixelRatio: 3,
       );
       await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
 
       unawaited(
         Get.toNamed<void>(
           AppRoutes.checkout,
-          arguments: {'orderId': ids.openOrderId},
+          arguments: {'orderId': koIds.openOrderId},
         ),
       );
       await ScreenshotHarness.settle(tester);
@@ -599,6 +614,32 @@ void main() {
       await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'ko-44-web-dashboard');
+    });
+
+    // GIF สาธิตผู้ช่วย AI เป็นภาษาไทยทั้งใบ (บันทึกจากการเรียก API จริงครั้งเดียว
+    // ถ่ายใหม่เป็นเกาหลีต้องมี API key) หน้าเกาหลีจึงต้องมีภาพหน้า AI ภาษาเกาหลี
+    // ไว้เป็นภาพหลักก่อน ไม่งั้นทั้งหัวข้อจะดูเหมือนระบบไม่รองรับเกาหลีเลย
+    testWidgets('45 หน้าผู้ช่วย AI ภาษาเกาหลี', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.desktop,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+      final controller = Get.find<HomeController>();
+      final index = controller.destinations.indexWhere(
+        (destination) => destination.label == 'home_nav_ai_assistant',
+      );
+      expect(
+        index,
+        isNonNegative,
+        reason:
+            'ไม่พบเมนูผู้ช่วย AI ในเมนูของแอดมิน — '
+            'ดู HomeBinding.destinationsForRole ว่า label เปลี่ยนไปหรือเปล่า',
+      );
+      controller.changeTab(index);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-45-web-ai-assistant');
     });
   });
 }

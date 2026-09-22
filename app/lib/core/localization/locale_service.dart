@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../demo/demo_names.dart';
 import '../services/storage_service.dart';
 
 /// สลับภาษาทั้งแอปและจำค่าไว้ในเครื่อง
@@ -18,10 +19,10 @@ class LocaleService {
   static bool get isEnglish => languageCode == 'en';
   static bool get isKorean => languageCode == 'ko';
 
-  /// ควรใช้ชื่อเมนู/หมวดหมู่ที่เป็นภาษาอังกฤษไหม
+  /// ควรใช้ชื่อที่ไม่ใช่อักษรไทยไหม
   ///
-  /// ข้อมูลเมนูมีแค่ชื่อไทยกับชื่ออังกฤษ ไม่มีชื่อเกาหลี — ผู้ใช้ที่ไม่ได้อ่านไทย
-  /// จึงควรได้ชื่ออังกฤษ ไม่ใช่ชื่อไทยที่อ่านไม่ออก เงื่อนไขจึงเป็น "ไม่ใช่ไทย"
+  /// ข้อมูลที่ร้านจริงกรอกเองมักมีแค่ชื่อไทย ผู้ใช้ที่อ่านไทยไม่ออกจึงควรได้
+  /// ชื่ออักษรละตินแทนชื่อไทยที่อ่านไม่ออกเลย เงื่อนไขจึงเป็น "ไม่ใช่ไทย"
   /// ไม่ใช่ "เป็นอังกฤษ" เพื่อให้ภาษาที่เพิ่มเข้ามาทีหลังได้พฤติกรรมนี้เอง
   static bool get prefersLatinNames => !isThai;
 
@@ -33,8 +34,16 @@ class LocaleService {
 
   static Future<void> change(Locale locale) async {
     Get.updateLocale(locale);
+    syncDemoNames();
     if (Get.isRegistered<StorageService>()) {
       await Get.find<StorageService>().saveLocale(locale.languageCode);
     }
   }
+
+  /// บอกชั้นข้อมูลสาธิตว่าตอนนี้ภาษาอะไร
+  ///
+  /// `DemoNames` อยู่ในชั้นข้อมูล เรียก `Get.locale` เองไม่ได้ (ดูคอมเมนต์ในไฟล์นั้น)
+  /// จึงต้องมีคนป้อนให้ — ถ้าลืมเรียก ชื่อที่ประทับลงออเดอร์ใหม่จะค้างเป็นภาษาไทย
+  /// ทั้งที่หน้าจอเป็นเกาหลี มีเทสต์คุมไว้ใน locale_service_test.dart
+  static void syncDemoNames() => DemoNames.language = languageCode;
 }

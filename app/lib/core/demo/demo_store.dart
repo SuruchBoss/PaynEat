@@ -6,6 +6,7 @@ import '../../features/order/domain/services/bill_calculator.dart';
 import '../../features/order/domain/services/promotion_engine.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
+import 'demo_names.dart';
 import 'demo_seed.dart';
 import '../utils/app_clock.dart';
 import '../utils/csv.dart';

@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/app.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
+import 'package:payneat_pos/core/demo/demo_names.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
@@ -46,6 +47,25 @@ class ScreenshotHarness {
   ///
   /// ต้องเรียก "ก่อน" [seedScenario] เพราะข้อมูลสาธิตประทับเวลาตอนถูกสร้าง
   static void freezeClock() => AppClock.freeze(capturedAt);
+
+  /// สร้างข้อมูลสาธิตใหม่ทั้งชุดในภาษาที่กำหนด
+  ///
+  /// ต้องเรียกก่อนถ่ายภาษาอื่น เพราะชื่อรายการอาหารในออเดอร์ถูก "ประทับ" ลงไป
+  /// ตอนสั่ง ไม่ได้อ่านจากเมนูสด ๆ ทุกครั้ง — ถ้าไม่ seed ใหม่ ตั๋วครัวจะยังเป็น
+  /// ภาษาไทยอยู่ทั้งที่ UI รอบ ๆ เป็นเกาหลีหมดแล้ว (ซึ่งทำให้คนอ่านสงสัยว่า
+  /// รองรับภาษาเกาหลีจริงหรือเปล่า — เป็นข้อที่ผู้ใช้ทักมาจริง ๆ)
+  static ({
+    int openOrderId,
+    int kitchenOrderId,
+    int paidOrderId,
+    int takeawayOrderId,
+    int customerId,
+  })
+  reseedIn(String languageCode) {
+    DemoNames.language = languageCode;
+    DemoStore.instance.reset();
+    return seedScenario();
+  }
 
   /// คืนนาฬิกาจริง — เรียกใน tearDownAll เสมอ
   static void unfreezeClock() => AppClock.unfreeze();
@@ -108,6 +128,10 @@ class ScreenshotHarness {
   /// มาตลอด — เดิมโค้ดตั้ง `AppColors.contrast = AppContrast.high` ตรง ๆ ใน `setUp`
   /// ก่อนเรียก [launchApp] แต่ storage ว่างเปล่าทำให้ restore() ตั้งค่ากลับเป็นปกติทันที)
   ///
+  /// [pixelRatio] คือความละเอียดที่เรนเดอร์ออกมา ไม่ใช่ขนาดหน้าจอจำลอง
+  /// ภาพจอมือถือถูกเอาไปวางในหน้า Landing ที่ความกว้างใกล้เคียงของจริง
+  /// ที่ 2.0 จึงเหลือพิกเซลให้จอ retina ไม่พอ ตัวหนังสือในภาพเลยดูเบลอ
+  ///
   /// [locale] เซฟลง storage ด้วยเหตุผลเดียวกับ [highContrast] — `PaynEatApp`
   /// อ่านภาษาที่เคยเลือกไว้จาก storage ตอน build ถ้าเรียก `Get.updateLocale()`
   /// หลังวาง widget ค่านั้นจะถูกตั้งทับกลับเป็นไทยทันทีในเฟรมถัดไป
@@ -116,8 +140,9 @@ class ScreenshotHarness {
     Size size, {
     bool highContrast = false,
     Locale? locale,
+    double pixelRatio = 2.0,
   }) async {
-    setSurface(tester, size);
+    setSurface(tester, size, pixelRatio: pixelRatio);
     Get.reset();
 
     // ใช้ storage แบบหน่วยความจำ เพราะใน testWidgets เวลาเป็นแบบจำลอง
@@ -206,7 +231,7 @@ class ScreenshotHarness {
           'menuItemId': 2,
           'quantity': 2,
           'optionIds': [1023, 1031],
-          'note': 'ไม่ใส่ผัก',
+          'note': _note('ไม่ใส่ผัก', '야채 빼주세요', 'No vegetables'),
         },
         {
           'menuItemId': 17,
@@ -418,6 +443,14 @@ class ScreenshotHarness {
       customerId: firstCustomerId,
     );
   }
+
+  /// โน้ตถึงครัวที่พนักงานพิมพ์เอง — ต้องเป็นภาษาเดียวกับข้อมูลชุดที่กำลัง seed
+  static String _note(String th, String ko, String en) =>
+      switch (DemoNames.language) {
+        'ko' => ko,
+        'en' => en,
+        _ => th,
+      };
 
   /// จำนวนบิลต่อชั่วโมงของวันขายทั่วไป — ช่วงเที่ยงและช่วงเย็นจะหนาแน่นกว่า
   static const Map<int, int> _billsPerHour = {

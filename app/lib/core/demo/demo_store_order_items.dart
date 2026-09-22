@@ -62,8 +62,10 @@ extension DemoStoreOrderItems on DemoStore {
             if (option['id'] == optionId) {
               selected.add({
                 'id': option['id'],
-                'groupName': group['name'],
-                'name': option['name'],
+                // ประทับชื่อตามภาษาที่คนกดสั่งเห็นอยู่ตอนนั้น ไม่ใช่ภาษาไทยเสมอ
+                // (ตั๋วครัวและใบเสร็จต้องตรงกับที่พนักงานเห็นบนจอตอนสั่ง)
+                'groupName': DemoNames.of(group.cast<String, dynamic>()),
+                'name': DemoNames.of(option.cast<String, dynamic>()),
                 'priceDelta': option['priceDelta'],
               });
             }
@@ -83,7 +85,7 @@ extension DemoStoreOrderItems on DemoStore {
         'orderId': order['id'],
         'menuItemId': menu['id'],
         'categoryId': menu['categoryId'],
-        'name': menu['name'],
+        'name': DemoNames.of(menu),
         'unitPrice': unitPrice,
         'quantity': quantity,
         'options': selected,

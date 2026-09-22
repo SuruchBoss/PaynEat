@@ -5,6 +5,7 @@ class CategoryModel extends Category {
     required super.id,
     required super.name,
     super.nameEn,
+    super.nameKo,
     super.icon,
     super.sortOrder,
     super.isActive,
@@ -15,6 +16,7 @@ class CategoryModel extends Category {
     id: (json['id'] as num).toInt(),
     name: json['name'] as String? ?? '',
     nameEn: json['nameEn'] as String?,
+    nameKo: json['nameKo'] as String?,
     icon: json['icon'] as String?,
     sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
     isActive: json['isActive'] as bool? ?? true,
@@ -24,11 +26,13 @@ class CategoryModel extends Category {
   static Map<String, dynamic> toCreateJson({
     required String name,
     String? nameEn,
+    String? nameKo,
     String? icon,
     int? sortOrder,
   }) => {
     'name': name,
     if (nameEn != null && nameEn.isNotEmpty) 'nameEn': nameEn,
+    if (nameKo != null && nameKo.isNotEmpty) 'nameKo': nameKo,
     if (icon != null && icon.isNotEmpty) 'icon': icon,
     'sortOrder': ?sortOrder,
   };

@@ -1,19 +1,46 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:payneat_pos/core/demo/demo_names.dart';
+import 'package:payneat_pos/core/demo/demo_seed.dart';
 import 'package:payneat_pos/core/localization/app_translations.dart';
 
 /// ฟอนต์เกาหลีที่ฝังไว้เป็น subset เฉพาะตัวอักษรที่คำแปลใช้จริง (ดู pubspec.yaml)
 /// ถ้ามีคนเพิ่มคำแปลเกาหลีที่ใช้ตัวอักษรนอก subset ตัวนั้นจะกลายเป็นกล่องสี่เหลี่ยม
 /// บนหน้าจอจริงโดยไม่มีอะไรเตือน — เทสต์นี้อ่าน cmap ของไฟล์ฟอนต์จริงมาเทียบ
 void main() {
-  test('ทุกตัวอักษรในคำแปลเกาหลีต้องมี glyph อยู่ในฟอนต์ที่ฝังไว้', () {
+  test('ทุกตัวอักษรภาษาเกาหลีที่แอปแสดงต้องมี glyph อยู่ในฟอนต์ที่ฝังไว้', () {
     final translations = AppTranslations().keys['ko_KR'];
     expect(translations, isNotNull, reason: 'ยังไม่ได้ลงทะเบียน ko_KR');
 
     final used = <int>{};
     for (final value in translations!.values) {
       used.addAll(value.runes);
+    }
+
+    // ข้อมูลสาธิตก็ถูกวาดด้วยฟอนต์เดียวกัน และเป็นสิ่งที่คนกดเข้ามาลองเห็นก่อน
+    // คำแปล UI ด้วยซ้ำ — รอบแรกตรวจแค่คำแปล ชื่อเมนูภาษาเกาหลีจึงหลุดออกนอก
+    // subset ได้โดยไม่มีอะไรฟ้อง
+    for (final row in [
+      ...DemoSeed.categories(),
+      ...DemoSeed.menuItems(),
+      ...DemoSeed.tables(),
+    ]) {
+      used.addAll(DemoNames.of(row, lang: 'ko').runes);
+      final zoneKo = row['zoneKo'] as String?;
+      if (zoneKo != null) used.addAll(zoneKo.runes);
+      for (final group in (row['optionGroups'] as List? ?? const [])) {
+        final g = (group as Map).cast<String, dynamic>();
+        used.addAll(DemoNames.of(g, lang: 'ko').runes);
+        for (final option in (g['options'] as List? ?? const [])) {
+          used.addAll(
+            DemoNames.of(
+              (option as Map).cast<String, dynamic>(),
+              lang: 'ko',
+            ).runes,
+          );
+        }
+      }
     }
 
     final covered = _cmapOf('assets/fonts/NotoSansKR-400.ttf')

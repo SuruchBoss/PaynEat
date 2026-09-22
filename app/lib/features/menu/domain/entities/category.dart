@@ -1,4 +1,4 @@
-import '../../../../core/localization/locale_service.dart';
+import '../../../../core/localization/localized_name.dart';
 
 /// หมวดหมู่อาหาร เช่น อาหารจานเดียว / เครื่องดื่ม
 class Category {
@@ -6,6 +6,7 @@ class Category {
     required this.id,
     required this.name,
     this.nameEn,
+    this.nameKo,
     this.icon,
     this.sortOrder = 0,
     this.isActive = true,
@@ -15,16 +16,15 @@ class Category {
   final int id;
   final String name;
   final String? nameEn;
+  final String? nameKo;
   final String? icon;
   final int sortOrder;
   final bool isActive;
   final int itemCount;
 
-  /// ชื่อที่จะแสดงตามภาษาปัจจุบัน — ถอยกลับไปใช้ [name] (ไทย) ถ้าไม่มี [nameEn]
+  /// ชื่อที่จะแสดงตามภาษาปัจจุบัน (ดู [LocalizedName.pick])
   String get displayName =>
-      LocaleService.prefersLatinNames && (nameEn?.isNotEmpty ?? false)
-      ? nameEn!
-      : name;
+      LocalizedName.pick(name: name, nameEn: nameEn, nameKo: nameKo);
 
   @override
   bool operator ==(Object other) =>

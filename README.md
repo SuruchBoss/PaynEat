@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-650%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-651%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 650 automated tests.
+control and 651 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -46,7 +46,7 @@ control and 650 automated tests.
 - **โหมดคอนทราสต์สูง** — อ่านออกชัดแม้แดดจ้าริมหน้าต่างหรือไอน้ำในครัว ตัวหนังสือผ่านเกณฑ์ WCAG AAA
 - **Audit log ครบทุกจุดเสี่ยงต่อการทุจริต** — ยกเลิกออเดอร์ ให้ส่วนลด แก้ VAT คืนเงิน บันทึกผู้ทำ/เวลา/
   เหตุผลไว้เสมอ แก้ไขลบไม่ได้จาก UI ไหนเลย
-- **ทดสอบอัตโนมัติ 650 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 651 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -410,7 +410,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 293 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 357 เคส — domain / controller / widget
+cd app && flutter test      # 358 เคส — domain / controller / widget
 ```
 
 ---
@@ -571,7 +571,10 @@ cd app && flutter test      # 357 เคส — domain / controller / widget
   (`NODE_ENV=production`) จะไม่ยอม seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้วให้เองด้วย
   (ดู `docs/DECISIONS.md` #20 และ `SECURITY.md`)
 - **สามภาษาทั้งระบบ: ไทย / English / 한국어** — สลับได้ที่หน้า **บัญชี** หรือหน้า **ตั้งค่า**
-  จำค่าไว้กับเครื่อง คำแปลครบ 806 คีย์เท่ากันทุกภาษา ฟอนต์เกาหลีฝังมาในแอปแบบ subset เฉพาะ
+  จำค่าไว้กับเครื่อง **ข้อมูลสาธิตก็แปลครบทั้งสามภาษาด้วย** (ชื่อเมนู หมวดหมู่ โซนโต๊ะ
+  ตัวเลือกเสริม) ไม่ใช่ UI ภาษาเดียวบนข้อมูลอีกภาษา — ข้อมูลที่ร้านจริงกรอกเองยังแสดง
+  ตามที่พิมพ์เข้าไปเสมอ และชื่อบนตั๋วครัว/ใบเสร็จของบิลเก่าไม่ขยับตามภาษา เพราะเป็น
+  ค่าที่ประทับไว้ตอนสั่ง คำแปลครบ 806 คีย์เท่ากันทุกภาษา ฟอนต์เกาหลีฝังมาในแอปแบบ subset เฉพาะ
   ตัวอักษรที่ใช้จริง (4 น้ำหนัก 256KB) จึงไม่พึ่งฟอนต์ของเครื่อง มีเทสต์อ่านตาราง cmap ของไฟล์ฟอนต์
   กันไม่ให้มีคำแปลที่ใช้ตัวอักษรนอก subset หลุดเข้ามา และผู้ช่วย AI ตอบภาษาเดียวกับคำถามได้
   ทั้งสามภาษา (ดู `docs/DECISIONS.md` #39)
@@ -869,7 +872,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 293 เคส
-cd app && flutter test      # 357 เคส
+cd app && flutter test      # 358 เคส
 ```
 
 **Backend (293 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -999,7 +1002,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 `POST .../items` ได้ 30 ครั้ง/5 นาทีต่อโต๊ะ เกินแล้วโดน 429 (ดู `docs/tickets/17-qr-self-order.md`,
 `docs/DECISIONS.md` #37)
 
-**Flutter (357 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (358 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|

@@ -27,8 +27,16 @@ class _FakeTableRepository implements TableRepository {
 DiningTable _table(
   int id, {
   String zone = 'โซนในร้าน',
+  String? zoneKo,
   String status = TableStatus.available,
-}) => DiningTable(id: id, name: 'A$id', zone: zone, seats: 4, status: status);
+}) => DiningTable(
+  id: id,
+  name: 'A$id',
+  zone: zone,
+  zoneKo: zoneKo,
+  seats: 4,
+  status: status,
+);
 
 User _user(int id, {String role = UserRole.waiter}) => User(
   id: id,
@@ -95,7 +103,23 @@ void main() {
       await controller.loadTables();
 
       // เรียงด้วย String.compareTo ปกติ (เทียบทีละโค้ดยูนิต) ไม่ใช่ Thai locale collation
-      expect(controller.zones, ['โซนสวน', 'โซนในร้าน']);
+      expect(controller.zones.map((zone) => zone.key), ['โซนสวน', 'โซนในร้าน']);
+    });
+
+    // key ใช้กรอง (ค่าดิบจากฐานข้อมูล) ส่วน label ใช้โชว์ (แปลตามภาษาแล้ว)
+    // ถ้าเผลอเอา label ไปกรองด้วย พอสลับเป็นเกาหลีชิปจะกรองไม่เจอโต๊ะสักตัว
+    test('zones แยก key ที่ใช้กรอง ออกจาก label ที่เอาไปโชว์', () async {
+      repository.nextGetTablesResult = Result.success([
+        _table(1, zone: 'โซนในร้าน', zoneKo: '실내'),
+      ]);
+      await controller.loadTables();
+
+      expect(controller.zones.single.key, 'โซนในร้าน');
+      expect(controller.zones.single.label, isNotEmpty);
+
+      // กรองด้วย key ต้องเจอโต๊ะ ส่วนกรองด้วย label ที่แปลแล้วต้องไม่เจอ
+      controller.filterByZone(controller.zones.single.key);
+      expect(controller.filteredTables, hasLength(1));
     });
 
     test('filteredTables กรองได้ทั้งโซนและสถานะพร้อมกัน', () async {
