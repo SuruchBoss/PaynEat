@@ -15,9 +15,14 @@
 <meta name="twitter:image" content="https://suruchboss.github.io/PaynEat/og-image-en.png">
 <link rel="alternate" hreflang="th" href="https://suruchboss.github.io/PaynEat/">
 <link rel="alternate" hreflang="en" href="https://suruchboss.github.io/PaynEat/index.en.html">
+<link rel="alternate" hreflang="ko" href="https://suruchboss.github.io/PaynEat/index.ko.html">
 <title>PaynEat POS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.3' fill='%23FF6B2C'/%3E%3Crect x='5.6' y='3.6' width='3.8' height='16.8' rx='1.9' fill='white'/%3E%3Cpath d='M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@600;800&family=Anuphan:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<!-- ป้ายสลับภาษา "한국어" ใช้ฮันกึล ซึ่งไม่มีใน Kanit/Anuphan ที่หน้านี้โหลด
+     ถ้าปล่อยให้เบราว์เซอร์ fallback เอง เครื่องที่ไม่มีฟอนต์เกาหลีจะเห็นเป็นกล่องสี่เหลี่ยม
+     พารามิเตอร์ text= ของ Google Fonts ตัด subset ให้เหลือเฉพาะ 3 ตัวอักษรนี้ (~2KB) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&amp;text=%ED%95%9C%EA%B5%AD%EC%96%B4&amp;display=swap">
 <style>
   /* Reset equivalent to the skeleton the Artifact wrapper adds on publish —
      inlined here so this file renders the same when opened standalone. */
@@ -76,6 +81,11 @@
   .wordmark{display:flex;align-items:center;gap:10px;font-family:'Kanit';font-weight:800;font-size:1.02rem;letter-spacing:-.02em;color:var(--paper)}
   .glyph{width:26px;height:26px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:.82rem;flex:none}
   nav .links{display:flex;gap:clamp(14px,2.4vw,30px);font-size:.9rem;color:var(--steel-lt)}
+  /* ตัวสลับภาษาต้องแยกออกจาก .links — .links ถูกซ่อนทั้งก้อนบนจอแคบ
+     ถ้าปล่อยลิงก์ภาษาไว้ในนั้น คนเปิดจากมือถือจะหาทางไปหน้าภาษาอื่นไม่เจอเลย */
+  nav .langs{display:flex;align-items:center;gap:6px;font-size:.86rem;color:var(--steel-lt);flex:none}
+  nav .langs a{padding:6px 10px;border-radius:999px;border:1px solid var(--line-d);white-space:nowrap}
+  nav .langs a:hover{border-color:var(--steel)}
   nav a{color:inherit;text-decoration:none}
   nav a:hover{color:var(--paper)}
   @media(max-width:620px){nav .links{display:none}}
@@ -228,6 +238,7 @@
   @keyframes drift{from{transform:translateY(26px)}to{transform:translateY(-26px)}}
   @keyframes pop{from{opacity:.2;transform:scale(.9)}to{opacity:1;transform:none}}
   @keyframes settle{from{opacity:.4;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+  nav .langs a[lang="ko"]{font-family:'Noto Sans KR',sans-serif}
 </style>
 </head>
 <body>
@@ -243,7 +254,10 @@
     <a href="#back">Back office</a>
     <a href="#edge">Edge</a>
     <a href="#ai">AI assistant</a>
-    <a href="index.html" style="color:var(--steel-lt)">TH</a>
+  </span>
+  <span class="langs">
+    <a href="index.html" hreflang="th" lang="th">ไทย</a>
+    <a href="index.ko.html" hreflang="ko" lang="ko">한국어</a>
   </span>
 </nav>
 
@@ -255,7 +269,7 @@
       greasy hands, and Wi-Fi that drops mid-service</p>
     <div class="chips">
       <span class="chip">Orders · Kitchen · Checkout · Back office</span>
-      <span class="chip">Automated tests <b>639</b></span>
+      <span class="chip">Automated tests <b>650</b></span>
       <span class="chip">Thai / English</span>
     </div>
   </div>
@@ -408,7 +422,7 @@
     <a class="cta" href="app/" target="_blank" rel="noopener" style="margin-top:0">Try the live demo →</a>
     <a href="https://github.com/SuruchBoss/PaynEat" target="_blank" rel="noopener" style="color:var(--steel-lt);text-decoration:underline;font-size:.92rem">View source on GitHub</a>
   </div>
-  <p class="fnote">Backed by 639+ automated tests before it ever ships · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · released under
+  <p class="fnote">Backed by 650+ automated tests before it ever ships · PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · released under
     <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a><br>
     Every screenshot on this page is a golden-test capture from the real app, not a mockup (except the
     AI assistant animation, recorded from a real Claude API call, not a golden test — see

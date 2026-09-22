@@ -54,6 +54,9 @@ session อื่นกำลังทำขนานกันอยู่ใน
   และบัญชี/การเงิน + ลูกค้า/แต้มสะสม + takeaway/delivery flow ในระบบ
 - **ผู้ช่วย AI ถามตอบข้อมูลร้านด้วยภาษาพูด** (admin/manager) ผ่าน Claude API + tool-calling ที่เรียก
   endpoint จริงในระบบเท่านั้น กันตอบมั่ว/แต่งตัวเลข ดู `docs/tickets/15-ai-ask-your-data.md`
+- **สามภาษาทั้งระบบ: ไทย / English / 한국어** สลับได้จากหน้าตั้งค่าหรือหน้าโปรไฟล์ จำค่าไว้กับเครื่อง
+  ฝังฟอนต์เกาหลีแบบ subset มาในแอป (ไม่พึ่งฟอนต์ของเครื่อง) และผู้ช่วย AI ตอบภาษาเดียวกับคำถาม
+  ได้ทั้งสามภาษา — ดู `docs/DECISIONS.md` #39
 
 ที่มา: `README.md`, `docs/DECISIONS.md`, `backend/src/db/schema.sql`,
 `app/lib/features/**`, `backend/src/modules/**`

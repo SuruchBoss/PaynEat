@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-639%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-650%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 639 automated tests.
+control and 650 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -49,7 +49,7 @@ control and 639 automated tests.
 - **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
 - **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
   always with who/when/why, and nothing an admin can edit or delete from any UI
-- **639 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **650 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -101,13 +101,21 @@ control and 639 automated tests.
 > 🌐 **Landing page — static HTML, not a single line of JavaScript**
 > · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
 > · [Thai version](https://suruchboss.github.io/PaynEat/)
+> · [Korean version](https://suruchboss.github.io/PaynEat/index.ko.html)
+>
+> The Korean edition deliberately uses a different visual world from the other two (light grounds,
+> cool blue-grey, soft-shadowed rounded cards, in the idiom of modern Korean service sites). Its
+> screenshots are of the app running in Korean, and the Thailand-specific features (PromptPay,
+> Buddhist-era years on tax invoices, 7% VAT) are described as they actually are, each with a short
+> note explaining what it is — the reader is a Korean speaker running a restaurant in Thailand,
+> so they need the real thing, not a localised substitute. See `docs/DECISIONS.md` #39
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
 > a Wi-Fi drop mid-service — with real screenshots embedded in the file. The animation is pure CSS.
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
-> [`index.html`](docs/landing/index.html) — every screenshot is embedded **except** the AI assistant
+> [`index.html`](docs/landing/index.html) / [`index.ko.html`](docs/landing/index.ko.html) — every screenshot is embedded **except** the AI assistant
 > demo GIF, which lives in `docs/ai-demo/` (924 KB, too large to inline). `deploy-pages.yml` copies
 > that folder into the site at deploy time, so the live page is complete; opening the file straight
 > from the repo shows a broken image in the "AI assistant" section.
@@ -378,6 +386,13 @@ The login page has one-tap buttons for each account — no need to type anything
     deduction/promotion calculation happen automatically too) — see
     `docs/tickets/17-qr-self-order.md`
 
+24. **Switch the whole app's language** → open the **Profile** page (the person icon in the bottom
+    bar/rail) → under **Language**, switch between **ไทย / English / 한국어** → every screen changes
+    instantly without a restart, and the choice is remembered per device. Menu and zone names stay
+    exactly as the restaurant typed them (Korean gets the Latin menu names rather than Thai script),
+    while names already printed on kitchen tickets and past receipts do not move — those were
+    captured when the order was placed (see `docs/DECISIONS.md` #39)
+
 **Want to try the hidden business rules?**
 
 - Try opening a second order at the same table → rejected, with a hint to add to the existing bill instead
@@ -430,7 +445,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 293 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 346 cases — domain / controller / widget
+cd app && flutter test      # 357 cases — domain / controller / widget
 ```
 
 ---
@@ -614,6 +629,12 @@ cd app && flutter test      # 346 cases — domain / controller / widget
   instead of waiting for its token to expire, a manager can't self-promote or touch an admin
   account, and a real deployment (`NODE_ENV=production`) refuses to seed accounts with the known
   demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
+- **Three languages throughout: ไทย / English / 한국어** — switch from the **Profile** or
+  **Settings** page; remembered per device. All 806 keys are translated for every language, and the
+  Korean font ships inside the app as a subset of only the characters actually used (4 weights,
+  256 KB), so it never depends on the device's own fonts. A test parses the font file's cmap table
+  to stop any translation from using a character outside that subset, and the AI assistant answers
+  in the same language as the question for all three (see `docs/DECISIONS.md` #39)
 - **Multi-branch support** — tables/menu items/orders/ingredients and every report are correctly
   scoped per branch. An account with access to more than one branch lands on a **branch picker**
   right after login, then can switch branch anytime from the **Profile** page — `admin` can switch
@@ -919,7 +940,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 293 cases
-cd app && flutter test      # 346 cases
+cd app && flutter test      # 357 cases
 ```
 
 **Backend (293 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
@@ -1065,7 +1086,7 @@ immediately with RBAC (admin/manager only — waiters can't call it), and `POST 
 limited to 30 requests/5 minutes per table, returning 429 past that (see
 `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37).
 
-**Flutter (346 cases)** — split into 3 levels:
+**Flutter (357 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1158,6 +1179,14 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - [x] **High-contrast mode** — done: toggled from the **Profile** page (reachable by every role,
   not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
   and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
+- [x] **Korean language support** — done: 806 translation keys across every feature (verified to
+  match the Thai key set exactly), NotoSansKR embedded as a subset, a separately designed Korean
+  landing page with 5 real Korean-locale app screenshots, a three-way language switcher on all
+  three landing pages (now visible on mobile too, where the whole group used to be hidden), and
+  the AI assistant unlocked to answer in Korean. This was not on the roadmap — it came from a
+  Korean business owner in Bangkok who found the project on GitHub and got in touch
+  (see `docs/DECISIONS.md` #39) — **no Korean menu names in the database**, deliberately: those
+  are each restaurant's own data, not system text
 - [ ] **Flutter integration tests** with `integration_test` against a real backend
 - [x] **Tax invoice** — done: store tax ID/address/branch can be set from Settings; abbreviated/full tax
   invoices can be issued from the receipt page of any fully-paid bill, with a continuous, non-duplicate
