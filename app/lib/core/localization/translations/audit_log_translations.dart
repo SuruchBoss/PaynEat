@@ -74,3 +74,38 @@ const Map<String, String> auditLogTranslationsEn = {
   'audit_log_export_unsupported_platform':
       'CSV export is only supported on the web (this page is admin/web-only)',
 };
+
+const Map<String, String> auditLogTranslationsKo = {
+  'audit_log_empty_state': '기록된 활동이 없습니다',
+  'audit_log_reason_prefix': '사유: @reason',
+  'audit_log_actor_prefix': '처리자: @name',
+  'audit_log_action_order_create': '신규 주문 생성',
+  'audit_log_action_order_item_add': '주문에 메뉴 추가',
+  'audit_log_action_order_item_edit': '메뉴 수량 변경',
+  'audit_log_action_order_item_remove': '주문에서 메뉴 삭제',
+  'audit_log_action_order_move_table': '테이블 이동',
+  'audit_log_action_order_merge': '주문 합치기',
+  'audit_log_action_order_cancel': '주문 취소',
+  'audit_log_action_order_item_void': '조리 후 메뉴 취소',
+  'audit_log_action_order_discount': '할인 변경',
+  'audit_log_action_user_deactivate': '직원 계정 사용 중지',
+  'audit_log_action_user_delete': '직원 계정 삭제',
+  'audit_log_action_user_role_change': '직원 역할 변경',
+  'audit_log_action_user_password_reset': '직원 비밀번호 재설정',
+  'audit_log_action_settings_update': '부가가치세/서비스 차지 변경',
+  'audit_log_action_payment_refund': '환불',
+  'audit_log_action_tax_invoice_void': '세금계산서 취소',
+  'audit_log_shown_count': '전체 @total건 중 @shown건 표시',
+  'audit_log_load_more': '더 보기',
+  'audit_log_action_menu_price_change': '메뉴 가격 변경',
+  'audit_log_action_promotion_create': '프로모션 생성',
+  'audit_log_action_promotion_update': '프로모션 수정',
+  'audit_log_action_promotion_delete': '프로모션 삭제',
+  'audit_log_action_ingredient_stock_adjust': '재고 수동 조정',
+  'audit_log_date_range_all': '전체 기간',
+  'audit_log_date_range_selected': '@from – @to',
+  'audit_log_date_range_clear': '기간 초기화',
+  'audit_log_export_csv_button': 'CSV 내보내기',
+  'audit_log_export_unsupported_platform':
+      'CSV 내보내기는 웹에서만 지원됩니다 (이 화면은 관리자 웹 전용입니다)',
+};

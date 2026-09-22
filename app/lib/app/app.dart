@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../core/localization/app_translations.dart';
+import '../core/localization/locale_service.dart';
 import '../core/services/contrast_service.dart';
 import '../core/services/storage_service.dart';
 import 'config/app_config.dart';
@@ -14,11 +15,15 @@ class PaynEatApp extends StatelessWidget {
   const PaynEatApp({super.key});
 
   /// ภาษาที่ผู้ใช้เลือกไว้ล่าสุด (ถ้ามี) — ค่าเริ่มต้นคือไทย
+  ///
+  /// แปลงรหัสภาษาผ่าน [LocaleService.localeOf] จุดเดียว ไม่เทียบ `== 'en'` เอง
+  /// ตรงนี้ — ตอนเพิ่มภาษาเกาหลีโค้ดเดิมยังคืนไทยให้ผู้ใช้ที่เลือก ko ไว้
+  /// เพราะลืมแก้เงื่อนไขนี้ตามไปด้วย
   Locale get _initialLocale {
     final saved = Get.isRegistered<StorageService>()
         ? Get.find<StorageService>().locale
         : null;
-    return saved == 'en' ? const Locale('en', 'US') : const Locale('th', 'TH');
+    return LocaleService.localeOf(saved ?? 'th');
   }
 
   @override

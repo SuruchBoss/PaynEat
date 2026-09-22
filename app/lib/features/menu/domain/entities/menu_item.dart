@@ -41,7 +41,9 @@ class MenuItem {
 
   /// ชื่อที่จะแสดงตามภาษาปัจจุบัน — ถอยกลับไปใช้ [name] (ไทย) ถ้าไม่มี [nameEn]
   String get displayName =>
-      LocaleService.isEnglish && (nameEn?.isNotEmpty ?? false) ? nameEn! : name;
+      LocaleService.prefersLatinNames && (nameEn?.isNotEmpty ?? false)
+      ? nameEn!
+      : name;
 
   bool get hasOptions => optionGroups.isNotEmpty;
 

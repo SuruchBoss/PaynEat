@@ -59,3 +59,28 @@ const Map<String, String> customerTranslationsEn = {
   'customer_detail_history_empty': 'No purchase history yet',
   'customer_detail_points_earned': 'Earned @points points',
 };
+
+const Map<String, String> customerTranslationsKo = {
+  'customer_error_not_found': '고객을 찾을 수 없습니다',
+  'customer_error_phone_taken': '이 전화번호는 다른 고객이 이미 사용 중입니다',
+  'customer_picker_title': '주문에 고객 연결',
+  'customer_picker_search_hint': '이름 또는 전화번호로 검색',
+  'customer_picker_empty': '검색 결과가 없습니다',
+  'customer_picker_points_badge': '@points P',
+  'customer_picker_add_new_button': '신규 고객 등록',
+  'customer_picker_clear_button': '고객 연결 해제',
+  'customer_picker_name_label': '고객 이름',
+  'customer_picker_phone_label': '전화번호',
+  'customer_picker_email_label': '이메일 (선택)',
+  'customer_picker_create_button': '저장 후 선택',
+  'customer_picker_name_phone_required': '이름과 전화번호를 입력해 주세요',
+  'customer_list_search_hint': '이름 또는 전화번호로 검색',
+  'customer_list_empty': '등록된 고객이 없습니다',
+  'customer_list_points_badge': '@points P',
+  'customer_detail_title': '고객 내역',
+  'customer_detail_not_found': '고객을 찾을 수 없습니다',
+  'customer_detail_points_label': '적립금 잔액',
+  'customer_detail_history_title': '구매 내역',
+  'customer_detail_history_empty': '아직 구매 내역이 없습니다',
+  'customer_detail_points_earned': '@points P 적립',
+};

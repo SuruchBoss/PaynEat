@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
+import 'package:payneat_pos/core/localization/locale_service.dart';
 import 'package:payneat_pos/features/customer/presentation/widgets/customer_picker_dialog.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
 import 'package:payneat_pos/features/payment/presentation/controllers/checkout_controller.dart';
@@ -522,6 +523,82 @@ void main() {
       await tester.tap(find.text('ดู QR สั่งอาหารเอง'));
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'phone-39-table-qr-sheet');
+    });
+  });
+
+  // ---------------------------------------------------------------------
+  // ภาษาเกาหลี (ticket 18) — ใช้ประกอบหน้า Landing ฉบับเกาหลี
+  //
+  // ถ่ายเฉพาะหน้าที่หน้า Landing เอาไปใช้จริง ไม่ได้ถ่ายซ้ำทุกหน้า:
+  // ผังโต๊ะ / จอครัว / เก็บเงิน / แดชบอร์ด + จอครัวโหมดคอนทราสต์สูง
+  // (ภาพคู่เทียบปุ่ม "เริ่มทำ" ตัดมาจากสองภาพจอครัวนี้)
+  //
+  // ชื่อเมนู ("ผัดกะเพราหมูสับ") ยังเป็นไทย/อังกฤษตามข้อมูลจริงของร้าน —
+  // ข้อมูลเมนูในฐานข้อมูลมีแค่สองภาษา ส่วนที่แปลคือ UI ของระบบ
+  // ---------------------------------------------------------------------
+  group('ภาษาเกาหลี', () {
+    testWidgets('40 ผังโต๊ะภาษาเกาหลี', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
+      await ScreenshotHarness.capture(tester, 'ko-40-phone-tables');
+    });
+
+    testWidgets('41 จอครัวภาษาเกาหลี', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
+      await ScreenshotHarness.capture(tester, 'ko-41-tablet-kitchen');
+    });
+
+    testWidgets('42 จอครัวภาษาเกาหลีโหมดคอนทราสต์สูง', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        highContrast: true,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(
+        tester,
+        'ko-42-tablet-kitchen-high-contrast',
+      );
+    });
+
+    testWidgets('43 หน้าเก็บเงินภาษาเกาหลี', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
+
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.checkout,
+          arguments: {'orderId': ids.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-43-phone-checkout');
+    });
+
+    testWidgets('44 แดชบอร์ดผู้ดูแลระบบภาษาเกาหลี', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.desktop,
+        locale: LocaleService.korean,
+      );
+      await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-44-web-dashboard');
     });
   });
 }

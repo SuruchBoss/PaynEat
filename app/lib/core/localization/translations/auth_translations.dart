@@ -87,3 +87,42 @@ const Map<String, String> authTranslationsEn = {
   'branch_current_label': 'Current branch',
   'branch_switch_action': 'Switch branch',
 };
+
+const Map<String, String> authTranslationsKo = {
+  'auth_login_brand_headline': '음식점을 위한\n포스 시스템',
+  'auth_login_brand_subheadline':
+      '태블릿으로 주문을 받아 주방으로 바로 전달하고, 결제와 매출 확인까지 한곳에서 처리합니다.',
+  'auth_login_feature_tables': '테이블 상태를 실시간으로 한눈에',
+  'auth_login_feature_kds': '주문을 넣는 즉시 주방 모니터(KDS)에 표시',
+  'auth_login_feature_billing': '결제 마감, 분할 결제, 영수증 출력',
+  'auth_login_feature_reports': '매출 리포트와 인기 메뉴 분석',
+  'auth_login_title': '로그인',
+  'auth_login_subtitle': '매니저에게 받은 직원 계정으로 로그인하세요',
+  'auth_username_label': '아이디',
+  'auth_username_hint': '예: waiter1',
+  'auth_password_label': '비밀번호',
+  'auth_demo_mode_banner':
+      '데모 모드 — 모든 데이터는 기기에만 저장됩니다. 모든 기능을 사용할 수 있으며, 새로고침하면 처음 상태로 돌아갑니다.',
+  'auth_login_footer_demo': 'PaynEat POS · 데모 모드',
+  'auth_login_footer_connected': '@url 에 연결됨',
+  'auth_demo_accounts_label': '데모 계정',
+  'auth_profile_connection_title': '연결 상태',
+  'auth_profile_realtime_connected': '실시간 연결 사용 중',
+  'auth_profile_realtime_disconnected': '실시간 연결이 끊겼습니다',
+  'auth_logout': '로그아웃',
+  'auth_logout_confirm_message': '로그아웃하시겠습니까?',
+  'auth_session_expired_message': '로그인이 만료되었습니다. 다시 로그인해 주세요.',
+  'auth_username_required': '아이디를 입력해 주세요',
+  'auth_password_required': '비밀번호를 입력해 주세요',
+  'auth_invalid_credentials': '아이디 또는 비밀번호가 올바르지 않습니다',
+  'auth_demo_session_expired': '세션이 만료되었습니다',
+  'auth_username_taken': '이미 사용 중인 아이디입니다',
+  'auth_user_not_found': '사용자를 찾을 수 없습니다',
+  'branch_selection_title': '지점 선택',
+  'branch_selection_subtitle':
+      '이 계정은 두 곳 이상의 지점에 접근할 수 있습니다. 지금 근무할 지점을 선택하세요.',
+  'branch_switch_success': '@branch(으)로 전환했습니다',
+  'branch_all_branches': '전체 지점',
+  'branch_current_label': '현재 지점',
+  'branch_switch_action': '지점 전환',
+};

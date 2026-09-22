@@ -34,3 +34,19 @@ const Map<String, String> selfOrderTranslationsEn = {
   'self_order_send_to_kitchen': 'Send to kitchen',
   'self_order_view_cart_button': 'Cart (@count) · @total',
 };
+
+const Map<String, String> selfOrderTranslationsKo = {
+  'self_order_title': '주문하기',
+  'self_order_loading': '메뉴를 불러오는 중...',
+  'self_order_invalid_link': '유효하지 않은 링크입니다 — 테이블의 QR 코드를 다시 스캔해 주세요',
+  'self_order_table_unavailable': '테이블을 찾을 수 없거나 사용이 중지된 테이블입니다. 직원을 불러 주세요.',
+  'self_order_menu_empty': '이 카테고리에는 아직 메뉴가 없습니다',
+  'self_order_hint': '메뉴를 눌러 장바구니에 담으세요 — 직원을 부르지 않아도 됩니다',
+  'self_order_submit_success': '주문이 주방으로 전달되었습니다',
+  'self_order_current_order_title': '내 주문',
+  'self_order_cart_title': '장바구니',
+  'self_order_cart_footnote':
+      '이 금액에는 서비스 차지와 부가가치세가 아직 포함되지 않았습니다 — 주방으로 전달할 때 합산됩니다',
+  'self_order_send_to_kitchen': '주방으로 전달',
+  'self_order_view_cart_button': '장바구니 (@count) · @total',
+};

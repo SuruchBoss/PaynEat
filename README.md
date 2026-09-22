@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-639%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-650%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 639 automated tests.
+control and 650 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -46,7 +46,7 @@ control and 639 automated tests.
 - **โหมดคอนทราสต์สูง** — อ่านออกชัดแม้แดดจ้าริมหน้าต่างหรือไอน้ำในครัว ตัวหนังสือผ่านเกณฑ์ WCAG AAA
 - **Audit log ครบทุกจุดเสี่ยงต่อการทุจริต** — ยกเลิกออเดอร์ ให้ส่วนลด แก้ VAT คืนเงิน บันทึกผู้ทำ/เวลา/
   เหตุผลไว้เสมอ แก้ไขลบไม่ได้จาก UI ไหนเลย
-- **ทดสอบอัตโนมัติ 639 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 650 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -96,12 +96,19 @@ control and 639 automated tests.
 > 🌐 **หน้า Landing Page — static HTML ไม่มี JavaScript สักบรรทัด**
 > · [หน้าจริงบน GitHub Pages](https://suruchboss.github.io/PaynEat/)
 > · [English version](https://suruchboss.github.io/PaynEat/index.en.html)
+> · [한국어 버전](https://suruchboss.github.io/PaynEat/index.ko.html)
+>
+> ฉบับเกาหลีตั้งใจใช้ดีไซน์คนละแบบกับอีกสองฉบับ (พื้นสว่าง เทาอมฟ้า การ์ดมุมมนเงานุ่ม
+> ตามแบบเว็บบริการเกาหลีสมัยใหม่) ภาพประกอบเป็นภาพแอปภาษาเกาหลีจริง และฟีเจอร์เฉพาะไทย
+> (พร้อมเพย์ / ปี พ.ศ. บนใบกำกับภาษี / VAT 7%) เขียนตามจริงพร้อมกล่องอธิบายสั้น ๆ ว่าคืออะไร
+> เพราะคนอ่านคือคนเกาหลีที่ทำร้านอยู่ในไทย — ดู `docs/DECISIONS.md` #39
 >
 > เล่าเรื่องระบบจากเงื่อนไขหน้างานจริง — แสงจ้า ไอน้ำ มือเปื้อน เน็ตสะดุด — พร้อมภาพหน้าจอจริง
 > ที่ฝังมาในไฟล์ แอนิเมชันเป็น CSS ล้วน
 > ผลตรวจความถูกต้องของภาษาและตัวเลขอยู่ใน [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > ไฟล์ต้นทางคือ [`docs/landing/index.html`](docs/landing/index.html) / [`index.en.html`](docs/landing/index.en.html)
+> / [`index.ko.html`](docs/landing/index.ko.html)
 > — ภาพหน้าจอฝังมาในไฟล์หมดแล้ว **ยกเว้น** GIF สาธิตผู้ช่วย AI ที่อยู่ใน `docs/ai-demo/`
 > (ไฟล์ 924 KB ใหญ่เกินจะ inline) ตัว workflow `deploy-pages.yml` ก๊อปโฟลเดอร์นั้นเข้า site ให้
 > ตอน deploy หน้าจริงจึงครบ แต่ถ้าเปิดไฟล์จากรีโปตรง ๆ หัวข้อ "ผู้ช่วย AI" จะขึ้นรูปแตก
@@ -354,6 +361,12 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     รายการที่ลูกค้าสั่งเองขึ้นในออเดอร์เดิมของโต๊ะ A1 ทันทีเหมือนพนักงานสั่งเองทุกประการ (ตัดสต๊อก/
     คำนวณโปรโมชันอัตโนมัติเหมือนกัน) ดู `docs/tickets/17-qr-self-order.md`
 
+24. **ลองสลับภาษาทั้งแอป** → เปิดหน้า **บัญชี** (ไอคอนคนที่แถบล่าง/rail) → ที่หัวข้อ **ภาษา**
+    กดสลับระหว่าง **ไทย / English / 한국어** → ทุกหน้าจอเปลี่ยนทันทีโดยไม่ต้องรีสตาร์ต
+    และจำค่าไว้กับเครื่อง เปิดแอปครั้งหน้าได้ภาษาเดิม — ชื่อเมนู/ชื่อโซนยังเป็นค่าที่ร้านพิมพ์เข้าไป
+    (ภาษาเกาหลีจะได้ชื่อเมนูอักษรละตินแทนอักษรไทย) ส่วนชื่อบนตั๋วครัวและใบเสร็จของบิลเก่า
+    ไม่ขยับตามภาษา เพราะเป็นค่าที่บันทึกไว้ตอนสั่ง (ดู `docs/DECISIONS.md` #39)
+
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
 - ลองเปิดออเดอร์ที่โต๊ะเดิมซ้ำ → ระบบปฏิเสธ พร้อมบอกให้ไปเพิ่มในบิลเดิม
@@ -397,7 +410,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 293 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 346 เคส — domain / controller / widget
+cd app && flutter test      # 357 เคส — domain / controller / widget
 ```
 
 ---
@@ -557,6 +570,11 @@ cd app && flutter test      # 346 เคส — domain / controller / widget
   ไม่ต้องรอ token หมดอายุ, manager ยกระดับตัวเอง/แตะบัญชี admin ไม่ได้, และ deploy จริง
   (`NODE_ENV=production`) จะไม่ยอม seed บัญชีด้วยรหัสผ่านเดโมที่รู้อยู่แล้วให้เองด้วย
   (ดู `docs/DECISIONS.md` #20 และ `SECURITY.md`)
+- **สามภาษาทั้งระบบ: ไทย / English / 한국어** — สลับได้ที่หน้า **บัญชี** หรือหน้า **ตั้งค่า**
+  จำค่าไว้กับเครื่อง คำแปลครบ 806 คีย์เท่ากันทุกภาษา ฟอนต์เกาหลีฝังมาในแอปแบบ subset เฉพาะ
+  ตัวอักษรที่ใช้จริง (4 น้ำหนัก 256KB) จึงไม่พึ่งฟอนต์ของเครื่อง มีเทสต์อ่านตาราง cmap ของไฟล์ฟอนต์
+  กันไม่ให้มีคำแปลที่ใช้ตัวอักษรนอก subset หลุดเข้ามา และผู้ช่วย AI ตอบภาษาเดียวกับคำถามได้
+  ทั้งสามภาษา (ดู `docs/DECISIONS.md` #39)
 - **รองรับหลายสาขา (Multi-branch)** — โต๊ะ/เมนู/ออเดอร์/วัตถุดิบ และรายงานทุกตัวแยกตามสาขาไม่ปนกัน
   บัญชีที่มีสิทธิ์เข้าได้มากกว่า 1 สาขาจะเจอหน้า **เลือกสาขา** ทันทีหลัง login แล้วสลับสาขาได้ทุกเมื่อ
   ที่หน้า **บัญชี** ภายหลัง — `admin` สลับไปโหมด **"ทุกสาขา"** เพื่อดูรายงานรวมทุกสาขาได้ด้วย ส่วน
@@ -851,7 +869,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 293 เคส
-cd app && flutter test      # 346 เคส
+cd app && flutter test      # 357 เคส
 ```
 
 **Backend (293 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
@@ -981,7 +999,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 `POST .../items` ได้ 30 ครั้ง/5 นาทีต่อโต๊ะ เกินแล้วโดน 429 (ดู `docs/tickets/17-qr-self-order.md`,
 `docs/DECISIONS.md` #37)
 
-**Flutter (346 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (357 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1072,6 +1090,13 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   1.24:1 เป็น 4.10:1 ให้ยังอ่านออกกลางแดดและบนจอครัว (ดู `docs/DECISIONS.md` #18)
   — ระหว่างทำเจอว่าพาเลตต์เดิมวัดคอนทราสต์บนพื้นขาวอย่างเดียว พอวัดกับพื้นที่ใช้จริงพบว่า
   `textSecondary` `warningInk` `infoInk` และพื้นปุ่มสีเขียว/ส้ม/เหลือง ตกเกณฑ์ AA แก้ครบแล้ว
+- [x] **รองรับภาษาเกาหลี** — ทำแล้ว: คำแปล 806 คีย์ครบทุกฟีเจอร์ (ตรวจแล้วว่าชุดคีย์ตรงกับ
+  ภาษาไทยเป๊ะ), ฝังฟอนต์ NotoSansKR แบบ subset, หน้า Landing ฉบับเกาหลีดีไซน์แยกต่างหาก
+  พร้อมภาพแอปภาษาเกาหลีจริง 5 ภาพ, ตัวสลับภาษาสามทางทุกหน้า Landing (และแสดงบนมือถือด้วย
+  ซึ่งเดิมซ่อนไว้ทั้งก้อน) และปลดล็อกให้ผู้ช่วย AI ตอบเกาหลีได้ — งานนี้ไม่ได้อยู่ในแผนเดิม
+  แต่มาจากเจ้าของธุรกิจเกาหลีในกรุงเทพฯ ที่เจอโปรเจกต์บน GitHub แล้วติดต่อเข้ามา
+  (ดู `docs/DECISIONS.md` #39) — **ยังไม่มีชื่อเมนูภาษาเกาหลีในฐานข้อมูล** ตั้งใจไม่ทำ
+  เพราะเป็นข้อมูลของร้านแต่ละร้าน ไม่ใช่ข้อความของระบบ
 - [ ] **เทสต์ integration ฝั่ง Flutter** ด้วย `integration_test` ยิงกับ backend จริง
 - [x] **ใบกำกับภาษี** — ทำแล้ว: ตั้งค่าเลขผู้เสียภาษี/ที่อยู่/สาขาร้านได้ที่หน้าตั้งค่า ออกใบกำกับ
   ภาษีอย่างย่อ/เต็มรูปจากหน้าใบเสร็จของบิลที่จ่ายครบแล้ว พร้อมเลขที่รันต่อเนื่องไม่ซ้ำ
