@@ -167,66 +167,70 @@ class _TableGrid extends StatelessWidget {
   ) {
     Get.bottomSheet<void>(
       SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-                child: Row(
-                  children: [
-                    Text(
-                      'table_number_label'.trParams({'name': table.name}),
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w800,
+        // ใช้ Material ระบายสีเอง ไม่ใช่ Container+BoxDecoration —
+        // ListTile วาด ripple ลงบน Material ที่ใกล้ที่สุด ถ้ามีกล่องทึบคั่นอยู่
+        // ripple จะถูกบัง กดแล้วไม่มีอะไรตอบสนอง (Flutter เตือน assertion ตรง ๆ)
+        child: Material(
+          color: AppColors.surface,
+          clipBehavior: Clip.antiAlias,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Row(
+                    children: [
+                      Text(
+                        'table_number_label'.trParams({'name': table.name}),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
-                      style: TextStyle(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.5,
+                      const Spacer(),
+                      Text(
+                        '${'table_seat_count'.trParams({'count': table.seats.toString()})} · ${table.zone}',
+                        style: TextStyle(
+                          color: AppColors.textSecondary,
+                          fontSize: 12.5,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: const Icon(Icons.qr_code_2_rounded),
-                title: Text('table_qr_action_label'.tr),
-                onTap: () {
-                  Get.back<void>();
-                  _showQrSheet(context, table);
-                },
-              ),
-              const Divider(height: 1),
-              for (final status in TableStatus.all)
-                ListTile(
-                  leading: Icon(
-                    Icons.circle,
-                    size: 12,
-                    color: AppColors.tableStatus(status),
+                    ],
                   ),
-                  title: Text(TableStatus.label(status)),
-                  trailing: table.status == status
-                      ? Icon(Icons.check_rounded, color: AppColors.brandInk)
-                      : null,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.qr_code_2_rounded),
+                  title: Text('table_qr_action_label'.tr),
                   onTap: () {
                     Get.back<void>();
-                    if (table.status != status) {
-                      controller.changeStatus(table, status);
-                    }
+                    _showQrSheet(context, table);
                   },
                 ),
-            ],
+                const Divider(height: 1),
+                for (final status in TableStatus.all)
+                  ListTile(
+                    leading: Icon(
+                      Icons.circle,
+                      size: 12,
+                      color: AppColors.tableStatus(status),
+                    ),
+                    title: Text(TableStatus.label(status)),
+                    trailing: table.status == status
+                        ? Icon(Icons.check_rounded, color: AppColors.brandInk)
+                        : null,
+                    onTap: () {
+                      Get.back<void>();
+                      if (table.status != status) {
+                        controller.changeStatus(table, status);
+                      }
+                    },
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -236,13 +240,14 @@ class _TableGrid extends StatelessWidget {
   void _showQrSheet(BuildContext context, DiningTable table) {
     Get.bottomSheet<void>(
       SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        child: Material(
+          color: AppColors.surface,
+          clipBehavior: Clip.antiAlias,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: TableQrView(table: table),
           ),
-          padding: const EdgeInsets.all(20),
-          child: TableQrView(table: table),
         ),
       ),
       isScrollControlled: true,
