@@ -616,6 +616,78 @@ void main() {
       await ScreenshotHarness.capture(tester, 'ko-44-web-dashboard');
     });
 
+    // หน้าที่ "ลูกค้า" เห็นจากมือถือตัวเองหลังสแกน QR — สำหรับร้านเกาหลี นี่คือหน้าที่
+    // ตัดสินภาพลักษณ์ของร้านมากกว่าหน้าพนักงานทุกหน้ารวมกัน เพราะลูกค้าเห็นเองกับตา
+    testWidgets('46 หน้าเมนูที่ลูกค้าเห็นหลังสแกน QR (เกาหลี)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+        pixelRatio: 3,
+      );
+      unawaited(Get.toNamed<void>('/order/demo-table-1'));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-46-self-order-menu');
+    });
+
+    testWidgets('47 ตะกร้าของลูกค้าก่อนกดส่งครัว (เกาหลี)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+        pixelRatio: 3,
+      );
+      unawaited(Get.toNamed<void>('/order/demo-table-1'));
+      await ScreenshotHarness.settle(tester);
+      final controller = Get.find<SelfOrderController>();
+      for (final item
+          in controller.items
+              .where((item) => !item.requiresSelection)
+              .take(2)) {
+        await controller.addToCart(item);
+      }
+      await ScreenshotHarness.settle(tester);
+      await tester.tap(find.byType(FilledButton).last);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-47-self-order-cart');
+    });
+
+    testWidgets('48 หน้ารับออเดอร์ของพนักงาน (เกาหลี)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+        pixelRatio: 3,
+      );
+      await ScreenshotHarness.loginAs(tester, 'waiter1', 'waiter123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.newOrder,
+          arguments: {'tableId': 3, 'tableName': 'A3', 'seats': 4},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-48-order-taking');
+    });
+
+    testWidgets('49 ใบเสร็จ (เกาหลี)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.korean,
+        pixelRatio: 3,
+      );
+      await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.receipt,
+          arguments: {'orderId': koIds.paidOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'ko-49-receipt');
+    });
+
     // GIF สาธิตผู้ช่วย AI เป็นภาษาไทยทั้งใบ (บันทึกจากการเรียก API จริงครั้งเดียว
     // ถ่ายใหม่เป็นเกาหลีต้องมี API key) หน้าเกาหลีจึงต้องมีภาพหน้า AI ภาษาเกาหลี
     // ไว้เป็นภาพหลักก่อน ไม่งั้นทั้งหัวข้อจะดูเหมือนระบบไม่รองรับเกาหลีเลย
