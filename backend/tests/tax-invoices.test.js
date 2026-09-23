@@ -73,6 +73,28 @@ test('POST /tax-invoices/order/:id — ออกใบกำกับภาษ�
   assert.equal(invoice.total, 117.7); // 100 + 10% service charge + 7% VAT
 });
 
+test('POST /tax-invoices/order/:id — มูลค่าสินค้า/บริการคือฐานภาษีรวมค่าบริการ บวก VAT แล้วเท่ายอดรวมพอดี', async () => {
+  const admin = await login('admin', 'admin123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+  const orderId = await createPaidOrder(admin, waiter, cashier);
+
+  const res = await post(`/api/v1/tax-invoices/order/${orderId}`, cashier.token, {
+    invoiceType: 'full',
+    customerName: 'บริษัท ทดสอบ จำกัด',
+    customerAddress: 'กรุงเทพมหานคร',
+  });
+  assert.equal(res.status, 201, JSON.stringify(res.body));
+  const invoice = res.body.data;
+  // เมนู 100 + ค่าบริการ 10% = ฐานภาษี 110 → VAT 7% = 7.70 → รวม 117.70
+  // (เดิมเก็บ order.subtotal = 100 ค่าอาหารอย่างเดียว ใบกำกับภาษีเลยพิมพ์ 100 + 7.70 = 117.70 ซึ่งบวกกันไม่ลง
+  //  และ VAT ที่พิมพ์ไม่ใช่ 7% ของมูลค่าที่พิมพ์อยู่บรรทัดบน — เจอจากชุด E2E ใน app/test_e2e/)
+  assert.equal(invoice.subtotal, 110);
+  assert.equal(invoice.vat, 7.7);
+  assert.equal(invoice.total, 117.7);
+  assert.equal(Math.round((invoice.subtotal + invoice.vat) * 100), Math.round(invoice.total * 100));
+});
+
 test('POST /tax-invoices/order/:id — ใบกำกับภาษีเต็มรูปต้องระบุชื่อและที่อยู่ลูกค้า', async () => {
   const admin = await login('admin', 'admin123');
   const waiter = await login('waiter1', 'waiter123');

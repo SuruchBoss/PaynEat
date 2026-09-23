@@ -38,23 +38,30 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
   });
 
   @override
-  Future<OrderModel> addItems(String qrToken, List<OrderItemPayload> items) =>
-      _delayed(() {
-        final table = _store.resolveTableByQrToken(qrToken);
-        final tableId = table['id'] as int;
-        final itemsJson = items
-            .map((item) => item.toJson())
-            .toList(growable: false);
+  Future<OrderModel> addItems(
+    String qrToken,
+    List<OrderItemPayload> items,
+  ) => _delayed(() {
+    final table = _store.resolveTableByQrToken(qrToken);
+    final tableId = table['id'] as int;
+    final itemsJson = items
+        .map((item) => item.toJson())
+        .toList(growable: false);
 
-        final existing = _store.openOrderByTable(tableId);
-        final order = existing == null
-            ? _store.createOrder(
-                type: OrderType.dineIn,
-                tableId: tableId,
-                guestCount: 1,
-                items: itemsJson,
-              )
-            : _store.addItems(existing['id'] as int, itemsJson);
-        return OrderModel.fromJson(order);
-      });
+    final existing = _store.openOrderByTable(tableId);
+    final order = existing == null
+        ? _store.createOrder(
+            type: OrderType.dineIn,
+            tableId: tableId,
+            guestCount: 1,
+            items: itemsJson,
+          )
+        : _store.addItems(existing['id'] as int, itemsJson);
+    // mirror ของ public-order.service.js#addItems — ลูกค้ากด "ส่งเข้าครัว" ร่างออเดอร์จึงต้อง
+    // เข้าครัวจริง ไม่งั้นครัวไม่เห็น (DECISIONS #46)
+    final sent = order['status'] == OrderStatus.open
+        ? _store.sendToKitchen(order['id'] as int)
+        : order;
+    return OrderModel.fromJson(sent);
+  });
 }

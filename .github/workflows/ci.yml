@@ -64,7 +64,7 @@ jobs:
         run: flutter pub get
 
       - name: ตรวจรูปแบบโค้ด
-        run: dart format --output=none --set-exit-if-changed lib test
+        run: dart format --output=none --set-exit-if-changed lib test test_e2e
 
       - name: วิเคราะห์โค้ดแบบ static
         run: flutter analyze
@@ -79,3 +79,37 @@ jobs:
 
       - name: ลอง build เว็บ
         run: flutter build web --release --dart-define=DEMO_MODE=true
+
+  # แอปจริง ↔ backend จริง (app/test_e2e/) — ชุดเดียวที่ให้โค้ดชั้น data/domain ของแอปอ่าน JSON ที่
+  # backend ส่งมาจริง เทสต์ Flutter ใน job `app` วิ่งบนโหมดสาธิตทั้งหมด ส่วนเทสต์ backend เป็นฝั่ง JS ล้วน
+  # ชื่อฟิลด์ไม่ตรงกันแค่ตัวเดียวจึงผ่านทั้งสอง job ได้แต่พังทันทีที่ร้านใช้จริง — ต้องมีทั้ง Node และ
+  # Flutter ในเครื่องเดียวกัน ชุดเทสต์เปิด backend เองบนพอร์ตสุ่ม + ฐานข้อมูลชั่วคราวใหม่ทุกไฟล์
+  e2e:
+    name: E2E (แอปจริง ↔ backend จริง)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: ติดตั้ง dependencies ของ backend
+        working-directory: backend
+        run: npm ci
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: stable
+          cache: true
+
+      - name: ติดตั้ง dependencies ของแอป
+        working-directory: app
+        run: flutter pub get
+
+      - name: รันชุด E2E
+        working-directory: app
+        run: flutter test test_e2e

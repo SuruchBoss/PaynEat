@@ -276,6 +276,14 @@ export const paymentService = {
       throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
     }
 
+    // เงินสดที่คืนลูกค้าออกจากลิ้นชักจริง จึงต้องมีกะเปิดอยู่ให้ผูก — กฎเดียวกับตอนรับเงิน (ดู pay())
+    // ไม่งั้นยอดที่คาดไว้ตอนปิดกะจะเกินเงินจริง แคชเชียร์ที่นับถูกจะถูกบันทึกว่าเงินขาด (DECISIONS #44)
+    // คืนผ่าน QR/บัตร/โอนไม่แตะลิ้นชักจึงไม่บังคับ แต่ยังผูกกะไว้ถ้ามี ให้รู้ว่าคืนระหว่างกะไหน
+    const shift = shiftRepository.findOpen();
+    if (!shift && payment.method === 'cash') {
+      throw ApiError.conflict('ต้องเปิดกะก่อนจึงจะคืนเงินสดได้');
+    }
+
     const order = orderRepository.findById(payment.order_id);
 
     const refund = getDb().transaction(() => {
@@ -285,6 +293,7 @@ export const paymentService = {
         amount: amountSatang,
         reason,
         refundedBy: user.id,
+        shiftId: shift?.id,
       });
       auditLogService.log({
         actorUser: user,

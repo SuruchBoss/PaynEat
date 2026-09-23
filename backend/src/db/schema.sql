@@ -267,6 +267,9 @@ CREATE TABLE IF NOT EXISTS refunds (
   amount      INTEGER NOT NULL CHECK (amount > 0),
   reason      TEXT    NOT NULL,
   refunded_by INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  -- กะที่เปิดอยู่ตอนคืนเงิน (ไม่ใช่กะที่รับเงินมา) — เงินสดที่คืนออกจากลิ้นชักของกะนี้ ต้องหักจากยอดที่
+  -- คาดไว้ตอนปิดกะ (ดู docs/DECISIONS.md #44) index สร้างใน migrate.js หลังเพิ่มคอลัมน์ให้ฐานข้อมูลเดิม
+  shift_id    INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
   created_at  TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_refunds_payment ON refunds(payment_id);

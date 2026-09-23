@@ -233,3 +233,8 @@ mock/ตรวจ internal ของ service — นี่คือ pattern เ�
   อื่นในโปรเจกต์นี้ทำมาตลอด — ดู `docs/DECISIONS.md`)
 - อัปเดต `docs/tickets/README.md` และ `docs/FEATURE-GAP-ANALYSIS.md` (#12) เป็น ✅ เสร็จแล้ว พร้อม
   เพิ่ม entry ใหม่ใน `docs/DECISIONS.md` เมื่อ ticket นี้เสร็จ ตามธรรมเนียมเดิมของโปรเจกต์
+
+## แก้ภายหลัง (2026-09-23 — พบจากชุด E2E `app/test_e2e/`)
+backend ใส่ BOM ถูกต้องตามสเปก แต่แอปที่ดาวน์โหลดไฟล์ผ่าน `ApiClient.getText` ถอด UTF-8 แบบปกติซึ่งตัด BOM
+ทิ้ง ไฟล์ที่ร้านได้จริง (ตอนต่อ backend) จึงไม่มี BOM เปิดใน Excel แล้วภาษาไทยเพี้ยน — โหมดสาธิตไม่เจอเพราะ
+สร้าง CSV ฝั่ง Dart เอง ตอนนี้ `getText` อ่านเป็นไบต์แล้วคง BOM ไว้ ดู `docs/DECISIONS.md` #45

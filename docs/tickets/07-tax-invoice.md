@@ -47,3 +47,8 @@
 - `backend/src/modules/settings/`
 - `backend/src/modules/tax-invoices/`
 - `app/lib/features/settings/`, `app/lib/features/tax_invoice/`, `app/lib/features/payment/`
+
+## แก้ภายหลัง (2026-09-23 — พบจากชุด E2E `app/test_e2e/`)
+บรรทัด "มูลค่าสินค้า/บริการ" บนใบกำกับเต็มรูปเคยเป็นยอดก่อนค่าบริการ ขณะที่ VAT คิดบนฐานที่รวมค่าบริการ
+แล้ว สามบรรทัดบนเอกสารจึงบวกกันไม่ลง — ตอนนี้เป็นฐานภาษี (`total − vat`) มูลค่า + VAT = ยอดรวมพอดีทุก
+สตางค์ ใบที่ออกไปก่อนแก้ไม่ถูกแก้ย้อนหลัง (snapshot ไว้ที่ตัวเอกสาร) ดู `docs/DECISIONS.md` #43

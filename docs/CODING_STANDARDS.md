@@ -440,6 +440,7 @@ cd app
 flutter analyze                                    # ต้อง "No issues found!"
 dart format --output=none --set-exit-if-changed .  # ต้อง exit 0
 flutter test                                        # ต้อง "All tests passed!"
+flutter test test_e2e                               # ต้อง "All tests passed!" (แอปจริง ↔ backend จริง — ต้อง `npm ci` ใน backend ก่อน)
 
 # Backend
 cd backend

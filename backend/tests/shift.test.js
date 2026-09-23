@@ -145,3 +145,113 @@ test('GET /shifts — ดูประวัติย้อนหลังเห�
   assert.ok(res.body.data.length >= 1);
   assert.ok(res.body.data.some((shift) => shift.status === 'closed'));
 });
+
+// ---------------------------------------------------------------------------
+// เงินสดที่คืนลูกค้าต้องออกจากลิ้นชักของกะที่ "เปิดอยู่ตอนคืน" (docs/DECISIONS.md #44)
+// เดิมยอดที่คาดไว้ตอนปิดกะนับแค่เงินสดที่รับเข้า ไม่หักเงินสดที่คืนออกไป แคชเชียร์ที่นับเงินถูกต้อง
+// จึงถูกบันทึกว่าเงินขาดเท่ากับยอดที่ผู้จัดการคืนลูกค้าไป — เจอจากชุด E2E ใน app/test_e2e/
+// ---------------------------------------------------------------------------
+
+/** เปิดกะใหม่ด้วยเงินทอนตั้งต้นที่กำหนด (ปิดกะที่ค้างอยู่ก่อนถ้ามี) */
+const openFreshShift = async (managerToken, openingCash) => {
+  await closeCurrentShiftIfAny(managerToken);
+  const res = await post('/api/v1/shifts', managerToken, { openingCash });
+  assert.equal(res.status, 201, JSON.stringify(res.body));
+  return res.body.data;
+};
+
+const payInFull = async (cashierToken, order, method) => {
+  const res = await post('/api/v1/payments', cashierToken, {
+    orderId: order.id,
+    method,
+    amount: order.total,
+    ...(method === 'cash' ? { received: order.total } : { reference: `T-${Date.now()}` }),
+  });
+  assert.equal(res.status, 201, JSON.stringify(res.body));
+  return res.body.data.payment;
+};
+
+const refundPayment = (managerToken, paymentId, amount) =>
+  post(`/api/v1/payments/${paymentId}/refund`, managerToken, {
+    amount,
+    reason: 'ทดสอบคืนเงิน',
+  });
+
+test('PATCH /shifts/:id/close — เงินสดที่คืนลูกค้าระหว่างกะถูกหักจากยอดที่คาดไว้ นับตรงต้องไม่ขาด', async () => {
+  const manager = await login('manager', 'manager123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+
+  const shift = await openFreshShift(manager.token, 500);
+  const order = await openOrderWithItem(waiter.token);
+  const payment = await payInFull(cashier.token, order, 'cash');
+
+  const refundRes = await refundPayment(manager.token, payment.id, 20);
+  assert.equal(refundRes.status, 201, JSON.stringify(refundRes.body));
+
+  const inDrawer = Math.round((500 + order.total - 20) * 100) / 100;
+  const closeRes = await patch(`/api/v1/shifts/${shift.id}/close`, manager.token, {
+    countedCash: inDrawer,
+  });
+  assert.equal(closeRes.status, 200, JSON.stringify(closeRes.body));
+  assert.equal(closeRes.body.data.expectedCash, inDrawer);
+  assert.equal(closeRes.body.data.variance, 0);
+});
+
+test('PATCH /shifts/:id/close — คืนเงินสดของบิลจากกะก่อน หักจากลิ้นชักของกะที่คืน ไม่ใช่กะที่รับเงินมา', async () => {
+  const manager = await login('manager', 'manager123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+
+  const morning = await openFreshShift(manager.token, 1000);
+  const order = await openOrderWithItem(waiter.token);
+  const payment = await payInFull(cashier.token, order, 'cash');
+  const closedMorning = await patch(`/api/v1/shifts/${morning.id}/close`, manager.token, {
+    countedCash: 1000 + order.total,
+  });
+  assert.equal(closedMorning.body.data.variance, 0);
+
+  // ลูกค้ากลับมาขอคืนเงินตอนกะบ่าย — เงินออกจากลิ้นชักกะบ่าย
+  const afternoon = await openFreshShift(manager.token, 300);
+  const refundRes = await refundPayment(manager.token, payment.id, 10);
+  assert.equal(refundRes.status, 201, JSON.stringify(refundRes.body));
+
+  const closedAfternoon = await patch(`/api/v1/shifts/${afternoon.id}/close`, manager.token, {
+    countedCash: 290,
+  });
+  assert.equal(closedAfternoon.body.data.expectedCash, 290);
+  assert.equal(closedAfternoon.body.data.variance, 0);
+
+  // กะเช้าปิดไปแล้ว ตัวเลขที่บันทึกไว้ต้องไม่ถูกแก้ย้อนหลัง
+  const morningAfter = await get(`/api/v1/shifts`, manager.token);
+  const row = morningAfter.body.data.find((s) => s.id === morning.id);
+  assert.equal(row.variance, 0);
+});
+
+test('POST /payments/:id/refund — ไม่มีกะเปิดอยู่ คืนเงินสดไม่ได้ (409) เหมือนรับเงินสดไม่ได้', async () => {
+  const manager = await login('manager', 'manager123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+
+  await openFreshShift(manager.token, 0);
+  const order = await openOrderWithItem(waiter.token);
+  const payment = await payInFull(cashier.token, order, 'cash');
+  await closeCurrentShiftIfAny(manager.token);
+
+  const res = await refundPayment(manager.token, payment.id, 5);
+  assert.equal(res.status, 409, JSON.stringify(res.body));
+});
+
+test('POST /payments/:id/refund — คืนเงินที่จ่ายผ่าน QR ได้แม้ไม่มีกะเปิด เพราะไม่แตะลิ้นชัก', async () => {
+  const manager = await login('manager', 'manager123');
+  const waiter = await login('waiter1', 'waiter123');
+  const cashier = await login('cashier', 'cashier123');
+
+  await openFreshShift(manager.token, 0);
+  const order = await openOrderWithItem(waiter.token);
+  const payment = await payInFull(cashier.token, order, 'qr');
+  await closeCurrentShiftIfAny(manager.token);
+
+  const res = await refundPayment(manager.token, payment.id, 5);
+  assert.equal(res.status, 201, JSON.stringify(res.body));
+});

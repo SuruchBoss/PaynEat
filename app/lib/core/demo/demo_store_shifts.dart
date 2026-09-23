@@ -50,6 +50,15 @@ extension DemoStoreShifts on DemoStore {
       )
       .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
 
+  /// mirror ของ shift.repository.js#cashRefundedDuring — ผูกด้วยกะที่เปิดอยู่ตอนคืน ไม่ใช่กะของ payment
+  double _cashRefundedDuring(int shiftId) => refunds
+      .where((row) {
+        if (row['shiftId'] != shiftId) return false;
+        final payment = payments.firstWhere((p) => p['id'] == row['paymentId']);
+        return payment['method'] == PaymentMethod.cash;
+      })
+      .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
+
   Map<String, dynamic> closeShift(
     int id, {
     required double countedCash,
@@ -70,8 +79,11 @@ extension DemoStoreShifts on DemoStore {
       );
     }
 
+    // เงินทอนตั้งต้น + เงินสดที่รับเข้า − เงินสดที่คืนลูกค้าออกไประหว่างกะนี้ (mirror ของ shift.service.js)
     final expected =
-        (shift['openingCash'] as num).toDouble() + _cashInDuring(id);
+        (shift['openingCash'] as num).toDouble() +
+        _cashInDuring(id) -
+        _cashRefundedDuring(id);
     shift['status'] = ShiftStatus.closed;
     shift['closedBy'] = closedById;
     shift['closedByName'] = _findUser(closedById)['name'];

@@ -138,6 +138,22 @@ void main() {
     );
 
     test(
+      'รูปแบบ token ผิด (backend ตอบ 400) ถือเป็นลิงก์เสีย — เช่นลิงก์ถูกตัดท้ายตอนส่งต่อทาง LINE',
+      () async {
+        repository.nextGetTableResult = Result.failure(
+          const ValidationFailure('ข้อมูลที่ส่งมาไม่ถูกต้อง'),
+        );
+
+        _setRouteQrToken('3f2a9c1e-77b0-4d');
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+
+        // เดิมนับแค่ 404 — ลิงก์แบบนี้เลยขึ้นหน้า "ไม่มีอินเทอร์เน็ต" พร้อมปุ่มลองใหม่ที่ไม่มีวันสำเร็จ
+        expect(controller.isLinkProblem.value, isTrue);
+      },
+    );
+
+    test(
       'เน็ตสะดุด (ไม่ใช่ 404) ต้องไม่ถูกมองว่าเป็นลิงก์เสีย — ยังให้กดลองใหม่ได้',
       () async {
         repository.nextGetTableResult = Result.failure(

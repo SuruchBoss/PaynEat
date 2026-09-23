@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-659%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-704%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -207,12 +207,20 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **659건**의 자동화 테스트를 통과합니다.
+공개 전 **704건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 293건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 366건 — domain / controller / widget
+cd backend && npm test      # 298건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 376건 — domain / controller / widget
+cd app && flutter test test_e2e   # 30건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
+
+`app/test_e2e/`의 E2E 30건은 실제 백엔드(`node src/server.js`)를 매번 새 임시 DB로 띄우고, 앱의
+실제 data/domain 코드가 매장의 하루를 처음부터 끝까지 진행합니다 — 로그인, 주문, 주방, 근무 시작,
+결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 그리고 손님의 QR 주문과
+지점·권한까지. 다른 Flutter 테스트는 모두 데모 모드에서 돌기 때문에, 앱이 **백엔드가 실제로 보낸
+JSON을 읽는** 테스트는 이것뿐입니다. 첫 실행에서 기존 659건이 모두 통과하던 실제 버그 5개를 찾아
+모두 고쳤습니다 (`docs/DECISIONS.md` #43–#47).
 
 한국어 지원에도 전용 테스트가 있습니다:
 

@@ -49,7 +49,11 @@ export const shiftService = {
     if (!shift) throw ApiError.notFound('ไม่พบกะนี้');
     if (shift.status !== 'open') throw ApiError.conflict('กะนี้ปิดไปแล้ว');
 
-    const expectedCash = shift.opening_cash + shiftRepository.cashInDuring(id);
+    // เงินที่ควรอยู่ในลิ้นชัก = เงินทอนตั้งต้น + เงินสดที่รับเข้า − เงินสดที่คืนลูกค้าออกไประหว่างกะนี้
+    const expectedCash =
+      shift.opening_cash +
+      shiftRepository.cashInDuring(id) -
+      shiftRepository.cashRefundedDuring(id);
     const counted = toSatang(countedCash);
     const variance = counted - expectedCash;
 

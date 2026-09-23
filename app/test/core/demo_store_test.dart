@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
+import 'package:payneat_pos/core/demo/demo_data_sources.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/errors/exceptions.dart';
+import 'package:payneat_pos/features/order/domain/entities/order_item_payload.dart';
 
 /// เทสต์ตรงต่อ DemoStore เอง (ไม่ผ่าน data source/repository) เพื่อยืนยันว่าเมธอด
 /// ที่ถูกแยกออกไปหลายไฟล์ตามโดเมนด้วย part/part of (auth, menu, tables, orders,
@@ -699,6 +701,38 @@ void main() {
         expect(invoice['runningNumber'], matches(RegExp('^INV$yy-\\d{6}\$')));
         expect(invoice['invoiceType'], TaxInvoiceType.abbreviated);
         expect(invoice['isVoid'], false);
+      },
+    );
+
+    test(
+      'มูลค่าสินค้า/บริการคือฐานภาษีรวมค่าบริการ — บวก VAT แล้วเท่ายอดรวมพอดี (ตรงกับ backend)',
+      () {
+        final order = paidOrder();
+        final invoice = store.issueTaxInvoice(order['id'] as int, {
+          'invoiceType': TaxInvoiceType.full,
+          'customerName': 'บริษัท ทดสอบ จำกัด',
+          'customerAddress': 'กรุงเทพมหานคร',
+        });
+
+        final total = (order['total'] as num).toDouble();
+        final vat = (order['vat'] as num).toDouble();
+        final serviceCharge = (order['serviceCharge'] as num).toDouble();
+        expect(
+          serviceCharge,
+          greaterThan(0),
+          reason: 'dine-in ต้องมีค่าบริการ',
+        );
+        final subtotal = (invoice['subtotal'] as num).toDouble();
+        expect(subtotal, closeTo(total - vat, 0.005));
+        expect(
+          subtotal,
+          greaterThan((order['subtotal'] as num).toDouble()),
+          reason: 'ต้องรวมค่าบริการ ไม่ใช่ค่าอาหารล้วน',
+        );
+        expect(
+          subtotal + (invoice['vat'] as num).toDouble(),
+          closeTo((invoice['total'] as num).toDouble(), 0.005),
+        );
       },
     );
 
@@ -1514,6 +1548,24 @@ void main() {
       expect(tokens.toSet().length, tokens.length);
     });
 
+    test(
+      'ลูกค้ากด "ส่งเข้าครัว" แล้วครัวเห็นทันที ไม่ค้างเป็นร่าง (mirror ของ backend — DECISIONS #46)',
+      () async {
+        final table = store.tableList().firstWhere(
+          (t) => t['status'] == 'available',
+        );
+        final item = store.menuList().first;
+        final order = await DemoSelfOrderDataSource(store).addItems(
+          table['qrToken'] as String,
+          [OrderItemPayload(menuItemId: item['id'] as int, quantity: 1)],
+        );
+
+        expect(order.status, OrderStatus.inKitchen);
+        final queue = store.kitchenQueue(['pending', 'cooking', 'ready']);
+        expect(queue.where((row) => row['orderId'] == order.id), hasLength(1));
+      },
+    );
+
     test('resolveTableByQrToken หาโต๊ะถูกตัวจาก token ที่ seed มา', () {
       final table = store.tableList().first;
       final resolved = store.resolveTableByQrToken(table['qrToken'] as String);
@@ -1554,4 +1606,139 @@ void main() {
       expect(store.resolveTableByQrToken(newToken)['id'], table['id']);
     });
   });
+
+  group(
+    'DemoStore shift + refund — เงินสดที่คืนลูกค้าหักจากลิ้นชักของกะที่คืน (DECISIONS #44)',
+    () {
+      // mirror ของเทสต์ชุดเดียวกันใน backend/tests/shift.test.js — โหมดสาธิตต้องได้ตัวเลขเดียวกันทุกกรณี
+      Map<String, dynamic> openFreshShift(double openingCash) {
+        final current = store.currentShift();
+        if (current != null) {
+          store.closeShift(
+            current['id'] as int,
+            countedCash: (current['openingCash'] as num).toDouble(),
+            closedById: 2,
+          );
+        }
+        return store.openShift(openingCash: openingCash, openedById: 6);
+      }
+
+      ({double total, int paymentId}) paidOrder(String method) {
+        final table = store.tableList().firstWhere(
+          (t) => t['status'] == 'available',
+        );
+        final item = store.menuList().first;
+        final order = store.createOrder(
+          type: 'dine_in',
+          tableId: table['id'] as int,
+          guestCount: 1,
+          items: [
+            {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+          ],
+        );
+        final total = (order['total'] as num).toDouble();
+        final isCash = method == PaymentMethod.cash;
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: method,
+          amount: total,
+          received: isCash ? total : null,
+          reference: isCash ? null : 'T-1',
+          cashierId: 6,
+        );
+        return (
+          total: total,
+          paymentId: (result['payment'] as Map)['id'] as int,
+        );
+      }
+
+      test('คืนเงินสดระหว่างกะ ถูกหักจากยอดที่คาดไว้ — นับตรงต้องไม่ขาด', () {
+        final shift = openFreshShift(500);
+        final paid = paidOrder(PaymentMethod.cash);
+        store.refundPayment(
+          paymentId: paid.paymentId,
+          amount: 20,
+          reason: 'ทดสอบ',
+          refundedById: 2,
+        );
+
+        final inDrawer = 500 + paid.total - 20;
+        final closed = store.closeShift(
+          shift['id'] as int,
+          countedCash: inDrawer,
+          closedById: 6,
+        );
+        expect(closed['expectedCash'], closeTo(inDrawer, 0.005));
+        expect(closed['variance'], closeTo(0, 0.005));
+      });
+
+      test(
+        'คืนเงินสดของบิลจากกะก่อน หักจากลิ้นชักกะที่คืน ไม่ใช่กะที่รับเงินมา',
+        () {
+          final morning = openFreshShift(1000);
+          final paid = paidOrder(PaymentMethod.cash);
+          final closedMorning = store.closeShift(
+            morning['id'] as int,
+            countedCash: 1000 + paid.total,
+            closedById: 6,
+          );
+          expect(closedMorning['variance'], closeTo(0, 0.005));
+
+          final afternoon = openFreshShift(300);
+          store.refundPayment(
+            paymentId: paid.paymentId,
+            amount: 10,
+            reason: 'ลูกค้ากลับมาขอคืนตอนบ่าย',
+            refundedById: 2,
+          );
+          final closedAfternoon = store.closeShift(
+            afternoon['id'] as int,
+            countedCash: 290,
+            closedById: 6,
+          );
+          expect(closedAfternoon['expectedCash'], closeTo(290, 0.005));
+          expect(closedAfternoon['variance'], closeTo(0, 0.005));
+          expect(closedMorning['variance'], closeTo(0, 0.005));
+        },
+      );
+
+      test('ไม่มีกะเปิดอยู่ คืนเงินสดไม่ได้ (409) เหมือนรับเงินสดไม่ได้', () {
+        openFreshShift(0);
+        final paid = paidOrder(PaymentMethod.cash);
+        final current = store.currentShift()!;
+        store.closeShift(
+          current['id'] as int,
+          countedCash: paid.total,
+          closedById: 6,
+        );
+
+        expect(
+          () => store.refundPayment(
+            paymentId: paid.paymentId,
+            amount: 5,
+            reason: 'ทดสอบ',
+            refundedById: 2,
+          ),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'status', 409),
+          ),
+        );
+      });
+
+      test('คืนเงินที่จ่ายผ่าน QR ได้แม้ไม่มีกะเปิด เพราะไม่แตะลิ้นชัก', () {
+        openFreshShift(0);
+        final paid = paidOrder(PaymentMethod.qr);
+        final current = store.currentShift()!;
+        store.closeShift(current['id'] as int, countedCash: 0, closedById: 6);
+
+        final refund = store.refundPayment(
+          paymentId: paid.paymentId,
+          amount: 5,
+          reason: 'ทดสอบ',
+          refundedById: 2,
+        );
+        expect(refund['amount'], 5);
+      });
+    },
+  );
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 
@@ -74,13 +76,17 @@ class ApiClient {
 
   /// ดึง response แบบข้อความดิบ (ไม่ใช่ envelope `{success,data}`) — ใช้กับ endpoint ที่ตอบเป็น
   /// ไฟล์ เช่น CSV export ซึ่งไม่ใช่ JSON
+  ///
+  /// รับเป็นไบต์แล้วถอดเองแทน [ResponseType.plain] เพราะตัวถอด UTF-8 ของ Dart ตัด BOM หัวข้อความ
+  /// ทิ้งเสมอ — backend ใส่ BOM ให้ทุกไฟล์ CSV เพื่อให้ Excel อ่านภาษาไทยถูก ถ้าหายระหว่างทาง ไฟล์ที่
+  /// ร้านดาวน์โหลดไปจะเปิดใน Excel เป็นตัวอักษรเพี้ยน (ดู docs/DECISIONS.md #45)
   Future<String> getText(String path, {Map<String, dynamic>? query}) async {
-    late final Response<String> response;
+    late final Response<List<int>> response;
     try {
-      response = await _dio.get<String>(
+      response = await _dio.get<List<int>>(
         path,
         queryParameters: _clean(query),
-        options: Options(responseType: ResponseType.plain),
+        options: Options(responseType: ResponseType.bytes),
       );
     } on DioException catch (error) {
       if (error.type == DioExceptionType.connectionTimeout ||
@@ -105,7 +111,18 @@ class ApiClient {
         statusCode: statusCode,
       );
     }
-    return response.data ?? '';
+    return _decodeKeepingBom(response.data ?? const []);
+  }
+
+  /// ถอด UTF-8 แล้วคืน BOM กลับไปถ้าไบต์ต้นฉบับมี — ได้ข้อความตรงกับที่เซิร์ฟเวอร์ส่งมาทุกตัวอักษร
+  static String _decodeKeepingBom(List<int> bytes) {
+    final hasBom =
+        bytes.length >= 3 &&
+        bytes[0] == 0xEF &&
+        bytes[1] == 0xBB &&
+        bytes[2] == 0xBF;
+    final text = utf8.decode(bytes, allowMalformed: true);
+    return hasBom && !text.startsWith('\uFEFF') ? '\uFEFF$text' : text;
   }
 
   Future<ApiResult> _request(Future<Response<dynamic>> Function() send) async {

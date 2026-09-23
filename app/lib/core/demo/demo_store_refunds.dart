@@ -37,10 +37,21 @@ extension DemoStoreRefunds on DemoStore {
       );
     }
 
+    // mirror ของ payment.service.js#refund — เงินสดที่คืนออกจากลิ้นชักของกะที่เปิดอยู่ตอนคืน จึงต้องมี
+    // กะเปิดอยู่ (กฎเดียวกับตอนรับเงิน) คืนผ่านช่องทางอื่นไม่แตะลิ้นชักจึงไม่บังคับ — ดู DECISIONS #44
+    final shift = _openShift;
+    if (shift == null && payment['method'] == PaymentMethod.cash) {
+      throw ApiException(
+        message: 'payment_error_refund_shift_required'.tr,
+        statusCode: 409,
+      );
+    }
+
     final refund = {
       'id': _nextId(),
       'paymentId': paymentId,
       'orderId': payment['orderId'],
+      'shiftId': shift?['id'],
       'amount': amount,
       'reason': reason,
       'refundedBy': refundedById,

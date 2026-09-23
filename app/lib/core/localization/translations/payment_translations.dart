@@ -85,6 +85,7 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_error_item_cancelled': '"@name" ถูกยกเลิกไปแล้ว เลือกจ่ายไม่ได้',
   'payment_error_order_cancelled': 'ออเดอร์นี้ถูกยกเลิกแล้ว',
   'payment_error_shift_required': 'ต้องเปิดกะก่อนจึงจะรับชำระเงินได้',
+  'payment_error_refund_shift_required': 'ต้องเปิดกะก่อนจึงจะคืนเงินสดได้',
   'payment_error_amount_exceeds_remaining':
       'ยอดชำระเกินยอดคงเหลือ (คงเหลือ @remaining บาท)',
   'payment_error_received_less_than_amount':
@@ -198,6 +199,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_error_order_cancelled': 'This order has been cancelled',
   'payment_error_shift_required':
       'You must open a shift before accepting payment',
+  'payment_error_refund_shift_required':
+      'You must open a shift before refunding cash',
   'payment_error_amount_exceeds_remaining':
       'Payment amount exceeds the remaining balance (remaining @remaining THB)',
   'payment_error_received_less_than_amount':
@@ -290,6 +293,7 @@ const Map<String, String> paymentTranslationsKo = {
   'payment_error_item_cancelled': '"@name"은(는) 취소된 메뉴여서 결제 대상으로 선택할 수 없습니다',
   'payment_error_order_cancelled': '취소된 주문입니다',
   'payment_error_shift_required': '결제를 받으려면 먼저 근무를 시작해야 합니다',
+  'payment_error_refund_shift_required': '현금을 환불하려면 먼저 근무를 시작해야 합니다',
   'payment_error_amount_exceeds_remaining':
       '결제 금액이 남은 금액을 초과합니다 (남은 금액 @remaining THB)',
   'payment_error_received_less_than_amount': '받은 금액은 청구 금액보다 적을 수 없습니다',

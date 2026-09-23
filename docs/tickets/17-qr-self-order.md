@@ -69,3 +69,9 @@ realtime) ได้เกือบ 100%
 - `app/lib/app/config/app_config.dart` (`selfOrderLink()`)
 - `app/lib/core/demo/demo_self_order_data_source.dart`, `demo_store_tables.dart`
 - `app/test/presentation/self_order_controller_test.dart`, `app/test/core/demo_store_test.dart`
+
+## แก้ภายหลัง (2026-09-23 — พบจากชุด E2E `app/test_e2e/`)
+เกณฑ์ข้อ "กดส่งเข้าครัวแล้วขึ้นที่ครัว" ติ๊กไว้แต่จริง ๆ ผ่านแค่กรณีพนักงานเปิดออเดอร์ไว้ก่อน — ถ้าลูกค้าเป็น
+คนแรกของโต๊ะว่าง ออเดอร์ค้างเป็นร่าง (`open`) ครัวไม่เห็นเลย (เทสต์เดิมยืนยันพฤติกรรมผิดนี้ไว้ด้วย) ตอนนี้
+ส่งเข้าครัวทันทีทุกกรณี และลิงก์ QR ที่ถูกตัดท้าย (token ผิดรูปแบบ → 400) แสดง "ลิงก์ใช้ไม่ได้" แทนหน้า
+"ไม่มีอินเทอร์เน็ต" — กติกาอยู่ที่ `isBrokenSelfOrderLink` ที่เดียว ดู `docs/DECISIONS.md` #46

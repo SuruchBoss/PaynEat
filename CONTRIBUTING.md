@@ -39,6 +39,7 @@
 flutter analyze                                    # ต้องขึ้น "No issues found!"
 dart format --output=none --set-exit-if-changed .  # ต้อง exit 0
 flutter test                                        # ต้องขึ้น "All tests passed!"
+flutter test test_e2e                               # ต้องขึ้น "All tests passed!" (แอปจริง ↔ backend จริง — ต้อง `npm ci` ใน backend ก่อน)
 
 # Backend (โฟลเดอร์ backend/)
 npm run format:check                                # ต้องขึ้น "All matched files use Prettier code style!"

@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-659%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-704%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 659 automated tests.
+control and 704 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -49,7 +49,7 @@ control and 659 automated tests.
 - **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
 - **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
   always with who/when/why, and nothing an admin can edit or delete from any UI
-- **659 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **704 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -384,8 +384,9 @@ The login page has one-tap buttons for each account — no need to type anything
     straight on table A1's menu, **no login at all** — add an item to the cart and tap **"Send to
     Kitchen"** → switch back to the waiter/kitchen window and the item the customer just ordered shows
     up in table A1's existing order immediately, exactly as if a staff member had entered it (stock
-    deduction/promotion calculation happen automatically too) — see
-    `docs/tickets/17-qr-self-order.md`
+    deduction/promotion calculation happen automatically too). Try it again on an **empty table** with
+    no order yet — the customer's very first order lands on the kitchen screen immediately too, rather
+    than sitting as a draft waiting for staff to send it (#46) — see `docs/tickets/17-qr-self-order.md`
 
 24. **Switch the whole app's language** → open the **Profile** page (the person icon in the bottom
     bar/rail) → under **Language**, switch between **ไทย / English / 한국어** → every screen changes
@@ -438,15 +439,23 @@ The login page has one-tap buttons for each account — no need to type anything
   no-connection one and **no retry button**, because a dead link never starts working however many
   times you tap — unlike a genuine network hiccup, which does offer a retry — and there's no way to
   guess another table's token from its plain numeric table id, since the token is a separate random
-  value, not a sequential id
+  value, not a sequential id — this behaves the same in Demo Mode and against the real backend,
+  including a real link whose tail got cut off when it was forwarded over LINE (#46)
+- Log in as `manager` → open a bill that was paid in **cash** → **refund** 20 THB → log in as
+  `cashier` → **close the shift**, counting exactly what's really in the drawer (starting float + cash
+  received − 20) → the variance is **0**, because the system subtracts cash handed back to customers
+  from the expected total on its own — a cashier who counts correctly is never recorded as short. And
+  try a cash refund with no shift open → rejected, just like taking cash with no shift (see
+  `docs/DECISIONS.md` #44)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 293 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 366 cases — domain / controller / widget
+cd backend && npm test      # 298 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 376 cases — domain / controller / widget
+cd app && flutter test test_e2e   # 30 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
 ---
@@ -513,6 +522,9 @@ cd app && flutter test      # 366 cases — domain / controller / widget
   duplicated business logic — it's the same service/endpoints staff use)
 - **Payment still goes through the cashier** — this feature is order-taking only, not self-checkout
   (see `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37)
+- **A broken link says plainly that the link doesn't work** — whether the QR has been regenerated, the
+  table deactivated, or the link got cut off while being forwarded (e.g. over LINE) — instead of a
+  "no internet" screen whose retry button never succeeds (#46)
 
 ### 🔥 Kitchen (KDS display)
 
@@ -528,7 +540,9 @@ cd app && flutter test      # 366 cases — domain / controller / widget
 
 - **Shift open/close** — enter a starting cash float when opening a shift; count the real cash when closing
   and the system automatically compares it against the expected total (cash drawer reconciliation) — a
-  shift must be open before payments can be accepted
+  shift must be open before payments can be accepted. The expected total **subtracts cash refunded to
+  customers during the shift**, so a cashier who counts correctly is never recorded as short (see
+  `docs/DECISIONS.md` #44)
 - **Z-report (shift close report)** — view a breakdown of sales/tax/discounts (manual vs. promotion,
   separately)/payment methods for any shift, past or just-closed, along with its cash reconciliation
   (starting/expected/counted/variance) — export it as a CSV for accounting right away (see
@@ -544,7 +558,9 @@ cd app && flutter test      # 366 cases — domain / controller / widget
   calculates each person's share of food cost/discount/Service Charge/VAT proportionally, paid in rounds
   until every item is settled (already-paid items can't be selected again)
 - **Refunds** after a payment has gone through (full or partial), always with a required reason (audit
-  trail) — refunded amounts are automatically subtracted from net sales in reports (manager role or above)
+  trail) — refunded amounts are automatically subtracted from net sales in reports (manager role or above).
+  A **cash** refund needs an open shift (the money leaves that shift's drawer); refunds via QR/card/
+  transfer don't
 - Change calculation with shortcut buttons (exact / round up to the nearest hundred / 100 / 500 / 1000)
 - **Receipts reconcile the way a Thai receipt should** — each payment line shows the cash the
   customer handed over, not the amount applied to the bill, so tendered − change equals the bill
@@ -557,7 +573,9 @@ cd app && flutter test      # 366 cases — domain / controller / widget
 - **Issue a tax invoice** from the receipt page of any fully-paid bill — choose abbreviated (issued
   instantly) or full (enter the customer's name + address), with a continuous, non-duplicate running
   number in the legally required format — can't issue a second one for the same bill until the earlier
-  one is voided first (voiding requires manager role or above — see `docs/DECISIONS.md` #19)
+  one is voided first (voiding requires manager role or above — see `docs/DECISIONS.md` #19) — the
+  "value of goods/services" line is the taxable value including service charge, so it plus VAT adds up
+  to the total to the last satang (#43)
 - **Redeem loyalty points for a discount** at checkout, if the order is linked to a customer — their
   points balance shows right away on the checkout page; redeem up to what they have and never more than
   the amount due this round (going over either limit is rejected outright, never silently capped — see
@@ -569,7 +587,9 @@ cd app && flutter test      # 366 cases — domain / controller / widget
   (answers "how's the store doing right now" — historical data and best sellers live on the **Reports** page)
 - **Historical reports** — pick any date range to see daily totals, best sellers, and category breakdowns,
   with an **Export CSV** button for each report type (sales summary/top items/sales by day) for the
-  currently selected date range (web only — see `docs/tickets/12-report-export.md`)
+  currently selected date range (web only — see `docs/tickets/12-report-export.md`). Files carry a
+  UTF-8 BOM, so Thai text opens in Excel without garbling, in Demo Mode and against the real backend
+  alike (#45)
 - **Menu management** — add/edit/delete items, and build your own modifier groups
 - **Staff management** — add accounts, change roles, deactivate accounts
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
@@ -944,11 +964,39 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 293 cases
-cd app && flutter test      # 366 cases
+cd backend && npm test      # 298 cases
+cd app && flutter test      # 376 cases
+cd app && flutter test test_e2e   # 30 cases (run npm ci in backend first)
 ```
 
-**Backend (293 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**E2E — the real app talking to the real backend (30 cases)** — `app/test_e2e/` boots the real backend
+(`node src/server.js`) on a random port with a brand-new temporary database per file, then drives the
+app's real data/domain code (`ApiClient` → data source → repository, the same stack the app assembles at
+startup) against it the way a restaurant would, with each role holding its own "device". It's the only
+suite where the app **reads JSON the backend actually sent** (every other Flutter test runs on Demo Mode,
+and the backend tests are pure JavaScript), and it has its own job in CI:
+
+> `restaurant_day_e2e_test.dart` (15 steps) — every role logs in → set a PromptPay ID → open an order whose
+> total matches, to the satang, the cart total the app showed the waiter → a draft neither reaches the
+> kitchen nor deducts stock until "Send to Kitchen" → the kitchen cooks it through to served → a leftover
+> shift must be closed, and no payment is accepted until a new one opens → the backend's PromptPay QR
+> matches the Dart algorithm character for character, CRC included → cash payment with correct change,
+> table freed → full tax invoice → refund (cashier can't, manager can) → shift closes with zero variance →
+> Z-report + CSV → reports count exactly one more bill → the audit log holds every money event
+>
+> `self_order_and_access_e2e_test.dart` (15 cases) — a customer scans the QR and orders all the way to the
+> kitchen screen, every kind of broken link, regenerating the QR kills the old link instantly, no personal
+> data leaks onto the public page, multi-branch staff/branch switching, a 403 at every money-related
+> permission, a bad token, and a deactivated staff member's still-logged-in device stops working
+
+Its first run found **5 real bugs that all 659 existing tests passed**, all now fixed with regression
+tests on both the backend and Demo Mode: a tax invoice whose three printed lines didn't add up (#43), a
+cash refund making the cashier look short at shift close (#44), CSV files downloaded against the real
+backend losing their BOM so Thai text garbled in Excel (#45), and a customer tapping "Send to Kitchen"
+without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
+design is in `docs/DECISIONS.md` #47
+
+**Backend (298 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1091,7 +1139,7 @@ immediately with RBAC (admin/manager only — waiters can't call it), and `POST 
 limited to 30 requests/5 minutes per table, returning 429 past that (see
 `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37).
 
-**Flutter (366 cases)** — split into 3 levels:
+**Flutter (376 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1141,7 +1189,8 @@ limited to 30 requests/5 minutes per table, returning 429 past that (see
 
 GitHub Actions CI runs `dart format` → `flutter analyze` → `dart run custom_lint` → `flutter test` →
 `flutter build web` on the Flutter side, and `prettier --check` → `eslint` → `npm test` on the backend,
-on every push.
+on every push, plus a separate **E2E** job that installs Node and Flutter side by side and runs
+`flutter test test_e2e` against a real backend process (see the E2E paragraph above).
 
 A separate **Clean Architecture (layer rules)** job runs `tool/check-architecture.sh` — the five
 dependency-direction checks from [`CODING_STANDARDS.md` §4.3](docs/CODING_STANDARDS.md). Those rules
@@ -1192,7 +1241,12 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   Korean business owner in Bangkok who found the project on GitHub and got in touch
   (see `docs/DECISIONS.md` #39) — **no Korean menu names in the database**, deliberately: those
   are each restaurant's own data, not system text
-- [ ] **Flutter integration tests** with `integration_test` against a real backend
+- [x] **Flutter integration tests against a real backend** — done as the E2E suite `app/test_e2e/`
+  (30 cases): boots the real backend on a fresh temporary database per file and drives the app's real
+  data/domain code through a full restaurant business day + a customer scanning the QR + branches/
+  permissions. It works at the data/domain layer rather than `integration_test`, which needs a real
+  device, and runs as its own CI job — its first run found 5 real bugs that all 659 existing tests
+  passed, all fixed (see the 🧪 Testing section and `docs/DECISIONS.md` #43–#47)
 - [x] **Tax invoice** — done: store tax ID/address/branch can be set from Settings; abbreviated/full tax
   invoices can be issued from the receipt page of any fully-paid bill, with a continuous, non-duplicate
   running number (`INV<Buddhist year>-<sequence>`, resetting every year); voiding a wrongly-issued invoice

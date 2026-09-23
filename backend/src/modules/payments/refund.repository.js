@@ -27,15 +27,15 @@ export const refundRepository = {
       .get(orderId).total;
   },
 
-  create({ paymentId, orderId, amount, reason, refundedBy }) {
+  create({ paymentId, orderId, amount, reason, refundedBy, shiftId }) {
     const info = getDb()
       .prepare(
         `
-        INSERT INTO refunds (payment_id, order_id, amount, reason, refunded_by)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO refunds (payment_id, order_id, amount, reason, refunded_by, shift_id)
+        VALUES (?, ?, ?, ?, ?, ?)
       `,
       )
-      .run(paymentId, orderId, amount, reason, refundedBy);
+      .run(paymentId, orderId, amount, reason, refundedBy, shiftId ?? null);
     return getDb()
       .prepare(
         `

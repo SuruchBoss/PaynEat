@@ -61,7 +61,12 @@ export const taxInvoiceService = {
         storeTaxId: settings.storeTaxId,
         storeAddress: settings.storeAddress,
         storeBranch: settings.storeBranch,
-        subtotal: order.subtotal,
+        // "มูลค่าสินค้า/บริการ" บนใบกำกับภาษีคือฐานภาษี (ยอดก่อน VAT) = total − vat ไม่ใช่
+        // order.subtotal ซึ่งเป็นค่าอาหารล้วน — ค่าบริการก็เป็นมูลค่าบริการที่ต้องเสีย VAT และส่วนลด
+        // ต้องหักออกก่อน ถ้าใช้ order.subtotal ใบกำกับภาษีจะพิมพ์สามบรรทัดที่บวกกันไม่ลง และ VAT ที่พิมพ์
+        // ไม่ใช่ 7% ของมูลค่าบรรทัดบน (ดู docs/DECISIONS.md #43) ใช้ได้ทั้งโหมด VAT แยกและ VAT รวมใน
+        // ราคา เพราะทั้งสองโหมด total − vat คือฐานภาษีเสมอ
+        subtotal: order.total - order.vat,
         vat: order.vat,
         total: order.total,
         issuedBy: user.id,

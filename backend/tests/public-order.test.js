@@ -83,10 +83,17 @@ test('POST /public/tables/:qrToken/items — ยังไม่มีออเ�
   ]);
 
   assert.equal(res.status, 200);
-  assert.equal(res.body.data.status, 'open');
+  // ลูกค้ากด "ส่งเข้าครัว" → ต้องเข้าครัวจริง (DECISIONS #46) — เดิมค้างเป็นร่าง 'open' ซึ่งคิวครัว
+  // ไม่ดึงมาแสดง ลูกค้าเห็นข้อความว่าส่งแล้วแต่ไม่มีใครทำอาหาร (เจอจากชุด E2E ใน app/test_e2e/)
+  assert.equal(res.body.data.status, 'in_kitchen');
   assert.equal(res.body.data.items.length, 1);
   assert.equal(res.body.data.items[0].quantity, 2);
   assert.equal(res.body.data.items[0].note, 'ไม่ใส่ผัก');
+
+  const kitchen = await login('kitchen', 'kitchen123');
+  const queue = await get('/api/v1/orders/kitchen/queue', kitchen.token);
+  assert.equal(queue.status, 200);
+  assert.equal(queue.body.data.filter((row) => row.orderId === res.body.data.id).length, 1);
 
   // โต๊ะต้องเปลี่ยนเป็น "มีคนนั่ง" ให้พนักงานเห็นในผังโต๊ะทันที เหมือนพนักงานเปิดออเดอร์เอง
   const tableRes = await get('/api/v1/tables', token);

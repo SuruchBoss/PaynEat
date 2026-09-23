@@ -97,7 +97,11 @@ extension DemoStoreTaxInvoices on DemoStore {
       'storeTaxId': storeTaxId,
       'storeAddress': storeAddress,
       'storeBranch': settings['storeBranch'],
-      'subtotal': order['subtotal'],
+      // ฐานภาษี (ยอดก่อน VAT) ไม่ใช่ order.subtotal — mirror ของ tax-invoice.service.js#issue
+      // ดูเหตุผลเต็มที่ docs/DECISIONS.md #43
+      'subtotal': DemoStorePayments._roundMoney(
+        (order['total'] as num).toDouble() - (order['vat'] as num).toDouble(),
+      ),
       'vat': order['vat'],
       'total': order['total'],
       'issuedByName': issuedById == null ? null : _findUser(issuedById)['name'],

@@ -31,7 +31,9 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
 ## 🟢 Nice-to-have (backlog, ไม่ตัด ticket แยก)
 - ระบบจองโต๊ะ (reservation) ผูกกับผังโต๊ะ
 - แจ้งเตือนสต๊อกใกล้หมด/ยกเลิกออเดอร์ผิดปกติ ผ่าน push/LINE Notify
-- Flutter integration test กับ backend จริง (README ระบุว่ายังไม่มี มีแค่ unit/widget test)
+- ~~Flutter integration test กับ backend จริง~~ ✅ เสร็จแล้ว — ชุด E2E `app/test_e2e/` (30 เคส) เปิด
+  backend ตัวจริงแล้วให้โค้ดชั้น data/domain ของแอปเดินหนึ่งวันทำงานของร้าน รอบแรกเจอบั๊กจริง 5 ตัวใน
+  ticket 02/07/12/17 แก้แล้วทั้งหมด ดู `docs/DECISIONS.md` #43–#47
 - เอา pagination ที่ backend รองรับอยู่แล้วมาใช้ฝั่ง app
 
 ## นอกเหนือจาก gap analysis เดิม (ผู้ใช้ร้องขอเพิ่มเติมภายหลัง — audit ทั้ง financial และ restaurant manager)

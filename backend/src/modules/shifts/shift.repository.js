@@ -36,6 +36,19 @@ export const shiftRepository = {
       .get(shiftId).total;
   },
 
+  /** เงินสดที่คืนลูกค้าออกไปจากลิ้นชักระหว่างกะนี้ — ผูกด้วย refunds.shift_id (กะที่เปิดอยู่ตอนคืน)
+   * ไม่ใช่กะของ payment เดิม เพราะบิลเมื่อเช้าที่คืนเงินตอนบ่าย เงินออกจากลิ้นชักกะบ่าย */
+  cashRefundedDuring(shiftId) {
+    return getDb()
+      .prepare(
+        `SELECT IFNULL(SUM(r.amount), 0) AS total
+           FROM refunds r
+           JOIN payments p ON p.id = r.payment_id
+          WHERE r.shift_id = ? AND p.method = 'cash'`,
+      )
+      .get(shiftId).total;
+  },
+
   close(id, { closedBy, expectedCash, countedCash, variance, note }) {
     getDb()
       .prepare(

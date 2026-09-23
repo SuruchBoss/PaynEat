@@ -81,6 +81,12 @@ export const migrate = () => {
     'shift_id',
     'INTEGER REFERENCES shifts(id) ON DELETE SET NULL',
   );
+  // เงินสดที่คืนลูกค้าออกจากลิ้นชักของกะที่เปิดอยู่ตอนคืน (docs/DECISIONS.md #44) — สร้าง index ที่นี่
+  // ไม่ใช่ใน schema.sql เพราะ schema.sql รันก่อน addColumnIfMissing เสมอ ฐานข้อมูลเดิมที่ยังไม่มี
+  // คอลัมน์นี้จะพังตั้งแต่บรรทัด CREATE INDEX ก่อนจะได้เพิ่มคอลัมน์ รีฟันด์เก่าจะเป็น NULL ซึ่งถูกต้อง:
+  // ก่อนหน้านี้ไม่เคยถูกหักจากลิ้นชักกะไหนอยู่แล้ว กะที่ปิดไปแล้วก็ไม่ควรถูกคำนวณใหม่ย้อนหลัง
+  addColumnIfMissing(db, 'refunds', 'shift_id', 'INTEGER REFERENCES shifts(id) ON DELETE SET NULL');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_refunds_shift ON refunds(shift_id)');
   addColumnIfMissing(
     db,
     'orders',

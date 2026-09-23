@@ -97,7 +97,13 @@ export const publicOrderService = {
           table.branch_id,
         );
 
-    return toPublicOrderPreview(order);
+    // ปุ่มฝั่งลูกค้าคือ "ส่งเข้าครัว" และหน้าจอบอกว่า "ส่งออเดอร์เข้าครัวเรียบร้อยแล้ว" แต่ออเดอร์ที่
+    // เพิ่งเปิดยังเป็นร่าง ('open') ซึ่งคิวครัวไม่ดึงมาแสดงเลย (ดูแค่ in_kitchen/served) — ลูกค้าจะ
+    // นั่งรออาหารที่ไม่มีใครทำ จึงส่งเข้าครัวต่อทันทีด้วย sendToKitchen ตัวเดียวกับที่พนักงานกด
+    // (ตัดสต๊อก + ยิง KITCHEN_TICKET ครบ) ออเดอร์ที่อยู่ในครัวอยู่แล้วไม่ต้องส่งซ้ำ เพราะ addItems
+    // ตัดสต๊อกให้รายการใหม่และครัวเห็นทันทีอยู่แล้ว (ดู docs/DECISIONS.md #46)
+    const sent = order.status === 'open' ? orderService.sendToKitchen(order.id) : order;
+    return toPublicOrderPreview(sent);
   },
 };
 

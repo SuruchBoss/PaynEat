@@ -1,0 +1,140 @@
+import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
+/// เปิด backend ตัวจริง (`node src/server.js`) ขึ้นมาเป็น process แยก ให้ชุด E2E ยิงผ่าน HTTP จริง
+///
+/// ทุกครั้งที่เรียก [start] ได้ฐานข้อมูล SQLite ใหม่เอี่ยมในโฟลเดอร์ชั่วคราว (server migrate + seed เอง
+/// ตอนบูต — ดู `backend/src/server.js`) บนพอร์ตว่างที่สุ่มได้ จึงรันซ้ำกี่รอบก็ไม่มีข้อมูลค้างจากรอบก่อน
+/// และไม่ชนกับ backend ที่เปิดทิ้งไว้ใช้งานเองบนพอร์ต 3000
+///
+/// ทำไมต้องเป็น process จริง ไม่ใช่ supertest ใน Node: เทสต์ backend เดิม (`backend/tests/`) ยิงผ่าน
+/// HTTP จริงอยู่แล้ว แต่เป็นฝั่ง JavaScript ล้วน ส่วนเทสต์ Flutter เดิมทั้งหมดวิ่งบนโหมดสาธิต
+/// (`DemoStore` ฝั่ง Dart) — ไม่มีเทสต์ไหนเลยที่ให้โค้ดฝั่งแอป *อ่าน JSON ที่ backend ส่งมาจริง*
+/// ชื่อฟิลด์สะกดไม่ตรงกันแค่ตัวเดียวจะผ่านเทสต์ครบทุกตัวแต่พังทันทีที่ร้านเปิดใช้จริง ชุดนี้ปิดช่องนั้น
+class BackendProcess {
+  BackendProcess._(this._process, this.port, this._tempDir, this._log);
+
+  final Process _process;
+  final int port;
+  final Directory _tempDir;
+  final StringBuffer _log;
+
+  String get apiBaseUrl => 'http://127.0.0.1:$port/api/v1';
+
+  /// stdout/stderr ของ backend ทั้งหมด — พิมพ์ออกมาตอนเทสต์ล้มจะรู้ทันทีว่าฝั่งไหนผิด
+  String get log => _log.toString();
+
+  static Future<BackendProcess> start({
+    Duration bootTimeout = const Duration(seconds: 60),
+  }) async {
+    final backendDir = _findBackendDir();
+    if (!Directory('${backendDir.path}/node_modules').existsSync()) {
+      throw StateError(
+        'ยังไม่ได้ติดตั้ง dependency ของ backend — รัน `cd backend && npm ci` ก่อน',
+      );
+    }
+
+    final port = await _freePort();
+    final tempDir = await Directory.systemTemp.createTemp('payneat-e2e-');
+    final log = StringBuffer();
+
+    // สำเนา env ของเครื่องแล้วทับเฉพาะที่ต้องคุม — ตัด ANTHROPIC_API_KEY ออกเสมอ กันไม่ให้
+    // เทสต์ไปเรียก Claude API จริงเสียเงินโดยไม่ตั้งใจ (ผู้ช่วย AI มีทางถอยเมื่อไม่มี key อยู่แล้ว)
+    final environment = <String, String>{
+      ...Platform.environment,
+      'NODE_ENV': 'test',
+      'JWT_SECRET': 'e2e-secret',
+      'DATABASE_FILE': '${tempDir.path}/e2e.sqlite',
+      'PORT': '$port',
+      'HOST': '127.0.0.1',
+    }..remove('ANTHROPIC_API_KEY');
+
+    final process = await Process.start(
+      Platform.environment['E2E_NODE'] ?? 'node',
+      ['src/server.js'],
+      workingDirectory: backendDir.path,
+      environment: environment,
+      includeParentEnvironment: false,
+    );
+    process.stdout.transform(utf8.decoder).listen(log.write);
+    process.stderr.transform(utf8.decoder).listen(log.write);
+
+    int? earlyExit;
+    unawaited(process.exitCode.then((code) => earlyExit = code));
+
+    final backend = BackendProcess._(process, port, tempDir, log);
+    // วัดเวลาที่ผ่านไปด้วย Stopwatch (monotonic) ไม่ใช่นาฬิกา — AppClock ถูกตรึงได้ในเทสต์ ถ้าใช้ตัวนั้น
+    // timeout อาจไม่มีวันถึง ส่วน DateTime.now() ถูกกฎ use_app_clock_not_date_time_now ห้ามไว้
+    final elapsed = Stopwatch()..start();
+    while (!await _isHealthy(port)) {
+      if (earlyExit != null) {
+        await backend._cleanTempDir();
+        throw StateError(
+          'backend ปิดตัวเองก่อนพร้อมใช้งาน (exit $earlyExit):\n$log',
+        );
+      }
+      if (elapsed.elapsed > bootTimeout) {
+        await backend.stop();
+        throw TimeoutException(
+          'backend ไม่ตอบ /health ภายใน ${bootTimeout.inSeconds} วินาที:\n$log',
+        );
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+    }
+    return backend;
+  }
+
+  Future<void> stop() async {
+    _process.kill(ProcessSignal.sigterm);
+    // server.js ปิด DB ให้เองตอนได้ SIGTERM — รอให้จบจริงก่อนลบไฟล์ ไม่งั้นไฟล์ -wal อาจค้าง
+    await _process.exitCode.timeout(
+      const Duration(seconds: 10),
+      onTimeout: () {
+        _process.kill(ProcessSignal.sigkill);
+        return -1;
+      },
+    );
+    await _cleanTempDir();
+  }
+
+  Future<void> _cleanTempDir() async {
+    if (_tempDir.existsSync()) await _tempDir.delete(recursive: true);
+  }
+
+  /// หา `backend/` โดยไล่ขึ้นจากโฟลเดอร์ที่รันเทสต์ — `flutter test` รันจาก `app/` เสมอ แต่ไม่ผูก
+  /// ตายตัวไว้เผื่อมีคนรันจาก root ของรีโป
+  static Directory _findBackendDir() {
+    var dir = Directory.current.absolute;
+    for (var i = 0; i < 4; i++) {
+      final candidate = Directory('${dir.path}/backend');
+      if (File('${candidate.path}/src/server.js').existsSync()) {
+        return candidate;
+      }
+      dir = dir.parent;
+    }
+    throw StateError('หาโฟลเดอร์ backend/ ไม่เจอจาก ${Directory.current.path}');
+  }
+
+  static Future<int> _freePort() async {
+    final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final port = socket.port;
+    await socket.close();
+    return port;
+  }
+
+  static Future<bool> _isHealthy(int port) async {
+    final client = HttpClient()
+      ..connectionTimeout = const Duration(milliseconds: 500);
+    try {
+      final request = await client.get('127.0.0.1', port, '/health');
+      final response = await request.close();
+      await response.drain<void>();
+      return response.statusCode == 200;
+    } on Object {
+      return false;
+    } finally {
+      client.close(force: true);
+    }
+  }
+}

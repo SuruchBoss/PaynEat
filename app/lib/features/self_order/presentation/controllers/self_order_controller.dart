@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 
-import '../../../../core/errors/failures.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../menu/domain/entities/category.dart';
 import '../../../menu/domain/entities/menu_item.dart';
@@ -9,6 +8,7 @@ import '../../../order/domain/entities/order.dart';
 import '../../../order/domain/entities/order_item_payload.dart';
 import '../../../order/presentation/widgets/option_selection_sheet.dart';
 import '../../domain/entities/self_order_table.dart';
+import '../../domain/self_order_link.dart';
 import '../../domain/usecases/add_self_order_items_usecase.dart';
 import '../../domain/usecases/get_self_order_menu_usecase.dart';
 import '../../domain/usecases/get_self_order_table_usecase.dart';
@@ -83,9 +83,8 @@ class SelfOrderController extends GetxController {
     final failure = tableResult.failureOrNull;
     if (failure != null) {
       errorMessage.value = failure.message;
-      // 404 = token ไม่มีจริง/โต๊ะถูกปิดใช้งาน/QR ถูกเปลี่ยนไปแล้ว — ต่างจาก error อื่นที่ลองใหม่ได้
-      isLinkProblem.value =
-          failure is ServerFailure && failure.statusCode == 404;
+      // ลิงก์เสีย (404 หรือรูปแบบ token ผิด) ลองใหม่ไม่มีวันสำเร็จ — ต่างจาก error อื่นที่ลองใหม่ได้
+      isLinkProblem.value = isBrokenSelfOrderLink(failure);
       isLoading.value = false;
       return;
     }
