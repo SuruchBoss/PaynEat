@@ -116,6 +116,9 @@ control and 659 automated tests.
 > A demo button sits on the very first screen, and every language edition has **Security** and
 > **Pricing · Contact** sections. Each edition's screenshots are genuinely in that language — not Thai
 > screenshots with translated alt text.
+> The Thai/English editions tell it with objects only a restaurant has: the shift conditions are kitchen tickets on a
+> steel rail, timestamped across one shift; pricing is a thermal receipt (every line ฿0.00); and security is a checklist
+> kept apart from a "what to do before going live" warning box — see `docs/DECISIONS.md` #44
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
