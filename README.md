@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-794%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-801%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 794 automated tests.
+control and 801 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -49,7 +49,7 @@ control and 794 automated tests.
 - **ร้านเนื้อ + ขายส่งก็ใช้ได้** — ขายตามน้ำหนัก (ราคาต่อกิโล) สแกนฉลากตาชั่ง/บาร์โค้ด ขายเชื่อลูกค้าประจำ
   ตามวงเงิน ออกใบวางบิล รับชำระหนี้ และเงินสดที่รับชำระยังกระทบยอดลิ้นชักตอนปิดกะได้ตรง
   (`docs/tickets/18-sell-by-weight.md`–`20-b2b-credit.md`)
-- **ทดสอบอัตโนมัติ 794 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 801 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -112,6 +112,8 @@ control and 794 automated tests.
 > **ราคา · ช่องทางติดต่อ** ครบทั้งสามภาษา ภาพหน้าจอแต่ละฉบับเป็นภาษาของฉบับนั้นจริง ๆ ไม่ใช่ภาพไทยใส่ alt ภาษาอื่น
 > ทั้งสามฉบับเล่าด้วยของที่มีแค่ในร้านอาหาร: เงื่อนไขหน้างานเป็นตั๋วครัวเสียบราวสแตนเลสที่เวลาเรียงเป็นหนึ่งกะ
 > ราคาเป็นใบเสร็จกระดาษความร้อน (ทุกบรรทัด ฿0.00) และความปลอดภัยเป็นเช็กลิสต์แยกจากกล่องเตือน "ต้องทำก่อนใช้งานจริง" — ดู `docs/DECISIONS.md` #53
+> หัวข้อ **เคาน์เตอร์เนื้อ · ขายส่ง** (ticket 18–20) ใช้ฉลากตาชั่งของเดโมจริง `2000101012504` — บาร์โค้ดวาดเป็น EAN-13 จริง
+> ทีละโมดูล เอาเครื่องสแกนยิงจากจอเข้าช่องสแกนในเดโมได้เลย (ตรวจด้วยตัวถอดรหัส zxing ทั้งสามภาษา — ดู #54)
 > ผลตรวจความถูกต้องของภาษาและตัวเลขอยู่ใน [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > ไฟล์ต้นทางคือ [`docs/landing/index.html`](docs/landing/index.html) / [`index.en.html`](docs/landing/index.en.html)
@@ -380,7 +382,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     **"เนื้อวัวริบอาย"** (ป้ายราคาเป็น **฿1,200.00/กก.**) → กล่องชั่งน้ำหนักขึ้นมา พิมพ์ตามหน้าจอตาชั่ง
     เช่น `0.485` → เห็นราคา **0.485 กก. = ฿582.00** ก่อนกดใส่ตะกร้า — ต่อด้วยช่อง **"สแกนบาร์โค้ด /
     ฉลากตาชั่ง"** ข้างช่องค้นหาเมนู (เครื่องสแกน USB/บลูทูธยิงเข้าช่องนี้ได้เลย บนจอกว้าง focus ไว้ให้แล้ว)
-    พิมพ์ `2000101012504` แล้วกด Enter = สแกนฉลากตาชั่ง **หมูสามชั้นสไลซ์ 1.250 กก.** ลงตะกร้าทันที
+    (บนมือถือขึ้นสั้น ๆ ว่า "สแกน" และช่องนี้โผล่เฉพาะร้านที่มีสินค้าติดบาร์โค้ด/รหัสตาชั่ง) พิมพ์ `2000101012504` แล้วกด Enter = สแกนฉลากตาชั่ง **หมูสามชั้นสไลซ์ 1.250 กก.** ลงตะกร้าทันที
     โดยไม่ต้องพิมพ์น้ำหนัก และ `8850999320014` = ซอสหมักบุลโกกิ 1 ขวด — แต่ละถุงเป็นคนละบรรทัด (ไม่รวม
     กันแม้หนักเท่ากัน) กดชิปน้ำหนักในตะกร้าเพื่อชั่งใหม่ได้ก่อนส่ง จ่ายเงินแล้วดูหน้า **วัตถุดิบ/สต๊อก**
     เนื้อริบอายลดลง 0.485 กก. พอดี (ดู `docs/tickets/18-sell-by-weight.md`, `19-barcode-scale.md`)
@@ -453,7 +455,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 325 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 427 เคส — domain / controller / widget
+cd app && flutter test      # 434 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 42 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -946,7 +948,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 325 เคส
-cd app && flutter test      # 427 เคส
+cd app && flutter test      # 434 เคส
 cd app && flutter test test_e2e   # 42 เคส (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -1116,7 +1118,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 ขายเชื่อไม่เกินยอดค้าง, อายุหนี้ และ RBAC — `migrate-credit.test.js` (1 เคส) สร้างฐานข้อมูลรุ่นก่อน ticket 20
 จริงแล้ว migrate ยืนยันว่าข้อมูลเงิน/refund ที่อ้างถึง/index อยู่ครบ (ดู `docs/DECISIONS.md` #48–#51)
 
-**Flutter (427 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (434 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1153,6 +1155,8 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget รวมถึง `KitchenTicketCard` ต้องแยกไอคอน/ป้ายถูกต้องครบทั้ง 3 ประเภทออเดอร์ (โต๊ะ/กลับบ้าน/เดลิเวอรี) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
 | Widget | `weight_entry_dialog_test.dart` | แปลงน้ำหนักที่พิมพ์ (กก. รับจุลภาคแทนจุดได้) เป็นกรัมเต็ม ปัดเศษกรัม และปฏิเสธค่านอกช่วง 1–99,999 กรัม (ticket 18) |
+| Widget | `cart_panel_locale_test.dart` | ตะกร้าต้องโชว์ชื่อเมนูตามภาษา (อังกฤษ/เกาหลี) เหมือนการ์ดที่เพิ่งแตะ — เดิมใช้ `menuItem.name` ไทยเสมอมาตั้งแต่คอมมิตแรก และบรรทัดชั่งน้ำหนักต้องไม่ล้นเมื่อตัวอักษรกว้าง (ดู `docs/DECISIONS.md` #54) |
+| Core | `formatters_due_date_test.dart` | วันครบกำหนดชำระแสดงตามภาษา ("11 Oct 2026" / "2026년 10월 11일") ไม่ใช่ `2026-10-11` ดิบ และไม่เลื่อนวันตามโซนเวลาเครื่อง |
 | Widget | `customer_picker_dialog_test.dart` | กล่องผูกลูกค้ากับออเดอร์ — เน็ตสะดุดครั้งเดียวแล้วค้นใหม่สำเร็จต้องกลับมาเห็นรายชื่อ (เคยค้างที่หน้า error ถาวร), มีปุ่มลองใหม่ให้กดกู้ได้, และดีบาวซ์ต้องยุบการพิมพ์ 6 ตัวอักษรเหลือยิงค้นหาครั้งเดียว |
 | Core | `app_clock_test.dart` | `AppClock` ตรึง/คืนนาฬิกาได้ถูกต้อง — กันเวลาที่ตรึงไว้รั่วข้ามเทสต์ |
 | Core | `app_colors_contrast_test.dart` | คำนวณคอนทราสต์ตามสูตร WCAG จริง เทียบกับ **ทุกพื้นที่ใช้จริง** ไม่ใช่แค่พื้นขาว — โหมดปกติต้องผ่าน AA (4.5:1) โหมดคอนทราสต์สูงต้องผ่าน AAA (7:1) และสีที่เอาไปเป็นพื้นปุ่ม/ชิปต้องอ่านป้ายสีขาวออก |
@@ -1289,6 +1293,11 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
 - [x] **ขายเชื่อ/วางบิลลูกค้าขายส่ง (B2B)** — ทำแล้ว: วงเงิน/เครดิตเทอมต่อลูกค้า, ขายเชื่อ, ใบวางบิล,
   ใบเสร็จรับชำระหนี้ตัดบิลเก่าสุดก่อน, อายุหนี้, เงินสดที่รับชำระนับเข้าลิ้นชักตอนปิดกะ, migrate ฐานข้อมูล
   เดิมได้โดยข้อมูลเงินไม่หาย (ดู `docs/tickets/20-b2b-credit.md`, `docs/DECISIONS.md` #50)
+- [x] **ตรวจ UI ของขายตามน้ำหนัก/สแกน/ขายเชื่อ ทุกภาษา × ทุกขนาดจอ** — ทำแล้ว: 93 หน้าจอ ไม่มีอะไรล้น แก้ตะกร้า/ชีทตัวเลือกที่ขึ้น
+  ภาษาไทยในหน้าจออังกฤษ/เกาหลี, วันครบกำหนดดิบ, ช่องสแกนบนมือถือ, ฟอนต์เกาหลีขาด 8 ตัว, เครื่องมือถ่ายภาพที่พัง
+  และเพิ่มหัวข้อเคาน์เตอร์เนื้อพร้อมฉลากที่สแกนได้จริงในหน้า Landing ทั้งสามภาษา (ดู `docs/DECISIONS.md` #54)
+- [ ] **ตัดสินว่าบิลขายเชื่อควรได้แต้มสะสมตอนไหน** — ตอนนี้ได้ทันทีตอนลงบัญชีทั้งที่ยังไม่ได้รับเงิน เป็นกฎธุรกิจที่
+  เจ้าของร้านต้องเลือก (ตอนลงบัญชี / ตอนรับชำระครบ / ไม่ได้เลย) จึงยังไม่เปลี่ยนเอง (ดู `docs/DECISIONS.md` #54)
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 

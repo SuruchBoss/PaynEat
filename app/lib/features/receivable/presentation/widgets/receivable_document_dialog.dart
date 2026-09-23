@@ -65,7 +65,10 @@ class ReceivableDocumentDialog extends StatelessWidget {
       canVoid: canVoid,
       voidTitle: 'receivable_billing_note_void_title'.tr,
       extraRows: [
-        ('receivable_billing_note_due_date'.tr, note.dueDate),
+        (
+          'receivable_billing_note_due_date'.tr,
+          Formatters.dueDate(note.dueDate),
+        ),
         if (!note.isVoided)
           (
             'receivable_billing_note_remaining'.tr,
@@ -205,7 +208,7 @@ class ReceivableDocumentDialog extends StatelessWidget {
                             Text(
                               'receivable_line_dates'.trParams({
                                 'date': Formatters.dateTime(line.createdAt),
-                                'due': line.dueDate ?? '-',
+                                'due': Formatters.dueDate(line.dueDate),
                               }),
                               style: secondary,
                             ),

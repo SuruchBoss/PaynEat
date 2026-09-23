@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-794%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-801%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 794 automated tests.
+control and 801 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -53,7 +53,7 @@ control and 794 automated tests.
   barcodes, sell on credit to regular trade customers within a limit, issue billing notes, collect
   payments — and cash collected against debt still reconciles with the drawer at shift close
   (`docs/tickets/18-sell-by-weight.md`–`20-b2b-credit.md`)
-- **794 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **801 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -123,6 +123,9 @@ control and 794 automated tests.
 > All three editions tell it with objects only a restaurant has: the shift conditions are kitchen tickets on a
 > steel rail, timestamped across one shift; pricing is a thermal receipt (every line ฿0.00); and security is a checklist
 > kept apart from a "what to do before going live" warning box — see `docs/DECISIONS.md` #53
+> The **Meat counter · Wholesale** section (tickets 18–20) shows the demo's real scale label `2000101012504` — the
+> barcode is drawn as a genuine EAN-13, module by module, so a scanner can read it straight off the screen into the
+> demo's scan box (checked with the zxing decoder in all three languages — see #54)
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
@@ -410,7 +413,7 @@ The login page has one-tap buttons for each account — no need to type anything
     tap **"Beef Ribeye"** (its price tag reads **฿1,200.00/kg**) → a weighing dialog opens; type what the
     scale shows, e.g. `0.485` → it previews **0.485 kg = ฿582.00** before you add it to the cart — then
     use the **"Scan barcode / scale label"** field next to the menu search (a USB/Bluetooth scanner types
-    straight into it; on wide screens it's already focused): type `2000101012504` and press Enter = a
+    straight into it; on wide screens it's already focused, on phones it just says "Scan", and it only appears once the menu has barcoded or scale-coded items): type `2000101012504` and press Enter = a
     scale label for **Sliced Pork Belly 1.250 kg** lands in the cart with no weight typed at all, and
     `8850999320014` = one bottle of Bulgogi Marinade. Each bag stays on its own line (never merged, even at
     the same weight) and you can tap the weight chip to re-weigh before sending. After payment, the
@@ -501,7 +504,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 325 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 427 cases — domain / controller / widget
+cd app && flutter test      # 434 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 42 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -1043,7 +1046,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 325 cases
-cd app && flutter test      # 427 cases
+cd app && flutter test      # 434 cases
 cd app && flutter test test_e2e   # 42 cases (run npm ci in backend first)
 ```
 
@@ -1240,7 +1243,7 @@ capped at what's still owed, debt aging, and RBAC — `migrate-credit.test.js` (
 pre-ticket-20 database and migrates it, proving the money data, the refunds pointing at it, and the
 indexes all survive (see `docs/DECISIONS.md` #48–#51)
 
-**Flutter (427 cases)** — split into 3 levels:
+**Flutter (434 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1276,6 +1279,8 @@ indexes all survive (see `docs/DECISIONS.md` #48–#51)
 | Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Widget | `weight_entry_dialog_test.dart` | Turning the typed weight (kg, a comma works as the decimal point) into whole grams, rounding, and rejecting anything outside 1–99,999 g (ticket 18) |
+| Widget | `cart_panel_locale_test.dart` | The cart must show item names in the chosen language (English/Korean), matching the card just tapped — it had used the always-Thai `menuItem.name` since the first commit; also checks a weighed line doesn't overflow when glyphs are wide (see `docs/DECISIONS.md` #54) |
+| Core | `formatters_due_date_test.dart` | Due dates render in the current language ("11 Oct 2026" / "2026년 10월 11일") instead of a raw `2026-10-11`, without shifting a day with the device timezone |
 | Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |
 | Core | `app_clock_test.dart` | `AppClock` freezes and restores the clock correctly — stops a frozen time leaking across tests |
 | Core | `app_colors_contrast_test.dart` | Computes real WCAG contrast ratios against **every surface actually used**, not just white — standard mode must pass AA (4.5:1), high-contrast mode AAA (7:1), and any colour used as a button/chip fill must carry a white label |
@@ -1429,6 +1434,13 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   sales, billing notes, payment receipts applied oldest bill first, debt aging, cash collections counted
   into the drawer at shift close, and existing databases migrate with no money data lost (see
   `docs/tickets/20-b2b-credit.md`, `docs/DECISIONS.md` #50)
+- [x] **UI review of weight sales/scanning/credit in every language × every screen size** — done: 93 screens,
+  nothing overflows; fixed the cart and option sheet showing Thai on English/Korean screens, raw due dates, the
+  scan box on phones, 8 missing Korean glyphs and the broken screenshot tool, and added a meat-counter section
+  with a genuinely scannable label to all three landing pages (see `docs/DECISIONS.md` #54)
+- [ ] **Decide when a credit sale should earn loyalty points** — today it earns them as soon as it's charged to
+  the account, before any money arrives. That's a business rule for the store owner (on charge / on full
+  payment / never), so it hasn't been changed (see `docs/DECISIONS.md` #54)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

@@ -35,6 +35,7 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
       items: _store
           .menuList(availableOnly: true)
           .where((item) => item['soldByWeight'] != true)
+          .map(_store.presentMenuItem)
           .map(MenuItemModel.fromJson)
           .toList(growable: false),
     );

@@ -74,6 +74,15 @@ class Formatters {
 
   static String isoDate(DateTime value) => _isoDate.format(value);
 
+  /// วันครบกำหนดชำระ — backend ส่งมาเป็นวันที่ล้วน "2026-10-11" (ไม่มีเวลา/โซนเวลา)
+  /// เดิมหน้าลูกหนี้โชว์สตริงนี้ตรง ๆ ทุกภาษา อ่านเหมือนหน้าจอโปรแกรมเมอร์ ไม่ใช่เอกสารการค้า
+  /// ห้ามส่งผ่าน [parse] — มันเติม Z แล้วแปลงเป็นเวลาเครื่อง วันครบกำหนดอาจเลื่อนไปหนึ่งวัน
+  static String dueDate(String? value) {
+    if (value == null || value.length < 10) return value ?? '-';
+    final date = DateTime.tryParse(value.substring(0, 10));
+    return date == null ? value : _date.format(date);
+  }
+
   /// เวลาที่ผ่านไปแบบอ่านง่าย เช่น "5 นาทีที่แล้ว" — ใช้ในจอครัวเพื่อดูว่าออเดอร์รอนานแค่ไหน
   static String elapsed(String? value) {
     final date = parse(value);

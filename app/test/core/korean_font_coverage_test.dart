@@ -66,6 +66,17 @@ void main() {
       }
     }
 
+    // วัตถุดิบ (ชื่อ + หน่วย) และคำอธิบายเมนู เพิ่งมีคำแปลเกาหลีตอนตรวจ UI หลัง ticket 18–20 —
+    // เดิมเป็นไทยล้วนเลยไม่ต้องตรวจ พอแปลแล้วต้องตามมาตรวจด้วย ไม่งั้นหลุด subset เงียบ ๆ อีกรอบ
+    for (final ingredient in DemoSeed.ingredients()) {
+      used
+        ..addAll(DemoNames.of(ingredient, lang: 'ko').runes)
+        ..addAll(DemoNames.of(ingredient, lang: 'ko', key: 'unit').runes);
+    }
+    for (final menu in DemoSeed.menuItems()) {
+      used.addAll(DemoNames.of(menu, lang: 'ko', key: 'description').runes);
+    }
+
     final covered = _cmapOf('assets/fonts/NotoSansKR-400.ttf')
       ..addAll(_cmapOf('assets/fonts/NotoSansThai-400.ttf'));
 

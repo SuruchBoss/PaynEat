@@ -268,7 +268,7 @@ class _CartLineTile extends GetView<CartController> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      line.menuItem.name,
+                      line.menuItem.displayName,
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
@@ -325,31 +325,42 @@ class _CartLineTile extends GetView<CartController> {
           Row(
             children: [
               // สินค้าชั่งน้ำหนักไม่มีปุ่ม +/- (บรรทัดละ 1 ถุง) แตะน้ำหนักเพื่อชั่งใหม่แทน
-              if (line.isWeighed)
-                ActionChip(
-                  avatar: const Icon(Icons.scale_rounded, size: 16),
-                  label: Text(
-                    '${Formatters.weight(line.weightGrams!)} × '
-                    '${Formatters.bahtPerKg(line.unitPrice)}',
-                  ),
-                  tooltip: 'order_weigh_again'.tr,
-                  onPressed: () async {
-                    final grams = await WeightEntryDialog.show(
-                      line.menuItem,
-                      options: line.selectedOptions,
-                      initialGrams: line.weightGrams,
-                    );
-                    if (grams != null) controller.updateWeight(index, grams);
-                  },
-                )
-              else
-                QuantityStepper(
-                  value: line.quantity,
-                  size: 30,
-                  min: 1,
-                  onChanged: (value) => controller.updateQuantity(index, value),
+              // Expanded + ellipsis: ชิปน้ำหนักยาวกว่าปุ่ม +/- มาก ("1.012 kg × ฿1,200.00/kg")
+              // ในตะกร้าแคบ ๆ หรือตอนผู้ใช้ขยายตัวอักษรของระบบ Row เดิมล้นขวาจนยอดเงินหลุดจอ
+              Expanded(
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: line.isWeighed
+                      ? ActionChip(
+                          avatar: const Icon(Icons.scale_rounded, size: 16),
+                          label: Text(
+                            '${Formatters.weight(line.weightGrams!)} × '
+                            '${Formatters.bahtPerKg(line.unitPrice)}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          tooltip: 'order_weigh_again'.tr,
+                          onPressed: () async {
+                            final grams = await WeightEntryDialog.show(
+                              line.menuItem,
+                              options: line.selectedOptions,
+                              initialGrams: line.weightGrams,
+                            );
+                            if (grams != null) {
+                              controller.updateWeight(index, grams);
+                            }
+                          },
+                        )
+                      : QuantityStepper(
+                          value: line.quantity,
+                          size: 30,
+                          min: 1,
+                          onChanged: (value) =>
+                              controller.updateQuantity(index, value),
+                        ),
                 ),
-              const Spacer(),
+              ),
+              const SizedBox(width: 8),
               Text(
                 Formatters.baht(line.lineTotal),
                 style: const TextStyle(

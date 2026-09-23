@@ -99,22 +99,37 @@ class _MenuSection extends GetView<MenuBrowseController> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  onChanged: controller.search,
-                  decoration: InputDecoration(
-                    hintText: 'order_search_menu_hint'.tr,
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    isDense: true,
+          // ช่องสแกนโผล่เฉพาะร้านที่มีสินค้าติดบาร์โค้ด/รหัสตาชั่งจริง — ร้านอาหารทั่วไปที่ไม่มีเครื่องสแกน
+          // ไม่ควรเสียช่องค้นหาไปครึ่งหนึ่ง บนมือถือช่องค้นหากว้างกว่า (3:2) และคำใบ้ช่องสแกนสั้นลง
+          // เดิมแบ่งครึ่ง คำใบ้ทั้งสองช่องถูกตัดเป็น "Search men..." / "Scan barcod..." ทุกภาษา
+          child: Obx(() {
+            final canScan = controller.items.any(
+              (item) => item.barcode != null || item.scalePlu != null,
+            );
+            final compact = !Responsive.isWide(context);
+            return Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    onChanged: controller.search,
+                    decoration: InputDecoration(
+                      hintText: 'order_search_menu_hint'.tr,
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      isDense: true,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(child: _ScanField(onScanned: _handleScan)),
-            ],
-          ),
+                if (canScan) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: compact ? 2 : 3,
+                    child: _ScanField(onScanned: _handleScan, compact: compact),
+                  ),
+                ],
+              ],
+            );
+          }),
         ),
         Obx(
           () => CategoryFilterBar(
@@ -249,9 +264,12 @@ class _MenuSection extends GetView<MenuBrowseController> {
 /// ให้สแกนชิ้นต่อไปได้ทันทีโดยไม่ต้องแตะจอ — จอกว้าง (เคาน์เตอร์) โฟกัสช่องนี้ตั้งแต่เปิดหน้า
 /// ส่วนมือถือไม่ออโต้โฟกัส ไม่งั้นคีย์บอร์ดเด้งบังเมนูทุกครั้งที่เข้าหน้า
 class _ScanField extends StatefulWidget {
-  const _ScanField({required this.onScanned});
+  const _ScanField({required this.onScanned, this.compact = false});
 
   final Future<void> Function(String code) onScanned;
+
+  /// จอแคบ — คำใบ้สั้น ("สแกน") ไอคอนเครื่องสแกนบอกความหมายที่เหลือเอง
+  final bool compact;
 
   @override
   State<_ScanField> createState() => _ScanFieldState();
@@ -285,7 +303,8 @@ class _ScanFieldState extends State<_ScanField> {
       textInputAction: TextInputAction.done,
       onSubmitted: _submit,
       decoration: InputDecoration(
-        hintText: 'order_scan_hint'.tr,
+        hintText:
+            (widget.compact ? 'order_scan_hint_short' : 'order_scan_hint').tr,
         prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
         isDense: true,
       ),

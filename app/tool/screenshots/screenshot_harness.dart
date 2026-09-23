@@ -490,6 +490,17 @@ class ScreenshotHarness {
       (payment) => dropped.contains(payment['orderId']),
     );
 
+    // ตั้งแต่ ticket 18 บิลหน้าเคาน์เตอร์ที่จ่ายเลยโดยไม่ส่งครัวถูกตัดสต๊อกตอนจ่ายครบ (ถูกต้องตามจริง)
+    // บิลจำลอง ~34 ใบข้างล่างเลยกินสต๊อกวัตถุดิบสาธิตจนหมดกลางทาง เมนูถูกปิดขายอัตโนมัติ แล้ว
+    // createOrder ล้มด้วย order_error_menu_item_unavailable — เครื่องมือถ่ายภาพพังทั้งไฟล์
+    // เติมสต๊อกชั่วคราวระหว่างสร้างกราฟ แล้วคืนค่าเดิม หน้าวัตถุดิบในภาพจึงเหมือนก่อนสร้างกราฟ
+    final stockBefore = {
+      for (final row in store.ingredients) row['id']: row['currentStock'],
+    };
+    for (final row in store.ingredients) {
+      row['currentStock'] = 1000000;
+    }
+
     var sequence = 0;
 
     _billsPerHour.forEach((hour, count) {
@@ -547,6 +558,10 @@ class ScreenshotHarness {
         sequence++;
       }
     });
+
+    for (final row in store.ingredients) {
+      row['currentStock'] = stockBefore[row['id']];
+    }
   }
 
   /// รอให้แอนิเมชันและ Future ต่าง ๆ ทำงานจบ

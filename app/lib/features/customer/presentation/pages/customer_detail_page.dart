@@ -266,7 +266,12 @@ class _OrderHistoryTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    // Wrap ไม่ใช่ Row — เลขออเดอร์ + ป้ายสถานะภาษาไทยยาวกว่าช่องบนมือถือ 390px
+                    // (ล้น 2.5px ตอนลูกค้าเครดิตมีบิลกลับบ้าน) ให้ป้ายขึ้นบรรทัดใหม่แทนการล้น
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           order.code,
@@ -275,7 +280,6 @@ class _OrderHistoryTile extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(width: 8),
                         StatusChip(
                           label: order.statusLabel,
                           color: color,

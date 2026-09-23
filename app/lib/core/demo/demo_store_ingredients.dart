@@ -10,8 +10,12 @@ extension DemoStoreIngredients on DemoStore {
     ),
   );
 
+  /// ส่งออกพร้อมชื่อ/หน่วยตามภาษาที่เลือก (ดู [DemoNames]) — วัตถุดิบสาธิตเคยเป็นไทยอย่างเดียว
+  /// หน้าวัตถุดิบและฟอร์มเมนูฉบับเกาหลี/อังกฤษเลยขึ้น "เนื้อริบอาย 1 กก." ปนอยู่
   Map<String, dynamic> _withIsLowStock(Map<String, dynamic> row) => {
     ...row,
+    'name': DemoNames.of(row),
+    'unit': DemoNames.of(row, key: 'unit'),
     'isLowStock':
         (row['currentStock'] as num) <= (row['lowStockThreshold'] as num),
   };
@@ -41,8 +45,20 @@ extension DemoStoreIngredients on DemoStore {
     }
 
     final raw = _rawIngredient(id);
-    if (body['name'] != null) raw['name'] = body['name'];
-    if (body['unit'] != null) raw['unit'] = body['unit'];
+    // เจ้าของร้านแก้ชื่อ/หน่วยเอง → ทิ้งคำแปลสาธิตไป ไม่งั้นจะเห็นคำแปลเดิมแทนค่าที่เพิ่งแก้
+    if (body['name'] != null && body['name'] != DemoNames.of(raw)) {
+      raw
+        ..['name'] = body['name']
+        ..remove('nameEn')
+        ..remove('nameKo');
+    }
+    if (body['unit'] != null &&
+        body['unit'] != DemoNames.of(raw, key: 'unit')) {
+      raw
+        ..['unit'] = body['unit']
+        ..remove('unitEn')
+        ..remove('unitKo');
+    }
     if (body['lowStockThreshold'] != null) {
       raw['lowStockThreshold'] = (body['lowStockThreshold'] as num).toDouble();
     }

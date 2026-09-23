@@ -67,6 +67,49 @@ extension DemoStoreMenu on DemoStore {
         .toList(growable: false);
   }
 
+  /// แถวเมนูที่ส่งออกไปหน้าจอ — คำอธิบาย และชื่อ/หน่วยวัตถุดิบที่ผูกไว้ตามภาษาที่เลือก
+  /// (ชื่อเมนูเองสลับที่ entity ผ่าน displayName อยู่แล้ว ส่วนนี้คือข้อมูลที่ entity ไม่มีคำแปล)
+  /// ห้ามใช้ผลลัพธ์นี้แก้ข้อมูลในร้าน — เป็นสำเนา แก้ผ่าน [menuItem] เท่านั้น
+  Map<String, dynamic> presentMenuItem(Map<String, dynamic> row) => {
+    ...row,
+    'description': row['description'] == null
+        ? null
+        : DemoNames.of(row, key: 'description'),
+    'ingredients': [
+      for (final link
+          in (row['ingredients'] as List? ?? const [])
+              .cast<Map<String, dynamic>>())
+        _presentIngredientLink(link),
+    ],
+    // ชื่อกลุ่มตัวเลือก/ตัวเลือกมีคำแปลใน seed มานานแล้ว แต่ถูกใช้แค่ตอนประทับลงออเดอร์
+    // ชีทเลือกตัวเลือกฉบับอังกฤษ/เกาหลีเลยขึ้น "ระดับความเผ็ด · ไม่เผ็ด · ไข่ดาว" มาตลอด
+    'optionGroups': [
+      for (final group
+          in (row['optionGroups'] as List? ?? const [])
+              .cast<Map<String, dynamic>>())
+        {
+          ...group,
+          'name': DemoNames.of(group),
+          'options': [
+            for (final option
+                in (group['options'] as List? ?? const [])
+                    .cast<Map<String, dynamic>>())
+              {...option, 'name': DemoNames.of(option)},
+          ],
+        },
+    ],
+  };
+
+  Map<String, dynamic> _presentIngredientLink(Map<String, dynamic> link) {
+    final source = ingredients.where((i) => i['id'] == link['ingredientId']);
+    if (source.isEmpty) return link;
+    return {
+      ...link,
+      'ingredientName': DemoNames.of(source.first),
+      'unit': DemoNames.of(source.first, key: 'unit'),
+    };
+  }
+
   Map<String, dynamic> menuItem(int id) => menuItems.firstWhere(
     (row) => row['id'] == id,
     orElse: () => throw ApiException(
@@ -116,6 +159,13 @@ extension DemoStoreMenu on DemoStore {
 
     final item = menuItem(id);
     final previousPrice = (item['price'] as num?)?.toDouble();
+    // แก้คำอธิบายเอง → ทิ้งคำแปลสาธิต ไม่งั้นหน้าจอภาษาอื่นยังโชว์คำแปลเดิม
+    if (body.containsKey('description') &&
+        body['description'] != presentMenuItem(item)['description']) {
+      item
+        ..remove('descriptionEn')
+        ..remove('descriptionKo');
+    }
     body.forEach((key, value) {
       if (key == 'optionGroups') {
         item[key] = _normalizeOptionGroups(value);
