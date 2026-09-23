@@ -3,6 +3,7 @@ import { toBaht } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { settingsService } from '../settings/settings.service.js';
+import { creditPoints } from './credit-points.js';
 import { lateFeeRepository } from './late-fee.repository.js';
 import { receivableRepository } from './receivable.repository.js';
 import { toLateFeeDto, toLateFeeLineDto } from './receivable.mapper.js';
@@ -171,6 +172,10 @@ export const lateFeeService = {
 
     getDb().transaction(() => {
       lateFeeRepository.void(id, { reason, voidedBy: user.id });
+      // ต้นเงินจ่ายครบแล้วเหลือแค่ดอกเบี้ยที่ยกเว้นให้ = บิลนั้นชำระครบ ได้แต้มสะสมตอนนี้ (#59)
+      const points = creditPoints.syncOrders(
+        lateFeeRepository.items(id).map((item) => item.order_id),
+      );
       auditLogService.log({
         actorUser: user,
         action: 'receivable.late_fee_void',
@@ -178,7 +183,11 @@ export const lateFeeService = {
         entityId: id,
         summary: `ยกเลิกใบแจ้งดอกเบี้ย ${row.charge_no} (${toBaht(row.total)} บาท) ของ "${row.customer_name}"`,
         reason,
-        metadata: { chargeNo: row.charge_no, total: toBaht(row.total) },
+        metadata: {
+          chargeNo: row.charge_no,
+          total: toBaht(row.total),
+          pointsEarned: points.earned,
+        },
       });
     })();
     return buildDto(lateFeeRepository.findById(id));

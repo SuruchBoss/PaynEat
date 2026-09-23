@@ -13,6 +13,7 @@ import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { customerRepository } from '../customers/customer.repository.js';
 import { ingredientService } from '../ingredients/ingredient.service.js';
 import { creditNoteService } from '../receivables/credit-note.service.js';
+import { creditPoints } from '../receivables/credit-points.js';
 import { receivableService } from '../receivables/receivable.service.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
@@ -223,7 +224,11 @@ export const paymentService = {
         orderRepository.updateStatus(order.id, 'paid', { closedAt: new Date().toISOString() });
         if (order.table_id) tableRepository.setStatus(order.table_id, 'available');
         // สะสมแต้มให้ลูกค้าที่ผูกไว้ครั้งเดียวตอนออเดอร์นี้จ่ายครบ (ไม่ผูกลูกค้า = ไม่ได้แต้ม)
-        if (order.customer_id) {
+        // ออเดอร์ที่มีส่วนขายเชื่อยังไม่ได้เงินจริง แต้มรอไปให้ตอนรับชำระหนี้ครบ (credit-points.js, #59)
+        // — ให้ sync ตัดสิน เผื่อส่วนขายเชื่อถูกชำระหนี้ครบไปก่อนที่ส่วนที่เหลือของบิลจะจ่ายรอบนี้
+        if (order.customer_id && creditPoints.hasCredit(order.id)) {
+          creditPoints.sync(order.id);
+        } else if (order.customer_id) {
           const earnRateSatang = toSatang(settings.pointsEarnRateBaht);
           const pointsEarned = Math.floor(order.total / earnRateSatang);
           if (pointsEarned > 0) {
@@ -356,6 +361,8 @@ export const paymentService = {
           previousCredited: alreadyRefunded,
           user,
         });
+        // ลดหนี้ส่วนที่เหลือจนยอดค้างเป็น 0 = ชำระครบแล้ว ได้แต้มจากยอดสุทธิหลังลดหนี้ (#59)
+        creditPoints.sync(payment.order_id);
       }
       return refundRepository.findById(created.id);
     })();

@@ -216,6 +216,12 @@ extension DemoStoreArAdjustments on DemoStore {
       ..['isVoided'] = true
       ..['voidReason'] = reason
       ..['voidedAt'] = _now();
+    // ต้นเงินจ่ายครบแล้วเหลือแค่ดอกเบี้ยที่ยกเว้นให้ = ชำระครบ ได้แต้มตอนนี้ (DECISIONS #59)
+    final points = _syncCreditPointsOf(
+      (charge['items'] as List).cast<Map<String, dynamic>>().map(
+        (item) => item['paymentId'] as int,
+      ),
+    );
     _logAudit(
       actorId: actorId,
       action: 'receivable.late_fee_void',
@@ -225,7 +231,7 @@ extension DemoStoreArAdjustments on DemoStore {
           'ยกเลิกใบแจ้งดอกเบี้ย ${charge['chargeNo']} (${charge['total']} บาท) '
           'ของ "${charge['customerName']}"',
       reason: reason,
-      metadata: {'chargeNo': charge['chargeNo']},
+      metadata: {'chargeNo': charge['chargeNo'], 'pointsEarned': points.earned},
     );
     return lateFeeDocument(id);
   }

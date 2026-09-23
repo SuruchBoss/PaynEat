@@ -307,7 +307,10 @@ components:
         pointsEarned:
           type: integer
           example: 0
-          description: แต้มสะสมที่ลูกค้าได้รับ (ตั้งค่าครั้งเดียวตอนออเดอร์นี้จ่ายครบ)
+          description: >-
+            แต้มสะสมที่ลูกค้าได้รับจากออเดอร์นี้ — จ่ายด้วยเงินจริง: ตั้งครั้งเดียวตอนจ่ายครบ ·
+            มีส่วนขายเชื่อ: 0 จนกว่ารับชำระหนี้ครบ แล้วคิดจากยอดสุทธิหลังลดหนี้ (ไม่รวมดอกเบี้ย)
+            ยกเลิกใบเสร็จรับชำระแล้วบิลกลับมาค้าง = ดึงแต้มคืนเท่าที่ลูกค้ายังมี (DECISIONS #59)
         guestCount: { type: integer }
         status: { type: string, enum: [open, in_kitchen, served, paid, cancelled] }
         subtotal: { type: number, example: 180 }

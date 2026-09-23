@@ -5,6 +5,7 @@ import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { toCustomerDto } from '../customers/customer.mapper.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
 import { creditNoteRepository } from './credit-note.repository.js';
+import { creditPoints } from './credit-points.js';
 import { lateFeeRepository } from './late-fee.repository.js';
 import { receivableRepository } from './receivable.repository.js';
 import {
@@ -191,6 +192,7 @@ export const receivableService = {
       });
 
       let remaining = amountSatang;
+      const touchedOrders = [];
       for (const invoice of candidates) {
         if (remaining <= 0) break;
         const applied = Math.min(remaining, invoice.outstanding);
@@ -199,8 +201,11 @@ export const receivableService = {
           paymentId: invoice.payment_id,
           amount: applied,
         });
+        touchedOrders.push(invoice.order_id);
         remaining -= applied;
       }
+      // บิลที่ใบเสร็จนี้ปิดยอดได้ครบ ลูกค้าได้แต้มสะสมตอนนี้ (DECISIONS #59)
+      const points = creditPoints.syncOrders(touchedOrders);
 
       auditLogService.log({
         actorUser: user,
@@ -208,7 +213,13 @@ export const receivableService = {
         entityType: 'ar_receipt',
         entityId: created.id,
         summary: `รับชำระหนี้ ${toBaht(amountSatang)} บาท (${method}) จาก "${customer.name}" ใบเสร็จ ${created.receipt_no}`,
-        metadata: { customerId, amount: toBaht(amountSatang), method, billingNoteId },
+        metadata: {
+          customerId,
+          amount: toBaht(amountSatang),
+          method,
+          billingNoteId,
+          pointsEarned: points.earned,
+        },
       });
       return created;
     })();
@@ -248,6 +259,10 @@ export const receivableService = {
 
     getDb().transaction(() => {
       receivableRepository.voidReceipt(id, { reason, voidedBy: user.id });
+      // บิลกลับมาค้าง = แต้มที่ได้ตอนชำระครบถูกดึงคืน (เท่าที่ลูกค้ายังมีอยู่ — DECISIONS #59)
+      const points = creditPoints.syncOrders(
+        receivableRepository.receiptAllocations(id).map((line) => line.order_id),
+      );
       auditLogService.log({
         actorUser: user,
         action: 'receivable.receipt_void',
@@ -255,7 +270,13 @@ export const receivableService = {
         entityId: id,
         summary: `ยกเลิกใบเสร็จรับชำระหนี้ ${row.receipt_no} (${toBaht(row.amount)} บาท) ของ "${row.customer_name}"`,
         reason,
-        metadata: { receiptNo: row.receipt_no, amount: toBaht(row.amount), method: row.method },
+        metadata: {
+          receiptNo: row.receipt_no,
+          amount: toBaht(row.amount),
+          method: row.method,
+          pointsRevoked: points.revoked,
+          pointsNotRecovered: points.shortfall,
+        },
       });
     })();
     return buildReceiptDto(receivableRepository.findReceipt(id));

@@ -112,7 +112,8 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_method_credit': 'ขายเชื่อ',
   'payment_credit_available': 'วงเงินคงเหลือ @amount',
   'payment_credit_due_in': 'ลงบัญชีลูกหนี้ ครบกำหนดชำระใน @days วัน',
-  'payment_credit_no_points': 'ขายเชื่อใช้แต้มสะสมร่วมไม่ได้',
+  'payment_credit_no_points':
+      'ขายเชื่อใช้แต้มสะสมร่วมไม่ได้ — ลูกค้าได้แต้มของบิลนี้เมื่อชำระหนี้ครบ',
   'payment_credit_over_limit':
       'ยอดนี้เกินวงเงินที่เหลือ — ลดยอดหรือรับชำระหนี้เก่าก่อน',
   'payment_error_credit_limit_exceeded':
@@ -248,7 +249,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_method_credit': 'On credit',
   'payment_credit_available': 'Credit available @amount',
   'payment_credit_due_in': 'Charged to account — due in @days days',
-  'payment_credit_no_points': 'Points cannot be used on a credit sale',
+  'payment_credit_no_points':
+      'Points cannot be used on a credit sale — the customer earns this bill\'s points once it is paid in full',
   'payment_credit_over_limit':
       'This amount exceeds the remaining credit — lower it or collect old debt first',
   'payment_error_credit_limit_exceeded':
@@ -355,7 +357,8 @@ const Map<String, String> paymentTranslationsKo = {
   'payment_method_credit': '외상',
   'payment_credit_available': '사용 가능 한도 @amount',
   'payment_credit_due_in': '외상 장부에 기록 — @days일 후 결제 기한',
-  'payment_credit_no_points': '외상 판매에는 적립금을 사용할 수 없습니다',
+  'payment_credit_no_points':
+      '외상 판매에는 적립금을 사용할 수 없습니다 — 이 계산서의 적립금은 외상을 모두 받으면 적립됩니다',
   'payment_credit_over_limit': '남은 한도를 초과합니다 — 금액을 줄이거나 기존 외상을 먼저 받으세요',
   'payment_error_credit_limit_exceeded':
       '"@name" 의 신용 한도 초과 — 한도 @limit THB, 미수금 @outstanding THB, 사용 가능 @available THB',

@@ -69,6 +69,14 @@ export const receivableRepository = {
       .map(withOutstanding);
   },
 
+  /** บิลขายเชื่อของออเดอร์เดียว — ออเดอร์หนึ่งอาจแยกจ่ายขายเชื่อหลายรอบ (ใช้ตัดสินแต้มสะสม credit-points.js) */
+  invoicesByOrder(orderId) {
+    return getDb()
+      .prepare(`${INVOICE_SELECT} AND p.order_id = ? ${OLDEST_FIRST}`)
+      .all(orderId)
+      .map(withOutstanding);
+  },
+
   invoiceByPaymentId(paymentId) {
     return withOutstanding(getDb().prepare(`${INVOICE_SELECT} AND p.id = ?`).get(paymentId));
   },
@@ -166,7 +174,7 @@ export const receivableRepository = {
     return getDb()
       .prepare(
         `
-        SELECT a.payment_id, a.amount, o.code AS order_code, p.created_at, p.due_date
+        SELECT a.payment_id, a.amount, p.order_id, o.code AS order_code, p.created_at, p.due_date
           FROM ar_allocations a
           JOIN payments p ON p.id = a.payment_id
           JOIN orders o ON o.id = p.order_id

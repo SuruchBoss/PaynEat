@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-844%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-856%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 844 automated tests.
+control and 856 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 844 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **844 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **856 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -522,6 +522,12 @@ The login page has one-tap buttons for each account — no need to type anything
 - Collect a debt payment in cash and **close the shift** first → log in as `manager`, open that receipt
   and tap **Void** → rejected, because the cash already left with a closed shift's drawer (a receipt paid
   by transfer can be voided, and the debt is owed again immediately)
+- Sell on credit (step 26), then open **Customers/Loyalty** → the company has no points for that bill yet,
+  because the shop hasn't been paid (checkout says so as soon as you pick "On credit") → **collect
+  payment** until that bill owes nothing and look again → its purchase history shows **"Earned … points"**
+  right away — a partial payment, or paying the principal while late interest is still owed, doesn't count,
+  and if a `manager` voids the receipt that cleared it, the points are taken back (as far as the customer
+  still has them; the balance never goes negative) (see `docs/DECISIONS.md` #59)
 - After issuing a billing note, look at **Issue billing note** again → it's disabled, because every open
   bill is already on a note; void the old note first to bill again — and open any table's QR self-order
   link (step 23): the weighed-meat items don't appear at all, since customers can't weigh for themselves
@@ -547,8 +553,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 344 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 452 cases — domain / controller / widget
+cd backend && npm test      # 352 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 456 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -662,7 +668,9 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
 - Accepts 4 payment methods: cash, PromptPay/QR, credit card, bank transfer — plus **"On credit"**, which
   appears only when the order is linked to a customer with a credit limit (and the user isn't a waiter),
   showing the remaining credit and due date; over the limit, the pay button is disabled; points can't be
-  combined with it (see `docs/tickets/20-b2b-credit.md`)
+  combined with it, and a credit bill earns its points **when the debt is paid in full**, not when it's
+  charged — on the net amount after credit notes, excluding interest, and taken back if the receipt that
+  cleared it is voided (see `docs/tickets/20-b2b-credit.md`, `docs/DECISIONS.md` #59)
 - **Receivables** (admin/manager/cashier) — credit customers listed longest-overdue first → a per-customer
   statement: what's owed split by age (not yet due/1–30/31–60/61–90/over 90 days), every credit bill,
   **Issue billing note** to bundle open bills (`BN69-000001`, with both parties' tax IDs), **Collect
@@ -1137,8 +1145,8 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 344 cases
-cd app && flutter test      # 452 cases
+cd backend && npm test      # 352 cases
+cd app && flutter test      # 456 cases
 cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
 ```
 
@@ -1168,7 +1176,8 @@ and the backend tests are pure JavaScript), and it has its own job in CI:
 > the limit gets a 409 / a waiter gets a 403 → a credit sale is due in 30 days and deducts the meat stock
 > in kg even though it never went to the kitchen → a billing note bundles two bills (issuing it again is
 > a 409) → a cash payment against the note is applied oldest bill first → the shift closes with zero
-> variance + the Z-report splits credit sales from debt collected → reports show total kg sold
+> variance + the Z-report splits credit sales from debt collected (the first bill, now fully paid, earns its
+> points at that moment — a credit sale earns nothing up front) → reports show total kg sold
 >
 > `scale_documents_e2e_test.dart` (6 steps) — the test opens its own TCP server as the "scale" and the
 > real backend connects to it (`SCALE_DRIVER=tcp`): the weight travels scale → parser → socket.io → app;
@@ -1186,7 +1195,7 @@ backend losing their BOM so Thai text garbled in Excel (#45), and a customer tap
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
 
-**Backend (344 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (352 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1360,7 +1369,16 @@ a dropped cable, readings older than 3 seconds not forwarded, `GET /scale` off b
 sending weights / the kitchen denied, and serial with no port configured explaining why without crashing
 (see `docs/DECISIONS.md` #54–#57)
 
-**Flutter (452 cases)** — split into 3 levels:
+`credit-points.test.js` (8 cases) loyalty points on credit sales: a cash bill still earns at checkout, a
+credit sale / partial payment earns nothing and full payment earns by the usual formula + audit, one
+receipt covering several bills rewards only the bills it clears, voiding a receipt takes the points back
+and paying again doesn't double them, a customer who already spent the points loses only what's left (never
+negative, never doubled), credit notes reduce the points to the net amount / a fully credited bill earns
+nothing, unpaid interest keeps a bill open while waiving it earns the points without counting interest,
+and a split bill whose credit part was paid off first earns when the bill closes (see
+`docs/DECISIONS.md` #59)
+
+**Flutter (456 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1369,7 +1387,7 @@ sending weights / the kitchen denied, and serial with no port configured explain
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines + a weighed line priced in satang before rounding, matching the backend (including prices with fractional satang), per-kg modifiers, two bags of equal weight never merging (ticket 18) |
 | Domain | `barcode_resolver_test.dart` | Reading product barcodes/EAN-13 scale labels: PLUs with leading zeros, no guessing on a bad check digit, store-defined label formats, labels matching only weighed items, and a registered exact barcode winning over label parsing (ticket 19) |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23), and credit-sale points earned on full payment / taken back on a void as far as possible / withheld while interest is owed / net of credit notes (#59) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10), weighed items sending `weightGrams` to the backend/no quantity edits but re-weighing allowed, scanning labels/barcodes into the cart, and a bad scan leaving the cart unchanged (tickets 18–19) |
 | Controller | `receivable_controllers_test.dart` | Totals of what's owed/overdue, splitting open bills/unbilled bills/open billing notes, document voiding limited to managers and up, a successful payment sending the chosen billing note then reloading / a failed one not reloading (ticket 20), late interest/credit notes limited to managers and up and reloading on success, e-mail with no recipient using the customer's address (tickets 21, 23) |
 | Widget | `live_scale_test.dart` | The live scale panel: nothing shown with no scale / no DI binding, a weight usable only when stable (wobbling/overloaded/disconnected/0 g disabled), "Use this weight" filling the weight with nothing typed, the camera button sending codes down the scanner's path / closing the camera doing nothing / no camera = no button, and the simulated scale cycling empty → wobble → stable → lifted off (ticket 22) |
@@ -1571,9 +1589,11 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   nothing overflows; fixed the cart and option sheet showing Thai on English/Korean screens, raw due dates, the
   scan box on phones, 8 missing Korean glyphs and the broken screenshot tool, and added a meat-counter section
   with a genuinely scannable label to all three landing pages (see `docs/DECISIONS.md` #58)
-- [ ] **Decide when a credit sale should earn loyalty points** — today it earns them as soon as it's charged to
-  the account, before any money arrives. That's a business rule for the store owner (on charge / on full
-  payment / never), so it hasn't been changed (see `docs/DECISIONS.md` #58)
+- [x] **Decide when a credit sale should earn loyalty points** — done: the store owner chose **on full
+  payment** — charging to the account, partial payments or unpaid interest earn nothing; once paid off it
+  earns on the net amount after credit notes (excluding interest); voiding the receipt that cleared it takes
+  the points back as far as the customer still has them; cash bills still earn at checkout (see
+  `docs/DECISIONS.md` #58, #59)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

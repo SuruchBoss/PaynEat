@@ -336,6 +336,11 @@ void main() {
       );
       expect(account.creditOutstanding, baht(firstSale.total));
       expect(account.creditAvailable, baht(50000 - firstSale.total));
+      expect(
+        account.pointsBalance,
+        b2b.pointsBalance,
+        reason: 'ขายเชื่อยังไม่ได้เงิน = ยังไม่ได้แต้มสะสม (DECISIONS #59)',
+      );
     },
   );
 
@@ -424,6 +429,17 @@ void main() {
       expect(after.remaining, baht(secondSale.total));
       expect(after.total, baht(note.total), reason: 'ยอดบนใบวางบิลคงเดิม');
       expect(after.status, BillingNoteStatus.open);
+
+      // บิลแรกชำระครบแล้ว = ได้แต้มของบิลนั้นตอนนี้ บิลที่สองยังค้างจึงยังไม่ได้ (DECISIONS #59)
+      final account = expectOk(
+        await cashier.customers.getById(b2b.id),
+        'แต้มหลังรับชำระ',
+      );
+      final earnSatang = (settings.pointsEarnRateBaht * 100).round();
+      expect(
+        account.pointsBalance,
+        b2b.pointsBalance + (firstSale.total * 100).round() ~/ earnSatang,
+      );
     },
   );
 

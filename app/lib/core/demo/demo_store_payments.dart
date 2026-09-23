@@ -312,7 +312,10 @@ extension DemoStorePayments on DemoStore {
       order['closedAt'] = _now();
       _freeTable(order);
       // สะสมแต้มให้ลูกค้าที่ผูกไว้ครั้งเดียวตอนออเดอร์นี้จ่ายครบ (ไม่ผูกลูกค้า = ไม่ได้แต้ม)
-      if (customerId != null) {
+      // ออเดอร์ที่มีส่วนขายเชื่อ แต้มรอไปให้ตอนรับชำระหนี้ครบ (DECISIONS #59)
+      if (customerId != null && _hasCreditPayment(orderId)) {
+        _syncCreditPoints(orderId);
+      } else if (customerId != null) {
         final earnRate = (settings['pointsEarnRateBaht'] as num).toDouble();
         final pointsEarned = (total / earnRate).floor();
         if (pointsEarned > 0) {

@@ -48,7 +48,7 @@ export const lateFeeRepository = {
     return getDb()
       .prepare(
         `
-        SELECT ci.*, o.code AS order_code, p.due_date
+        SELECT ci.*, p.order_id, o.code AS order_code, p.due_date
           FROM ar_charge_items ci
           JOIN payments p ON p.id = ci.payment_id
           JOIN orders o ON o.id = p.order_id

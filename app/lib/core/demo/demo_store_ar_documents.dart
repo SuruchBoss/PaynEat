@@ -119,6 +119,10 @@ extension DemoStoreArDocuments on DemoStore {
     };
     receipt['receiptNo'] = receipt['no'];
     arReceipts.add(receipt);
+    // บิลที่ใบเสร็จนี้ปิดยอดได้ครบ ลูกค้าได้แต้มสะสมตอนนี้ (DECISIONS #59)
+    final points = _syncCreditPointsOf(
+      allocations.map((line) => line['paymentId'] as int),
+    );
 
     _logAudit(
       actorId: actorId,
@@ -128,7 +132,12 @@ extension DemoStoreArDocuments on DemoStore {
       summary:
           'รับชำระหนี้ $amount บาท ($method) จาก "${customer['name']}" '
           'ใบเสร็จ ${receipt['receiptNo']}',
-      metadata: {'customerId': customerId, 'amount': amount, 'method': method},
+      metadata: {
+        'customerId': customerId,
+        'amount': amount,
+        'method': method,
+        'pointsEarned': points.earned,
+      },
     );
     return receipt;
   }
@@ -176,6 +185,12 @@ extension DemoStoreArDocuments on DemoStore {
       ..['isVoided'] = true
       ..['voidReason'] = reason
       ..['voidedAt'] = _now();
+    // บิลกลับมาค้าง = ดึงแต้มที่ได้ตอนชำระครบคืน เท่าที่ลูกค้ายังมี (DECISIONS #59)
+    final points = _syncCreditPointsOf(
+      (receipt['allocations'] as List).cast<Map<String, dynamic>>().map(
+        (line) => line['paymentId'] as int,
+      ),
+    );
     _logAudit(
       actorId: actorId,
       action: 'receivable.receipt_void',
@@ -185,7 +200,11 @@ extension DemoStoreArDocuments on DemoStore {
           'ยกเลิกใบเสร็จรับชำระหนี้ ${receipt['receiptNo']} '
           '(${receipt['amount']} บาท) ของ "${receipt['customerName']}"',
       reason: reason,
-      metadata: {'receiptNo': receipt['receiptNo']},
+      metadata: {
+        'receiptNo': receipt['receiptNo'],
+        'pointsRevoked': points.revoked,
+        'pointsNotRecovered': points.shortfall,
+      },
     );
     return receipt;
   }

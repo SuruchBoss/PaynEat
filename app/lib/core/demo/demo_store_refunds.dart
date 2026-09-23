@@ -84,6 +84,8 @@ extension DemoStoreRefunds on DemoStore {
         previousCredited: previousCredited,
         actorId: refundedById,
       );
+      // ลดหนี้ส่วนที่เหลือจนยอดค้างเป็น 0 = ชำระครบ ได้แต้มจากยอดสุทธิ (DECISIONS #59)
+      _syncCreditPoints(payment['orderId'] as int);
     }
 
     // mirror ของ payment.service.js#refund — ดู docs/tickets/08-audit-log.md

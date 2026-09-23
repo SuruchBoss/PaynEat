@@ -131,6 +131,84 @@ extension DemoStoreReceivables on DemoStore {
     return _isoDay(AppClock.now().add(Duration(days: term)));
   }
 
+  /// ออเดอร์นี้มีส่วนที่ขายเชื่อไหม — มี = ปิดบิลแล้วยังไม่ให้แต้ม รอรับชำระหนี้ครบ (DECISIONS #59)
+  bool _hasCreditPayment(int orderId) => payments.any(
+    (row) => row['orderId'] == orderId && row['method'] == PaymentMethod.credit,
+  );
+
+  /// แต้มสะสมของบิลขายเชื่อ — mirror ของ backend credit-points.js (docs/DECISIONS.md #59)
+  ///
+  /// ยอดค้างทุกบิลขายเชื่อของออเดอร์ (รวมดอกเบี้ย) เป็น 0 = ได้แต้มจากยอดสุทธิหลังลดหนี้ กลับมาค้าง =
+  /// ดึงคืนเท่าที่ลูกค้ายังมี (ยอดแต้มติดลบไม่ได้) และ pointsEarned เก็บแต้มที่ยังอยู่กับลูกค้าจริง
+  ({int earned, int revoked, int shortfall}) _syncCreditPoints(int orderId) {
+    const none = (earned: 0, revoked: 0, shortfall: 0);
+    final order = findOrder(orderId);
+    final customerId = order['customerId'] as int?;
+    if (customerId == null) return none;
+    final invoices = payments
+        .where(
+          (row) =>
+              row['orderId'] == orderId &&
+              row['method'] == PaymentMethod.credit,
+        )
+        .map(_invoiceRow)
+        .toList();
+    if (invoices.isEmpty) return none;
+
+    final settled =
+        order['status'] == OrderStatus.paid &&
+        invoices.every((row) => (row['outstanding'] as double) <= 0.001);
+    final refunded = refunds
+        .where((row) => row['orderId'] == orderId)
+        .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
+    // สตางค์เป็นจำนวนเต็มเหมือน backend — หารทศนิยมตรง ๆ อาจปัดต่างกันหนึ่งแต้มที่ขอบ
+    final netSatang = (((order['total'] as num).toDouble() - refunded) * 100)
+        .round();
+    final rateSatang =
+        ((settings['pointsEarnRateBaht'] as num).toDouble() * 100).round();
+    final target = settled && netSatang > 0 ? netSatang ~/ rateSatang : 0;
+    final current = (order['pointsEarned'] as num?)?.toInt() ?? 0;
+
+    if (target > current) {
+      adjustCustomerPoints(customerId, target - current);
+      order['pointsEarned'] = target;
+      return (earned: target - current, revoked: 0, shortfall: 0);
+    }
+    if (target < current) {
+      final balance = (findCustomer(customerId)['pointsBalance'] as num)
+          .toInt();
+      final revoked = min(current - target, balance);
+      if (revoked > 0) adjustCustomerPoints(customerId, -revoked);
+      order['pointsEarned'] = current - revoked;
+      return (
+        earned: 0,
+        revoked: revoked,
+        shortfall: current - target - revoked,
+      );
+    }
+    return none;
+  }
+
+  /// sync ทุกออเดอร์ของบิลขายเชื่อ ([paymentIds]) แล้วรวมผลไว้ใส่ audit
+  ({int earned, int revoked, int shortfall}) _syncCreditPointsOf(
+    Iterable<int> paymentIds,
+  ) {
+    var earned = 0;
+    var revoked = 0;
+    var shortfall = 0;
+    final orderIds = {
+      for (final paymentId in paymentIds)
+        payments.firstWhere((row) => row['id'] == paymentId)['orderId'] as int,
+    };
+    for (final orderId in orderIds) {
+      final result = _syncCreditPoints(orderId);
+      earned += result.earned;
+      revoked += result.revoked;
+      shortfall += result.shortfall;
+    }
+    return (earned: earned, revoked: revoked, shortfall: shortfall);
+  }
+
   /// คืนเงินบิลขายเชื่อได้ไม่เกินยอดที่ยังค้าง
   double creditRefundable(int paymentId) {
     final payment = payments.firstWhere((row) => row['id'] == paymentId);

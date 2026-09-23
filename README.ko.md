@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-844%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-856%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -149,7 +149,8 @@
 - 고객 · 적립금
 - **외상 매출 관리 (B2B)** — 거래처별 신용 한도·결제 기한, 미수금 연령 분석(기한 전/1–30/31–60/61–90/
   90일 초과), 청구서 발행, 오래된 전표부터 차감하는 수금 영수증. 현금 수금은 해당 교대의 금고에 포함되어
-  마감 정산이 정확히 맞습니다
+  마감 정산이 정확히 맞습니다. 외상 계산서의 적립금은 장부에 올릴 때가 아니라 **외상을 모두 받았을 때**
+  적립됩니다 (감액 후 순액 기준, 연체 이자 제외 — 수금 영수증을 취소하면 적립금도 회수)
 - **연체 이자 · 대변전표** (매니저 이상) — 매장이 정한 연이율(0–15%)과 유예일로 청구서별 단리 이자를 미리 보고
   이자 청구서(`LF…`)를 발행합니다. 같은 기간을 두 번 계산하지 않고, 아직 받지 않은 이자만 취소(면제)할 수
   있습니다. 외상 전표를 감액하면 원래 금액 / 올바른 금액 / 차액과 차액의 부가가치세가 적힌 대변전표(`CN…`)가
@@ -230,11 +231,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **844건**의 자동화 테스트를 통과합니다.
+공개 전 **856건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 344건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 452건 — domain / controller / widget
+cd backend && npm test      # 352건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 456건 — domain / controller / widget
 cd app && flutter test test_e2e   # 48건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
 

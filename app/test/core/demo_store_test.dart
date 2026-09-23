@@ -2344,4 +2344,156 @@ void main() {
       },
     );
   });
+
+  group('DemoStore แต้มสะสมของบิลขายเชื่อ — ได้ตอนรับชำระครบ (DECISIONS #59)', () {
+    const b2b = 900;
+    const manager = 2;
+    const cashier = 6;
+
+    tearDown(AppClock.unfreeze);
+
+    int balance() => (store.findCustomer(b2b)['pointsBalance'] as num).toInt();
+    int pointsFor(double baht) =>
+        (baht * 100).round() ~/ 2500; // seed: 25 บาทต่อ 1 แต้ม
+    double r2(double baht) => (baht * 100).round() / 100;
+    Map<String, dynamic> lastAudit(String action) =>
+        store.auditLogs.lastWhere((row) => row['action'] == action);
+
+    Map<String, dynamic> creditSale() {
+      final order = store.createOrder(
+        type: 'takeaway',
+        guestCount: 1,
+        customerId: b2b,
+        items: [
+          {'menuItemId': 26, 'quantity': 1, 'weightGrams': 1500},
+        ],
+      );
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'credit',
+        amount: (order['total'] as num).toDouble(),
+        cashierId: cashier,
+      );
+      return store.findOrder(order['id'] as int);
+    }
+
+    Map<String, dynamic> collect(double amount) => store.createArReceipt({
+      'customerId': b2b,
+      'amount': amount,
+      'method': 'transfer',
+    }, actorId: cashier);
+
+    setUp(
+      () => store.payments.removeWhere(
+        (payment) => payment['method'] == PaymentMethod.credit,
+      ),
+    );
+
+    test(
+      'ลงบัญชี/จ่ายบางส่วนยังไม่ได้แต้ม — ชำระครบแล้วได้ ตรงกับสูตรเดียวกับบิลเงินสด',
+      () {
+        final order = creditSale();
+        final total = (order['total'] as num).toDouble();
+        expect(order['pointsEarned'], 0);
+        expect(balance(), 0);
+
+        collect(100);
+        expect(balance(), 0);
+
+        collect(r2(total - 100));
+        expect(balance(), pointsFor(total));
+        expect(
+          store.findOrder(order['id'] as int)['pointsEarned'],
+          pointsFor(total),
+        );
+        expect(
+          (lastAudit('receivable.receipt')['metadata'] as Map)['pointsEarned'],
+          pointsFor(total),
+        );
+      },
+    );
+
+    test(
+      'ยกเลิกใบเสร็จ = ดึงแต้มคืนเท่าที่มี ไม่ติดลบ รับชำระใหม่ไม่ได้แต้มซ้ำ',
+      () {
+        final order = creditSale();
+        final total = (order['total'] as num).toDouble();
+        final earned = pointsFor(total);
+        final receipt = collect(total);
+        expect(balance(), earned);
+
+        // ลูกค้าใช้แต้มไปเกือบหมดก่อนใบเสร็จถูกยกเลิก
+        store.adjustCustomerPoints(b2b, -(earned - 3));
+        store.voidArReceipt(receipt['id'] as int, 'เช็คเด้ง', actorId: manager);
+        final audit = lastAudit('receivable.receipt_void')['metadata'] as Map;
+        expect(audit['pointsRevoked'], 3);
+        expect(audit['pointsNotRecovered'], earned - 3);
+        expect(balance(), 0);
+
+        collect(total);
+        expect(balance(), 3, reason: 'ได้คืนเฉพาะส่วนที่ดึงกลับไป');
+        expect(store.findOrder(order['id'] as int)['pointsEarned'], earned);
+      },
+    );
+
+    test(
+      'บิลที่ seed ไว้: จ่ายเท่ายอดบิลแต่ดอกเบี้ยยังค้าง = ยังไม่ครบ ยกเว้นดอกเบี้ยแล้วได้แต้ม',
+      () {
+        AppClock.freeze(DateTime(2026, 9, 23, 12));
+        store.reset();
+        final invoice =
+            ((store.receivableStatement(b2b)['invoices'] as List).single as Map)
+                .cast<String, dynamic>();
+        final order = store.findOrder(invoice['orderId'] as int);
+        final total = (order['total'] as num).toDouble();
+        final charge = store.createLateFee({
+          'customerId': b2b,
+        }, actorId: manager);
+
+        collect((invoice['amount'] as num).toDouble());
+        expect(balance(), 0, reason: 'ดอกเบี้ยยังค้าง');
+        store.voidLateFee(charge['id'] as int, 'ยกเว้นให้', actorId: manager);
+        expect(
+          balance(),
+          pointsFor(total),
+          reason: 'ดอกเบี้ยไม่นับเป็นยอดซื้อ',
+        );
+      },
+    );
+
+    test(
+      'ลดหนี้แล้วจ่ายที่เหลือ: แต้มจากยอดสุทธิ — ลดหนี้ทั้งบิลไม่ได้แต้ม',
+      () {
+        final order = creditSale();
+        final total = (order['total'] as num).toDouble();
+        final paymentId =
+            store.payments.lastWhere(
+                  (row) => row['orderId'] == order['id'],
+                )['id']
+                as int;
+        store.createCreditNote({
+          'paymentId': paymentId,
+          'amount': 200.0,
+          'reason': 'ของชำรุด',
+        }, actorId: manager);
+        expect(balance(), 0);
+        collect(r2(total - 200));
+        expect(balance(), pointsFor(total - 200));
+
+        final other = creditSale();
+        final otherPayment =
+            store.payments.lastWhere(
+                  (row) => row['orderId'] == other['id'],
+                )['id']
+                as int;
+        final before = balance();
+        store.createCreditNote({
+          'paymentId': otherPayment,
+          'amount': (other['total'] as num).toDouble(),
+          'reason': 'คืนของทั้งบิล',
+        }, actorId: manager);
+        expect(balance(), before);
+      },
+    );
+  });
 }
