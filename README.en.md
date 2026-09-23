@@ -59,27 +59,27 @@ control and 659 automated tests.
 <table>
 <tr>
 <td width="50%" align="center"><b>Table map — waiter view</b><br><sub>See every table's status and running total in one screen</sub><br><br>
-<img src="docs/screenshots/phone-02-tables.png" width="230"></td>
+<img src="docs/screenshots/en-50-phone-tables.png" width="230"></td>
 <td width="50%" align="center"><b>Order taking with modifiers</b><br><sub>Spice level, extras, and a note to the kitchen</sub><br><br>
-<img src="docs/screenshots/phone-04-option-sheet.png" width="230"></td>
+<img src="docs/screenshots/en-51-phone-option-sheet.png" width="230"></td>
 </tr>
 </table>
 
 <p align="center"><b>Kitchen display (KDS)</b> — tickets pop up in real time, split into 3 status columns, with a red border and flame icon for tickets waiting over 15 minutes, and a distinct icon for table/takeaway/delivery on every ticket</p>
-<p align="center"><img src="docs/screenshots/tablet-14-kitchen.png" width="780"></p>
+<p align="center"><img src="docs/screenshots/en-55-tablet-kitchen.png" width="780"></p>
 
 <p align="center"><b>Admin web dashboard</b> — today's sales, an hourly chart, best sellers, and a live store status counter</p>
-<p align="center"><img src="docs/screenshots/web-18-dashboard.png" width="780"></p>
+<p align="center"><img src="docs/screenshots/en-58-web-dashboard.png" width="780"></p>
 
 <p align="center"><b>Split payment checkout</b> — pay part by QR, the rest in cash; the system tracks the remaining balance and calculates change</p>
-<p align="center"><img src="docs/screenshots/tablet-16-checkout.png" width="780"></p>
+<p align="center"><img src="docs/screenshots/en-57-tablet-checkout.png" width="780"></p>
 
 <table>
 <tr>
 <td width="50%" align="center"><b>Takeaway/delivery — no table needed</b><br><sub>Tap the floating button on the table map to open an order without touching any table at all</sub><br><br>
-<img src="docs/screenshots/phone-28-takeaway-order-taking.png" width="230"></td>
+<img src="docs/screenshots/en-52-phone-takeaway-order.png" width="230"></td>
 <td width="50%" align="center"><b>Automatic queue number</b><br><sub>Runs on its own daily counter for takeaway only — delivery riders reference the order by its bill number instead</sub><br><br>
-<img src="docs/screenshots/phone-29-takeaway-order-detail.png" width="230"></td>
+<img src="docs/screenshots/en-53-phone-takeaway-detail.png" width="230"></td>
 </tr>
 </table>
 

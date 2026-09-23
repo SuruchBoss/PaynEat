@@ -714,4 +714,137 @@ void main() {
       await ScreenshotHarness.capture(tester, 'ko-45-web-ai-assistant');
     });
   });
+
+  // ---------------------------------------------------------------------
+  // ภาษาอังกฤษ — หน้า Landing ฉบับอังกฤษและ README.en.md ใช้ภาพ UI ภาษาไทย
+  // มาตลอด (ตรวจด้วย hash แล้วพบว่าเหมือนหน้าไทยทุกไบต์ ต่างแค่ alt text)
+  // เป็นปัญหาเดียวกับที่ฉบับเกาหลีเจอ แต่ฝั่งอังกฤษไม่เคยถูกแก้
+  // ---------------------------------------------------------------------
+  group('ภาษาอังกฤษ', () {
+    late final ({
+      int openOrderId,
+      int kitchenOrderId,
+      int paidOrderId,
+      int takeawayOrderId,
+      int customerId,
+    })
+    enIds;
+
+    setUpAll(() => enIds = ScreenshotHarness.reseedIn('en'));
+    tearDownAll(() => ids = ScreenshotHarness.reseedIn('th'));
+
+    Future<void> phone(WidgetTester tester, String user, String pass) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.phone,
+        locale: LocaleService.english,
+        pixelRatio: 3,
+      );
+      await ScreenshotHarness.loginAs(tester, user, pass);
+    }
+
+    testWidgets('50 ผังโต๊ะ (อังกฤษ)', (tester) async {
+      await phone(tester, 'waiter1', 'waiter123');
+      await ScreenshotHarness.capture(tester, 'en-50-phone-tables');
+    });
+
+    testWidgets('51 เลือกตัวเลือกเสริม (อังกฤษ)', (tester) async {
+      await phone(tester, 'waiter1', 'waiter123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.newOrder,
+          arguments: {'tableId': 3, 'tableName': 'A3', 'seats': 4},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      // ชื่อเมนูเป็นภาษาอังกฤษแล้วเพราะ seed ใหม่ด้วย DemoNames.language = 'en'
+      await tester.tap(find.text('Basil Pork with Rice').first);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-51-phone-option-sheet');
+    });
+
+    testWidgets('52 หน้ารับออเดอร์กลับบ้าน (อังกฤษ)', (tester) async {
+      await phone(tester, 'waiter1', 'waiter123');
+      unawaited(Get.toNamed<void>(AppRoutes.newOrder));
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-52-phone-takeaway-order');
+    });
+
+    testWidgets('53 รายละเอียดออเดอร์กลับบ้าน (อังกฤษ)', (tester) async {
+      await phone(tester, 'waiter1', 'waiter123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.orderDetail,
+          arguments: {'orderId': enIds.takeawayOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-53-phone-takeaway-detail');
+    });
+
+    testWidgets('54 หน้าเก็บเงิน (อังกฤษ)', (tester) async {
+      await phone(tester, 'cashier', 'cashier123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.checkout,
+          arguments: {'orderId': enIds.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-54-phone-checkout');
+    });
+
+    testWidgets('55 จอครัว (อังกฤษ)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        locale: LocaleService.english,
+      );
+      await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
+      await ScreenshotHarness.capture(tester, 'en-55-tablet-kitchen');
+    });
+
+    testWidgets('56 จอครัวโหมดคอนทราสต์สูง (อังกฤษ)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        highContrast: true,
+        locale: LocaleService.english,
+      );
+      await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(
+        tester,
+        'en-56-tablet-kitchen-high-contrast',
+      );
+    });
+
+    testWidgets('57 เก็บเงินบนแท็บเล็ต (อังกฤษ)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.tablet,
+        locale: LocaleService.english,
+      );
+      await ScreenshotHarness.loginAs(tester, 'cashier', 'cashier123');
+      unawaited(
+        Get.toNamed<void>(
+          AppRoutes.checkout,
+          arguments: {'orderId': enIds.openOrderId},
+        ),
+      );
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-57-tablet-checkout');
+    });
+
+    testWidgets('58 แดชบอร์ดผู้ดูแลระบบ (อังกฤษ)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.desktop,
+        locale: LocaleService.english,
+      );
+      await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-58-web-dashboard');
+    });
+  });
 }
