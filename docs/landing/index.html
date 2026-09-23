@@ -83,7 +83,7 @@
     background:rgba(10,10,11,.72);backdrop-filter:blur(18px) saturate(1.4);
     border-bottom:1px solid var(--line-d);
   }
-  .wordmark{display:flex;align-items:center;gap:10px;font-family:'Kanit';font-weight:800;font-size:1.02rem;letter-spacing:-.02em;color:var(--paper)}
+  .wordmark{display:flex;align-items:center;gap:10px;font-family:'Kanit','Anuphan',sans-serif;font-weight:800;font-size:1.02rem;letter-spacing:-.02em;color:var(--paper)}
   .glyph{width:26px;height:26px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:.82rem;flex:none}
   nav .links{display:flex;gap:clamp(14px,2.4vw,30px);font-size:.9rem;color:var(--steel-lt)}
   /* ตัวสลับภาษาต้องแยกออกจาก .links — .links ถูกซ่อนทั้งก้อนบนจอแคบ
@@ -93,7 +93,9 @@
   nav .langs a:hover{border-color:var(--steel)}
   nav a{color:inherit;text-decoration:none}
   nav a:hover{color:var(--paper)}
-  @media(max-width:620px){nav .links{display:none}}
+  /* ลิงก์ในแถบเมนูมี 8 อัน (รวม "ราคา" ที่เพิ่ม) ฉบับอังกฤษยาวสุด ล้นจอ 25px ที่ 768px
+     จึงซ่อนตั้งแต่ต่ำกว่า 1000px — จอแคบกว่านั้นยังมีปุ่มในจอแรกกับตัวสลับภาษาครบ */
+  @media(max-width:1000px){nav .links{display:none}}
 
   /* ---------- shared act ---------- */
   .act{padding:clamp(72px,11vw,150px) var(--pad)}
@@ -101,7 +103,7 @@
   .act.paper .lede{color:var(--steel)}
   .lede{color:var(--steel-lt);max-width:56ch;font-size:clamp(1.05rem,1.5vw,1.3rem)}
   .eyebrow{
-    font-family:'IBM Plex Mono',monospace;font-size:.76rem;letter-spacing:.2em;
+    font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:.76rem;letter-spacing:.2em;
     text-transform:uppercase;color:var(--brand);margin-bottom:18px;display:block;
   }
   .act.paper .eyebrow{color:var(--ember)}
@@ -125,7 +127,7 @@
     display:inline-flex;align-items:baseline;gap:8px;padding:9px 15px;border-radius:999px;
     border:1px solid var(--line-d);background:#131316;font-size:.86rem;color:var(--steel-lt);
   }
-  .chip b{font-family:'IBM Plex Mono',monospace;color:var(--paper);font-weight:500;font-size:.95rem}
+  .chip b{font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;color:var(--paper);font-weight:500;font-size:.95rem}
 
   /* device frames */
   .phone{
@@ -166,8 +168,8 @@
   }
   /* --steel อ่านได้บนพื้นสว่างเท่านั้น (5.01 บน paper / 3.60 บน ink)
      แถบนี้อยู่บนฉากมืด จึงต้องใช้ --steel-lt ซึ่งได้ 6.52 บน ink */
-  .cond .n{font-family:'IBM Plex Mono',monospace;font-size:.78rem;color:var(--steel-lt);letter-spacing:.1em}
-  .cond .t{font-family:'Kanit';font-weight:600;font-size:clamp(1.15rem,2.2vw,1.7rem);letter-spacing:-.02em}
+  .cond .n{font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:.78rem;color:var(--steel-lt);letter-spacing:.1em}
+  .cond .t{font-family:'Kanit','Anuphan',sans-serif;font-weight:600;font-size:clamp(1.15rem,2.2vw,1.7rem);letter-spacing:-.02em}
   .cond .d{color:var(--steel-lt);font-size:.96rem;text-align:right;max-width:34ch;justify-self:end}
   @media(max-width:720px){
     .cond .row{grid-template-columns:auto 1fr}
@@ -182,7 +184,7 @@
   .beat p{color:var(--steel);max-width:38ch}
   .act.paper .beat p{color:var(--steel)}
   .beat .metric{
-    margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:.86rem;color:var(--ember);
+    margin-top:16px;font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:.86rem;color:var(--ember);
     border-left:2px solid var(--brand);padding-left:12px;
   }
   @media(max-width:880px){
@@ -196,15 +198,15 @@
 
   /* ---------- contrast act ---------- */
   .ratio{display:flex;align-items:baseline;gap:clamp(14px,3vw,34px);flex-wrap:wrap;margin:clamp(30px,5vw,56px) 0}
-  .ratio .v{font-family:'Kanit';font-weight:800;letter-spacing:-.05em;line-height:.86;font-size:clamp(3.6rem,13vw,10rem)}
+  .ratio .v{font-family:'Kanit','Anuphan',sans-serif;font-weight:800;letter-spacing:-.05em;line-height:.86;font-size:clamp(3.6rem,13vw,10rem)}
   .ratio .was{color:#4A4A50}
   .ratio .now{color:var(--brand)}
-  .ratio .arw{font-family:'IBM Plex Mono';font-size:clamp(1.2rem,3vw,2rem);color:var(--steel)}
-  .ratio .cap{font-family:'IBM Plex Mono';font-size:.78rem;color:var(--steel);letter-spacing:.12em;text-transform:uppercase;width:100%}
+  .ratio .arw{font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:clamp(1.2rem,3vw,2rem);color:var(--steel)}
+  .ratio .cap{font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:.78rem;color:var(--steel);letter-spacing:.12em;text-transform:uppercase;width:100%}
   .compare{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,3vw,30px);margin-top:12px}
   .compare figure{margin:0;display:flex;flex-direction:column;gap:12px;align-items:center}
   /* ป้ายใต้ภาพเทียบอยู่บนฉากมืด จึงใช้ --steel-lt (6.52 บน ink) ไม่ใช่ --steel (3.60) */
-  .compare figcaption{font-family:'IBM Plex Mono';font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel-lt)}
+  .compare figcaption{font-family:'IBM Plex Mono','Anuphan',ui-monospace,monospace;font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--steel-lt)}
   .compare .lit figcaption{color:var(--brand)}
   .pillcrop{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line-d)}
   @media(max-width:620px){.compare{grid-template-columns:1fr;gap:26px}}
@@ -212,11 +214,11 @@
   /* ---------- split ---------- */
   .split{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(28px,5vw,72px);align-items:center}
   .split.flip{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
-  @media(max-width:880px){.split,.split.flip{grid-template-columns:1fr}}
+  @media(max-width:880px){.split,.split.flip{grid-template-columns:minmax(0,1fr)}}
   .feat{display:flex;flex-direction:column;gap:18px;margin-top:30px}
   .feat div{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
   .feat .dot{width:7px;height:7px;border-radius:50%;background:var(--brand);margin-top:.62em}
-  .feat b{font-family:'Kanit';font-weight:600;letter-spacing:-.01em}
+  .feat b{font-family:'Kanit','Anuphan',sans-serif;font-weight:600;letter-spacing:-.01em}
   .feat span{color:var(--steel)}
   .act:not(.paper) .feat span{color:var(--steel-lt)}
 
@@ -226,7 +228,7 @@
     border-top:1px solid var(--line-d);border-left:1px solid var(--line-d);
   }
   .tally>div{padding:clamp(24px,3.4vw,38px);border-right:1px solid var(--line-d);border-bottom:1px solid var(--line-d)}
-  .tally .v{font-family:'Kanit';font-weight:800;font-size:clamp(2rem,4.4vw,3.2rem);letter-spacing:-.04em;line-height:1}
+  .tally .v{font-family:'Kanit','Anuphan',sans-serif;font-weight:800;font-size:clamp(2rem,4.4vw,3.2rem);letter-spacing:-.04em;line-height:1}
   .tally .k{margin-top:8px;color:var(--steel);font-size:.9rem}
 
   /* ---------- footer ---------- */
@@ -236,7 +238,7 @@
   .fnote a{color:var(--steel-lt)}
   .cta{
     display:inline-flex;align-items:center;gap:10px;margin-top:26px;padding:14px 26px;border-radius:999px;
-    background:var(--brand);color:#141008;text-decoration:none;font-family:'Kanit';font-weight:600;letter-spacing:-.01em;
+    background:var(--brand);color:#141008;text-decoration:none;font-family:'Kanit','Anuphan',sans-serif;font-weight:600;letter-spacing:-.01em;
   }
   .cta:hover{background:#FF7F49}
   a:focus-visible,.cta:focus-visible{outline:2px solid var(--brand);outline-offset:3px;border-radius:6px}
@@ -259,6 +261,44 @@
   @keyframes pop{from{opacity:.2;transform:scale(.9)}to{opacity:1;transform:none}}
   @keyframes settle{from{opacity:.4;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
   nav .langs a[lang="ko"]{font-family:'Noto Sans KR',sans-serif}
+
+  /* ---------- ปุ่มใน hero ----------
+     เดิมปุ่ม "ลองใช้งาน" มีที่เดียวคือท้ายหน้า คนที่อ่านแค่จอแรกแล้วสนใจต้องเลื่อน 9,000px
+     ถึงจะเจอทางไปต่อ — หน้าขายของทุกหน้าต้องมีทางไปต่อตั้งแต่จอแรก */
+  .hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;margin-top:30px}
+  .hero-cta .cta{margin-top:0}
+  .ghost{
+    display:inline-flex;align-items:center;padding:13px 22px;border-radius:999px;border:1px solid var(--line-d);
+    color:var(--paper);text-decoration:none;font-family:'Kanit','Anuphan',sans-serif;font-weight:600;letter-spacing:-.01em;
+  }
+  .ghost:hover{border-color:var(--steel)}
+  .act.paper .ghost{color:var(--ink);border-color:var(--line-l)}
+  .act.paper .ghost:hover{border-color:var(--steel)}
+  .ghost:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+
+  /* ---------- ราคา ---------- */
+  .price{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:1px;
+    background:var(--line-l);border:1px solid var(--line-l);border-radius:18px;overflow:hidden;
+    margin-top:clamp(34px,5vw,56px);
+  }
+  /* 1 → 2 → 4 คอลัมน์ ไม่ใช้ auto-fit เพราะที่ความกว้างกลาง ๆ จะได้ 3+1 ใบสุดท้ายโดดอยู่แถวเดียว */
+  @media(min-width:560px){.price{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(min-width:1200px){.price{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .price>div{background:var(--paper);padding:clamp(22px,3vw,32px)}
+  .price .v{font-family:'Kanit','Anuphan',sans-serif;font-weight:800;font-size:clamp(1.6rem,2.4vw,2.3rem);letter-spacing:-.03em;line-height:1.05;color:var(--ink)}
+  .price .k{margin-top:10px;color:var(--steel);font-size:.95rem}
+  .contact{display:flex;flex-wrap:wrap;gap:12px;margin-top:22px}
+  .feat a{color:inherit}
+
+  /* คำทับศัพท์ยาว ๆ อย่าง "เดลิเวอรี" ไม่อยู่ในพจนานุกรมตัดคำของเบราว์เซอร์
+     จึงโดนตัดกลางคำเป็น "เดลิเว|อรี" บนจอกว้าง 1440px — ห่อไว้ไม่ให้ตัด */
+  .nw{white-space:nowrap}
+  .chip [lang="ko"]{font-family:'Noto Sans KR',sans-serif}
+
+  /* อักษรไทยห้ามถ่างตัวอักษร — สระบนและวรรณยุกต์จะลอยห่างจากพยัญชนะจนอ่านเป็นตัว ๆ
+     หัวข้อเล็ก (eyebrow) เดิมถ่าง .2em ซึ่งออกแบบมาสำหรับตัวพิมพ์ใหญ่ภาษาอังกฤษ */
+  html:lang(th) .eyebrow,html:lang(th) .compare figcaption,html:lang(th) .ratio .cap{letter-spacing:.03em}
 </style>
 </head>
 <body>
@@ -274,6 +314,7 @@
     <a href="#back">หลังร้าน</a>
     <a href="#edge">จุดต่าง</a>
     <a href="#ai">ผู้ช่วย AI</a>
+    <a href="#pricing">ราคา</a>
   </span>
   <span class="langs">
     <a href="index.en.html" hreflang="en" lang="en">EN</a>
@@ -283,14 +324,18 @@
 
 <header class="hero">
   <div>
-    <span class="eyebrow">ระบบขายหน้าร้าน · ร้านอาหารไทย</span>
+    <span class="eyebrow">ระบบขายหน้าร้าน · สำหรับร้านอาหารในไทย</span>
     <h1>ออกแบบมาเพื่อ<br>กะที่<em>วุ่นที่สุด</em></h1>
     <p class="sub">POS ที่ตัดสินใจเรื่องออกแบบทุกข้อจากหน้างานจริง — แสงจ้าริมหน้าต่าง ไอน้ำบนจอครัว
       มือเปื้อนน้ำมัน และเน็ตที่สะดุดกลางมื้อเย็น</p>
     <div class="chips">
       <span class="chip">รับออเดอร์ · ครัว · เก็บเงิน · หลังร้าน</span>
       <span class="chip">เทสต์อัตโนมัติ <b>659</b></span>
-      <span class="chip">ไทย / English</span>
+      <span class="chip">ไทย · English · <span lang="ko">한국어</span></span>
+    </div>
+    <div class="hero-cta">
+      <a class="cta" href="app/" target="_blank" rel="noopener">ลองใช้งานจริงได้เลย →</a>
+      <a class="ghost" href="#pricing">ราคาและการเริ่มใช้งาน</a>
     </div>
   </div>
   <div class="stage">
@@ -326,7 +371,7 @@
         <p class="metric">เกินกำหนด 15 นาที → ขึ้นเตือนอัตโนมัติ</p>
       </div>
       <div class="beat">
-        <h3>โต๊ะ กลับบ้าน หรือเดลิเวอรี — แยกออกตั้งแต่แวบแรก</h3>
+        <h3>โต๊ะ กลับบ้าน หรือ<span class="nw">เดลิเวอรี</span> — แยกออกตั้งแต่แวบแรก</h3>
         <p>ตั๋วแต่ละใบขึ้นไอคอนต่างกันตามประเภทออเดอร์ ไม่ต้องเปิดดูรายละเอียดก็รู้ทันทีว่าใบไหนต้องเสิร์ฟที่โต๊ะ
           ใบไหนลูกค้ามารอรับเอง — เปิดออเดอร์กลับบ้าน/เดลิเวอรีได้จากปุ่มเดียวบนผังโต๊ะโดยไม่ต้องผูกกับโต๊ะไหนเลย
           ถ้าเป็นกลับบ้านจะได้เลขคิวรับอาหารรันต่อวันให้อัตโนมัติด้วย</p>
@@ -425,7 +470,7 @@
     <div>
       <span class="eyebrow rise">07 — ผู้ช่วย AI</span>
       <h2 class="rise" style="font-size:var(--w2);max-width:17ch">ถามยอดขายด้วยคำพูด ไม่ต้องไล่เปิดหน้ารายงานเอง</h2>
-      <p class="lede rise" style="margin-top:20px">พิมพ์คำถามภาษาไทยหรืออังกฤษ ผู้ช่วย AI (ขับเคลื่อนด้วย Claude) เรียกเครื่องมือที่ต่อกับ
+      <p class="lede rise" style="margin-top:20px">พิมพ์คำถามภาษาไทย อังกฤษ หรือเกาหลี ผู้ช่วย AI (ขับเคลื่อนด้วย Claude) เรียกเครื่องมือที่ต่อกับ
         ฐานข้อมูลร้านจริงเพื่อดึงตัวเลขมาตอบ ไม่ใช่เดาจากความรู้ทั่วไปของโมเดล — ทุกคำตอบระบุที่มาของ
         ข้อมูลกำกับไว้เสมอ</p>
       <div class="feat">
@@ -434,6 +479,37 @@
         <div><span class="dot"></span><span><b>จำกัดสิทธิ์ตามบทบาท</b><br><span>เฉพาะเจ้าของร้าน/ผู้จัดการเท่านั้นที่ถามได้ พร้อมจำกัดจำนวนคำถามต่อวันเพื่อคุมค่าใช้จ่าย</span></span></div>
       </div>
     </div>
+  </div>
+</section>
+
+<section class="act" id="security">
+  <span class="eyebrow">08 — ความปลอดภัย</span>
+  <h2 style="font-size:var(--w2);max-width:18ch">ระบบที่แตะเงิน ต้องปลอดภัยตั้งแต่วันแรก</h2>
+  <p class="lede" style="margin-top:20px">POS ถือทั้งยอดขายและข้อมูลลูกค้าไว้พร้อมกัน ความปลอดภัยจึงไม่ใช่ฟีเจอร์ที่ค่อยมาเติมทีหลัง</p>
+  <div class="feat" style="margin-top:clamp(34px,5vw,56px);max-width:68ch">
+    <div><span class="dot"></span><span><b>ผ่านการตรวจ OWASP Top 10</b><br><span>พบ 7 จุด แก้ครบทุกจุด และทุกจุดตั้งให้ "ปิดไว้ก่อน" เป็นค่าเริ่มต้น ไม่มีรหัสลับสำรองฝังไว้ในโค้ด</span></span></div>
+    <div><span class="dot"></span><span><b>สิทธิ์บังคับที่เซิร์ฟเวอร์ ไม่ใช่แค่ซ่อนปุ่ม</b><br><span>ยิงคำขอตรง ๆ ก็ถูกปฏิเสธ บัญชีที่ถูกปิดหรือเปลี่ยนสิทธิ์หมดสิทธิ์ทันที ไม่ต้องรอให้ token หมดอายุ</span></span></div>
+    <div><span class="dot"></span><span><b>ประวัติการทำรายการที่แก้ไม่ได้</b><br><span>ยกเลิกออเดอร์ ให้ส่วนลด คืนเงิน แก้ราคาเมนู เปลี่ยนสิทธิ์พนักงาน — บันทึกผู้ทำและเหตุผลไว้ทุกครั้ง</span></span></div>
+    <div><span class="dot"></span><span><b>ข้อมูลอยู่ในร้านของคุณ</b><br><span>รันบนเซิร์ฟเวอร์หรือคอมพิวเตอร์ในร้านเอง ยอดขายและข้อมูลลูกค้าไม่ถูกส่งขึ้นเซิร์ฟเวอร์ของใคร</span></span></div>
+    <div><span class="dot"></span><span><b>สิ่งที่ต้องทำก่อนใช้งานจริง</b><br><span>โปรเจกต์นี้เริ่มจากพอร์ตโฟลิโอ ค่าตั้งต้นบางอย่างจึงยังไม่ปลอดภัยพอ แต่ไม่ได้ซ่อนไว้ — ถ้าเปิดโหมด production แล้วยังใช้รหัสผ่านเดโม เซิร์ฟเวอร์จะไม่ยอมเปิดเลย ดูรายการทั้งหมดใน <a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md" target="_blank" rel="noopener">SECURITY.md</a></span></span></div>
+  </div>
+</section>
+
+<section class="act paper" id="pricing">
+  <span class="eyebrow">09 — ราคา · เริ่มใช้งาน</span>
+  <h2 style="font-size:var(--w2);max-width:18ch">ราคาเท่าไร?</h2>
+  <p class="lede" style="margin-top:20px">ใช้ฟรี และจะไม่มีแพ็กเกจรายเดือนตามมาทีหลัง — เพราะระบบไม่ได้รันบนเซิร์ฟเวอร์ของเราตั้งแต่แรก</p>
+  <div class="price">
+    <div><div class="v">฿0</div><div class="k">ค่าลิขสิทธิ์ — Apache License 2.0 ใช้เชิงพาณิชย์ แก้ไข และแจกจ่ายต่อได้</div></div>
+    <div><div class="v">฿0/เดือน</div><div class="k">ไม่มีค่าเช่ารายเดือน ติดตั้งครั้งเดียว รันในร้านของคุณเอง</div></div>
+    <div><div class="v">ไม่จำกัด</div><div class="k">จำนวนเครื่อง — เพิ่มมือถือหรือแท็บเล็ตกี่เครื่องก็ไม่มีค่าใช้จ่ายเพิ่ม</div></div>
+    <div><div class="v">เครื่องเดิม</div><div class="k">มือถือ แท็บเล็ต คอมพิวเตอร์ที่ร้านมีอยู่แล้วใช้ได้เลย ไม่ต้องซื้อเครื่องเฉพาะยี่ห้อ</div></div>
+  </div>
+  <p class="lede" style="margin-top:clamp(34px,5vw,48px)">สนใจนำไปใช้ หรืออยากถามอะไร ติดต่อได้ที่</p>
+  <div class="contact">
+    <a class="ghost" href="https://github.com/SuruchBoss/PaynEat/issues" target="_blank" rel="noopener">ถามผ่าน GitHub Issues</a>
+    <a class="ghost" href="https://www.linkedin.com/in/suruchboss" target="_blank" rel="noopener">LinkedIn</a>
+    <a class="ghost" href="https://github.com/SuruchBoss/PaynEat#readme" target="_blank" rel="noopener">คู่มือติดตั้ง</a>
   </div>
 </section>
 

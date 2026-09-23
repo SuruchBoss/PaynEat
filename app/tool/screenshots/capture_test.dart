@@ -846,5 +846,24 @@ void main() {
       await ScreenshotHarness.settle(tester);
       await ScreenshotHarness.capture(tester, 'en-58-web-dashboard');
     });
+
+    // GIF สาธิต AI เป็นคำถามภาษาไทย (ถ่ายใหม่ต้องมี API key) หน้าอังกฤษจึงใช้ภาพนี้
+    // เป็นภาพหลักแทน แล้วลิงก์ไปที่ GIF พร้อมบอกตรง ๆ ว่าในคลิปถามเป็นภาษาไทย
+    testWidgets('59 หน้าผู้ช่วย AI (อังกฤษ)', (tester) async {
+      await ScreenshotHarness.launchApp(
+        tester,
+        ScreenshotHarness.desktop,
+        locale: LocaleService.english,
+      );
+      await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+      final controller = Get.find<HomeController>();
+      final index = controller.destinations.indexWhere(
+        (destination) => destination.label == 'home_nav_ai_assistant',
+      );
+      expect(index, isNonNegative);
+      controller.changeTab(index);
+      await ScreenshotHarness.settle(tester);
+      await ScreenshotHarness.capture(tester, 'en-59-web-ai-assistant');
+    });
   });
 }

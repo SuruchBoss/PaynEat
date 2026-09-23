@@ -113,6 +113,9 @@ control and 659 automated tests.
 >
 > Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
 > a Wi-Fi drop mid-service — with real screenshots embedded in the file. The animation is pure CSS.
+> A demo button sits on the very first screen, and every language edition has **Security** and
+> **Pricing · Contact** sections. Each edition's screenshots are genuinely in that language — not Thai
+> screenshots with translated alt text.
 > The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
 >
 > The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
