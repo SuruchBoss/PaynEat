@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-655%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-659%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -207,11 +207,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **655건**의 자동화 테스트를 통과합니다.
+공개 전 **659건**의 자동화 테스트를 통과합니다.
 
 ```bash
 cd backend && npm test      # 293건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 362건 — domain / controller / widget
+cd app && flutter test      # 366건 — domain / controller / widget
 ```
 
 한국어 지원에도 전용 테스트가 있습니다:

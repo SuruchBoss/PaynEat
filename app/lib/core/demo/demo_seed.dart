@@ -504,16 +504,18 @@ class DemoSeed {
     final result = <Map<String, dynamic>>[];
     var id = 1;
     for (var i = 1; i <= 8; i++) {
-      result.add(_table(id++, 'A$i', 'โซนในร้าน', '실내', i <= 4 ? 2 : 4));
+      result.add(
+        _table(id++, 'A$i', 'โซนในร้าน', 'Indoor', '실내', i <= 4 ? 2 : 4),
+      );
     }
     for (var i = 1; i <= 6; i++) {
-      result.add(_table(id++, 'B$i', 'โซนริมหน้าต่าง', '창가', 4));
+      result.add(_table(id++, 'B$i', 'โซนริมหน้าต่าง', 'Window', '창가', 4));
     }
     for (var i = 1; i <= 4; i++) {
-      result.add(_table(id++, 'C$i', 'โซนสวน', '정원', 6));
+      result.add(_table(id++, 'C$i', 'โซนสวน', 'Garden', '정원', 6));
     }
-    result.add(_table(id++, 'VIP1', 'ห้องส่วนตัว', '룸', 10));
-    result.add(_table(id++, 'VIP2', 'ห้องส่วนตัว', '룸', 12));
+    result.add(_table(id++, 'VIP1', 'ห้องส่วนตัว', 'Private Room', '룸', 10));
+    result.add(_table(id++, 'VIP2', 'ห้องส่วนตัว', 'Private Room', '룸', 12));
     return result;
   }
 
@@ -521,12 +523,14 @@ class DemoSeed {
     int id,
     String name,
     String zone,
+    String zoneEn,
     String zoneKo,
     int seats,
   ) => {
     'id': id,
     'name': name,
     'zone': zone,
+    'zoneEn': zoneEn,
     'zoneKo': zoneKo,
     'seats': seats,
     'status': 'available',
