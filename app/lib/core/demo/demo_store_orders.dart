@@ -85,10 +85,10 @@ extension DemoStoreOrders on DemoStore {
       'type': type,
       'tableId': tableId,
       'tableName': table?['name'],
-      'tableZone': table?['zone'],
+      'tableZone': table == null ? null : DemoNames.of(table, key: 'zone'),
       'queueNumber': type == OrderType.takeaway ? _nextQueueNumber(now) : null,
       'waiterId': waiterId,
-      'waiterName': waiterId == null ? null : _findUser(waiterId)['name'],
+      'waiterName': waiterId == null ? null : DemoNames.of(_findUser(waiterId)),
       'customerId': customerId,
       'customerName': customer?['name'],
       'customerPhone': customer?['phone'],
@@ -226,7 +226,7 @@ extension DemoStoreOrders on DemoStore {
     final table = _findTable(tableId);
     order['tableId'] = tableId;
     order['tableName'] = table['name'];
-    order['tableZone'] = table['zone'];
+    order['tableZone'] = DemoNames.of(table, key: 'zone');
     table['status'] = TableStatus.occupied;
     _findTable(oldTableId as int)['status'] = TableStatus.available;
     order['updatedAt'] = _now();

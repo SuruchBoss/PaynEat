@@ -5,6 +5,8 @@ class SelfOrderTableModel extends SelfOrderTable {
     required super.id,
     required super.name,
     required super.zone,
+    super.zoneEn,
+    super.zoneKo,
     super.branchName,
   });
 
@@ -17,6 +19,8 @@ class SelfOrderTableModel extends SelfOrderTable {
     id: (json['id'] as num).toInt(),
     name: json['name'] as String? ?? '',
     zone: json['zone'] as String? ?? '',
+    zoneEn: json['zoneEn'] as String?,
+    zoneKo: json['zoneKo'] as String?,
     branchName: branchName,
   );
 }

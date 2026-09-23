@@ -250,7 +250,9 @@ extension DemoStorePayments on DemoStore {
           : 0.0,
       'reference': reference,
       'cashierId': cashierId,
-      'cashierName': cashierId == null ? null : _findUser(cashierId)['name'],
+      'cashierName': cashierId == null
+          ? null
+          : DemoNames.of(_findUser(cashierId)),
       'pointsRedeemed': pointsToRedeem,
       'pointsRedeemedValue': pointsRedeemedValue,
       'createdAt': _now(),
@@ -296,7 +298,7 @@ extension DemoStorePayments on DemoStore {
     final order = findOrder(orderId);
     return {
       'store': {
-        'name': settings['storeName'],
+        'name': DemoNames.of(settings, key: 'storeName'),
         'currency': settings['currency'],
         'vatRate': settings['vatRate'],
         'serviceChargeRate': settings['serviceChargeRate'],

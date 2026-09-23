@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import '../localization/locale_service.dart';
 import 'app_clock.dart';
 
 /// จัดรูปแบบจำนวนเงินและวันที่ให้ตรงกับที่คนไทยอ่านแล้วเข้าใจทันที
@@ -9,9 +10,31 @@ class Formatters {
   static final NumberFormat _money = NumberFormat('#,##0.00', 'en_US');
   static final NumberFormat _compact = NumberFormat('#,##0', 'en_US');
   static final DateFormat _time = DateFormat('HH:mm');
-  static final DateFormat _dateTime = DateFormat('d MMM yyyy HH:mm');
-  static final DateFormat _date = DateFormat('d MMM yyyy');
   static final DateFormat _isoDate = DateFormat('yyyy-MM-dd');
+
+  /// รูปแบบวันที่ต่อภาษา
+  ///
+  /// ไทยกับอังกฤษใช้ `d MMM yyyy` เหมือนเดิมทุกประการ — จงใจไม่แตะ เพราะรูปแบบนี้
+  /// ไปโผล่บนใบเสร็จที่พิมพ์ออกเครื่องจริงและบนภาพ golden ทุกใบ การเปลี่ยนเป็น
+  /// เรื่องที่เจ้าของร้านควรตัดสินใจเอง ไม่ใช่ผลพลอยได้ของงานเพิ่มภาษา
+  ///
+  /// เกาหลีเขียน "2026년 9월 11일" ไม่ใช่ "11 Sep 2026" — ใบเสร็จเกาหลีที่ขึ้นเดือน
+  /// เป็นตัวย่อภาษาอังกฤษอ่านแล้วรู้ทันทีว่าเป็นระบบที่แปลมาไม่สุด
+  /// (ใช้ตัวอักษรเกาหลีในตัว pattern เลย จึงไม่ต้องโหลด locale data ของ intl)
+  static final Map<String, (DateFormat date, DateFormat dateTime)> _formats = {
+    'ko': (DateFormat('yyyy년 M월 d일'), DateFormat('yyyy년 M월 d일 HH:mm')),
+  };
+
+  static final (DateFormat, DateFormat) _default = (
+    DateFormat('d MMM yyyy'),
+    DateFormat('d MMM yyyy HH:mm'),
+  );
+
+  static (DateFormat, DateFormat) get _current =>
+      _formats[LocaleService.languageCode] ?? _default;
+
+  static DateFormat get _date => _current.$1;
+  static DateFormat get _dateTime => _current.$2;
 
   static String money(num value) => _money.format(value);
 

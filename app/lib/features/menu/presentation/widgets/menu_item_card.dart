@@ -6,10 +6,11 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/menu_item.dart';
 import 'menu_item_thumbnail.dart';
+import 'menu_placeholder.dart';
 
 /// การ์ดเมนู 1 รายการ
 ///
-/// ถ้าไม่มีรูปจะสร้างพื้นหลังไล่สีจากชื่อเมนูแทน เพื่อให้จอสั่งอาหารยังดูมีชีวิตชีวา
+/// ถ้าไม่มีรูปจะใช้ [MenuPlaceholder] แทน (ดูเหตุผลที่ไม่ใช้อักษรตัวแรกในไฟล์นั้น)
 class MenuItemCard extends StatelessWidget {
   const MenuItemCard({
     super.key,
@@ -23,18 +24,6 @@ class MenuItemCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Widget? trailing;
   final bool showAvailabilityBadge;
-
-  static const List<List<Color>> _palettes = [
-    [Color(0xFFFFB088), Color(0xFFFF6B2C)],
-    [Color(0xFF8CE0C4), Color(0xFF12B886)],
-    [Color(0xFF9DC8F5), Color(0xFF1971C2)],
-    [Color(0xFFF7C7E8), Color(0xFFD6336C)],
-    [Color(0xFFFFD98C), Color(0xFFF59F00)],
-    [Color(0xFFC0B3F5), Color(0xFF7048E8)],
-  ];
-
-  List<Color> get _palette =>
-      _palettes[item.name.hashCode.abs() % _palettes.length];
 
   @override
   Widget build(BuildContext context) {
@@ -64,25 +53,7 @@ class MenuItemCard extends StatelessWidget {
                     children: [
                       MenuItemThumbnail(
                         imageUrl: item.imageUrl,
-                        placeholder: DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: _palette,
-                            ),
-                          ),
-                          child: Center(
-                            child: Text(
-                              item.displayName.substring(0, 1),
-                              style: TextStyle(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white.withValues(alpha: 0.9),
-                              ),
-                            ),
-                          ),
-                        ),
+                        placeholder: MenuPlaceholder(seed: item.id),
                       ),
                       if (item.isRecommended)
                         Positioned(

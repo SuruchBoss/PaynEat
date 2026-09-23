@@ -9,6 +9,8 @@ class DemoSeed {
     {
       'id': 1,
       'name': 'ผู้ดูแลระบบ',
+      'nameEn': 'System Admin',
+      'nameKo': '관리자',
       'username': 'admin',
       'password': 'admin123',
       'role': 'admin',
@@ -17,6 +19,8 @@ class DemoSeed {
     {
       'id': 2,
       'name': 'สมชาย (ผู้จัดการ)',
+      'nameEn': 'Somchai (Manager)',
+      'nameKo': '김민수 (매니저)',
       'username': 'manager',
       'password': 'manager123',
       'role': 'manager',
@@ -25,6 +29,8 @@ class DemoSeed {
     {
       'id': 3,
       'name': 'น้องฝน (พนักงานเสิร์ฟ)',
+      'nameEn': 'Fon (Server)',
+      'nameKo': '박지은 (홀)',
       'username': 'waiter1',
       'password': 'waiter123',
       'role': 'waiter',
@@ -33,6 +39,8 @@ class DemoSeed {
     {
       'id': 4,
       'name': 'น้องมิ้น (พนักงานเสิร์ฟ)',
+      'nameEn': 'Mint (Server)',
+      'nameKo': '이수빈 (홀)',
       'username': 'waiter2',
       'password': 'waiter123',
       'role': 'waiter',
@@ -41,6 +49,8 @@ class DemoSeed {
     {
       'id': 5,
       'name': 'เชฟต้น (ครัว)',
+      'nameEn': 'Chef Ton (Kitchen)',
+      'nameKo': '최현우 (주방)',
       'username': 'kitchen',
       'password': 'kitchen123',
       'role': 'kitchen',
@@ -49,6 +59,8 @@ class DemoSeed {
     {
       'id': 6,
       'name': 'พี่แอน (แคชเชียร์)',
+      'nameEn': 'Ann (Cashier)',
+      'nameKo': '한소영 (캐셔)',
       'username': 'cashier',
       'password': 'cashier123',
       'role': 'cashier',
@@ -527,6 +539,8 @@ class DemoSeed {
 
   static Map<String, dynamic> settings() => {
     'storeName': 'ครัวคุณย่า (เดโม)',
+    'storeNameEn': "Grandma's Kitchen (Demo)",
+    'storeNameKo': '할머니 부엌 (데모)',
     'currency': 'THB',
     'vatRate': 0.07,
     'serviceChargeRate': 0.1,
@@ -534,6 +548,9 @@ class DemoSeed {
     // ข้อมูลผู้เสียภาษีของร้านตัวอย่าง (ดู docs/tickets/07-tax-invoice.md) — seed ไว้ให้ลอง
     // ออกใบกำกับภาษีได้ทันทีโดยไม่ต้องตั้งค่าเองก่อน
     'storeTaxId': '0105558000012',
+    // ที่อยู่และชื่อสาขา **จงใจไม่แปล** ทุกภาษา — ใบกำกับภาษีของไทยต้องแสดง
+    // ที่อยู่ตามที่จดทะเบียนไว้เป็นภาษาไทย ต่อให้หน้าจอเป็นเกาหลีก็ตาม
+    // (ร้านเกาหลีในกรุงเทพฯ ก็ยังต้องออกใบกำกับภาษีตามรูปแบบของไทย)
     'storeAddress':
         '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
     'storeBranch': 'สำนักงานใหญ่',

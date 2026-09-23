@@ -7,6 +7,7 @@ import '../../../../core/widgets/state_views.dart';
 import '../../domain/entities/category.dart';
 import '../../domain/entities/menu_item.dart';
 import '../controllers/menu_management_controller.dart';
+import '../widgets/menu_placeholder.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/menu_item_thumbnail.dart';
 
@@ -175,22 +176,7 @@ class _MenuRow extends GetView<MenuManagementController> {
               height: 44,
               child: MenuItemThumbnail(
                 imageUrl: item.imageUrl,
-                placeholder: Container(
-                  alignment: Alignment.center,
-                  color: item.isAvailable
-                      ? AppColors.primarySoft
-                      : AppColors.surfaceAlt,
-                  child: Text(
-                    item.displayName.substring(0, 1),
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: item.isAvailable
-                          ? AppColors.brandInk
-                          : AppColors.textSecondary,
-                    ),
-                  ),
-                ),
+                placeholder: MenuPlaceholder(seed: item.id, compact: true),
               ),
             ),
           ),

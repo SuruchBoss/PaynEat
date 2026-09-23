@@ -3,7 +3,10 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/demo/demo_names.dart';
 import 'package:payneat_pos/core/demo/demo_seed.dart';
+import 'package:get/get.dart';
 import 'package:payneat_pos/core/localization/app_translations.dart';
+import 'package:payneat_pos/core/localization/locale_service.dart';
+import 'package:payneat_pos/core/utils/formatters.dart';
 
 /// ฟอนต์เกาหลีที่ฝังไว้เป็น subset เฉพาะตัวอักษรที่คำแปลใช้จริง (ดู pubspec.yaml)
 /// ถ้ามีคนเพิ่มคำแปลเกาหลีที่ใช้ตัวอักษรนอก subset ตัวนั้นจะกลายเป็นกล่องสี่เหลี่ยม
@@ -21,6 +24,26 @@ void main() {
     // ข้อมูลสาธิตก็ถูกวาดด้วยฟอนต์เดียวกัน และเป็นสิ่งที่คนกดเข้ามาลองเห็นก่อน
     // คำแปล UI ด้วยซ้ำ — รอบแรกตรวจแค่คำแปล ชื่อเมนูภาษาเกาหลีจึงหลุดออกนอก
     // subset ได้โดยไม่มีอะไรฟ้อง
+    //
+    // รอบที่สองยังตกอีก 3 แหล่ง จนไปโผล่เป็นกล่องสี่เหลี่ยมกลางใบเสร็จ
+    // ("할□니 부□", "2026□ 9월", "□지은") — ชื่อร้านใช้คีย์ storeName ไม่ใช่ name,
+    // ชื่อพนักงานอยู่ใน users() ซึ่งไม่ได้อยู่ในลิสต์, และตัวอักษร 년/월/일
+    // มาจาก pattern ของ DateFormat ไม่ได้อยู่ในข้อมูลสักชุด
+    // บทเรียน: ต้องไล่จาก "สิ่งที่วาดบนจอ" ไม่ใช่ "ไฟล์ที่นึกออก"
+    used.addAll(
+      DemoNames.of(DemoSeed.settings(), lang: 'ko', key: 'storeName').runes,
+    );
+    for (final user in DemoSeed.users()) {
+      used.addAll(DemoNames.of(user, lang: 'ko').runes);
+    }
+    // รูปแบบวันที่ภาษาเกาหลีมีตัวอักษรเกาหลีฝังอยู่ใน pattern เอง
+    // เรียกผ่าน Formatters จริงแทนการพิมพ์ '년월일' ซ้ำไว้ในเทสต์
+    // ถ้าวันหนึ่งมีคนเปลี่ยน pattern เทสต์จะตามไปเอง
+    Get.locale = LocaleService.korean;
+    used.addAll(Formatters.dateTime('2026-09-11T12:42:00Z').runes);
+    used.addAll(Formatters.date(DateTime(2026, 9, 11)).runes);
+    Get.locale = LocaleService.thai;
+
     for (final row in [
       ...DemoSeed.categories(),
       ...DemoSeed.menuItems(),

@@ -301,7 +301,9 @@ class _TableHeader extends GetView<SelfOrderController> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              branch == null ? table.zone : '${table.zone} · $branch',
+              branch == null
+                  ? table.displayZone
+                  : '${table.displayZone} · $branch',
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 4),
