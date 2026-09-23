@@ -123,7 +123,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        widget.item.name,
+                        widget.item.displayName,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,

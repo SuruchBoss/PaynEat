@@ -10,9 +10,16 @@ import '../../../../core/utils/responsive.dart';
 /// ส่วนมือถือไม่ออโต้โฟกัส ไม่งั้นคีย์บอร์ดเด้งบังเมนูทุกครั้งที่เข้าหน้า — มือถือ/แท็บเล็ตที่ไม่มีเครื่อง
 /// สแกนกดปุ่มกล้องท้ายช่องแทนได้
 class BarcodeScanField extends StatefulWidget {
-  const BarcodeScanField({super.key, required this.onScanned});
+  const BarcodeScanField({
+    super.key,
+    required this.onScanned,
+    this.compact = false,
+  });
 
   final Future<void> Function(String code) onScanned;
+
+  /// จอแคบ — คำใบ้สั้น ("สแกน") ไอคอนเครื่องสแกนบอกความหมายที่เหลือเอง
+  final bool compact;
 
   @override
   State<BarcodeScanField> createState() => _BarcodeScanFieldState();
@@ -56,7 +63,8 @@ class _BarcodeScanFieldState extends State<BarcodeScanField> {
       textInputAction: TextInputAction.done,
       onSubmitted: _submit,
       decoration: InputDecoration(
-        hintText: 'order_scan_hint'.tr,
+        hintText:
+            (widget.compact ? 'order_scan_hint_short' : 'order_scan_hint').tr,
         prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
         suffixIcon: scanner != null && scanner.isSupported
             ? IconButton(

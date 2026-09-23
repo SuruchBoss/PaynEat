@@ -184,6 +184,41 @@ class _MenuFormPageState extends State<MenuFormPage> {
     );
   }
 
+  // เครื่องสแกนบาร์โค้ด USB/บลูทูธพิมพ์รหัสลงช่องนี้ได้เลยตอนตั้งค่าสินค้า
+  // (ดู docs/tickets/19-barcode-scale.md)
+  Widget _barcodeField() => TextFormField(
+    controller: _barcodeController,
+    decoration: InputDecoration(
+      labelText: 'menu_form_barcode_label'.tr,
+      helperText: 'menu_form_barcode_helper'.tr,
+      helperMaxLines: 2,
+      prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
+    ),
+    validator: (value) {
+      final text = value?.trim() ?? '';
+      if (text.isEmpty) return null;
+      return RegExp(r'^[0-9A-Za-z-]{1,32}$').hasMatch(text)
+          ? null
+          : 'menu_form_barcode_invalid'.tr;
+    },
+  );
+
+  Widget _pluField() => TextFormField(
+    controller: _pluController,
+    keyboardType: TextInputType.number,
+    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+    decoration: InputDecoration(
+      labelText: 'menu_form_scale_plu_label'.tr,
+      helperText: 'menu_form_scale_plu_helper'.tr,
+      helperMaxLines: 2,
+    ),
+    validator: (value) {
+      final text = value?.trim() ?? '';
+      if (text.isEmpty) return null;
+      return text.length <= 6 ? null : 'menu_form_scale_plu_invalid'.tr;
+    },
+  );
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -387,56 +422,30 @@ class _MenuFormPageState extends State<MenuFormPage> {
                     subtitle: Text('menu_form_sold_by_weight_subtitle'.tr),
                     contentPadding: EdgeInsets.zero,
                   ),
-                  // เครื่องสแกนบาร์โค้ด USB/บลูทูธพิมพ์รหัสลงช่องนี้ได้เลยตอนตั้งค่าสินค้า
-                  // (ดู docs/tickets/19-barcode-scale.md)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _barcodeController,
-                          decoration: InputDecoration(
-                            labelText: 'menu_form_barcode_label'.tr,
-                            helperText: 'menu_form_barcode_helper'.tr,
-                            prefixIcon: const Icon(
-                              Icons.qr_code_scanner_rounded,
-                            ),
-                          ),
-                          validator: (value) {
-                            final text = value?.trim() ?? '';
-                            if (text.isEmpty) return null;
-                            return RegExp(
-                                  r'^[0-9A-Za-z-]{1,32}$',
-                                ).hasMatch(text)
-                                ? null
-                                : 'menu_form_barcode_invalid'.tr;
-                          },
-                        ),
-                      ),
-                      if (_soldByWeight) ...[
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _pluController,
-                            keyboardType: TextInputType.number,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                            ],
-                            decoration: InputDecoration(
-                              labelText: 'menu_form_scale_plu_label'.tr,
-                              helperText: 'menu_form_scale_plu_helper'.tr,
-                            ),
-                            validator: (value) {
-                              final text = value?.trim() ?? '';
-                              if (text.isEmpty) return null;
-                              return text.length <= 6
-                                  ? null
-                                  : 'menu_form_scale_plu_invalid'.tr;
-                            },
-                          ),
-                        ),
-                      ],
-                    ],
+                  // จอแคบ (มือถือ) เรียงบาร์โค้ด/PLU ลงมาทีละช่อง — วางคู่กันแล้วป้ายและคำอธิบาย
+                  // ถูกตัดเป็น "Barcode (..." / "Scan or type the ..." ทุกภาษา
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final barcode = _barcodeField();
+                      if (!_soldByWeight) return barcode;
+                      if (constraints.maxWidth < 560) {
+                        return Column(
+                          children: [
+                            barcode,
+                            const SizedBox(height: 14),
+                            _pluField(),
+                          ],
+                        );
+                      }
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: barcode),
+                          const SizedBox(width: 12),
+                          Expanded(child: _pluField()),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 6),
                   SwitchListTile(
@@ -536,6 +545,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
                   else
                     for (final entry in _ingredientLinks.asMap().entries)
                       _IngredientLinkRow(
+                        perKg: _soldByWeight,
                         link: entry.value,
                         onRemove: () => setState(
                           () => _ingredientLinks.removeAt(entry.key),
@@ -592,7 +602,7 @@ class _MenuFormPageState extends State<MenuFormPage> {
     }
 
     final result = await Get.dialog<MenuItemIngredientUsage>(
-      _IngredientLinkDialog(choices: choices),
+      _IngredientLinkDialog(choices: choices, perKg: _soldByWeight),
     );
     if (result != null) setState(() => _ingredientLinks.add(result));
   }
@@ -857,7 +867,14 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
 }
 
 class _IngredientLinkRow extends StatelessWidget {
-  const _IngredientLinkRow({required this.link, required this.onRemove});
+  const _IngredientLinkRow({
+    required this.link,
+    required this.onRemove,
+    this.perKg = false,
+  });
+
+  /// เมนูขายตามน้ำหนัก ปริมาณวัตถุดิบคิดต่อ 1 กก. ที่ขาย ไม่ใช่ "ต่อที่/ต่อจาน"
+  final bool perKg;
 
   final MenuItemIngredientUsage link;
   final VoidCallback onRemove;
@@ -883,12 +900,15 @@ class _IngredientLinkRow extends StatelessWidget {
             ),
           ),
           Text(
-            'menu_form_ingredient_qty_summary'.trParams({
-              'qty': link.qtyPerUnit.toStringAsFixed(
-                link.qtyPerUnit == link.qtyPerUnit.roundToDouble() ? 0 : 1,
-              ),
-              'unit': link.unit ?? '',
-            }),
+            (perKg
+                    ? 'menu_form_ingredient_qty_summary_kg'
+                    : 'menu_form_ingredient_qty_summary')
+                .trParams({
+                  'qty': link.qtyPerUnit.toStringAsFixed(
+                    link.qtyPerUnit == link.qtyPerUnit.roundToDouble() ? 0 : 1,
+                  ),
+                  'unit': link.unit ?? '',
+                }),
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           IconButton(
@@ -905,7 +925,9 @@ class _IngredientLinkRow extends StatelessWidget {
 
 /// กล่องเลือกวัตถุดิบที่เมนูนี้ใช้ + ปริมาณต่อ 1 ที่ (denormalize ชื่อ/หน่วยจากวัตถุดิบที่เลือก)
 class _IngredientLinkDialog extends StatefulWidget {
-  const _IngredientLinkDialog({required this.choices});
+  const _IngredientLinkDialog({required this.choices, this.perKg = false});
+
+  final bool perKg;
 
   final List<Ingredient> choices;
 
@@ -958,7 +980,11 @@ class _IngredientLinkDialogState extends State<_IngredientLinkDialog> {
               FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
             ],
             decoration: InputDecoration(
-              labelText: 'menu_form_ingredient_qty_label'.tr,
+              labelText:
+                  (widget.perKg
+                          ? 'menu_form_ingredient_qty_label_kg'
+                          : 'menu_form_ingredient_qty_label')
+                      .tr,
               suffixText: _selected.unit,
             ),
             onChanged: (_) => setState(() {}),

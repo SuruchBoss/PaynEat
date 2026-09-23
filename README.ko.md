@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-837%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-844%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -230,11 +230,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **837건**의 자동화 테스트를 통과합니다.
+공개 전 **844건**의 자동화 테스트를 통과합니다.
 
 ```bash
 cd backend && npm test      # 344건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 445건 — domain / controller / widget
+cd app && flutter test      # 452건 — domain / controller / widget
 cd app && flutter test test_e2e   # 48건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
 
@@ -253,7 +253,10 @@ PDF로 내려받아짐 → 청구서 이메일 발송 (`scale_documents_e2e_test
 한국어 지원에도 전용 테스트가 있습니다:
 
 - `korean_font_coverage_test.dart` — 내장한 한글 폰트에 화면에 뜨는 모든 글자의
-  글리프가 실제로 있는지 폰트 파일의 cmap 테이블을 직접 읽어 확인합니다
-- `korean_leak_test.dart` — 한국어를 선택했을 때 태국어 글자가 화면에 남아 있지 않은지 확인합니다
+  글리프가 실제로 있는지 폰트 파일의 cmap 테이블을 직접 읽어 확인합니다 (재료·메뉴 설명 번역을 추가하자
+  빠져 있던 8글자 `깃걀틸끈짠쌀걸쭉`을 바로 잡아냈고, 폰트를 다시 subset했습니다)
+- `cart_panel_locale_test.dart` — 장바구니에 담긴 메뉴 이름이 선택한 언어로 보이는지 확인합니다
+- `korean_leak_test.dart` — 한국어를 선택했을 때 태국어 글자가 화면에 남아 있지 않은지 확인합니다.
+  메뉴 설명, 재료 이름·단위, 옵션 이름까지 화면으로 나가는 데이터를 직접 검사합니다
   (단, 세금계산서 주소와 지점명은 태국어로 남아야 하므로 반대로 검사합니다)
 - `locale_service_test.dart` — 저장된 언어가 다음 실행에서 그대로 복원되는지 확인합니다

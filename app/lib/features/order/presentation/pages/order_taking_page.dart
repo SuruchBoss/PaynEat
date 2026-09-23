@@ -100,22 +100,40 @@ class _MenuSection extends GetView<MenuBrowseController> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  onChanged: controller.search,
-                  decoration: InputDecoration(
-                    hintText: 'order_search_menu_hint'.tr,
-                    prefixIcon: const Icon(Icons.search_rounded),
-                    isDense: true,
+          // ช่องสแกนโผล่เฉพาะร้านที่มีสินค้าติดบาร์โค้ด/รหัสตาชั่งจริง — ร้านอาหารทั่วไปที่ไม่มีเครื่องสแกน
+          // ไม่ควรเสียช่องค้นหาไปครึ่งหนึ่ง บนมือถือช่องค้นหากว้างกว่า (3:2) และคำใบ้ช่องสแกนสั้นลง
+          // เดิมแบ่งครึ่ง คำใบ้ทั้งสองช่องถูกตัดเป็น "Search men..." / "Scan barcod..." ทุกภาษา
+          child: Obx(() {
+            final canScan = controller.items.any(
+              (item) => item.barcode != null || item.scalePlu != null,
+            );
+            final compact = !Responsive.isWide(context);
+            return Row(
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: TextField(
+                    onChanged: controller.search,
+                    decoration: InputDecoration(
+                      hintText: 'order_search_menu_hint'.tr,
+                      prefixIcon: const Icon(Icons.search_rounded),
+                      isDense: true,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(child: BarcodeScanField(onScanned: _handleScan)),
-            ],
-          ),
+                if (canScan) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: compact ? 2 : 3,
+                    child: BarcodeScanField(
+                      onScanned: _handleScan,
+                      compact: compact,
+                    ),
+                  ),
+                ],
+              ],
+            );
+          }),
         ),
         Obx(
           () => CategoryFilterBar(

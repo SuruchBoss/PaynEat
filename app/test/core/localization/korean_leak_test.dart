@@ -52,6 +52,47 @@ void main() {
 
   for (final lang in nonThai) {
     test(
+      '[$lang] วัตถุดิบ คำอธิบายเมนู และตัวเลือกเสริมที่ส่งออกไปหน้าจอ ต้องไม่มีอักษรไทย',
+      () {
+        // เจอตอนตรวจ UI หลัง ticket 18–20: ฟอร์มเมนูฉบับเกาหลีขึ้น "เนื้อริบอาย 1 กก." และคำอธิบาย
+        // "ราคาต่อกิโลกรัม ชั่งตามจริง" — ข้อมูลสาธิตสองชุดนี้ไม่เคยมีคำแปลมาตั้งแต่ ticket 06
+        // ตรวจผ่านฟังก์ชันที่ data source ใช้ส่งข้อมูลออกจริง ไม่ใช่อ่าน seed ตรง ๆ
+        DemoNames.language = lang;
+        final store = DemoStore.instance;
+        final offenders = <String>{};
+        for (final row in store.ingredientList()) {
+          for (final key in const ['name', 'unit']) {
+            final value = row[key] as String;
+            if (hasThai(value)) offenders.add(value);
+          }
+        }
+        for (final raw in store.menuItems) {
+          final row = store.presentMenuItem(raw);
+          final description = row['description'] as String?;
+          if (description != null && hasThai(description)) {
+            offenders.add(description);
+          }
+          for (final group in (row['optionGroups'] as List).cast<Map>()) {
+            final groupName = group['name'] as String;
+            if (hasThai(groupName)) offenders.add(groupName);
+            for (final option in (group['options'] as List).cast<Map>()) {
+              final optionName = option['name'] as String;
+              if (hasThai(optionName)) offenders.add(optionName);
+            }
+          }
+          for (final link in (row['ingredients'] as List).cast<Map>()) {
+            for (final key in const ['ingredientName', 'unit']) {
+              final value = link[key] as String;
+              if (hasThai(value)) offenders.add(value);
+            }
+          }
+        }
+        DemoNames.language = 'th';
+        expect(offenders, isEmpty);
+      },
+    );
+
+    test(
       '[$lang] ชื่อเมนู หมวดหมู่ และตัวเลือกเสริม ต้องไม่มีอักษรไทยเหลือ',
       () {
         final offenders = <String>{};

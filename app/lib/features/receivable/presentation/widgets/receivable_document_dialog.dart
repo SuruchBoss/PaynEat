@@ -84,7 +84,7 @@ class ReceivableDocumentDialog extends StatefulWidget {
   static String _dates(String? createdAt, String? dueDate) =>
       'receivable_line_dates'.trParams({
         'date': Formatters.dateTime(createdAt),
-        'due': dueDate ?? '-',
+        'due': Formatters.dueDate(dueDate),
       });
 
   static List<ReceivableDocumentLine> _documentLines(
@@ -118,7 +118,10 @@ class ReceivableDocumentDialog extends StatefulWidget {
       canVoid: canVoid,
       voidTitle: 'receivable_billing_note_void_title'.tr,
       extraRows: [
-        ('receivable_billing_note_due_date'.tr, note.dueDate),
+        (
+          'receivable_billing_note_due_date'.tr,
+          Formatters.dueDate(note.dueDate),
+        ),
         if (!note.isVoided)
           (
             'receivable_billing_note_remaining'.tr,
@@ -195,7 +198,7 @@ class ReceivableDocumentDialog extends StatefulWidget {
             'rate': percentText(charge.annualRate),
           }),
         ),
-        ('receivable_late_fee_as_of'.tr, charge.asOf),
+        ('receivable_late_fee_as_of'.tr, Formatters.dueDate(charge.asOf)),
       ],
       notes: [
         if (charge.note != null && charge.note!.isNotEmpty) charge.note!,
@@ -215,8 +218,8 @@ class ReceivableDocumentDialog extends StatefulWidget {
       ReceivableDocumentLine(
         '#${line.orderCode}',
         'receivable_late_fee_line'.trParams({
-          'from': line.periodFrom,
-          'to': line.periodTo,
+          'from': Formatters.dueDate(line.periodFrom),
+          'to': Formatters.dueDate(line.periodTo),
           'days': '${line.days}',
           'principal': Formatters.money(line.principal),
         }),

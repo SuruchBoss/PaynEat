@@ -41,34 +41,42 @@ class DemoMenuDataSource implements MenuRemoteDataSource {
           search: search,
           availableOnly: availableOnly,
         )
+        .map(_store.presentMenuItem)
         .map(MenuItemModel.fromJson)
         .toList(growable: false),
   );
 
   @override
-  Future<MenuItemModel> getMenuItem(int id) =>
-      _delayed(() => MenuItemModel.fromJson(_store.menuItem(id)));
+  Future<MenuItemModel> getMenuItem(int id) => _delayed(
+    () => MenuItemModel.fromJson(_store.presentMenuItem(_store.menuItem(id))),
+  );
 
   @override
   Future<MenuItemModel> createMenuItem(MenuItemPayload payload) => _delayed(
-    () => MenuItemModel.fromJson(_store.saveMenuItem(payload.toJson())),
+    () => MenuItemModel.fromJson(
+      _store.presentMenuItem(_store.saveMenuItem(payload.toJson())),
+    ),
   );
 
   @override
   Future<MenuItemModel> updateMenuItem(int id, MenuItemPayload payload) =>
       _delayed(
         () => MenuItemModel.fromJson(
-          _store.saveMenuItem(
-            payload.toJson(),
-            id: id,
-            actorId: _auth.currentUserId,
+          _store.presentMenuItem(
+            _store.saveMenuItem(
+              payload.toJson(),
+              id: id,
+              actorId: _auth.currentUserId,
+            ),
           ),
         ),
       );
 
   @override
   Future<MenuItemModel> setAvailability(int id, bool isAvailable) => _delayed(
-    () => MenuItemModel.fromJson(_store.setAvailability(id, isAvailable)),
+    () => MenuItemModel.fromJson(
+      _store.presentMenuItem(_store.setAvailability(id, isAvailable)),
+    ),
   );
 
   @override

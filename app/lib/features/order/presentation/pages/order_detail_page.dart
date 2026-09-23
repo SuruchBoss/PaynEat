@@ -306,9 +306,12 @@ class _OrderHeader extends StatelessWidget {
                 ),
               _MetaText(
                 icon: Icons.people_outline_rounded,
-                text: 'order_guest_count_summary'.trParams({
-                  'count': '${order.guestCount}',
-                }),
+                // "1 guests" ผิดไวยากรณ์อังกฤษ — แยกคีย์เอกพจน์ (ไทย/เกาหลีเหมือนกันทั้งสองคีย์)
+                text:
+                    (order.guestCount == 1
+                            ? 'order_guest_count_summary_one'
+                            : 'order_guest_count_summary')
+                        .trParams({'count': '${order.guestCount}'}),
               ),
               if (order.waiterName != null)
                 _MetaText(

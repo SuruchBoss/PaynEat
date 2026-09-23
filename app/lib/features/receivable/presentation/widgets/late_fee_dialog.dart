@@ -56,7 +56,7 @@ class _LateFeeDialogState extends State<LateFeeDialog> {
                   'receivable_late_fee_terms'.trParams({
                     'rate': percentText(preview.annualRate),
                     'grace': '${preview.graceDays}',
-                    'date': preview.asOf,
+                    'date': Formatters.dueDate(preview.asOf),
                   }),
                   style: secondary,
                 ),
@@ -85,8 +85,8 @@ class _LateFeeDialogState extends State<LateFeeDialog> {
                                 ),
                                 Text(
                                   'receivable_late_fee_line'.trParams({
-                                    'from': line.periodFrom,
-                                    'to': line.periodTo,
+                                    'from': Formatters.dueDate(line.periodFrom),
+                                    'to': Formatters.dueDate(line.periodTo),
                                     'days': '${line.days}',
                                     'principal': Formatters.money(
                                       line.principal,

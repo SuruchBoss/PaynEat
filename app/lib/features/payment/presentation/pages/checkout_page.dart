@@ -527,19 +527,25 @@ class _LoyaltySection extends GetView<CheckoutController> {
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
                     ),
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                Text(
-                  'payment_loyalty_points_balance'.trParams({
-                    'points': '${customer.pointsBalance}',
-                  }),
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.brandInk,
-                    fontWeight: FontWeight.w700,
+                // ขายเชื่อใช้แต้มไม่ได้ (บอกไว้บรรทัดล่าง) ยอดแต้มจึงไม่ต้องโชว์ — ให้ชื่อบริษัทยาว ๆ
+                // มีที่พอ เดิมชื่อถูกตัดแล้วชนกับ "0 points left" ติดกันไม่มีช่องว่าง
+                if (!controller.isCredit) ...[
+                  const SizedBox(width: 8),
+                  Text(
+                    'payment_loyalty_points_balance'.trParams({
+                      'points': '${customer.pointsBalance}',
+                    }),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.brandInk,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
             if (controller.isCredit)

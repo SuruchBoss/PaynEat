@@ -265,8 +265,8 @@ class CartController extends GetxController {
             summary: queuedLines
                 .map(
                   (line) => line.isWeighed
-                      ? '${line.menuItem.name} ${Formatters.weight(line.weightGrams!)}'
-                      : '${line.menuItem.name} x${line.quantity}',
+                      ? '${line.menuItem.displayName} ${Formatters.weight(line.weightGrams!)}'
+                      : '${line.menuItem.displayName} x${line.quantity}',
                 )
                 .join(', '),
           );

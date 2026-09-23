@@ -122,9 +122,11 @@ class ReceiptPage extends GetView<ReceiptController> {
                       ),
                     _KeyValue(
                       label: 'payment_receipt_guest_count_label'.tr,
-                      value: 'payment_guest_count_value'.trParams({
-                        'count': order.guestCount.toString(),
-                      }),
+                      value:
+                          (order.guestCount == 1
+                                  ? 'payment_guest_count_value_one'
+                                  : 'payment_guest_count_value')
+                              .trParams({'count': order.guestCount.toString()}),
                     ),
                     const _DashedDivider(),
                     for (final item in order.activeItems) ...[
@@ -135,8 +137,9 @@ class ReceiptPage extends GetView<ReceiptController> {
                           children: [
                             SizedBox(
                               width: 26,
+                              // บรรทัดชั่งน้ำหนักมีน้ำหนัก × ราคา/กก. อยู่ใต้ชื่อแล้ว "1x" จึงเป็นข้อมูลเกิน
                               child: Text(
-                                '${item.quantity}x',
+                                item.isWeighed ? '' : '${item.quantity}x',
                                 style: const TextStyle(
                                   fontSize: 12.5,
                                   fontWeight: FontWeight.w700,

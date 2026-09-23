@@ -507,7 +507,7 @@ class _EntryTile extends StatelessWidget {
                                   : null,
                             ),
                           ),
-                          if (chip != null) chip!,
+                          ?chip,
                         ],
                       ),
                       const SizedBox(height: 2),
@@ -588,7 +588,7 @@ class _InvoiceTile extends StatelessWidget {
       subtitle: [
         'receivable_line_dates'.trParams({
           'date': Formatters.dateTime(invoice.createdAt),
-          'due': invoice.dueDate ?? '-',
+          'due': Formatters.dueDate(invoice.dueDate),
         }),
         if (invoice.billingNoteNo != null) invoice.billingNoteNo!,
       ].join(' · '),
@@ -636,7 +636,7 @@ class _BillingNoteTile extends GetView<CustomerStatementController> {
       chip: StatusChip(label: label, color: color, dense: true),
       subtitle: 'receivable_note_line'.trParams({
         'date': Formatters.dateTime(note.issuedAt),
-        'due': note.dueDate,
+        'due': Formatters.dueDate(note.dueDate),
       }),
       amount: Formatters.baht(note.total),
       trailingNote: note.isOpen && note.remaining != note.total

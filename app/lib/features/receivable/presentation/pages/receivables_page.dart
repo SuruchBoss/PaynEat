@@ -212,7 +212,7 @@ class _ReceivableTile extends StatelessWidget {
                       Text(
                         'receivable_open_invoices_line'.trParams({
                           'count': '${summary.openInvoiceCount}',
-                          'due': summary.oldestDueDate ?? '-',
+                          'due': Formatters.dueDate(summary.oldestDueDate),
                         }),
                         style: secondary,
                       ),

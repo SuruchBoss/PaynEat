@@ -54,8 +54,10 @@ const Map<String, String> menuTranslationsTh = {
   'menu_form_no_ingredients': 'ยังไม่ได้ผูกวัตถุดิบ',
   'menu_form_no_more_ingredients': 'เลือกวัตถุดิบครบทุกตัวแล้ว',
   'menu_form_ingredient_qty_summary': '@qty @unit / ที่',
+  'menu_form_ingredient_qty_summary_kg': '@qty @unit ต่อ 1 กก. ที่ขาย',
   'menu_form_ingredient_select_label': 'วัตถุดิบ',
   'menu_form_ingredient_qty_label': 'ปริมาณต่อ 1 ที่',
+  'menu_form_ingredient_qty_label_kg': 'ปริมาณต่อ 1 กก. ที่ขาย',
 
   // Option group dialog
   'menu_option_required_badge': 'ต้องเลือก',
@@ -165,8 +167,10 @@ const Map<String, String> menuTranslationsEn = {
   'menu_form_no_ingredients': 'No ingredients linked yet',
   'menu_form_no_more_ingredients': 'All ingredients are already linked',
   'menu_form_ingredient_qty_summary': '@qty @unit / order',
+  'menu_form_ingredient_qty_summary_kg': '@qty @unit per kg sold',
   'menu_form_ingredient_select_label': 'Ingredient',
   'menu_form_ingredient_qty_label': 'Quantity per order',
+  'menu_form_ingredient_qty_label_kg': 'Quantity per kg sold',
 
   // Option group dialog
   'menu_option_required_badge': 'Required',
@@ -267,8 +271,10 @@ const Map<String, String> menuTranslationsKo = {
   'menu_form_no_ingredients': '연결된 재료가 없습니다',
   'menu_form_no_more_ingredients': '모든 재료가 이미 연결되어 있습니다',
   'menu_form_ingredient_qty_summary': '1인분당 @qty @unit',
+  'menu_form_ingredient_qty_summary_kg': '판매 1kg당 @qty @unit',
   'menu_form_ingredient_select_label': '재료',
   'menu_form_ingredient_qty_label': '1인분당 수량',
+  'menu_form_ingredient_qty_label_kg': '판매 1kg당 수량',
   'menu_option_required_badge': '필수',
   'menu_option_max_select_badge': '최대 @count개 선택',
   'menu_option_group_dialog_title': '옵션 그룹 추가',
