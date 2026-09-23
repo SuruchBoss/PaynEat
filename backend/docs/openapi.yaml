@@ -37,6 +37,8 @@ tags:
   - name: AiAssistant
   - name: PublicOrder
   - name: Receivables
+  - name: Scale
+    description: ตาชั่งต่อสาย อ่านน้ำหนักสด (ดู docs/tickets/22-live-scale-camera-scan.md)
 
 components:
   securitySchemes:
@@ -444,6 +446,79 @@ components:
         items:
           type: array
           items: { $ref: '#/components/schemas/DocumentLine' }
+        emails:
+          type: array
+          description: ประวัติการส่งทางอีเมล (มีเฉพาะตอนดึงแบบเอกสารเต็ม)
+          items: { $ref: '#/components/schemas/DocumentEmail' }
+    DocumentEmail:
+      type: object
+      properties:
+        to: { type: string, format: email }
+        subject: { type: string }
+        sentByName: { type: string, nullable: true }
+        sentAt: { type: string, format: date-time }
+    LateFeeLine:
+      type: object
+      properties:
+        paymentId: { type: integer }
+        orderCode: { type: string }
+        dueDate: { type: string, format: date }
+        principal: { type: number, description: เงินต้นที่ยังค้าง = min(ยอดบิลหลังลดหนี้, ยอดค้าง) }
+        periodFrom: { type: string, format: date }
+        periodTo: { type: string, format: date }
+        days: { type: integer }
+        amount: { type: number, description: round(principal × annualRate × days / 36500) }
+    LateFeeCharge:
+      type: object
+      description: ใบแจ้งดอกเบี้ยผิดนัด — ยอดบวกเข้ายอดค้างของแต่ละบิล ยกเลิก = ยกเว้นดอกเบี้ย (ticket 21)
+      properties:
+        id: { type: integer }
+        chargeNo: { type: string, example: LF69-000001 }
+        customerId: { type: integer }
+        customerName: { type: string }
+        total: { type: number }
+        annualRate: { type: number, example: 12 }
+        asOf: { type: string, format: date }
+        note: { type: string, nullable: true }
+        isVoided: { type: boolean }
+        voidReason: { type: string, nullable: true }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/LateFeeLine' }
+    CreditNote:
+      type: object
+      description: ใบลดหนี้ — ออกอัตโนมัติทุกครั้งที่คืนเงินบิลขายเชื่อ ยกเลิกไม่ได้ (ticket 21)
+      properties:
+        id: { type: integer }
+        noteNo: { type: string, example: CN69-000001 }
+        customerId: { type: integer }
+        paymentId: { type: integer }
+        refundId: { type: integer }
+        orderCode: { type: string }
+        originalAmount: { type: number, description: มูลค่าตามบิลเดิม }
+        previousCredited: { type: number, description: ลดหนี้ไปแล้วก่อนหน้า }
+        correctAmount: { type: number, description: มูลค่าที่ถูกต้องหลังลดครั้งนี้ }
+        amount: { type: number, description: ผลต่าง (รวม VAT) }
+        vatAmount: { type: number, description: VAT ของผลต่างตามสัดส่วน VAT ในบิลเดิม }
+        baseAmount: { type: number }
+        taxInvoiceNo: { type: string, nullable: true, description: เลขใบกำกับภาษีเดิมที่อ้างถึง }
+        reason: { type: string }
+    ScaleStatus:
+      type: object
+      properties:
+        enabled: { type: boolean, description: false = SCALE_DRIVER=off }
+        driver: { type: string, enum: [off, tcp, serial, simulator] }
+        connected: { type: boolean }
+        error: { type: string, nullable: true }
+        reading:
+          type: object
+          nullable: true
+          description: null เมื่อยังไม่มีค่า/ค่าเก่ากว่า 3 วินาที/สายหลุด
+          properties:
+            grams: { type: integer, example: 485 }
+            stable: { type: boolean, description: ใช้คิดเงินได้เฉพาะตอน true }
+            overload: { type: boolean }
+            at: { type: string, format: date-time }
 
 security:
   - bearerAuth: []
@@ -1563,6 +1638,17 @@ paths:
                   description: >-
                     จำนวนหลักของ PLU บนฉลาก — prefix + PLU ต้องเหลือหลักน้ำหนัก 4–6 หลัก ไม่งั้น 400
                     (ตรวจเทียบค่าที่บันทึกไว้ด้วยเมื่อส่งมาแค่ช่องเดียว)
+                lateFeeAnnualRatePercent:
+                  type: number
+                  minimum: 0
+                  maximum: 15
+                  example: 12
+                  description: ดอกเบี้ยผิดนัด % ต่อปี (0 = ไม่คิด ค่าเริ่มต้น) เปลี่ยนแล้วบันทึก audit log (ticket 21)
+                lateFeeGraceDays:
+                  type: integer
+                  minimum: 0
+                  maximum: 365
+                  description: วันผ่อนผันหลังครบกำหนดก่อนเริ่มคิดดอกเบี้ย
       responses:
         '200': { description: สำเร็จ }
 
@@ -1766,6 +1852,9 @@ paths:
                 creditTermDays: { type: integer, minimum: 0, maximum: 365 }
                 taxId: { type: string, description: ตัวเลข 13 หลัก หรือ '' เพื่อล้าง }
                 address: { type: string, maxLength: 300 }
+                email:
+                  type: string
+                  description: อีเมลรับเอกสารลูกหนี้ (ticket 23) — ไม่ส่งมา = คงค่าเดิม, '' = ล้าง
       responses:
         '200': { description: สำเร็จ }
         '403': { description: ไม่ใช่ผู้จัดการขึ้นไป }
@@ -1907,6 +1996,169 @@ paths:
                 reason: { type: string, maxLength: 300 }
       responses:
         '200': { description: สำเร็จ }
+  /receivables/customers/{id}/late-fee-preview:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: ดูดอกเบี้ยผิดนัดที่จะคิด ณ วันนี้ (ยังไม่บันทึก) — items ว่างถ้ายังไม่ตั้งอัตราหรือไม่มีบิลที่ต้องคิด
+      responses:
+        '200': { description: 'สำเร็จ — { annualRate, graceDays, asOf, items: LateFeeLine[], total }' }
+  /receivables/late-fees:
+    post:
+      tags: [Receivables]
+      summary: >-
+        ออกใบแจ้งดอกเบี้ยผิดนัด (admin/manager) — ยังไม่ตั้งอัตรา/ไม่มีบิลที่ต้องคิดเพิ่ม 409
+        คิดถึงวันนี้แล้วกดซ้ำวันเดิมได้ 409 (ไม่ได้ดอกเบี้ยซ้ำ)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId]
+              properties:
+                customerId: { type: integer }
+                note: { type: string, maxLength: 300 }
+      responses:
+        '201':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/LateFeeCharge' }
+        '403': { description: ไม่ใช่ผู้จัดการขึ้นไป }
+        '409': { description: ยังไม่ตั้งอัตรา / ไม่มีบิลที่ต้องคิด }
+  /receivables/late-fees/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: ใบแจ้งดอกเบี้ยแบบเอกสารเต็ม (รวมข้อมูลร้าน/ลูกค้า/ประวัติอีเมล)
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบใบแจ้งดอกเบี้ยนี้ }
+  /receivables/late-fees/{id}/void:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    post:
+      tags: [Receivables]
+      summary: >-
+        ยกเลิกใบแจ้งดอกเบี้ย = ยกเว้นดอกเบี้ย (admin/manager) — ดอกเบี้ยในใบถูกชำระแล้ว 409
+        (ยกเลิกใบเสร็จรับชำระก่อน)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: สำเร็จ }
+  /receivables/credit-notes:
+    post:
+      tags: [Receivables]
+      summary: >-
+        ลดหนี้บิลขายเชื่อ + ออกใบลดหนี้ (admin/manager) — ทางลัดของ POST /payments/{id}/refund ที่ตอบกลับ
+        เป็นใบลดหนี้ (คืนเงินบิลขายเชื่อผ่าน endpoint เดิมก็ได้ใบลดหนี้เหมือนกัน) บิลที่ไม่ใช่ขายเชื่อ 400
+        เกินยอดค้าง 400
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [paymentId, amount, reason]
+              properties:
+                paymentId: { type: integer }
+                amount: { type: number, example: 107 }
+                reason: { type: string, maxLength: 300 }
+      responses:
+        '201':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/CreditNote' }
+  /receivables/credit-notes/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: ใบลดหนี้แบบเอกสารเต็ม
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบใบลดหนี้นี้ }
+  /receivables/{kind}/{id}/pdf:
+    parameters:
+      - in: path
+        name: kind
+        required: true
+        schema: { type: string, enum: [billing-notes, receipts, credit-notes, late-fees] }
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: >-
+        เอกสารลูกหนี้เป็น PDF A4 ภาษาไทย (admin/manager/cashier — ticket 23) เอกสารที่ยกเลิกแล้วยังโหลดได้
+        (มีตรา "ยกเลิก")
+      responses:
+        '200':
+          description: ไฟล์ PDF (Cache-Control no-store)
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '404': { description: ไม่พบเอกสาร }
+  /receivables/{kind}/{id}/email:
+    parameters:
+      - in: path
+        name: kind
+        required: true
+        schema: { type: string, enum: [billing-notes, receipts, credit-notes, late-fees] }
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    post:
+      tags: [Receivables]
+      summary: >-
+        ส่งเอกสารเป็น PDF แนบอีเมล (admin/manager/cashier) — ไม่ระบุ to = อีเมลของลูกค้าในบัญชีเครดิต
+        บันทึกประวัติ + audit log receivable.document_email
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                to: { type: string, format: email }
+                message: { type: string, maxLength: 1000 }
+      responses:
+        '200': { description: 'สำเร็จ — ตอบกลับเอกสารเต็มพร้อม emails ล่าสุด' }
+        '400': { description: ลูกค้าไม่มีอีเมลและไม่ได้ระบุผู้รับ }
+        '409': { description: เอกสารถูกยกเลิกแล้ว }
+        '502': { description: SMTP ปฏิเสธ/ต่อไม่ติด (MAIL_SEND_FAILED) — ไม่บันทึกประวัติ }
+        '503': { description: ยังไม่ได้ตั้ง SMTP_HOST (MAIL_NOT_CONFIGURED) }
+  /scale:
+    get:
+      tags: [Scale]
+      summary: >-
+        น้ำหนักล่าสุดจากตาชั่งที่ต่อกับเซิร์ฟเวอร์ (admin/manager/cashier/waiter) — ค่าสดต่อจากนี้ส่งทาง
+        socket.io event scale:reading (รูปเดียวกัน) ตั้งตาชั่งผ่าน env SCALE_DRIVER/SCALE_TCP_*/SCALE_SERIAL_*
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/ScaleStatus' }
+        '403': { description: ครัวไม่มีสิทธิ์ }
   /ai/ask:
     post:
       tags: [AiAssistant]

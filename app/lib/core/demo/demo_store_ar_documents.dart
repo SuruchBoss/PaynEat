@@ -147,6 +147,7 @@ extension DemoStoreArDocuments on DemoStore {
       ...receipt,
       'store': _documentStore(),
       'customer': findCustomer(receipt['customerId'] as int),
+      'emails': _emailsOf('receipt', id),
     };
   }
 
@@ -324,6 +325,7 @@ extension DemoStoreArDocuments on DemoStore {
       ...note,
       'store': _documentStore(),
       'customer': findCustomer(note['customerId'] as int),
+      'emails': _emailsOf('billing_note', id),
     };
   }
 

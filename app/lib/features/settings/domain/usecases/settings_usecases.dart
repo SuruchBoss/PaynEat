@@ -26,6 +26,8 @@ class UpdateSettingsParams {
     this.promptPayId,
     this.scaleLabelPrefix,
     this.scaleLabelPluDigits,
+    this.lateFeeAnnualRatePercent,
+    this.lateFeeGraceDays,
   });
 
   final String? storeName;
@@ -40,6 +42,8 @@ class UpdateSettingsParams {
   final String? promptPayId;
   final String? scaleLabelPrefix;
   final int? scaleLabelPluDigits;
+  final double? lateFeeAnnualRatePercent;
+  final int? lateFeeGraceDays;
 }
 
 class UpdateSettingsUseCase
@@ -63,5 +67,7 @@ class UpdateSettingsUseCase
         promptPayId: params.promptPayId,
         scaleLabelPrefix: params.scaleLabelPrefix,
         scaleLabelPluDigits: params.scaleLabelPluDigits,
+        lateFeeAnnualRatePercent: params.lateFeeAnnualRatePercent,
+        lateFeeGraceDays: params.lateFeeGraceDays,
       );
 }

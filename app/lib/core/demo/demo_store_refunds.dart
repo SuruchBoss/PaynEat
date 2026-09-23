@@ -60,7 +60,8 @@ extension DemoStoreRefunds on DemoStore {
       );
     }
 
-    final refund = {
+    final previousCredited = _refundedTotalByPayment(paymentId);
+    final refund = <String, dynamic>{
       'id': _nextId(),
       'paymentId': paymentId,
       'orderId': payment['orderId'],
@@ -70,8 +71,20 @@ extension DemoStoreRefunds on DemoStore {
       'refundedBy': refundedById,
       'refundedByName': _findUser(refundedById)['name'],
       'createdAt': _now(),
+      'creditNoteId': null,
+      'creditNoteNo': null,
     };
     refunds.add(refund);
+
+    // ลดหนี้บิลขายเชื่อต้องมีเอกสารให้ลูกค้าเสมอ (ใบลดหนี้ DECISIONS #56)
+    if (payment['method'] == PaymentMethod.credit) {
+      _issueCreditNote(
+        payment: payment,
+        refund: refund,
+        previousCredited: previousCredited,
+        actorId: refundedById,
+      );
+    }
 
     // mirror ของ payment.service.js#refund — ดู docs/tickets/08-audit-log.md
     final order = findOrder(payment['orderId'] as int);

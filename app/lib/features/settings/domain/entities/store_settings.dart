@@ -14,6 +14,9 @@ class StoreSettings {
     this.promptPayId,
     this.scaleLabelPrefix = '20',
     this.scaleLabelPluDigits = 5,
+    this.lateFeeAnnualRatePercent = 0,
+    this.lateFeeGraceDays = 0,
+    this.emailEnabled = false,
   });
 
   final String storeName;
@@ -42,6 +45,15 @@ class StoreSettings {
   /// ของตาชั่งพิมพ์ฉลากส่วนใหญ่
   final String scaleLabelPrefix;
   final int scaleLabelPluDigits;
+
+  /// ดอกเบี้ยผิดนัดของลูกหนี้ขายเชื่อ (ดู docs/tickets/21-late-fees-credit-notes.md) — % ต่อปี
+  /// 0 = ไม่คิด (เพดาน 15%) และจำนวนวันผ่อนผันหลังครบกำหนดก่อนเริ่มคิด
+  final double lateFeeAnnualRatePercent;
+  final int lateFeeGraceDays;
+
+  /// เซิร์ฟเวอร์ตั้งค่า SMTP ไว้แล้ว ส่งเอกสารทางอีเมลได้ (อ่านอย่างเดียว — ตั้งที่ .env ของเซิร์ฟเวอร์)
+  /// ดู docs/tickets/23-document-pdf-email.md
+  final bool emailEnabled;
 
   double get vatPercent => vatRate * 100;
   double get serviceChargePercent => serviceChargeRate * 100;

@@ -25,6 +25,10 @@ const updateSettingsSchema = z
       .regex(/^2\d{0,2}$/, 'prefix ของฉลากตาชั่งต้องขึ้นต้นด้วย 2 และยาว 1–3 หลัก')
       .optional(),
     scaleLabelPluDigits: z.number().int().min(4).max(6).optional(),
+    // ดอกเบี้ยผิดนัดชำระ (docs/tickets/21-late-fees-credit-notes.md) — เพดาน 15% ต่อปีเท่ากับเพดาน
+    // ดอกเบี้ยทั่วไปใน ป.พ.พ. ม.654 ร้านใส่เกินนี้ไม่ได้แม้จะตกลงกับลูกค้าไว้ 0 = ไม่คิด
+    lateFeeAnnualRatePercent: z.number().min(0).max(15).optional(),
+    lateFeeGraceDays: z.number().int().min(0).max(365).optional(),
   })
   .refine(
     (data) => {

@@ -1,5 +1,6 @@
 import { env } from '../../config/env.js';
 import { ApiError } from '../../core/ApiError.js';
+import { mailer } from '../../core/mailer.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { settingsRepository } from './settings.repository.js';
@@ -10,6 +11,8 @@ const NUMBER_KEYS = new Set([
   'points_earn_rate_baht',
   'points_redeem_value_baht',
   'scale_label_plu_digits',
+  'late_fee_annual_rate',
+  'late_fee_grace_days',
 ]);
 const BOOLEAN_KEYS = new Set(['vat_included']);
 
@@ -41,6 +44,12 @@ export const settingsService = {
       // น้ำหนัก 5 หลัก (กรัม) เป็นรูปแบบที่ตาชั่งพิมพ์ฉลากส่วนใหญ่ตั้งมาจากโรงงาน แอปใช้แยกฉลากเอง
       scaleLabelPrefix: raw.scale_label_prefix ?? '20',
       scaleLabelPluDigits: Number(raw.scale_label_plu_digits ?? 5),
+      // ดอกเบี้ยผิดนัดชำระของลูกหนี้ขายเชื่อ (ดู docs/tickets/21-late-fees-credit-notes.md) — ค่าเริ่มต้น
+      // 0 = ไม่คิด ร้านต้องตกลงกับลูกค้าไว้ก่อน (เช่น ระบุในใบวางบิล/สัญญา) จึงค่อยเปิด
+      lateFeeAnnualRatePercent: Number(raw.late_fee_annual_rate ?? 0),
+      lateFeeGraceDays: Number(raw.late_fee_grace_days ?? 0),
+      // อ่านอย่างเดียว — มาจาก env (SMTP_HOST) ไม่ใช่ตาราง settings แอปใช้ซ่อน/เปิดปุ่ม "ส่งอีเมล"
+      emailEnabled: mailer.isConfigured(),
     };
   },
 
@@ -59,9 +68,11 @@ export const settingsService = {
       pointsRedeemValueBaht: 'points_redeem_value_baht',
       scaleLabelPrefix: 'scale_label_prefix',
       scaleLabelPluDigits: 'scale_label_plu_digits',
+      lateFeeAnnualRatePercent: 'late_fee_annual_rate',
+      lateFeeGraceDays: 'late_fee_grace_days',
     };
-    // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) ที่ต้อง log — ดู
-    // docs/tickets/08-audit-log.md
+    // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) และอัตราดอกเบี้ยผิดนัด (กระทบหนี้ลูกค้า)
+    // ที่ต้อง log — ดู docs/tickets/08-audit-log.md
     const before = this.get();
 
     // ฉลากตาชั่งยาว 13 หลักเสมอ: prefix + PLU + น้ำหนัก + check digit — schema ตรวจได้เฉพาะตอนส่งมา
@@ -91,6 +102,14 @@ export const settingsService = {
       ) {
         rateChanges.push(`ค่าบริการ ${before.serviceChargeRate}% → ${payload.serviceChargeRate}%`);
       }
+      if (
+        payload.lateFeeAnnualRatePercent !== undefined &&
+        payload.lateFeeAnnualRatePercent !== before.lateFeeAnnualRatePercent
+      ) {
+        rateChanges.push(
+          `ดอกเบี้ยผิดนัด ${before.lateFeeAnnualRatePercent}% → ${payload.lateFeeAnnualRatePercent}% ต่อปี`,
+        );
+      }
       if (rateChanges.length && actingUser) {
         auditLogService.log({
           actorUser: actingUser,
@@ -103,6 +122,8 @@ export const settingsService = {
             newVatRate: payload.vatRate,
             previousServiceChargeRate: before.serviceChargeRate,
             newServiceChargeRate: payload.serviceChargeRate,
+            previousLateFeeAnnualRatePercent: before.lateFeeAnnualRatePercent,
+            newLateFeeAnnualRatePercent: payload.lateFeeAnnualRatePercent,
           },
         });
       }

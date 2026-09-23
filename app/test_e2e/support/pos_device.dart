@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/network/api_client.dart';
+import 'package:payneat_pos/core/network/socket_client.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
 import 'package:payneat_pos/features/audit_log/data/datasources/audit_log_remote_data_source.dart';
@@ -24,6 +25,8 @@ import 'package:payneat_pos/features/receivable/data/datasources/receivable_remo
 import 'package:payneat_pos/features/receivable/data/repositories/receivable_repository_impl.dart';
 import 'package:payneat_pos/features/report/data/datasources/report_remote_data_source.dart';
 import 'package:payneat_pos/features/report/data/repositories/report_repository_impl.dart';
+import 'package:payneat_pos/features/scale/data/datasources/scale_remote_data_source.dart';
+import 'package:payneat_pos/features/scale/data/repositories/scale_repository_impl.dart';
 import 'package:payneat_pos/features/self_order/data/datasources/self_order_remote_data_source.dart';
 import 'package:payneat_pos/features/self_order/data/repositories/self_order_repository_impl.dart';
 import 'package:payneat_pos/features/settings/data/datasources/settings_remote_data_source.dart';
@@ -88,6 +91,7 @@ class PosDevice {
     receivables = ReceivableRepositoryImpl(
       ReceivableRemoteDataSourceImpl(client),
     );
+    scale = ScaleRepositoryImpl(ScaleRemoteDataSourceImpl(client, socket));
   }
 
   final StorageService storage = StorageService.memory();
@@ -111,6 +115,22 @@ class PosDevice {
   late final StaffRepositoryImpl staff;
   late final CustomerRepositoryImpl customers;
   late final ReceivableRepositoryImpl receivables;
+  late final ScaleRepositoryImpl scale;
+
+  /// socket.io ของเครื่องนี้ — ต่อเองด้วย [connectRealtime] หลังล็อกอิน (แอปจริงต่อใน SessionService)
+  final SocketClient socket = SocketClient();
+
+  /// ต่อ realtime ด้วย token ของผู้ใช้ที่ล็อกอินอยู่ แล้วรอจนต่อติดจริง
+  Future<void> connectRealtime(String url) async {
+    socket.connect(storage.token!, url: url);
+    final started = Stopwatch()..start();
+    while (!socket.isConnected) {
+      if (started.elapsed > const Duration(seconds: 10)) {
+        throw StateError('ต่อ socket.io ไม่ติดภายใน 10 วินาที');
+      }
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+    }
+  }
 
   /// ล็อกอินผ่าน repository จริง — ถ้าผู้ใช้มีหลายสาขา backend จะตอบ pendingToken มาให้เลือกสาขา
   /// ก่อน (ticket 11) จึงเลือกสาขาตาม [branchCode] ต่อให้ในขั้นเดียว เหมือนผู้ใช้กดเลือกบนหน้าจอ

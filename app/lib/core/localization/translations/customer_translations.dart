@@ -52,6 +52,10 @@ const Map<String, String> customerTranslationsTh = {
   'customer_credit_tax_id_label': 'เลขประจำตัวผู้เสียภาษี (ถ้ามี)',
   'customer_credit_tax_id_invalid': 'ต้องเป็นตัวเลข 13 หลัก',
   'customer_credit_address_label': 'ที่อยู่สำหรับออกใบวางบิล/ใบเสร็จ',
+  'customer_credit_email_label': 'อีเมลรับใบวางบิล',
+  'customer_credit_email_help':
+      'ใช้เป็นผู้รับเริ่มต้นตอนส่งเอกสารเป็น PDF ทางอีเมล',
+  'customer_credit_email_invalid': 'รูปแบบอีเมลไม่ถูกต้อง',
 };
 
 const Map<String, String> customerTranslationsEn = {
@@ -102,6 +106,10 @@ const Map<String, String> customerTranslationsEn = {
   'customer_credit_tax_id_label': 'Tax ID (optional)',
   'customer_credit_tax_id_invalid': 'Must be 13 digits',
   'customer_credit_address_label': 'Billing address',
+  'customer_credit_email_label': 'Billing e-mail',
+  'customer_credit_email_help':
+      'Default recipient when e-mailing documents as PDF',
+  'customer_credit_email_invalid': 'Invalid e-mail address',
 };
 
 const Map<String, String> customerTranslationsKo = {
@@ -147,4 +155,7 @@ const Map<String, String> customerTranslationsKo = {
   'customer_credit_tax_id_label': '납세자 번호 (선택)',
   'customer_credit_tax_id_invalid': '13자리 숫자여야 합니다',
   'customer_credit_address_label': '청구서 주소',
+  'customer_credit_email_label': '청구서 수신 이메일',
+  'customer_credit_email_help': '문서를 PDF로 이메일 발송할 때 기본 수신자',
+  'customer_credit_email_invalid': '이메일 형식이 올바르지 않습니다',
 };

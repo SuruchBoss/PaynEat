@@ -80,7 +80,12 @@ class ApiClient {
   /// รับเป็นไบต์แล้วถอดเองแทน [ResponseType.plain] เพราะตัวถอด UTF-8 ของ Dart ตัด BOM หัวข้อความ
   /// ทิ้งเสมอ — backend ใส่ BOM ให้ทุกไฟล์ CSV เพื่อให้ Excel อ่านภาษาไทยถูก ถ้าหายระหว่างทาง ไฟล์ที่
   /// ร้านดาวน์โหลดไปจะเปิดใน Excel เป็นตัวอักษรเพี้ยน (ดู docs/DECISIONS.md #45)
-  Future<String> getText(String path, {Map<String, dynamic>? query}) async {
+  Future<String> getText(String path, {Map<String, dynamic>? query}) async =>
+      _decodeKeepingBom(await getBytes(path, query: query));
+
+  /// ดึงไฟล์ดิบเป็นไบต์ (ไม่ใช่ envelope `{success,data}`) — CSV export และ PDF เอกสารลูกหนี้
+  /// (ดู docs/tickets/23-document-pdf-email.md)
+  Future<List<int>> getBytes(String path, {Map<String, dynamic>? query}) async {
     late final Response<List<int>> response;
     try {
       response = await _dio.get<List<int>>(
@@ -111,7 +116,7 @@ class ApiClient {
         statusCode: statusCode,
       );
     }
-    return _decodeKeepingBom(response.data ?? const []);
+    return response.data ?? const [];
   }
 
   /// ถอด UTF-8 แล้วคืน BOM กลับไปถ้าไบต์ต้นฉบับมี — ได้ข้อความตรงกับที่เซิร์ฟเวอร์ส่งมาทุกตัวอักษร

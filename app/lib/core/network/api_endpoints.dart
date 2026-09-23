@@ -122,6 +122,24 @@ class ApiEndpoints {
   static String billingNoteVoid(int id) =>
       '/receivables/billing-notes/$id/void';
 
+  // ดอกเบี้ยผิดนัด / ใบลดหนี้ (ดู docs/tickets/21-late-fees-credit-notes.md)
+  static String lateFeePreview(int customerId) =>
+      '/receivables/customers/$customerId/late-fee-preview';
+  static const String lateFees = '/receivables/late-fees';
+  static String lateFee(int id) => '/receivables/late-fees/$id';
+  static String lateFeeVoid(int id) => '/receivables/late-fees/$id/void';
+  static const String creditNotes = '/receivables/credit-notes';
+  static String creditNote(int id) => '/receivables/credit-notes/$id';
+
+  // PDF + อีเมลเอกสารลูกหนี้ (ดู docs/tickets/23-document-pdf-email.md) — kindPath เช่น billing-notes
+  static String receivableDocumentPdf(String kindPath, int id) =>
+      '/receivables/$kindPath/$id/pdf';
+  static String receivableDocumentEmail(String kindPath, int id) =>
+      '/receivables/$kindPath/$id/email';
+
+  // ตาชั่งต่อสาย (ดู docs/tickets/22-live-scale-camera-scan.md)
+  static const String scale = '/scale';
+
   // AI assistant
   static const String aiAssistantAsk = '/ai/ask';
 

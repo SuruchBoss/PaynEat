@@ -18,6 +18,8 @@ COPY --from=build /app/node_modules ./node_modules
 COPY package*.json ./
 COPY src ./src
 COPY docs ./docs
+# ฟอนต์ไทยสำหรับ PDF เอกสารลูกหนี้ (ดู src/core/documentPdf.js)
+COPY assets ./assets
 
 # เก็บไฟล์ฐานข้อมูลไว้ใน volume เพื่อไม่ให้ข้อมูลหายเมื่อสร้าง container ใหม่
 RUN mkdir -p /app/data && chown -R node:node /app

@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-794%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-837%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 794 automated tests.
+control and 837 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -49,11 +49,12 @@ control and 794 automated tests.
 - **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
 - **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
   always with who/when/why, and nothing an admin can edit or delete from any UI
-- **Works for a butcher counter and wholesale too** — sell by weight (price per kg), scan scale labels/
-  barcodes, sell on credit to regular trade customers within a limit, issue billing notes, collect
-  payments — and cash collected against debt still reconciles with the drawer at shift close
-  (`docs/tickets/18-sell-by-weight.md`–`20-b2b-credit.md`)
-- **794 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **Works for a butcher counter and wholesale too** — sell by weight (price per kg), read a cabled scale
+  live, scan scale labels/barcodes with a scanner or the phone camera, sell on credit to regular trade
+  customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
+  credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
+  the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
+- **837 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -427,6 +428,33 @@ The login page has one-tap buttons for each account — no need to type anything
     19): the cash the customer paid against their debt is counted in the drawer's expected total
     automatically, and the Z-report lists it under its own **"Debt collected"** heading, separate from
     sales (see `docs/tickets/20-b2b-credit.md`, `docs/DECISIONS.md` #50)
+27. **A cabled scale read live + scanning with the phone camera** → repeat step 25 and tap **"Beef
+    Ribeye"** → above the weight field there's a **"Scale (live)"** panel whose number follows the scale —
+    while it reads **"Weighing… wait until it settles"** the **"Use this weight"** button is disabled; once
+    it settles it shows **"Stable = ฿582.00"** and one tap puts it in the cart with nothing typed — Demo
+    Mode ships a **simulated scale** that cycles place → wobble → settle (0.485 / 1.250 / 0.730 kg) so you
+    can try it right away; a real shop sets `SCALE_DRIVER=tcp` or `serial` in `backend/.env` (try it with
+    no scale using `SCALE_DRIVER=simulator`) and every tablet/phone sees the same weight in real time —
+    then on a phone or the web with a camera, tap the **camera icon** at the end of the **"Scan barcode /
+    scale label"** field → frame the sauce bottle's barcode or a scale label (there's a torch button) →
+    it behaves exactly like a scanner (see `docs/tickets/22-live-scale-camera-scan.md`,
+    `docs/DECISIONS.md` #54)
+28. **Late-payment interest → credit note → e-mail the PDF** → log in as `manager` → **Receivables** →
+    open **"บริษัท โซลบาร์บีคิว จำกัด"** (Demo Mode seeds a credit sale of meat from 45 days ago, now 15 days
+    overdue, and the shop has late interest set to 12% a year with 7 grace days under **Settings → Credit
+    customers**) → tap **"Charge late interest"** → you see, per bill, how many days and on what principal
+    before you tap **"Issue interest notice"** → document `LF69-000001`, and that bill's balance goes up at
+    once → tap **"Issue credit note"**, pick the bill, enter 107 with the reason "fat trim over spec" → credit
+    note `CN69-000001` showing the **original value / corrected value / difference** with the VAT on the
+    difference split out, as the Revenue Department requires, and the balance drops by 107 → open any
+    billing note or credit note and tap **"Send e-mail"**: the customer's address is pre-filled (set under
+    the customer's **Edit credit** → **Billing e-mail**), add a message and send → the send history appears
+    under the document right away — Demo Mode simulates the send; the web app against a real backend
+    also offers **"Download PDF"**, an A4 Thai document with the amount in words (บาทถ้วน) and a
+    Buddhist-era date, and sends real e-mail once `SMTP_HOST` is set in `backend/.env` (against a real
+    backend: set the interest rate in Settings first, and a bill has to be past its due date plus the
+    grace days before there's any interest to charge) (see `docs/tickets/21-late-fees-credit-notes.md`,
+    `23-document-pdf-email.md`, `docs/DECISIONS.md` #55–#57)
 
 **Want to try the hidden business rules?**
 
@@ -494,15 +522,31 @@ The login page has one-tap buttons for each account — no need to type anything
 - After issuing a billing note, look at **Issue billing note** again → it's disabled, because every open
   bill is already on a note; void the old note first to bill again — and open any table's QR self-order
   link (step 23): the weighed-meat items don't appear at all, since customers can't weigh for themselves
+- In step 27, try **"Use this weight"** while the scale still says "Weighing…" or "Scale overloaded" →
+  it's disabled — only a weight the scale itself reports as stable is accepted, a reading with nothing
+  new for over 3 seconds is dropped (the panel goes back to "Waiting for the scale…"), and a pulled cable
+  shows **"Scale not connected"** at once rather than leaving an old number to tap — typing the weight by
+  hand always still works (see `docs/DECISIONS.md` #54)
+- In step 28, tap **"Charge late interest"** again the same day → "No bills need interest today" (the next
+  run picks up from the following day, never double-charging a period) — collect that bill in full, then
+  try voiding the interest notice → rejected; void the payment receipt first — and as `admin`, try setting
+  late interest above 15% a year in Settings → it won't save (see `docs/DECISIONS.md` #55)
+- Log in as `cashier` and open the same receivables account → there's no **"Charge late interest"** /
+  **"Issue credit note"** (changing what a customer owes is manager-and-up; a direct API call gets 403),
+  but e-mailing documents still works — void a billing note and reopen it → the **"Send e-mail"** button
+  is gone, because a voided document should never reach the customer (a direct call gets 409); and clear
+  the customer's e-mail under "Edit credit" → the recipient field starts empty and Send stays disabled
+  until you type a valid address (a direct call with no recipient gets 400) (see `docs/DECISIONS.md`
+  #56–#57)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 325 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 427 cases — domain / controller / widget
-cd app && flutter test test_e2e   # 42 cases — the real app talking to the real backend (run npm ci in backend first)
+cd backend && npm test      # 344 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 445 cases — domain / controller / widget
+cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
 ---
@@ -544,6 +588,14 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   USB/Bluetooth scanner: a product barcode adds one item, an EAN-13 scale label adds the item with its
   weight already filled in, and a misread label (bad check digit) warns instead of guessing (see
   `docs/tickets/19-barcode-scale.md`)
+- **A cabled scale, read live** — shops that connect a scale to the store server (USB/RS-232 cable or LAN)
+  get a live-weight panel in the weighing dialog with its state — weighing/stable/overloaded/not
+  connected; **"Use this weight"** works only once it's stable, and every device in the shop sees the
+  same number in real time. Shops without one keep typing the weight as before
+  (see `docs/tickets/22-live-scale-camera-scan.md`)
+- **Scan with the phone camera** — a camera button at the end of the scan field (Android/iOS/web) reads
+  barcodes and scale labels into the same path as a scanner, with a torch; it says clearly when camera
+  permission is denied, and devices without a camera don't show the button
 - **Live bill preview** — see Service Charge and VAT calculated the instant you order, no need to wait on
   the server
 - **Adding a second round** — add items to an already-open order, and mark kitchen-finished items as
@@ -615,6 +667,21 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   `RC69-000001` — cash collected against debt goes into the shift's drawer and counts toward the expected
   total at close, and the Z-report shows it under its own "Debt collected" heading (see
   `docs/DECISIONS.md` #50)
+- **Late-payment interest** (manager and up) — "Charge late interest" first shows, per bill, how many days
+  and on what principal, using the shop's annual rate and grace days (simple interest that picks up where
+  the last run stopped, never overlapping), then issues an interest notice `LF69-000001` added to each
+  bill's balance; it can be voided (= waiving the interest) only while that interest is unpaid (see
+  `docs/tickets/21-late-fees-credit-notes.md`, `docs/DECISIONS.md` #55)
+- **Separate credit notes** (manager and up) — credit a credit-sale bill (damaged/returned goods, wrong
+  price) and get credit note `CN69-000001` with the original value/corrected value/difference, the VAT on
+  the difference, the original tax invoice number and the reason — also issued automatically inside the
+  same transaction whenever a credit-sale bill is refunded; the balance drops immediately (see
+  `docs/DECISIONS.md` #56)
+- **PDF + e-mail for receivables documents** — billing notes/payment receipts/credit notes/interest notices
+  download as Thai A4 PDFs (amount in words, Buddhist-era dates) on the web, and can be e-mailed with the
+  PDF attached from any platform; the recipient is pre-filled from the customer's account, the send
+  history (to whom/when/by whom) shows under the document, and voided documents can't be sent (see
+  `docs/tickets/23-document-pdf-email.md`, `docs/DECISIONS.md` #57)
 - **Real PromptPay QR** — picking "QR" shows a real, scannable QR code built to the EMV QR standard,
   bound to the amount automatically (set the store's PromptPay ID in Settings first) — no payment
   gateway/callback yet, so the cashier still checks the slip/banking app before confirming, same as
@@ -666,8 +733,10 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   branch (for issuing tax invoices — optional if the store isn't VAT-registered), the loyalty
   points exchange rate (baht spent per point earned / point value when redeemed), and the **PromptPay
   ID** (phone number/national ID/tax ID — required before the "QR" payment method can show a real QR,
-  see `docs/DECISIONS.md` #26), and the **scale label format** (prefix + number of PLU digits, to match
-  the store's own scale — see `docs/DECISIONS.md` #49)
+  see `docs/DECISIONS.md` #26), the **scale label format** (prefix + number of PLU digits, to match
+  the store's own scale — see `docs/DECISIONS.md` #49), and a **Credit customers** section (late-payment
+  interest 0–15% a year + grace days after the due date — changes are audit-logged, and it shows whether
+  the server has e-mail configured; see `docs/DECISIONS.md` #55, #57)
 - **Receipt printer settings** — this device's IP/port/paper size, with a test-print button
 - **Conditional promotions/discounts** — create/edit/disable 3 promotion types (percent off, amount off,
   buy-one-get-one), with conditions for day/time window, eligible categories/menu items, minimum spend, and
@@ -695,8 +764,8 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   discount code (see `docs/DECISIONS.md` #28)
 - **Customers/Loyalty** (`admin` and `manager`) — search the full customer list, tap into any customer to
   see their purchase history and current points balance (see `docs/DECISIONS.md` #22), plus a **Credit
-  account** card: set the credit limit/term/tax ID/billing address (manager and up, audit-logged), see
-  what's owed and the remaining credit, and jump to the receivables statement
+  account** card: set the credit limit/term/tax ID/billing address/**billing e-mail** (manager and up,
+  audit-logged), see what's owed and the remaining credit, and jump to the receivables statement
 - **AI assistant for store data** (`admin` and `manager`) — ask a question in Thai or English about
   sales, best sellers, orders, customers, or (admin only) the audit log; the assistant answers only
   through tool-calling against the system's own existing endpoints (never touches the database directly,
@@ -729,9 +798,9 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   categories, table zones and add-on options — so you never see one language's UI wrapped around
   another language's data. A real restaurant's own entries always display exactly as typed, and
   names already printed on kitchen tickets and past receipts do not move, since those were
-  captured when the order was placed. All 963 keys are translated for every language, and the
+  captured when the order was placed. All 1,056 keys are translated for every language, and the
   Korean font ships inside the app as a subset of only the characters actually used (4 weights,
-  ~340 KB), so it never depends on the device's own fonts. A test parses the font file's cmap table
+  ~350 KB), so it never depends on the device's own fonts. A test parses the font file's cmap table
   to stop any translation from using a character outside that subset, and the AI assistant answers
   in the same language as the question for all three (see `docs/DECISIONS.md` #39)
 - **Multi-branch support** — tables/menu items/orders/ingredients and every report are correctly
@@ -740,6 +809,17 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
   to an **"all branches"** mode to see combined reports across every branch. Promotions, customers/
   loyalty, store settings, and shifts remain chain-wide by design (real backend only, option A/B —
   Demo Mode has a single branch; see `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
+- **A scale bridge on the store server** — set `SCALE_DRIVER=tcp|serial|simulator` in `backend/.env`; it
+  reads A&D/CAS, Mettler Toledo MT-SICS and plain number+unit (kg/g/lb/oz) formats, reconnects on its
+  own when the cable drops, supports poll-style scales, and broadcasts the weight to every device over
+  socket.io `scale:reading` (only on change + a 1-second heartbeat); readings older than 3 seconds are
+  never forwarded. The `serialport` package is optional — with no port/package the server says why and
+  keeps running (see `docs/DECISIONS.md` #54)
+- **Thai PDF documents + e-mail over SMTP** — PDFs are built on the server with pdfkit and the Noto Sans
+  Thai font bundled with the backend, wrapping Thai lines at word boundaries, with BAHTTEXT-style amounts
+  in words and Buddhist-era dates in Bangkok time; e-mail goes through nodemailer (set
+  `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`MAIL_FROM` — unset = e-mail off, the PDF button still works), and
+  every send is recorded in the history + audit log (see `docs/DECISIONS.md` #57)
 
 ---
 
@@ -755,6 +835,7 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
 | **socket_io_client** | Receives realtime events from the backend |
 | **get_storage** | Stores the token/profile on-device (falls back to in-memory) |
 | **intl** | Currency and date formatting |
+| **mobile_scanner** | Scanning barcodes/scale labels with the phone/web camera |
 
 ### Backend — `backend/`
 
@@ -766,6 +847,8 @@ cd app && flutter test test_e2e   # 42 cases — the real app talking to the rea
 | **JWT + bcrypt** | Authentication and password hashing |
 | **Zod** | Request validation on every endpoint |
 | **OpenAPI 3 + Swagger UI** | Interactive API documentation |
+| **pdfkit + nodemailer** | Building Thai receivables PDFs and sending them over SMTP |
+| **serialport** (optional) | Reading weight from a USB/RS-232 cabled scale |
 | **node:test + supertest** | Tests |
 
 ---
@@ -878,7 +961,7 @@ PaynEat/
 │   │   └── features/                 # Split by feature, each with all 3 layers
 │   │       ├── auth/  menu/  table/  order/
 │   │       ├── kitchen/  payment/  report/
-│   │       └── staff/  settings/  home/  customer/  receivable/ …
+│   │       └── staff/  settings/  home/  customer/  receivable/  scale/ …
 │   │           ├── domain/           # entities · repositories · usecases
 │   │           ├── data/             # models · datasources · repository impl
 │   │           └── presentation/     # controllers · pages · widgets · bindings
@@ -897,6 +980,7 @@ PaynEat/
 │   │   │       ├── order.calculator.js   # ⭐ Billing rules (pure functions)
 │   │   │       └── order.schema.js       # Zod
 │   │   └── routes.js
+│   ├── assets/fonts/                 # Thai font for receivables PDFs
 │   ├── docs/openapi.yaml
 │   └── tests/
 │
@@ -962,6 +1046,7 @@ kitchen never receives events that don't concern it.
 | `order:created` / `order:updated` | Everyone | An order is opened or edited |
 | `order:paid` | Everyone | A bill is closed successfully |
 | `table:updated` | Everyone | A table's status changes |
+| `scale:reading` | Service + management rooms | The weight on the cabled scale changes (+ a 1-second heartbeat) |
 
 On the app side, `SocketClient` always returns an unsubscribe function, which controllers keep around and
 call in `onClose()` to prevent stray listeners and memory leaks.
@@ -1016,6 +1101,13 @@ Open **http://localhost:3000/docs** for interactive, try-it-yourself documentati
 | GET | `/receivables/customers` · `/receivables/customers/:id` | cashier and up | Receivables list / customer statement (aging, credit bills, billing notes, receipts) |
 | POST | `/receivables/receipts` · `/receivables/billing-notes` | cashier and up | Collect a payment (oldest bill first) / issue a billing note |
 | POST | `/receivables/receipts/:id/void` · `/receivables/billing-notes/:id/void` | admin, manager | Void a payment receipt/billing note (reason required) |
+| GET | `/receivables/customers/:id/late-fee-preview` | cashier and up | Preview per-bill late interest before issuing a notice |
+| POST | `/receivables/late-fees` · `/receivables/late-fees/:id/void` | admin, manager | Issue a late-interest notice / void it (waive the interest) |
+| POST | `/receivables/credit-notes` | admin, manager | Credit a credit-sale bill + issue a credit note (VAT on the difference) |
+| GET | `/receivables/late-fees/:id` · `/receivables/credit-notes/:id` | cashier and up | An interest notice / credit note (with its e-mail history) |
+| GET | `/receivables/{billing-notes,receipts,credit-notes,late-fees}/:id/pdf` | cashier and up | Download the document as a Thai A4 PDF |
+| POST | `/receivables/{billing-notes,receipts,credit-notes,late-fees}/:id/email` | cashier and up | E-mail the document with the PDF attached (needs SMTP) |
+| GET | `/scale` | waiter and up | Cabled-scale status + latest weight |
 | POST | `/ai/ask` | admin, manager | Ask a natural-language question about sales/menu/orders/customers — answered via tool-calling against real data only (daily quota) |
 
 </details>
@@ -1042,12 +1134,12 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 325 cases
-cd app && flutter test      # 427 cases
-cd app && flutter test test_e2e   # 42 cases (run npm ci in backend first)
+cd backend && npm test      # 344 cases
+cd app && flutter test      # 445 cases
+cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
 ```
 
-**E2E — the real app talking to the real backend (42 cases)** — `app/test_e2e/` boots the real backend
+**E2E — the real app talking to the real backend (48 cases)** — `app/test_e2e/` boots the real backend
 (`node src/server.js`) on a random port with a brand-new temporary database per file, then drives the
 app's real data/domain code (`ApiClient` → data source → repository, the same stack the app assembles at
 startup) against it the way a restaurant would, with each role holding its own "device". It's the only
@@ -1074,6 +1166,15 @@ and the backend tests are pure JavaScript), and it has its own job in CI:
 > in kg even though it never went to the kitchen → a billing note bundles two bills (issuing it again is
 > a 409) → a cash payment against the note is applied oldest bill first → the shift closes with zero
 > variance + the Z-report splits credit sales from debt collected → reports show total kg sold
+>
+> `scale_documents_e2e_test.dart` (6 steps) — the test opens its own TCP server as the "scale" and the
+> real backend connects to it (`SCALE_DRIVER=tcp`): the weight travels scale → parser → socket.io → app;
+> a wobbling number can't be used, a settled one can → a credit sale at that weight prices to the satang
+> like the backend → a bill 20 days overdue with 5 grace days gets exactly 15 days of interest by the
+> formula (a cashier gets 403) → a 107-baht credit note splits out VAT and the balance drops exactly →
+> every document type downloads as a real `%PDF-` file → a billing note goes out by e-mail
+> (`MAIL_TRANSPORT=json` builds the full message + PDF attachment without sending it) and a customer with
+> no e-mail on file gets a 400
 
 Its first run found **5 real bugs that all 659 existing tests passed**, all now fixed with regression
 tests on both the backend and Demo Mode: a tax invoice whose three printed lines didn't add up (#43), a
@@ -1082,7 +1183,7 @@ backend losing their BOM so Thai text garbled in Excel (#45), and a customer tap
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
 
-**Backend (325 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (344 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1240,7 +1341,23 @@ capped at what's still owed, debt aging, and RBAC — `migrate-credit.test.js` (
 pre-ticket-20 database and migrates it, proving the money data, the refunds pointing at it, and the
 indexes all survive (see `docs/DECISIONS.md` #48–#51)
 
-**Flutter (427 cases)** — split into 3 levels:
+`late-fees-credit-notes.test.js` (7 cases) the 15% rate cap / cashiers can't set it / rate changes are
+audited, no rate = no interest, only bills past their grace period are charged through today and a second
+run the same day charges nothing, the next run continues from where the last stopped on the principal
+still owed, payments cover interest too and a paid interest notice can't be voided until its receipt is,
+crediting a bill issues a credit note automatically (original/corrected value, difference, VAT, the
+original tax invoice number), and credit notes are for credit-sale bills only and can't exceed what's
+owed without leaving a dangling document — `document-pdf-email.test.js` (7 cases) BAHTTEXT + Buddhist-era
+dates in Bangkok time, a PDF for every document type, a long billing note flowing onto a new page / voided
+documents still downloadable, no SMTP = 503, e-mailing the customer with the PDF attached + history +
+audit log, no recipient 400 / voided document 409 / SMTP failure 502 with no history row, and saving the
+customer's e-mail — `scale.test.js` (5 cases) parsing A&D/CAS/MT-SICS/number+unit with
+stable/unstable/overload, TCP joining lines split mid-way / sending the poll command / reconnecting after
+a dropped cable, readings older than 3 seconds not forwarded, `GET /scale` off by default / the simulator
+sending weights / the kitchen denied, and serial with no port configured explaining why without crashing
+(see `docs/DECISIONS.md` #54–#57)
+
+**Flutter (445 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1249,9 +1366,10 @@ indexes all survive (see `docs/DECISIONS.md` #48–#51)
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines + a weighed line priced in satang before rounding, matching the backend (including prices with fractional satang), per-kg modifiers, two bags of equal weight never merging (ticket 18) |
 | Domain | `barcode_resolver_test.dart` | Reading product barcodes/EAN-13 scale labels: PLUs with leading zeros, no guessing on a bad check digit, store-defined label formats, labels matching only weighed items, and a registered exact barcode winning over label parsing (ticket 19) |
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), and credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10), weighed items sending `weightGrams` to the backend/no quantity edits but re-weighing allowed, scanning labels/barcodes into the cart, and a bad scan leaving the cart unchanged (tickets 18–19) |
-| Controller | `receivable_controllers_test.dart` | Totals of what's owed/overdue, splitting open bills/unbilled bills/open billing notes, document voiding limited to managers and up, a successful payment sending the chosen billing note then reloading / a failed one not reloading (ticket 20) |
+| Controller | `receivable_controllers_test.dart` | Totals of what's owed/overdue, splitting open bills/unbilled bills/open billing notes, document voiding limited to managers and up, a successful payment sending the chosen billing note then reloading / a failed one not reloading (ticket 20), late interest/credit notes limited to managers and up and reloading on success, e-mail with no recipient using the customer's address (tickets 21, 23) |
+| Widget | `live_scale_test.dart` | The live scale panel: nothing shown with no scale / no DI binding, a weight usable only when stable (wobbling/overloaded/disconnected/0 g disabled), "Use this weight" filling the weight with nothing typed, the camera button sending codes down the scanner's path / closing the camera doing nothing / no camera = no button, and the simulated scale cycling empty → wobble → stable → lifted off (ticket 22) |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
 | Controller | `order_list_controller_test.dart` | Order status filters, sending activeOnly/dateFrom correctly |
 | Controller | `table_controller_test.dart` | Combined zone/status filtering, counting available/occupied tables, `canManageQrToken` restricted to admin/manager (mirrors the backend's RBAC — ticket 17) |
@@ -1337,7 +1455,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - [x] **High-contrast mode** — done: toggled from the **Profile** page (reachable by every role,
   not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
   and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
-- [x] **Korean language support** — done: 963 translation keys across every feature (verified to
+- [x] **Korean language support** — done: 1,056 translation keys across every feature (verified to
   match the Thai key set exactly), NotoSansKR embedded as a subset, a separately designed Korean
   landing page with 5 real Korean-locale app screenshots, a three-way language switcher on all
   three landing pages (now visible on mobile too, where the whole group used to be hidden), and
@@ -1346,7 +1464,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   (see `docs/DECISIONS.md` #39) — **no Korean menu names in the database**, deliberately: those
   are each restaurant's own data, not system text
 - [x] **Flutter integration tests against a real backend** — done as the E2E suite `app/test_e2e/`
-  (42 cases): boots the real backend on a fresh temporary database per file and drives the app's real
+  (48 cases): boots the real backend on a fresh temporary database per file and drives the app's real
   data/domain code through a full restaurant business day + a customer scanning the QR + branches/
   permissions. It works at the data/domain layer rather than `integration_test`, which needs a real
   device, and runs as its own CI job — its first run found 5 real bugs that all 659 existing tests
@@ -1429,6 +1547,21 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   sales, billing notes, payment receipts applied oldest bill first, debt aging, cash collections counted
   into the drawer at shift close, and existing databases migrate with no money data lost (see
   `docs/tickets/20-b2b-credit.md`, `docs/DECISIONS.md` #50)
+- [x] **Late-payment interest/fees + separate credit notes** — done: the shop sets a late-interest rate
+  (0–15% a year) + grace days; simple interest per bill continues from the previous run without
+  overlapping, producing an interest notice `LF…` added to the balance and voidable only while unpaid;
+  crediting a credit-sale bill always produces a credit note `CN…` with the original/corrected value,
+  the difference, and the VAT on the difference (see `docs/tickets/21-late-fees-credit-notes.md`,
+  `docs/DECISIONS.md` #55–#56)
+- [x] **Live weight from a cabled scale + scanning with the phone camera** — done: the scale connects to
+  the store server (TCP/serial) instead of each tablet, A&D/CAS/MT-SICS/number+unit formats are parsed,
+  the weight is broadcast in real time and usable only when stable, and a camera button on order taking
+  reads barcodes/scale labels into the scanner's path (see `docs/tickets/22-live-scale-camera-scan.md`,
+  `docs/DECISIONS.md` #54)
+- [x] **E-mailing billing notes as PDF** — done: all 4 receivables documents render as Thai A4 PDFs
+  (amount in words, Buddhist-era dates), download on the web, and go out by e-mail with the PDF attached
+  through the shop's own SMTP, with a send history (see `docs/tickets/23-document-pdf-email.md`,
+  `docs/DECISIONS.md` #57)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -1450,12 +1583,14 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - **Self-checkout through the QR order-taking flow** — QR self-order is order-taking only; payment
   still goes through the cashier as before, to avoid the money-safety/fraud risk that comes with
   self-checkout, which would also need a real payment gateway (not done, per the item above)
-- **Reading live weight from a cabled scale / scanning with a phone camera** — every scale brand speaks a
-  different protocol and Flutter web can't reach a serial port in every browser; scale labels + a
-  keyboard-style scanner cover it instead (see `docs/DECISIONS.md` #49)
-- **Late-payment interest/fees, separate credit-note documents, emailing billing notes as PDF** — reduce
-  debt by refunding a credit bill instead; documents are viewed/printed from the screen (see
-  `docs/tickets/20-b2b-credit.md`)
+- **Connecting a scale straight to a tablet/phone, and sending tare/zero commands to it** — Web
+  Serial/Bluetooth don't work on every platform and every brand's commands differ; the scale connects
+  once at the store server, which broadcasts to every device instead (see `docs/DECISIONS.md` #54)
+- **Flat late fees/early-payment discounts, an automatic e-mail retry queue, PDFs of front-of-house
+  receipts/tax invoices** — late interest is simple (non-compounding) interest a manager issues by hand,
+  so every baht added to a debt has someone accountable for it; a failed send tells the user at once to
+  retry; and front-of-house receipts still use the thermal printer / print from screen (see
+  `docs/DECISIONS.md` #55, #57)
 
 ---
 

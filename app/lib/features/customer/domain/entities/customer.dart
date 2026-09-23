@@ -46,6 +46,7 @@ class CustomerCreditTerms {
     required this.creditTermDays,
     this.taxId = '',
     this.address = '',
+    this.email,
   });
 
   final double creditLimit;
@@ -53,10 +54,15 @@ class CustomerCreditTerms {
   final String taxId;
   final String address;
 
+  /// อีเมลรับใบวางบิล/เอกสารลูกหนี้ (ดู docs/tickets/23-document-pdf-email.md) — null = ไม่แตะค่าเดิม
+  /// '' = ล้างค่า
+  final String? email;
+
   Map<String, dynamic> toJson() => {
     'creditLimit': creditLimit,
     'creditTermDays': creditTermDays,
     'taxId': taxId,
     'address': address,
+    'email': ?email,
   };
 }

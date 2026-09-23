@@ -200,6 +200,61 @@ class SettingsPage extends GetView<SettingsController> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  // ลูกหนี้ขายเชื่อ: ดอกเบี้ยผิดนัด + สถานะการส่งอีเมล (tickets 21, 23)
+                  SectionHeader(
+                    title: 'settings_receivable_title'.tr,
+                    subtitle: 'settings_receivable_subtitle'.tr,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          key: const ValueKey('settings-late-fee-rate'),
+                          controller: controller.lateFeeRateController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[0-9.]'),
+                            ),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'settings_late_fee_rate_label'.tr,
+                            suffixText: 'settings_late_fee_rate_suffix'.tr,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: controller.lateFeeGraceController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'settings_late_fee_grace_label'.tr,
+                            suffixText: 'settings_late_fee_grace_suffix'.tr,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Obx(
+                    () => Text(
+                      controller.settings.value.emailEnabled
+                          ? 'settings_email_enabled'.tr
+                          : 'settings_email_disabled'.tr,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   SectionHeader(
                     title: 'settings_loyalty_title'.tr,
                     subtitle: 'settings_loyalty_subtitle'.tr,

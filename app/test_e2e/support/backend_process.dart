@@ -13,20 +13,56 @@ import 'dart:io';
 /// (`DemoStore` ฝั่ง Dart) — ไม่มีเทสต์ไหนเลยที่ให้โค้ดฝั่งแอป *อ่าน JSON ที่ backend ส่งมาจริง*
 /// ชื่อฟิลด์สะกดไม่ตรงกันแค่ตัวเดียวจะผ่านเทสต์ครบทุกตัวแต่พังทันทีที่ร้านเปิดใช้จริง ชุดนี้ปิดช่องนั้น
 class BackendProcess {
-  BackendProcess._(this._process, this.port, this._tempDir, this._log);
+  BackendProcess._(
+    this._process,
+    this.port,
+    this._tempDir,
+    this._log,
+    this._backendDir,
+  );
 
   final Process _process;
   final int port;
   final Directory _tempDir;
   final StringBuffer _log;
+  final Directory _backendDir;
 
   String get apiBaseUrl => 'http://127.0.0.1:$port/api/v1';
+
+  /// ที่อยู่ของ socket.io (ราก ไม่มี /api/v1) — ตาชั่งสดส่งผ่านช่องนี้ (ticket 22)
+  String get socketUrl => 'http://127.0.0.1:$port';
+
+  String get _databaseFile => '${_tempDir.path}/e2e.sqlite';
+
+  /// "เลื่อนเวลา" ในฐานข้อมูลของ backend — เทสต์ที่ต้องการบิลเลยกำหนด (ดอกเบี้ยผิดนัด ticket 21) รอ
+  /// เวลาจริงไม่ได้ จึงแก้วันที่ตรงในไฟล์ SQLite ด้วย better-sqlite3 ของ backend เอง (WAL mode ให้
+  /// process อื่นเขียนพร้อมกับ server ได้) ใช้กับข้อมูลวันที่เท่านั้น ไม่ใช่ทางลัดสร้างข้อมูลเงิน
+  Future<void> execSql(String statement) async {
+    final result = await Process.run(
+      Platform.environment['E2E_NODE'] ?? 'node',
+      [
+        '-e',
+        "const Database = require('better-sqlite3');"
+            'const db = new Database(process.argv[1]);'
+            'db.exec(process.argv[2]); db.close();',
+        _databaseFile,
+        statement,
+      ],
+      workingDirectory: _backendDir.path,
+    );
+    if (result.exitCode != 0) {
+      throw StateError('execSql ล้มเหลว: ${result.stderr}');
+    }
+  }
 
   /// stdout/stderr ของ backend ทั้งหมด — พิมพ์ออกมาตอนเทสต์ล้มจะรู้ทันทีว่าฝั่งไหนผิด
   String get log => _log.toString();
 
+  /// [environment] ทับค่า env ของ backend เพิ่มเติม — เช่น ต่อตาชั่ง (SCALE_DRIVER) หรือเปิดอีเมลแบบ
+  /// ไม่ส่งจริง (MAIL_TRANSPORT=json) สำหรับชุดที่ต้องใช้ (tickets 22–23)
   static Future<BackendProcess> start({
     Duration bootTimeout = const Duration(seconds: 60),
+    Map<String, String> environment = const {},
   }) async {
     final backendDir = _findBackendDir();
     if (!Directory('${backendDir.path}/node_modules').existsSync()) {
@@ -41,20 +77,21 @@ class BackendProcess {
 
     // สำเนา env ของเครื่องแล้วทับเฉพาะที่ต้องคุม — ตัด ANTHROPIC_API_KEY ออกเสมอ กันไม่ให้
     // เทสต์ไปเรียก Claude API จริงเสียเงินโดยไม่ตั้งใจ (ผู้ช่วย AI มีทางถอยเมื่อไม่มี key อยู่แล้ว)
-    final environment = <String, String>{
+    final processEnvironment = <String, String>{
       ...Platform.environment,
       'NODE_ENV': 'test',
       'JWT_SECRET': 'e2e-secret',
       'DATABASE_FILE': '${tempDir.path}/e2e.sqlite',
       'PORT': '$port',
       'HOST': '127.0.0.1',
+      ...environment,
     }..remove('ANTHROPIC_API_KEY');
 
     final process = await Process.start(
       Platform.environment['E2E_NODE'] ?? 'node',
       ['src/server.js'],
       workingDirectory: backendDir.path,
-      environment: environment,
+      environment: processEnvironment,
       includeParentEnvironment: false,
     );
     process.stdout.transform(utf8.decoder).listen(log.write);
@@ -63,7 +100,7 @@ class BackendProcess {
     int? earlyExit;
     unawaited(process.exitCode.then((code) => earlyExit = code));
 
-    final backend = BackendProcess._(process, port, tempDir, log);
+    final backend = BackendProcess._(process, port, tempDir, log, backendDir);
     // วัดเวลาที่ผ่านไปด้วย Stopwatch (monotonic) ไม่ใช่นาฬิกา — AppClock ถูกตรึงได้ในเทสต์ ถ้าใช้ตัวนั้น
     // timeout อาจไม่มีวันถึง ส่วน DateTime.now() ถูกกฎ use_app_clock_not_date_time_now ห้ามไว้
     final elapsed = Stopwatch()..start();

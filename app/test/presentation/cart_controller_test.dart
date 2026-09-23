@@ -59,6 +59,8 @@ class _FakeSettingsRepository implements SettingsRepository {
     String? promptPayId,
     String? scaleLabelPrefix,
     int? scaleLabelPluDigits,
+    double? lateFeeAnnualRatePercent,
+    int? lateFeeGraceDays,
   }) async => get();
 }
 

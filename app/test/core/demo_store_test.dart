@@ -1886,6 +1886,13 @@ void main() {
     const cashier = 6;
     const waiter = 3;
 
+    // เดโม seed บิลขายเชื่อที่เลยกำหนดไว้ให้ลองคิดดอกเบี้ย (ticket 21) — กลุ่มนี้ทดสอบกฎของ ticket 20
+    // จากบัญชีที่ยังไม่มีหนี้ จึงเอาบิลนั้นออกก่อน (กลุ่ม ticket 21 ด้านล่างใช้บิลนั้นจริง)
+    setUp(
+      () => store.payments.removeWhere(
+        (payment) => payment['method'] == PaymentMethod.credit,
+      ),
+    );
     tearDown(AppClock.unfreeze);
 
     Map<String, dynamic> creditSale(double kg, {int? customerId = b2b}) {
@@ -2148,6 +2155,192 @@ void main() {
 
         expect(summary['overdue'], summary['outstanding']);
         expect((summary['aging'] as Map)['days1to30'], summary['outstanding']);
+      },
+    );
+  });
+
+  group('DemoStore ดอกเบี้ยผิดนัด / ใบลดหนี้ / อีเมลเอกสาร (tickets 21, 23)', () {
+    const b2b = 900;
+    const manager = 2;
+    const cashier = 6;
+
+    tearDown(AppClock.unfreeze);
+
+    Map<String, dynamic> seededInvoice() =>
+        ((store.receivableStatement(b2b)['invoices'] as List).single as Map)
+            .cast<String, dynamic>();
+
+    double outstanding() =>
+        (store.receivableStatement(b2b)['outstanding'] as num).toDouble();
+
+    test(
+      'บิลที่ seed ไว้เลยกำหนด 15 วัน ผ่อนผัน 7 วัน → คิด 8 วันที่ 12% ต่อปี '
+      'บวกเข้ายอดค้าง และกดซ้ำวันเดิมไม่ได้ดอกเบี้ยซ้ำ',
+      () {
+        AppClock.freeze(DateTime(2026, 9, 23, 12));
+        store.reset();
+        final invoice = seededInvoice();
+        expect(invoice['dueDate'], '2026-09-08');
+        final principal = (invoice['amount'] as num).toDouble();
+
+        final preview = store.lateFeePreview(b2b);
+        final line = (preview['items'] as List).single as Map;
+        expect(line['periodFrom'], '2026-09-16');
+        expect(line['periodTo'], '2026-09-23');
+        expect(line['days'], 8);
+        final expected = ((principal * 100) * 12 * 8 / 36500).round() / 100;
+        expect(line['amount'], expected);
+
+        final charge = store.createLateFee({
+          'customerId': b2b,
+        }, actorId: manager);
+        expect(charge['chargeNo'], startsWith('LF69-'));
+        expect(outstanding(), closeTo(principal + expected, 0.001));
+        expect(seededInvoice()['interest'], expected);
+        expect(
+          () => store.createLateFee({'customerId': b2b}, actorId: manager),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409),
+          ),
+        );
+
+        // รอบถัดไปนับต่อจากวันที่คิดไปแล้ว
+        AppClock.freeze(DateTime(2026, 10, 3, 12));
+        final next = (store.lateFeePreview(b2b)['items'] as List).single as Map;
+        expect(next['periodFrom'], '2026-09-24');
+        expect(next['days'], 10);
+      },
+    );
+
+    test('ยกเลิกใบแจ้งดอกเบี้ยที่ถูกชำระแล้วไม่ได้ จนกว่าจะยกเลิกใบเสร็จ', () {
+      AppClock.freeze(DateTime(2026, 9, 23, 12));
+      store.reset();
+      final principal = (seededInvoice()['amount'] as num).toDouble();
+      final charge = store.createLateFee({'customerId': b2b}, actorId: manager);
+      final receipt = store.createArReceipt({
+        'customerId': b2b,
+        'amount': outstanding(),
+        'method': 'transfer',
+      }, actorId: cashier);
+      expect(outstanding(), 0);
+
+      expect(
+        () =>
+            store.voidLateFee(charge['id'] as int, 'ยกเว้น', actorId: manager),
+        throwsA(isA<ApiException>()),
+      );
+      store.voidArReceipt(receipt['id'] as int, 'โอนผิด', actorId: manager);
+      final voided = store.voidLateFee(
+        charge['id'] as int,
+        'ยกเว้นให้ลูกค้าประจำ',
+        actorId: manager,
+      );
+      expect(voided['isVoided'], isTrue);
+      expect(outstanding(), closeTo(principal, 0.001));
+    });
+
+    test('ยังไม่ตั้งอัตรา = คิดไม่ได้ และตั้งเกิน 15% ไม่ได้', () {
+      store.updateSettings({'lateFeeAnnualRatePercent': 0.0});
+      expect((store.lateFeePreview(b2b)['items'] as List), isEmpty);
+      expect(
+        () => store.createLateFee({'customerId': b2b}, actorId: manager),
+        throwsA(isA<ApiException>()),
+      );
+      expect(
+        () => store.updateSettings({'lateFeeAnnualRatePercent': 16.0}),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test(
+      'ลดหนี้บิลขายเชื่อได้ใบลดหนี้ทุกครั้ง: มูลค่าเดิม มูลค่าที่ถูกต้อง VAT ของผลต่าง',
+      () {
+        final paymentId = seededInvoice()['paymentId'] as int;
+        final original = (seededInvoice()['amount'] as num).toDouble();
+        final note = store.createCreditNote({
+          'paymentId': paymentId,
+          'amount': 100.0,
+          'reason': 'เนื้อชำรุด',
+        }, actorId: manager);
+        expect(note['noteNo'], startsWith('CN'));
+        expect(note['originalAmount'], original);
+        expect(note['correctAmount'], closeTo(original - 100, 0.001));
+        expect(note['vatAmount'], greaterThan(0));
+        expect(outstanding(), closeTo(original - 100, 0.001));
+
+        // คืนเงินผ่านทางเดิม (หน้ารายละเอียดบิล) ก็ได้ใบลดหนี้เหมือนกัน
+        final refund = store.refundPayment(
+          paymentId: paymentId,
+          amount: 50,
+          reason: 'ส่งขาด',
+          refundedById: manager,
+        );
+        expect(refund['creditNoteNo'], startsWith('CN'));
+        final second = store.creditNoteDocument(refund['creditNoteId'] as int);
+        expect(second['previousCredited'], 100.0);
+        expect(
+          (store.receivableStatement(b2b)['creditNotes'] as List),
+          hasLength(2),
+        );
+
+        // บิลเงินสดออกใบลดหนี้ไม่ได้
+        final cash = store.payments.firstWhere(
+          (row) => row['method'] == PaymentMethod.cash,
+        );
+        expect(
+          () => store.createCreditNote({
+            'paymentId': cash['id'],
+            'amount': 1.0,
+            'reason': 'x',
+          }, actorId: manager),
+          throwsA(isA<ApiException>()),
+        );
+      },
+    );
+
+    test(
+      'ส่งอีเมล (จำลอง): ใช้อีเมลลูกค้าเป็นค่าเริ่มต้น บันทึกประวัติ + audit '
+      'เอกสารที่ยกเลิกส่งไม่ได้',
+      () {
+        final note = store.createBillingNote({
+          'customerId': b2b,
+        }, actorId: cashier);
+        final sent = store.emailDocument(
+          'billing_note',
+          note['id'] as int,
+          actorId: cashier,
+        );
+        final emails = sent['emails'] as List;
+        expect((emails.single as Map)['to'], 'ap@soulbbq.example');
+        expect(
+          store.auditLogs.any(
+            (log) => log['action'] == 'receivable.document_email',
+          ),
+          isTrue,
+        );
+
+        store.voidBillingNote(note['id'] as int, 'ออกผิด', actorId: manager);
+        expect(
+          () => store.emailDocument('billing_note', note['id'] as int),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409),
+          ),
+        );
+
+        store.updateCustomerCredit(b2b, {
+          'creditLimit': 50000.0,
+          'creditTermDays': 30,
+          'email': '',
+        });
+        final other = store.createBillingNote({
+          'customerId': b2b,
+        }, actorId: cashier);
+        expect(
+          () => store.emailDocument('billing_note', other['id'] as int),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'statusCode', 400),
+          ),
+        );
       },
     );
   });

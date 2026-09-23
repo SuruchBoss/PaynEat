@@ -655,6 +655,11 @@ class DemoSeed {
     // รูปแบบฉลากตาชั่ง (ดู docs/tickets/19-barcode-scale.md) — ค่าเริ่มต้นเดียวกับ backend
     'scaleLabelPrefix': '20',
     'scaleLabelPluDigits': 5,
+    // ดอกเบี้ยผิดนัด (ticket 21) — backend ค่าเริ่มต้นเป็น 0 (ไม่คิด) แต่เดโมเปิดไว้ให้ลองได้ทันที
+    'lateFeeAnnualRatePercent': 12.0,
+    'lateFeeGraceDays': 7,
+    // โหมดสาธิตจำลองการส่งอีเมล (ticket 23) — กดส่งได้ บันทึกประวัติ แต่ไม่มีอีเมลออกไปจริง
+    'emailEnabled': true,
   };
 
   /// ลูกค้าเครดิตตัวอย่าง (ดู docs/tickets/20-b2b-credit.md) — mirror ของ backend seed
@@ -665,7 +670,8 @@ class DemoSeed {
       'id': 900,
       'name': 'บริษัท โซลบาร์บีคิว จำกัด',
       'phone': '021234567',
-      'email': null,
+      // อีเมลรับใบวางบิล — โดเมน .example สงวนไว้ใช้เป็นตัวอย่าง ส่งไปไม่ถึงใครจริง
+      'email': 'ap@soulbbq.example',
       'pointsBalance': 0,
       'creditLimit': 50000.0,
       'creditTermDays': 30,

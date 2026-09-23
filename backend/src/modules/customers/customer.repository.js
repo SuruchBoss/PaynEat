@@ -53,7 +53,7 @@ export const customerRepository = {
   },
 
   /** ตั้งวงเงิน/เครดิตเทอม/ข้อมูลออกเอกสารของลูกค้าเครดิต — tax_id/address ส่ง null เพื่อล้างค่า */
-  updateCredit(id, { creditLimit, creditTermDays, taxId, address }) {
+  updateCredit(id, { creditLimit, creditTermDays, taxId, address, email }) {
     getDb()
       .prepare(
         `
@@ -62,11 +62,12 @@ export const customerRepository = {
                credit_term_days = ?,
                tax_id           = ?,
                address          = ?,
+               email            = ?,
                updated_at       = datetime('now')
          WHERE id = ?
       `,
       )
-      .run(creditLimit, creditTermDays, taxId, address, id);
+      .run(creditLimit, creditTermDays, taxId, address, email, id);
     return this.findById(id);
   },
 

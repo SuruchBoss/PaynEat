@@ -12,6 +12,7 @@ export const EVENTS = {
   SHIFT_OPENED: 'shift:opened',
   SHIFT_CLOSED: 'shift:closed',
   REFUND_CREATED: 'refund:created',
+  SCALE_READING: 'scale:reading',
 };
 
 /** ห้องแยกตาม role — ครัวรับเฉพาะตั๋วครัว, พนักงานเสิร์ฟรับสถานะอาหาร */

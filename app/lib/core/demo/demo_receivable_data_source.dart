@@ -64,4 +64,78 @@ class DemoReceivableDataSource implements ReceivableRemoteDataSource {
       _store.voidBillingNote(id, reason, actorId: _auth.currentUserId),
     ),
   );
+
+  @override
+  Future<LateFeePreview> previewLateFee(int customerId) => _delayed(
+    () => ReceivableModel.lateFeePreviewFromJson(
+      _store.lateFeePreview(customerId),
+    ),
+  );
+
+  @override
+  Future<LateFeeCharge> createLateFee(int customerId, {String? note}) =>
+      _delayed(
+        () => ReceivableModel.lateFeeFromJson(
+          _store.createLateFee({
+            'customerId': customerId,
+            'note': note,
+          }, actorId: _auth.currentUserId),
+        ),
+      );
+
+  @override
+  Future<LateFeeCharge> getLateFee(int id) => _delayed(
+    () => ReceivableModel.lateFeeFromJson(_store.lateFeeDocument(id)),
+  );
+
+  @override
+  Future<LateFeeCharge> voidLateFee(int id, String reason) => _delayed(
+    () => ReceivableModel.lateFeeFromJson(
+      _store.voidLateFee(id, reason, actorId: _auth.currentUserId),
+    ),
+  );
+
+  @override
+  Future<CreditNote> createCreditNote(CreateCreditNoteParams params) =>
+      _delayed(
+        () => ReceivableModel.creditNoteFromJson(
+          _store.createCreditNote(
+            params.toJson(),
+            actorId: _auth.currentUserId ?? 0,
+          ),
+        ),
+      );
+
+  @override
+  Future<CreditNote> getCreditNote(int id) => _delayed(
+    () => ReceivableModel.creditNoteFromJson(_store.creditNoteDocument(id)),
+  );
+
+  /// โหมดสาธิตไม่มีเซิร์ฟเวอร์สร้าง PDF — หน้าจอซ่อนปุ่มดาวน์โหลดอยู่แล้ว ([AppConfig.demoMode])
+  @override
+  Future<List<int>> downloadPdf(ReceivableDocumentKind kind, int id) =>
+      _delayed(
+        () => throw ApiException(
+          message: 'receivable_pdf_demo_unavailable'.tr,
+          statusCode: 503,
+        ),
+      );
+
+  @override
+  Future<List<DocumentEmail>> emailDocument(EmailDocumentParams params) =>
+      _delayed(
+        () => ReceivableModel.emailsFromJson(
+          _store.emailDocument(
+            switch (params.kind) {
+              ReceivableDocumentKind.billingNote => 'billing_note',
+              ReceivableDocumentKind.receipt => 'receipt',
+              ReceivableDocumentKind.creditNote => 'credit_note',
+              ReceivableDocumentKind.lateFee => 'late_fee',
+            },
+            params.id,
+            to: params.to,
+            actorId: _auth.currentUserId,
+          )['emails'],
+        ),
+      );
 }

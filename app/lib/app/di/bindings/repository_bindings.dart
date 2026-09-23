@@ -33,6 +33,9 @@ import '../../../features/report/data/repositories/report_repository_impl.dart';
 import '../../../features/report/domain/repositories/report_repository.dart';
 import '../../../features/self_order/data/datasources/self_order_remote_data_source.dart';
 import '../../../features/self_order/data/repositories/self_order_repository_impl.dart';
+import '../../../features/scale/data/datasources/scale_remote_data_source.dart';
+import '../../../features/scale/data/repositories/scale_repository_impl.dart';
+import '../../../features/scale/domain/repositories/scale_repository.dart';
 import '../../../features/self_order/domain/repositories/self_order_repository.dart';
 import '../../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../../features/settings/data/repositories/settings_repository_impl.dart';
@@ -125,6 +128,10 @@ void bindRepositories(StorageService storage) {
   );
   Get.lazyPut<ReceivableRepository>(
     () => ReceivableRepositoryImpl(Get.find<ReceivableRemoteDataSource>()),
+    fenix: true,
+  );
+  Get.lazyPut<ScaleRepository>(
+    () => ScaleRepositoryImpl(Get.find<ScaleRemoteDataSource>()),
     fenix: true,
   );
 }

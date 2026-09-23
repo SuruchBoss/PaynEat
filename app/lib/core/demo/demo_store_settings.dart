@@ -11,6 +11,8 @@ extension DemoStoreSettings on DemoStore {
   }) {
     final previousVatRate = settings['vatRate'] as double;
     final previousServiceChargeRate = settings['serviceChargeRate'] as double;
+    final previousLateFeeRate =
+        (settings['lateFeeAnnualRatePercent'] as num?)?.toDouble() ?? 0;
 
     // ฉลากตาชั่ง 13 หลัก: prefix + PLU + น้ำหนัก 4–6 หลัก + check digit (mirror ของ
     // settings.service.js — ดู docs/tickets/19-barcode-scale.md)
@@ -29,6 +31,17 @@ extension DemoStoreSettings on DemoStore {
       );
     }
 
+    // ดอกเบี้ยผิดนัด 0–15% ต่อปี ผ่อนผัน 0–365 วัน (mirror ของ settings.routes.js)
+    final rate = (changes['lateFeeAnnualRatePercent'] as num?)?.toDouble();
+    final grace = (changes['lateFeeGraceDays'] as num?)?.toInt();
+    if ((rate != null && (rate < 0 || rate > 15)) ||
+        (grace != null && (grace < 0 || grace > 365))) {
+      throw ApiException(
+        message: 'settings_late_fee_invalid'.tr,
+        statusCode: 422,
+      );
+    }
+
     changes.forEach((key, value) => settings[key] = value);
 
     final newVatRate = changes['vatRate'] as double?;
@@ -41,6 +54,14 @@ extension DemoStoreSettings on DemoStore {
         newServiceChargeRate != previousServiceChargeRate) {
       rateChanges.add(
         'ค่าบริการ $previousServiceChargeRate% → $newServiceChargeRate%',
+      );
+    }
+    // ดอกเบี้ยผิดนัดกระทบหนี้ลูกค้า — log เหมือน VAT/ค่าบริการ (ticket 21)
+    final newLateFeeRate = (changes['lateFeeAnnualRatePercent'] as num?)
+        ?.toDouble();
+    if (newLateFeeRate != null && newLateFeeRate != previousLateFeeRate) {
+      rateChanges.add(
+        'ดอกเบี้ยผิดนัด $previousLateFeeRate% → $newLateFeeRate% ต่อปี',
       );
     }
     if (rateChanges.isNotEmpty) {

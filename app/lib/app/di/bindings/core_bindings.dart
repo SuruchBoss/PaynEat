@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/socket_client.dart';
 import '../../../core/printing/receipt_printer_service.dart';
+import '../../../core/scanning/camera_barcode_scanner.dart';
 import '../../../core/services/printer_settings_service.dart';
 import '../../../core/services/session_service.dart';
 import '../../../core/services/storage_service.dart';
@@ -33,6 +34,10 @@ void bindCoreServices(StorageService storage) {
   );
   Get.lazyPut<ReceiptPrinterService>(
     () => ReceiptPrinterService(),
+    fenix: true,
+  );
+  Get.lazyPut<CameraBarcodeScanner>(
+    () => const MobileCameraBarcodeScanner(),
     fenix: true,
   );
 }

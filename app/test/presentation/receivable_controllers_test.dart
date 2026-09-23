@@ -110,6 +110,62 @@ class _FakeReceivableRepository implements ReceivableRepository {
     return nextReceipt!;
   }
 
+  // ดอกเบี้ยผิดนัด / ใบลดหนี้ / อีเมล (tickets 21, 23)
+  CreateLateFeeParams? lastLateFee;
+  CreateCreditNoteParams? lastCreditNote;
+  EmailDocumentParams? lastEmail;
+  Result<List<DocumentEmail>> nextEmails = const Result.success([
+    DocumentEmail(to: 'ap@soulbbq.example', subject: 'ใบวางบิล BN69-000001'),
+  ]);
+
+  @override
+  Future<Result<LateFeeCharge>> createLateFee(
+    int customerId, {
+    String? note,
+  }) async {
+    lastLateFee = CreateLateFeeParams(customerId: customerId, note: note);
+    return const Result.success(
+      LateFeeCharge(
+        id: 41,
+        chargeNo: 'LF69-000001',
+        customerId: 900,
+        customerName: 'บริษัท โซลบาร์บีคิว จำกัด',
+        total: 42.5,
+        annualRate: 12,
+        asOf: '2026-09-23',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<CreditNote>> createCreditNote(
+    CreateCreditNoteParams params,
+  ) async {
+    lastCreditNote = params;
+    return const Result.success(
+      CreditNote(
+        id: 51,
+        noteNo: 'CN69-000001',
+        customerId: 900,
+        customerName: 'บริษัท โซลบาร์บีคิว จำกัด',
+        paymentId: 2,
+        orderCode: 'T002',
+        originalAmount: 500,
+        amount: 100,
+        correctAmount: 400,
+        reason: 'ของชำรุด',
+      ),
+    );
+  }
+
+  @override
+  Future<Result<List<DocumentEmail>>> emailDocument(
+    EmailDocumentParams params,
+  ) async {
+    lastEmail = params;
+    return nextEmails;
+  }
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
@@ -136,6 +192,14 @@ void main() {
         createBillingNote: CreateBillingNoteUseCase(repository),
         getBillingNote: GetBillingNoteUseCase(repository),
         voidBillingNote: VoidBillingNoteUseCase(repository),
+        previewLateFee: PreviewLateFeeUseCase(repository),
+        createLateFee: CreateLateFeeUseCase(repository),
+        getLateFee: GetLateFeeUseCase(repository),
+        voidLateFee: VoidLateFeeUseCase(repository),
+        createCreditNote: CreateCreditNoteUseCase(repository),
+        getCreditNote: GetCreditNoteUseCase(repository),
+        downloadPdf: DownloadReceivablePdfUseCase(repository),
+        emailDocument: EmailReceivableDocumentUseCase(repository),
         session: session,
         customerId: 900,
       );
@@ -265,5 +329,78 @@ void main() {
       expect(receipt, isNull);
       expect(repository.statementCalls, 1);
     });
+
+    test('คิดดอกเบี้ย/ออกใบลดหนี้ได้เฉพาะผู้จัดการขึ้นไป', () {
+      final controller = statementController();
+      session.updateUser(_user(UserRole.cashier));
+      expect(controller.canAdjustDebt, isFalse);
+      session.updateUser(_user(UserRole.admin));
+      expect(controller.canAdjustDebt, isTrue);
+    });
+
+    testWidgets(
+      'ออกใบแจ้งดอกเบี้ย/ใบลดหนี้สำเร็จ → ส่งค่าถูก และโหลดยอดค้างใหม่',
+      (tester) async {
+        await tester.pumpWidget(const GetMaterialApp(home: SizedBox()));
+        final controller = statementController()..onInit();
+        await tester.pump();
+
+        final charge = await controller.issueLateFee(note: 'ตามสัญญา');
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
+        expect(charge?.chargeNo, 'LF69-000001');
+        expect(repository.lastLateFee?.customerId, 900);
+        expect(repository.lastLateFee?.note, 'ตามสัญญา');
+
+        final note = await controller.issueCreditNote(
+          paymentId: 2,
+          amount: 100,
+          reason: 'ของชำรุด',
+        );
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
+        expect(note?.noteNo, 'CN69-000001');
+        expect(repository.lastCreditNote?.toJson(), {
+          'paymentId': 2,
+          'amount': 100.0,
+          'reason': 'ของชำรุด',
+        });
+        expect(repository.statementCalls, 3, reason: 'โหลดใหม่หลังแต่ละครั้ง');
+      },
+    );
+
+    testWidgets(
+      'ส่งเอกสารทางอีเมล: ไม่ระบุผู้รับ = ใช้อีเมลลูกค้า / ล้มเหลว → null',
+      (tester) async {
+        await tester.pumpWidget(const GetMaterialApp(home: SizedBox()));
+        final controller = statementController();
+
+        final emails = await controller.emailDocument(
+          ReceivableDocumentKind.billingNote,
+          7,
+          message: '  ',
+        );
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
+        expect(emails?.single.to, 'ap@soulbbq.example');
+        expect(repository.lastEmail?.kind.path, 'billing-notes');
+        expect(repository.lastEmail?.toJson(), isEmpty);
+
+        repository.nextEmails = Result.failure(
+          ServerFailure('ยังไม่ได้ตั้งค่าเซิร์ฟเวอร์อีเมล', statusCode: 503),
+        );
+        final failed = await controller.emailDocument(
+          ReceivableDocumentKind.receipt,
+          31,
+          to: 'account@soulbbq.example',
+        );
+        await tester.pump(const Duration(seconds: 3));
+        await tester.pumpAndSettle();
+        expect(failed, isNull);
+        expect(repository.lastEmail?.toJson(), {
+          'to': 'account@soulbbq.example',
+        });
+      },
+    );
   });
 }

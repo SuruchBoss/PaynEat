@@ -29,7 +29,7 @@ export const customerService = {
   },
 
   /** ตั้งวงเงินเครดิต (ผู้จัดการขึ้นไป) — ลดวงเงินต่ำกว่ายอดค้างได้ แค่ขายเชื่อเพิ่มไม่ได้จนกว่าจะชำระ */
-  updateCredit(id, { creditLimit, creditTermDays, taxId, address }, user) {
+  updateCredit(id, { creditLimit, creditTermDays, taxId, address, email }, user) {
     const before = customerRepository.findById(id);
     if (!before) throw ApiError.notFound('ไม่พบลูกค้านี้');
     const limit = toSatang(creditLimit);
@@ -40,6 +40,7 @@ export const customerService = {
         creditTermDays,
         taxId: taxId || null,
         address: address || null,
+        email: email === undefined ? before.email : email || null,
       });
       if (limit !== before.credit_limit || creditTermDays !== before.credit_term_days) {
         auditLogService.log({

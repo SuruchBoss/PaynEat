@@ -11,11 +11,13 @@ import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../domain/entities/receivable.dart';
 import '../controllers/customer_statement_controller.dart';
+import '../widgets/credit_note_dialog.dart';
+import '../widgets/late_fee_dialog.dart';
 import '../widgets/receivable_document_dialog.dart';
 import '../widgets/receive_payment_dialog.dart';
 
-/// รายการเดินบัญชีของลูกค้าเครดิตหนึ่งราย: ยอดค้าง/อายุหนี้, บิลขายเชื่อ, ใบวางบิล, ใบเสร็จรับชำระ
-/// (ดู docs/tickets/20-b2b-credit.md)
+/// รายการเดินบัญชีของลูกค้าเครดิตหนึ่งราย: ยอดค้าง/อายุหนี้, บิลขายเชื่อ, ใบวางบิล, ใบเสร็จรับชำระ,
+/// ใบลดหนี้ และใบแจ้งดอกเบี้ยผิดนัด (ดู docs/tickets/20-b2b-credit.md, 21-late-fees-credit-notes.md)
 class CustomerStatementPage extends GetView<CustomerStatementController> {
   const CustomerStatementPage({super.key});
 
@@ -65,6 +67,18 @@ class CustomerStatementPage extends GetView<CustomerStatementController> {
               else
                 for (final receipt in statement.receipts)
                   _ReceiptTile(receipt: receipt),
+              if (statement.creditNotes.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                _SectionTitle('receivable_credit_notes_title'.tr),
+                for (final note in statement.creditNotes)
+                  _CreditNoteTile(note: note),
+              ],
+              if (statement.lateFees.isNotEmpty) ...[
+                const SizedBox(height: 18),
+                _SectionTitle('receivable_late_fees_title'.tr),
+                for (final charge in statement.lateFees)
+                  _LateFeeTile(charge: charge),
+              ],
             ],
           ),
         );
@@ -115,23 +129,29 @@ class _SummaryCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'receivable_available_value'.trParams({
-                      'amount': Formatters.baht(summary.available),
-                    }),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  Text(
-                    'receivable_limit_term_value'.trParams({
-                      'limit': Formatters.baht(summary.creditLimit),
-                      'days': '${summary.creditTermDays}',
-                    }),
-                    style: secondary,
-                  ),
-                ],
+              const SizedBox(width: 8),
+              // Flexible + ตัดบรรทัดได้ — ยอดค้างหลักพันขึ้นไปบนจอ 360px เดิมดันบรรทัดวงเงินล้นไปทับตัวเลข
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'receivable_available_value'.trParams({
+                        'amount': Formatters.baht(summary.available),
+                      }),
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    Text(
+                      'receivable_limit_term_value'.trParams({
+                        'limit': Formatters.baht(summary.creditLimit),
+                        'days': '${summary.creditTermDays}',
+                      }),
+                      textAlign: TextAlign.end,
+                      style: secondary,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -225,11 +245,31 @@ class _Actions extends GetView<CustomerStatementController> {
     if (note != null) await _openBillingNote(controller, note.id);
   }
 
+  Future<void> _lateFee() async {
+    final preview = await controller.previewLateFee();
+    if (preview == null) return;
+    final note = await LateFeeDialog.show(preview);
+    if (note == null) return;
+    final charge = await controller.issueLateFee(note: note);
+    if (charge != null) await _openLateFee(controller, charge.id);
+  }
+
+  Future<void> _creditNote() async {
+    final input = await CreditNoteDialog.show(statement.openInvoices);
+    if (input == null) return;
+    final note = await controller.issueCreditNote(
+      paymentId: input.paymentId,
+      amount: input.amount,
+      reason: input.reason,
+    );
+    if (note != null) await _openCreditNote(controller, note.id);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       final busy = controller.isSubmitting.value;
-      return Row(
+      final buttons = Row(
         children: [
           Expanded(
             child: FilledButton.icon(
@@ -254,8 +294,88 @@ class _Actions extends GetView<CustomerStatementController> {
           ),
         ],
       );
+      if (!controller.canAdjustDebt) return buttons;
+      // เปลี่ยนยอดหนี้ของลูกค้า (คิดดอกเบี้ย/ลดหนี้) — ผู้จัดการขึ้นไปเท่านั้น (ticket 21)
+      return Column(
+        children: [
+          buttons,
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              TextButton.icon(
+                key: const ValueKey('statement-late-fee'),
+                onPressed: busy || statement.openInvoices.isEmpty
+                    ? null
+                    : _lateFee,
+                icon: const Icon(Icons.percent_rounded),
+                label: Text('receivable_late_fee_button'.tr),
+              ),
+              TextButton.icon(
+                key: const ValueKey('statement-credit-note'),
+                onPressed: busy || statement.openInvoices.isEmpty
+                    ? null
+                    : _creditNote,
+                icon: const Icon(Icons.receipt_long_outlined),
+                label: Text('receivable_credit_note_button'.tr),
+              ),
+            ],
+          ),
+        ],
+      );
     });
   }
+}
+
+/// ปุ่ม PDF/อีเมลของเอกสาร — PDF เฉพาะเว็บที่ต่อเซิร์ฟเวอร์จริง อีเมลใช้ได้ทุกที่ (เดโมจำลอง)
+DocumentActions _actionsFor(
+  CustomerStatementController controller,
+  ReceivableDocumentKind kind,
+  int id,
+  String number,
+) => DocumentActions(
+  downloadPdf: controller.canDownloadPdf
+      ? () => controller.downloadPdf(kind, id, number)
+      : null,
+  email: ({String? to, String? message}) =>
+      controller.emailDocument(kind, id, to: to, message: message),
+);
+
+Future<void> _openLateFee(
+  CustomerStatementController controller,
+  int id,
+) async {
+  final charge = await controller.fetchLateFee(id);
+  if (charge == null) return;
+  final reason = await ReceivableDocumentDialog.showLateFee(
+    charge,
+    canVoid: controller.canAdjustDebt,
+    actions: _actionsFor(
+      controller,
+      ReceivableDocumentKind.lateFee,
+      id,
+      charge.chargeNo,
+    ),
+  );
+  if (reason != null) await controller.voidLateFee(id, reason);
+}
+
+Future<void> _openCreditNote(
+  CustomerStatementController controller,
+  int id,
+) async {
+  final note = await controller.fetchCreditNote(id);
+  if (note == null) return;
+  await ReceivableDocumentDialog.showCreditNote(
+    note,
+    actions: _actionsFor(
+      controller,
+      ReceivableDocumentKind.creditNote,
+      id,
+      note.noteNo,
+    ),
+  );
 }
 
 Future<void> _openReceipt(
@@ -267,6 +387,12 @@ Future<void> _openReceipt(
   final reason = await ReceivableDocumentDialog.showReceipt(
     receipt,
     canVoid: controller.canVoid,
+    actions: _actionsFor(
+      controller,
+      ReceivableDocumentKind.receipt,
+      id,
+      receipt.receiptNo,
+    ),
   );
   if (reason != null) await controller.voidReceipt(id, reason);
 }
@@ -280,6 +406,12 @@ Future<void> _openBillingNote(
   final reason = await ReceivableDocumentDialog.showBillingNote(
     note,
     canVoid: controller.canVoid,
+    actions: _actionsFor(
+      controller,
+      ReceivableDocumentKind.billingNote,
+      id,
+      note.noteNo,
+    ),
   );
   if (reason != null) await controller.voidBillingNote(id, reason);
 }
@@ -461,11 +593,17 @@ class _InvoiceTile extends StatelessWidget {
         if (invoice.billingNoteNo != null) invoice.billingNoteNo!,
       ].join(' · '),
       amount: Formatters.baht(invoice.amount),
-      trailingNote: invoice.isOpen && invoice.outstanding != invoice.amount
-          ? 'receivable_invoice_remaining'.trParams({
-              'amount': Formatters.money(invoice.outstanding),
-            })
-          : null,
+      trailingNote: [
+        if (invoice.isOpen && invoice.outstanding != invoice.amount)
+          'receivable_invoice_remaining'.trParams({
+            'amount': Formatters.money(invoice.outstanding),
+          }),
+        // ดอกเบี้ยผิดนัดรวมอยู่ในยอดค้างแล้ว (ticket 21) — บอกไว้ให้รู้ว่ายอดค้างเกินยอดบิลเพราะอะไร
+        if (invoice.interest > 0)
+          'receivable_invoice_interest'.trParams({
+            'amount': Formatters.money(invoice.interest),
+          }),
+      ].join('\n').ifEmptyNull,
       onTap: () => Get.toNamed<void>(
         AppRoutes.orderDetail,
         arguments: {'orderId': invoice.orderId},
@@ -535,6 +673,60 @@ class _ReceiptTile extends GetView<CustomerStatementController> {
       amount: Formatters.baht(receipt.amount),
       dimmed: receipt.isVoided,
       onTap: () => _openReceipt(controller, receipt.id),
+    );
+  }
+}
+
+extension on String {
+  String? get ifEmptyNull => isEmpty ? null : this;
+}
+
+class _CreditNoteTile extends GetView<CustomerStatementController> {
+  const _CreditNoteTile({required this.note});
+
+  final CreditNote note;
+
+  @override
+  Widget build(BuildContext context) {
+    return _EntryTile(
+      tileKey: ValueKey('statement-credit-note-${note.id}'),
+      title: note.noteNo,
+      subtitle: [
+        Formatters.dateTime(note.issuedAt),
+        '#${note.orderCode}',
+        note.reason,
+      ].join(' · '),
+      amount: '−${Formatters.baht(note.amount)}',
+      onTap: () => _openCreditNote(controller, note.id),
+    );
+  }
+}
+
+class _LateFeeTile extends GetView<CustomerStatementController> {
+  const _LateFeeTile({required this.charge});
+
+  final LateFeeCharge charge;
+
+  @override
+  Widget build(BuildContext context) {
+    return _EntryTile(
+      tileKey: ValueKey('statement-late-fee-${charge.id}'),
+      title: charge.chargeNo,
+      chip: charge.isVoided
+          ? StatusChip(
+              label: 'receivable_document_voided'.tr,
+              color: AppColors.danger,
+              dense: true,
+            )
+          : null,
+      subtitle: 'receivable_late_fee_tile'.trParams({
+        'date': Formatters.dateTime(charge.issuedAt),
+        'rate': percentText(charge.annualRate),
+        'count': '${charge.items.length}',
+      }),
+      amount: '+${Formatters.baht(charge.total)}',
+      dimmed: charge.isVoided,
+      onTap: () => _openLateFee(controller, charge.id),
     );
   }
 }

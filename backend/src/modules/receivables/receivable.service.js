@@ -2,12 +2,26 @@ import { ApiError } from '../../core/ApiError.js';
 import { toBaht, toSatang } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
-import { customerRepository } from '../customers/customer.repository.js';
 import { toCustomerDto } from '../customers/customer.mapper.js';
-import { settingsService } from '../settings/settings.service.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
+import { creditNoteRepository } from './credit-note.repository.js';
+import { lateFeeRepository } from './late-fee.repository.js';
 import { receivableRepository } from './receivable.repository.js';
-import { daysOverdue, toBillingNoteDto, toInvoiceDto, toReceiptDto } from './receivable.mapper.js';
+import {
+  daysOverdue,
+  toBillingNoteDto,
+  toCreditNoteDto,
+  toInvoiceDto,
+  toLateFeeDto,
+  toReceiptDto,
+} from './receivable.mapper.js';
+import {
+  customerInfo,
+  emailHistory,
+  loadCustomer,
+  nextDocumentNo,
+  storeInfo,
+} from './receivable.shared.js';
 
 /**
  * ลูกหนี้การค้า / ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md, docs/DECISIONS.md #50)
@@ -16,21 +30,6 @@ import { daysOverdue, toBillingNoteDto, toInvoiceDto, toReceiptDto } from './rec
  * - ใบเสร็จรับชำระหนี้ตัดชำระบิลเก่าสุดก่อน (FIFO) และบันทึกการตัดไว้ตอนรับเงินเลย
  * - ใบวางบิลเป็นเอกสารรวบบิลค้างส่งให้ลูกค้า ไม่เปลี่ยนยอดหนี้ด้วยตัวเอง
  */
-
-/** เลขที่เอกสารรูปแบบเดียวกับใบกำกับภาษี: <prefix><ปี พ.ศ. 2 หลัก>-<เลขรัน 6 หลัก> รีเซ็ตทุกปี
- * นับรวมใบที่ถูกยกเลิก เลขที่ที่เคยออกจึงไม่ถูกใช้ซ้ำ (ดู tax-invoice.service.js) */
-const nextDocumentNo = (table, column, code) => {
-  const buddhistYear = new Date().getFullYear() + 543;
-  const prefix = `${code}${String(buddhistYear).slice(-2)}-`;
-  const count = receivableRepository.countByPrefix(table, column, prefix);
-  return `${prefix}${String(count + 1).padStart(6, '0')}`;
-};
-
-const loadCustomer = (customerId) => {
-  const customer = customerRepository.findById(customerId);
-  if (!customer) throw ApiError.notFound('ไม่พบลูกค้านี้');
-  return customer;
-};
 
 const AGING_BUCKETS = [
   { key: 'current', max: 0 },
@@ -97,7 +96,7 @@ export const receivableService = {
       .sort((a, b) => b.overdue - a.overdue || b.outstanding - a.outstanding);
   },
 
-  /** รายการเดินบัญชีของลูกค้าหนึ่งราย: บิลขายเชื่อทุกใบ + ใบเสร็จ + ใบวางบิล */
+  /** รายการเดินบัญชีของลูกค้าหนึ่งราย: บิลขายเชื่อทุกใบ + ใบเสร็จ + ใบวางบิล + ใบลดหนี้ + ใบแจ้งดอกเบี้ย */
   statement(customerId) {
     const customer = loadCustomer(customerId);
     const today = receivableRepository.todayDate();
@@ -108,6 +107,10 @@ export const receivableService = {
       invoices: invoices.map((invoice) => toInvoiceDto(invoice, today)),
       receipts: receivableRepository.receiptsByCustomer(customerId).map(buildReceiptDto),
       billingNotes: receivableRepository.notesByCustomer(customerId).map(buildNoteDto),
+      creditNotes: creditNoteRepository.byCustomer(customerId).map(toCreditNoteDto),
+      lateFees: lateFeeRepository
+        .byCustomer(customerId)
+        .map((row) => toLateFeeDto(row, lateFeeRepository.items(row.id))),
     };
   },
 
@@ -133,7 +136,9 @@ export const receivableService = {
     return { customer, dueDate: receivableRepository.dateAfterDays(customer.credit_term_days) };
   },
 
-  /** ยอดที่ยังคืนได้ของบิลขายเชื่อ — คืนได้ไม่เกินยอดค้าง (ส่วนที่ชำระหนี้แล้วต้องยกเลิกใบเสร็จก่อน) */
+  /** ยอดที่ยังลดหนี้ได้ของบิลขายเชื่อ — ไม่เกินยอดค้าง (ส่วนที่ชำระหนี้แล้วต้องยกเลิกใบเสร็จก่อน)
+   * payment.service.js จำกัดไม่ให้เกินยอดบิลที่ยังไม่ถูกลดด้วยอีกชั้น ดอกเบี้ยจึงลดด้วยใบลดหนี้ไม่ได้
+   * (ยกเลิกใบแจ้งดอกเบี้ยแทน) */
   creditRefundable(paymentId) {
     return Math.max(receivableRepository.invoiceByPaymentId(paymentId)?.outstanding ?? 0, 0);
   },
@@ -214,7 +219,12 @@ export const receivableService = {
   getReceipt(id) {
     const row = receivableRepository.findReceipt(id);
     if (!row) throw ApiError.notFound('ไม่พบใบเสร็จรับชำระนี้');
-    return { ...buildReceiptDto(row), store: storeInfo(), customer: customerInfo(row.customer_id) };
+    return {
+      ...buildReceiptDto(row),
+      store: storeInfo(),
+      customer: customerInfo(row.customer_id),
+      emails: emailHistory('receipt', row.id),
+    };
   },
 
   /**
@@ -324,7 +334,12 @@ export const receivableService = {
   getBillingNote(id) {
     const row = receivableRepository.findNote(id);
     if (!row) throw ApiError.notFound('ไม่พบใบวางบิลนี้');
-    return { ...buildNoteDto(row), store: storeInfo(), customer: customerInfo(row.customer_id) };
+    return {
+      ...buildNoteDto(row),
+      store: storeInfo(),
+      customer: customerInfo(row.customer_id),
+      emails: emailHistory('billing_note', row.id),
+    };
   },
 
   /** ยกเลิกใบวางบิล (ผู้จัดการขึ้นไป) — ไม่กระทบยอดหนี้ บิลในใบนั้นกลับไปวางบิลใหม่ได้ */
@@ -348,18 +363,5 @@ export const receivableService = {
     return buildNoteDto(receivableRepository.findNote(id));
   },
 };
-
-/** หัวเอกสาร (ใบวางบิล/ใบเสร็จ) ใช้ข้อมูลร้าน ณ ตอนพิมพ์ — ต่างจากใบกำกับภาษีที่กฎหมายบังคับ snapshot */
-const storeInfo = () => {
-  const settings = settingsService.get();
-  return {
-    name: settings.storeName,
-    taxId: settings.storeTaxId,
-    address: settings.storeAddress,
-    branch: settings.storeBranch,
-  };
-};
-
-const customerInfo = (customerId) => toCustomerDto(customerRepository.findById(customerId));
 
 export default receivableService;

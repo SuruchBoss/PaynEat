@@ -442,3 +442,70 @@ CREATE TABLE IF NOT EXISTS billing_note_items (
 );
 CREATE INDEX IF NOT EXISTS idx_billing_note_items_note ON billing_note_items(billing_note_id);
 CREATE INDEX IF NOT EXISTS idx_billing_note_items_payment ON billing_note_items(payment_id);
+
+-- ใบแจ้งดอกเบี้ยผิดนัดชำระ (ดู docs/tickets/21-late-fees-credit-notes.md, docs/DECISIONS.md #55)
+-- ผู้จัดการเป็นคนกดคิด ไม่คิดเองเงียบ ๆ — ดอกเบี้ยแต่ละบรรทัดผูกกับบิลขายเชื่อที่เกินกำหนด (payment_id)
+-- แล้วบวกเข้ายอดค้างของบิลนั้นเลย ใบเสร็จรับชำระ/ใบวางบิลจึงเก็บดอกเบี้ยไปพร้อมกันโดยไม่ต้องมีเส้นทางใหม่
+-- period_to ของบรรทัดล่าสุดคือ "คิดถึงวันไหนแล้ว" รอบต่อไปเริ่มนับวันถัดไป จึงไม่คิดซ้ำวันเดิม
+CREATE TABLE IF NOT EXISTS ar_charges (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  charge_no    TEXT    NOT NULL UNIQUE,
+  customer_id  INTEGER NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+  total        INTEGER NOT NULL CHECK (total > 0),
+  annual_rate  REAL    NOT NULL CHECK (annual_rate > 0),
+  as_of        TEXT    NOT NULL,
+  note         TEXT,
+  issued_by    INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  issued_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  voided_at    TEXT,
+  void_reason  TEXT,
+  voided_by    INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ar_charges_customer ON ar_charges(customer_id);
+
+CREATE TABLE IF NOT EXISTS ar_charge_items (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  charge_id    INTEGER NOT NULL REFERENCES ar_charges(id) ON DELETE CASCADE,
+  payment_id   INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  principal    INTEGER NOT NULL CHECK (principal > 0),
+  period_from  TEXT    NOT NULL,
+  period_to    TEXT    NOT NULL,
+  days         INTEGER NOT NULL CHECK (days > 0),
+  amount       INTEGER NOT NULL CHECK (amount > 0)
+);
+CREATE INDEX IF NOT EXISTS idx_ar_charge_items_charge ON ar_charge_items(charge_id);
+CREATE INDEX IF NOT EXISTS idx_ar_charge_items_payment ON ar_charge_items(payment_id);
+
+-- ใบลดหนี้ (ดู docs/DECISIONS.md #56) — เอกสารของการลดหนี้บิลขายเชื่อ ตัวเลขทางบัญชีจริงยังอยู่ที่ refunds
+-- (ยอดขายสุทธิ/ยอดค้างที่มีอยู่แล้วใช้ต่อได้หมด) ใบนี้เก็บเลขที่เอกสาร เหตุผล ยอดเดิม/ยอดที่ถูกต้อง/ผลต่าง
+-- และ VAT ของผลต่าง ตามที่ใบลดหนี้ต้องแสดง — ไม่มีการยกเลิก ถ้าลดผิดให้คิดดอกเบี้ย/ขายเพิ่มเป็นรายการใหม่
+CREATE TABLE IF NOT EXISTS credit_notes (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  note_no            TEXT    NOT NULL UNIQUE,
+  customer_id        INTEGER NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+  payment_id         INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  refund_id          INTEGER NOT NULL UNIQUE REFERENCES refunds(id) ON DELETE RESTRICT,
+  order_id           INTEGER NOT NULL REFERENCES orders(id) ON DELETE RESTRICT,
+  original_amount    INTEGER NOT NULL,
+  previous_credited  INTEGER NOT NULL DEFAULT 0,
+  amount             INTEGER NOT NULL CHECK (amount > 0),
+  vat_amount         INTEGER NOT NULL DEFAULT 0,
+  tax_invoice_no     TEXT,
+  reason             TEXT    NOT NULL,
+  issued_by          INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  issued_at          TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_credit_notes_customer ON credit_notes(customer_id);
+
+-- ประวัติส่งเอกสารลูกหนี้ทางอีเมล (ดู docs/DECISIONS.md #57) — เก็บว่าส่งฉบับไหน ถึงใคร เมื่อไร โดยใคร
+CREATE TABLE IF NOT EXISTS document_emails (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  kind         TEXT    NOT NULL CHECK (kind IN ('billing_note', 'receipt', 'credit_note', 'late_fee')),
+  document_id  INTEGER NOT NULL,
+  to_address   TEXT    NOT NULL,
+  subject      TEXT    NOT NULL,
+  message_id   TEXT,
+  sent_by      INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  sent_at      TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_document_emails_document ON document_emails(kind, document_id);

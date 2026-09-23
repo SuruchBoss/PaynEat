@@ -124,4 +124,91 @@ extension DemoStoreSeedHistory on DemoStore {
       return day == _today();
     }).length;
   }
+
+  /// บิลขายเชื่อเนื้อสดของลูกค้าเครดิตตัวอย่างที่เลยกำหนดชำระมาแล้ว 15 วัน — ให้ทัวร์ลอง "คิดดอกเบี้ย
+  /// ผิดนัด" ได้ทันทีโดยไม่ต้องรอเวลาจริง (ดู docs/tickets/21-late-fees-credit-notes.md)
+  void _seedOverdueCreditSale() {
+    final customer = findCustomer(900);
+    final soldAt = AppClock.now().subtract(const Duration(days: 45));
+    final stamp = soldAt.toUtc().toIso8601String();
+    final weighed = [(menuId: 26, grams: 3200), (menuId: 25, grams: 5000)];
+    final items = [
+      for (final line in weighed)
+        () {
+          final menu = menuItems.firstWhere((row) => row['id'] == line.menuId);
+          final pricePerKg = (menu['price'] as num).toDouble();
+          return <String, dynamic>{
+            'id': _nextId(),
+            'orderId': 0,
+            'menuItemId': menu['id'],
+            'name': menu['name'],
+            'unitPrice': pricePerKg,
+            'quantity': 1,
+            'weightGrams': line.grams,
+            'options': const [],
+            'optionsPrice': 0.0,
+            'lineTotal': _weighedLineTotal(pricePerKg, const [], line.grams),
+            'note': null,
+            'status': OrderItemStatus.served,
+            'isPaid': true,
+            'createdAt': stamp,
+            'updatedAt': stamp,
+          };
+        }(),
+    ];
+    final order = <String, dynamic>{
+      'id': _nextId(),
+      'code':
+          'ORD-${soldAt.year}'
+          '${soldAt.month.toString().padLeft(2, '0')}'
+          '${soldAt.day.toString().padLeft(2, '0')}-0001',
+      'type': OrderType.takeaway,
+      'tableId': null,
+      'tableName': null,
+      'tableZone': null,
+      'queueNumber': null,
+      'waiterId': 6,
+      'waiterName': 'พี่แอน (แคชเชียร์)',
+      'customerId': customer['id'],
+      'customerName': customer['name'],
+      'customerPhone': customer['phone'],
+      'pointsEarned': 0,
+      'guestCount': 1,
+      'status': OrderStatus.paid,
+      'note': null,
+      'subtotal': 0.0,
+      'discountType': DiscountType.none,
+      'discountValue': 0.0,
+      'discountAmount': 0.0,
+      'serviceCharge': 0.0,
+      'vat': 0.0,
+      'total': 0.0,
+      'cancelledReason': null,
+      'createdAt': stamp,
+      'updatedAt': stamp,
+      'closedAt': stamp,
+      'items': items,
+    };
+    for (final item in items) {
+      item['orderId'] = order['id'];
+    }
+    orders.add(order);
+    _recalculate(order);
+    order['updatedAt'] = stamp;
+
+    final term = (customer['creditTermDays'] as num).toInt();
+    payments.add({
+      'id': _nextId(),
+      'orderId': order['id'],
+      'method': PaymentMethod.credit,
+      'amount': order['total'],
+      'received': 0.0,
+      'change': 0.0,
+      'reference': null,
+      'cashierId': 6,
+      'cashierName': 'พี่แอน (แคชเชียร์)',
+      'dueDate': _isoDay(soldAt.add(Duration(days: term))),
+      'createdAt': stamp,
+    });
+  }
 }

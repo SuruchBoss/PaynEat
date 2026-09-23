@@ -39,6 +39,10 @@ class SettingsController extends GetxController {
       TextEditingController();
   final RxInt scaleLabelPluDigits = 5.obs;
 
+  /// ดอกเบี้ยผิดนัดของลูกหนี้ขายเชื่อ (ดู docs/tickets/21-late-fees-credit-notes.md)
+  final TextEditingController lateFeeRateController = TextEditingController();
+  final TextEditingController lateFeeGraceController = TextEditingController();
+
   @override
   void onInit() {
     super.onInit();
@@ -57,6 +61,8 @@ class SettingsController extends GetxController {
     pointsRedeemValueController.dispose();
     promptPayIdController.dispose();
     scaleLabelPrefixController.dispose();
+    lateFeeRateController.dispose();
+    lateFeeGraceController.dispose();
     super.onClose();
   }
 
@@ -86,6 +92,8 @@ class SettingsController extends GetxController {
         promptPayIdController.text = data.promptPayId ?? '';
         scaleLabelPrefixController.text = data.scaleLabelPrefix;
         scaleLabelPluDigits.value = data.scaleLabelPluDigits;
+        lateFeeRateController.text = _trimZeros(data.lateFeeAnnualRatePercent);
+        lateFeeGraceController.text = '${data.lateFeeGraceDays}';
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -128,6 +136,27 @@ class SettingsController extends GetxController {
       return;
     }
 
+    // เพดาน 15% ต่อปีเท่ากับ backend (settings.routes.js) — ตรวจก่อนยิงให้ข้อความชัดกว่า 422
+    final lateFeeRate = double.tryParse(
+      lateFeeRateController.text.trim().isEmpty
+          ? '0'
+          : lateFeeRateController.text.trim(),
+    );
+    final lateFeeGrace = int.tryParse(
+      lateFeeGraceController.text.trim().isEmpty
+          ? '0'
+          : lateFeeGraceController.text.trim(),
+    );
+    if (lateFeeRate == null ||
+        lateFeeRate < 0 ||
+        lateFeeRate > 15 ||
+        lateFeeGrace == null ||
+        lateFeeGrace < 0 ||
+        lateFeeGrace > 365) {
+      AppDialogs.error('settings_late_fee_invalid'.tr);
+      return;
+    }
+
     isSaving.value = true;
     final result = await _updateSettings(
       UpdateSettingsParams(
@@ -143,6 +172,8 @@ class SettingsController extends GetxController {
         promptPayId: promptPayIdController.text.trim(),
         scaleLabelPrefix: scalePrefix,
         scaleLabelPluDigits: scaleLabelPluDigits.value,
+        lateFeeAnnualRatePercent: lateFeeRate,
+        lateFeeGraceDays: lateFeeGrace,
       ),
     );
     isSaving.value = false;
@@ -155,4 +186,9 @@ class SettingsController extends GetxController {
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
   }
+
+  /// 12.0 → "12", 7.5 → "7.5" — ช่องกรอกไม่ต้องมีศูนย์ท้ายรก ๆ
+  static String _trimZeros(double value) => value == value.roundToDouble()
+      ? value.toStringAsFixed(0)
+      : value.toString();
 }

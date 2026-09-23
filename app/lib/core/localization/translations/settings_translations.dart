@@ -90,6 +90,18 @@ const Map<String, String> settingsTranslationsTh = {
       'EAN-13 = prefix + PLU @plu หลัก + น้ำหนัก (กรัม) + check digit',
   'settings_scale_label_invalid':
       'รูปแบบฉลากตาชั่ง: prefix ขึ้นต้นด้วย 2 (1–3 หลัก) และต้องเหลือหลักน้ำหนัก 4–6 หลัก',
+  'settings_receivable_title': 'ลูกหนี้ขายเชื่อ',
+  'settings_receivable_subtitle': 'ดอกเบี้ยผิดนัดชำระ และการส่งเอกสารทางอีเมล',
+  'settings_late_fee_rate_label': 'ดอกเบี้ยผิดนัด',
+  'settings_late_fee_rate_suffix': '% ต่อปี (0 = ไม่คิด)',
+  'settings_late_fee_grace_label': 'ผ่อนผันหลังครบกำหนด',
+  'settings_late_fee_grace_suffix': 'วัน',
+  'settings_late_fee_invalid':
+      'ดอกเบี้ยผิดนัดต้องอยู่ระหว่าง 0–15% ต่อปี และวันผ่อนผัน 0–365 วัน',
+  'settings_email_enabled':
+      'ส่งใบวางบิล/เอกสารลูกหนี้เป็น PDF ทางอีเมลได้ (เซิร์ฟเวอร์ตั้งค่า SMTP แล้ว)',
+  'settings_email_disabled':
+      'ยังส่งอีเมลไม่ได้ — ผู้ดูแลเซิร์ฟเวอร์ต้องตั้ง SMTP_HOST ใน .env (ดาวน์โหลด PDF ยังใช้ได้)',
 };
 
 const Map<String, String> settingsTranslationsEn = {
@@ -184,6 +196,19 @@ const Map<String, String> settingsTranslationsEn = {
       'EAN-13 = prefix + @plu-digit PLU + weight (grams) + check digit',
   'settings_scale_label_invalid':
       'Scale label: prefix must start with 2 (1–3 digits) and leave 4–6 weight digits',
+  'settings_receivable_title': 'Credit customers',
+  'settings_receivable_subtitle':
+      'Late-payment interest and e-mailing documents',
+  'settings_late_fee_rate_label': 'Late-payment interest',
+  'settings_late_fee_rate_suffix': '% per year (0 = off)',
+  'settings_late_fee_grace_label': 'Grace after due date',
+  'settings_late_fee_grace_suffix': 'days',
+  'settings_late_fee_invalid':
+      'Interest must be 0–15% per year and grace 0–365 days',
+  'settings_email_enabled':
+      'Billing notes and other documents can be e-mailed as PDF (SMTP configured)',
+  'settings_email_disabled':
+      'E-mail is off — the server admin must set SMTP_HOST in .env (PDF download still works)',
 };
 
 const Map<String, String> settingsTranslationsKo = {
@@ -263,4 +288,14 @@ const Map<String, String> settingsTranslationsKo = {
   'settings_scale_example': 'EAN-13 = 접두어 + PLU @plu자리 + 무게(그램) + 체크 디지트',
   'settings_scale_label_invalid':
       '저울 라벨: 접두어는 2로 시작(1–3자리)하고 무게 자릿수가 4–6자리 남아야 합니다',
+  'settings_receivable_title': '외상 고객',
+  'settings_receivable_subtitle': '연체 이자 및 문서 이메일 발송',
+  'settings_late_fee_rate_label': '연체 이자',
+  'settings_late_fee_rate_suffix': '% / 년 (0 = 부과 안 함)',
+  'settings_late_fee_grace_label': '만기 후 유예',
+  'settings_late_fee_grace_suffix': '일',
+  'settings_late_fee_invalid': '연체 이자는 연 0–15%, 유예는 0–365일이어야 합니다',
+  'settings_email_enabled': '청구서 등 문서를 PDF로 이메일 발송할 수 있습니다 (SMTP 설정됨)',
+  'settings_email_disabled':
+      '이메일 사용 불가 — 서버 관리자가 .env에 SMTP_HOST를 설정해야 합니다 (PDF 다운로드는 가능)',
 };

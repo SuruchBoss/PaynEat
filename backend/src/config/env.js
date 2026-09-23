@@ -58,6 +58,35 @@ export const env = {
     model: process.env.AI_ASSISTANT_MODEL ?? 'claude-opus-5',
     dailyLimitPerUser: toInt(process.env.AI_ASSISTANT_DAILY_LIMIT, 20),
   },
+  // ส่งเอกสารลูกหนี้ (ใบวางบิล ฯลฯ) เป็น PDF ทางอีเมล (ดู docs/tickets/23-document-pdf-email.md) — ปิด
+  // เองถ้าไม่ตั้ง SMTP_HOST (endpoint ส่งอีเมลคืน 503 ดาวน์โหลด PDF ยังใช้ได้) หลักเดียวกับผู้ช่วย AI
+  // MAIL_TRANSPORT=json ใช้ในเทสต์/E2E: nodemailer สร้างอีเมลครบทุกส่วนแต่ไม่ส่งออกไปจริง
+  mail: {
+    transport: process.env.MAIL_TRANSPORT === 'json' ? 'json' : 'smtp',
+    host: process.env.SMTP_HOST,
+    port: toInt(process.env.SMTP_PORT, 587),
+    secure: (process.env.SMTP_SECURE ?? String(process.env.SMTP_PORT === '465')) === 'true',
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    from: process.env.MAIL_FROM ?? process.env.SMTP_USER,
+  },
+  // ตาชั่งต่อสาย (ดู docs/tickets/22-live-scale-camera-scan.md) — เซิร์ฟเวอร์ร้านอ่านน้ำหนักแล้วกระจายให้
+  // แอปทุกเครื่องผ่าน socket.io ค่าเริ่มต้นปิด (off) ร้านที่ไม่มีตาชั่งไม่ต้องตั้งอะไร
+  //   tcp       — ตาชั่งที่มีพอร์ต LAN หรือต่อผ่านกล่องแปลง Serial→Ethernet
+  //   serial    — ต่อ USB/RS-232 เข้าเครื่องที่รันเซิร์ฟเวอร์ตรง (ต้องมีแพ็กเกจ serialport)
+  //   simulator — ตาชั่งจำลอง ใช้เดโม/ทดสอบหน้าร้านโดยไม่มีเครื่องจริง
+  scale: {
+    driver: ['tcp', 'serial', 'simulator'].includes(process.env.SCALE_DRIVER)
+      ? process.env.SCALE_DRIVER
+      : 'off',
+    host: process.env.SCALE_TCP_HOST ?? '127.0.0.1',
+    port: toInt(process.env.SCALE_TCP_PORT, 4001),
+    serialPath: process.env.SCALE_SERIAL_PATH,
+    baudRate: toInt(process.env.SCALE_BAUD_RATE, 9600),
+    // ตาชั่งแบบถาม-ตอบ (ไม่ส่งน้ำหนักเองต่อเนื่อง) ต้องส่งคำสั่งขอน้ำหนักเป็นระยะ เช่น MT-SICS ใช้ "SI"
+    pollCommand: process.env.SCALE_POLL_COMMAND,
+    pollMs: toInt(process.env.SCALE_POLL_MS, 500),
+  },
 };
 
 export default env;

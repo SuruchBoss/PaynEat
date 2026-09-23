@@ -42,6 +42,10 @@ const Map<String, String> auditLogTranslationsTh = {
   'audit_log_action_receivable_receipt_void': 'ยกเลิกใบเสร็จรับชำระหนี้',
   'audit_log_action_receivable_billing_note': 'ออกใบวางบิล',
   'audit_log_action_receivable_billing_note_void': 'ยกเลิกใบวางบิล',
+  'audit_log_action_receivable_late_fee': 'คิดดอกเบี้ยผิดนัด',
+  'audit_log_action_receivable_late_fee_void': 'ยกเว้นดอกเบี้ยผิดนัด',
+  'audit_log_action_receivable_credit_note': 'ออกใบลดหนี้',
+  'audit_log_action_receivable_document_email': 'ส่งเอกสารทางอีเมล',
 };
 
 const Map<String, String> auditLogTranslationsEn = {
@@ -86,6 +90,10 @@ const Map<String, String> auditLogTranslationsEn = {
   'audit_log_action_receivable_receipt_void': 'Debt receipt voided',
   'audit_log_action_receivable_billing_note': 'Billing note issued',
   'audit_log_action_receivable_billing_note_void': 'Billing note voided',
+  'audit_log_action_receivable_late_fee': 'Late interest charged',
+  'audit_log_action_receivable_late_fee_void': 'Late interest waived',
+  'audit_log_action_receivable_credit_note': 'Credit note issued',
+  'audit_log_action_receivable_document_email': 'Document e-mailed',
 };
 
 const Map<String, String> auditLogTranslationsKo = {
@@ -127,4 +135,8 @@ const Map<String, String> auditLogTranslationsKo = {
   'audit_log_action_receivable_receipt_void': '수금 영수증 취소',
   'audit_log_action_receivable_billing_note': '청구서 발행',
   'audit_log_action_receivable_billing_note_void': '청구서 취소',
+  'audit_log_action_receivable_late_fee': '연체 이자 부과',
+  'audit_log_action_receivable_late_fee_void': '연체 이자 면제',
+  'audit_log_action_receivable_credit_note': '대변전표 발행',
+  'audit_log_action_receivable_document_email': '문서 이메일 발송',
 };

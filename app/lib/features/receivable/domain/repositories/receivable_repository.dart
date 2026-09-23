@@ -17,6 +17,65 @@ abstract class ReceivableRepository {
   Future<Result<BillingNote>> getBillingNote(int id);
 
   Future<Result<BillingNote>> voidBillingNote(int id, String reason);
+
+  // ดอกเบี้ยผิดนัด / ใบลดหนี้ (ดู docs/tickets/21-late-fees-credit-notes.md)
+  Future<Result<LateFeePreview>> previewLateFee(int customerId);
+
+  Future<Result<LateFeeCharge>> createLateFee(int customerId, {String? note});
+
+  Future<Result<LateFeeCharge>> getLateFee(int id);
+
+  Future<Result<LateFeeCharge>> voidLateFee(int id, String reason);
+
+  Future<Result<CreditNote>> createCreditNote(CreateCreditNoteParams params);
+
+  Future<Result<CreditNote>> getCreditNote(int id);
+
+  // PDF + อีเมล (ดู docs/tickets/23-document-pdf-email.md)
+  Future<Result<List<int>>> downloadPdf(ReceivableDocumentKind kind, int id);
+
+  /// ส่งเอกสารทางอีเมล — คืนประวัติการส่งล่าสุดของเอกสารนั้น
+  Future<Result<List<DocumentEmail>>> emailDocument(EmailDocumentParams params);
+}
+
+/// ลดหนี้บิลขายเชื่อพร้อมออกใบลดหนี้ (ผู้จัดการขึ้นไป)
+class CreateCreditNoteParams {
+  const CreateCreditNoteParams({
+    required this.paymentId,
+    required this.amount,
+    required this.reason,
+  });
+
+  final int paymentId;
+  final double amount;
+  final String reason;
+
+  Map<String, dynamic> toJson() => {
+    'paymentId': paymentId,
+    'amount': amount,
+    'reason': reason,
+  };
+}
+
+/// ส่งเอกสารเป็น PDF ทางอีเมล — ไม่ระบุ [to] = ส่งถึงอีเมลของลูกค้าในบัญชีเครดิต
+class EmailDocumentParams {
+  const EmailDocumentParams({
+    required this.kind,
+    required this.id,
+    this.to,
+    this.message,
+  });
+
+  final ReceivableDocumentKind kind;
+  final int id;
+  final String? to;
+  final String? message;
+
+  Map<String, dynamic> toJson() => {
+    if (to != null && to!.trim().isNotEmpty) 'to': to!.trim(),
+    if (message != null && message!.trim().isNotEmpty)
+      'message': message!.trim(),
+  };
 }
 
 /// รับชำระหนี้ — ไม่ระบุ [billingNoteId] = ตัดบิลเก่าสุดก่อน

@@ -33,6 +33,9 @@ class _CustomerCreditDialogState extends State<CustomerCreditDialog> {
   late final TextEditingController _address = TextEditingController(
     text: widget.customer.address ?? '',
   );
+  late final TextEditingController _email = TextEditingController(
+    text: widget.customer.email ?? '',
+  );
 
   @override
   void dispose() {
@@ -40,6 +43,7 @@ class _CustomerCreditDialogState extends State<CustomerCreditDialog> {
     _term.dispose();
     _taxId.dispose();
     _address.dispose();
+    _email.dispose();
     super.dispose();
   }
 
@@ -60,8 +64,16 @@ class _CustomerCreditDialogState extends State<CustomerCreditDialog> {
     return text.isEmpty || RegExp(r'^\d{13}$').hasMatch(text);
   }
 
+  bool get _isEmailValid {
+    final text = _email.text.trim();
+    return text.isEmpty || RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(text);
+  }
+
   bool get _isValid =>
-      _limitValue != null && _termValue != null && _isTaxIdValid;
+      _limitValue != null &&
+      _termValue != null &&
+      _isTaxIdValid &&
+      _isEmailValid;
 
   @override
   Widget build(BuildContext context) {
@@ -130,6 +142,20 @@ class _CustomerCreditDialogState extends State<CustomerCreditDialog> {
                   labelText: 'customer_credit_address_label'.tr,
                 ),
               ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const ValueKey('customer-credit-email'),
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'customer_credit_email_label'.tr,
+                  helperText: 'customer_credit_email_help'.tr,
+                  errorText: _isEmailValid
+                      ? null
+                      : 'customer_credit_email_invalid'.tr,
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
             ],
           ),
         ),
@@ -148,6 +174,7 @@ class _CustomerCreditDialogState extends State<CustomerCreditDialog> {
                     creditTermDays: _termValue!,
                     taxId: _taxId.text.trim(),
                     address: _address.text.trim(),
+                    email: _email.text.trim(),
                   ),
                 )
               : null,

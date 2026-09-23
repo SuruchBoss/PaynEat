@@ -30,6 +30,7 @@ part 'demo_store_audit_logs.dart';
 part 'demo_store_customers.dart';
 part 'demo_store_receivables.dart';
 part 'demo_store_ar_documents.dart';
+part 'demo_store_ar_adjustments.dart';
 
 /// "เซิร์ฟเวอร์จำลอง" ที่อยู่ในหน่วยความจำของแอป
 ///
@@ -74,6 +75,11 @@ class DemoStore {
   final List<Map<String, dynamic>> arReceipts = [];
   final List<Map<String, dynamic>> billingNotes = [];
 
+  /// ดอกเบี้ยผิดนัด / ใบลดหนี้ / ประวัติอีเมลเอกสาร (tickets 21, 23) — [DemoStoreArAdjustments]
+  final List<Map<String, dynamic>> arCharges = [];
+  final List<Map<String, dynamic>> creditNotes = [];
+  final List<Map<String, dynamic>> documentEmails = [];
+
   /// ผู้ใช้แคชเชียร์ที่ seed ไว้ให้ — ใช้เปิดกะแรกอัตโนมัติเหมือนวันแรกที่ร้านเปิดใช้ระบบ
   static const int _defaultCashierId = 6;
 
@@ -105,9 +111,13 @@ class DemoStore {
       ..addAll(DemoSeed.customers());
     arReceipts.clear();
     billingNotes.clear();
+    arCharges.clear();
+    creditNotes.clear();
+    documentEmails.clear();
     _orderSequence = 0;
     _idSequence = 1000;
     _seedHistoricalSales();
+    _seedOverdueCreditSale();
     openShift(openingCash: 2000, openedById: _defaultCashierId);
   }
 

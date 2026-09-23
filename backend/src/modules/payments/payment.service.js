@@ -12,6 +12,7 @@ import { shiftRepository } from '../shifts/shift.repository.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { customerRepository } from '../customers/customer.repository.js';
 import { ingredientService } from '../ingredients/ingredient.service.js';
+import { creditNoteService } from '../receivables/credit-note.service.js';
 import { receivableService } from '../receivables/receivable.service.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
@@ -345,7 +346,18 @@ export const paymentService = {
         reason,
         metadata: { paymentId, orderId: payment.order_id, amount: toBaht(amountSatang) },
       });
-      return created;
+      // ลดหนี้บิลขายเชื่อต้องมีเอกสารให้ลูกค้าเสมอ (ใบลดหนี้ DECISIONS #56) — ออกในทรานแซกชันเดียวกัน
+      // ถ้าออกเอกสารไม่สำเร็จ การลดหนี้ก็ต้องไม่เกิด
+      if (payment.method === 'credit') {
+        creditNoteService.issueForRefund({
+          payment,
+          order,
+          refund: created,
+          previousCredited: alreadyRefunded,
+          user,
+        });
+      }
+      return refundRepository.findById(created.id);
     })();
 
     const dto = toRefundDto(refund);

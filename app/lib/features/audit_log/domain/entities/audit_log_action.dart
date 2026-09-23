@@ -35,6 +35,11 @@ class AuditLogAction {
   static const String receivableBillingNote = 'receivable.billing_note';
   static const String receivableBillingNoteVoid =
       'receivable.billing_note_void';
+  // ดอกเบี้ยผิดนัด / ใบลดหนี้ / ส่งเอกสารทางอีเมล (tickets 21, 23)
+  static const String receivableLateFee = 'receivable.late_fee';
+  static const String receivableLateFeeVoid = 'receivable.late_fee_void';
+  static const String receivableCreditNote = 'receivable.credit_note';
+  static const String receivableDocumentEmail = 'receivable.document_email';
 
   static const List<String> all = [
     orderCreate,
@@ -63,6 +68,10 @@ class AuditLogAction {
     receivableReceiptVoid,
     receivableBillingNote,
     receivableBillingNoteVoid,
+    receivableLateFee,
+    receivableLateFeeVoid,
+    receivableCreditNote,
+    receivableDocumentEmail,
   ];
 
   static const Map<String, String> _keys = {
@@ -92,6 +101,10 @@ class AuditLogAction {
     receivableReceiptVoid: 'audit_log_action_receivable_receipt_void',
     receivableBillingNote: 'audit_log_action_receivable_billing_note',
     receivableBillingNoteVoid: 'audit_log_action_receivable_billing_note_void',
+    receivableLateFee: 'audit_log_action_receivable_late_fee',
+    receivableLateFeeVoid: 'audit_log_action_receivable_late_fee_void',
+    receivableCreditNote: 'audit_log_action_receivable_credit_note',
+    receivableDocumentEmail: 'audit_log_action_receivable_document_email',
   };
 
   static String translationKey(String action) => _keys[action] ?? action;

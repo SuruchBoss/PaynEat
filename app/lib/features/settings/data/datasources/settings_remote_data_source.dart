@@ -27,6 +27,10 @@ class SettingsRemoteDataSourceImpl implements SettingsRemoteDataSource {
     promptPayId: json['promptPayId'] as String?,
     scaleLabelPrefix: json['scaleLabelPrefix'] as String? ?? '20',
     scaleLabelPluDigits: (json['scaleLabelPluDigits'] as num?)?.toInt() ?? 5,
+    lateFeeAnnualRatePercent:
+        (json['lateFeeAnnualRatePercent'] as num?)?.toDouble() ?? 0,
+    lateFeeGraceDays: (json['lateFeeGraceDays'] as num?)?.toInt() ?? 0,
+    emailEnabled: json['emailEnabled'] as bool? ?? false,
   );
 
   @override

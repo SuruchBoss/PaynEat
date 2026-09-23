@@ -4,8 +4,8 @@ part of 'demo_store.dart';
 /// ลูกหนี้การค้า / ขายเชื่อ / ใบวางบิล — mirror ของ backend receivable.service.js
 /// (ดู docs/tickets/20-b2b-credit.md, docs/DECISIONS.md #50)
 ///
-/// บิลขายเชื่อ = payment ที่ method เป็น credit ยอดค้างคำนวณสดทุกครั้งจากยอดบิล − คืนเงิน − ยอดที่ตัด
-/// ชำระด้วยใบเสร็จที่ยังไม่ถูกยกเลิก เหมือนฝั่ง backend ไม่เก็บ "ยอดค้าง" แยกไว้
+/// บิลขายเชื่อ = payment ที่ method เป็น credit ยอดค้างคำนวณสดทุกครั้งจากยอดบิล + ดอกเบี้ยผิดนัด − คืนเงิน
+/// − ยอดที่ตัดชำระด้วยใบเสร็จที่ยังไม่ถูกยกเลิก เหมือนฝั่ง backend ไม่เก็บ "ยอดค้าง" แยกไว้
 extension DemoStoreReceivables on DemoStore {
   static const _agingBuckets = [
     ('current', 0),
@@ -55,6 +55,8 @@ extension DemoStoreReceivables on DemoStore {
     final amount = (payment['amount'] as num).toDouble();
     final refunded = _refundedTotalByPayment(id);
     final settled = _settledOf(id);
+    // ดอกเบี้ยผิดนัดบวกเข้ายอดค้างของบิลนั้นเลย (DECISIONS #55)
+    final charged = _chargedOf(id);
     final order = findOrder(payment['orderId'] as int);
     return {
       'paymentId': id,
@@ -64,7 +66,11 @@ extension DemoStoreReceivables on DemoStore {
       'amount': amount,
       'refunded': refunded,
       'settled': settled,
-      'outstanding': DemoStorePayments._roundMoney(amount - refunded - settled),
+      'interest': DemoStorePayments._roundMoney(charged),
+      'interestThrough': _interestThroughOf(id),
+      'outstanding': DemoStorePayments._roundMoney(
+        amount + charged - refunded - settled,
+      ),
       'createdAt': payment['createdAt'],
       'dueDate': payment['dueDate'],
       'billingNoteNo': _billingNoteNoOf(id),
@@ -159,6 +165,8 @@ extension DemoStoreReceivables on DemoStore {
     final limit = (body['creditLimit'] as num).toDouble();
     final term = (body['creditTermDays'] as num).toInt();
     final taxId = (body['taxId'] as String?)?.trim() ?? '';
+    // อีเมลรับเอกสาร (ticket 23) — ไม่ส่งมา = คงค่าเดิม ส่ง '' = ล้างค่า เหมือน backend
+    final email = (body['email'] as String?)?.trim();
     if (taxId.isNotEmpty && !RegExp(r'^\d{13}$').hasMatch(taxId)) {
       throw ApiException(
         message: 'customer_error_tax_id_invalid'.tr,
@@ -171,6 +179,9 @@ extension DemoStoreReceivables on DemoStore {
       ..['creditTermDays'] = term
       ..['taxId'] = taxId.isEmpty ? null : taxId
       ..['address'] = address.isEmpty ? null : address
+      ..['email'] = email == null
+          ? customer['email']
+          : (email.isEmpty ? null : email)
       ..['updatedAt'] = _now();
 
     if (limit != previousLimit || term != previousTerm) {
@@ -272,6 +283,16 @@ extension DemoStoreReceivables on DemoStore {
       'billingNotes': billingNotes
           .where((row) => row['customerId'] == customerId)
           .map(_withNoteStatus)
+          .toList()
+          .reversed
+          .toList(growable: false),
+      'creditNotes': creditNotes
+          .where((row) => row['customerId'] == customerId)
+          .toList()
+          .reversed
+          .toList(growable: false),
+      'lateFees': arCharges
+          .where((row) => row['customerId'] == customerId)
           .toList()
           .reversed
           .toList(growable: false),

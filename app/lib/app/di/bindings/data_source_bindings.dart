@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../../core/demo/demo_data_sources.dart';
 import '../../../core/demo/demo_store.dart';
 import '../../../core/network/api_client.dart';
+import '../../../core/network/socket_client.dart';
 import '../../../features/ai_assistant/data/datasources/ai_assistant_remote_data_source.dart';
 import '../../../features/audit_log/data/datasources/audit_log_remote_data_source.dart';
 import '../../../features/auth/data/datasources/auth_remote_data_source.dart';
@@ -14,6 +15,7 @@ import '../../../features/payment/data/datasources/payment_remote_data_source.da
 import '../../../features/promotion/data/datasources/promotion_remote_data_source.dart';
 import '../../../features/receivable/data/datasources/receivable_remote_data_source.dart';
 import '../../../features/report/data/datasources/report_remote_data_source.dart';
+import '../../../features/scale/data/datasources/scale_remote_data_source.dart';
 import '../../../features/self_order/data/datasources/self_order_remote_data_source.dart';
 import '../../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../../features/shift/data/datasources/shift_remote_data_source.dart';
@@ -102,6 +104,10 @@ void bindDataSources() {
     () => ReceivableRemoteDataSourceImpl(client),
     fenix: true,
   );
+  Get.lazyPut<ScaleRemoteDataSource>(
+    () => ScaleRemoteDataSourceImpl(client, Get.find<SocketClient>()),
+    fenix: true,
+  );
 }
 
 /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -168,4 +174,5 @@ void _bindDemoDataSources() {
     DemoReceivableDataSource(store, auth),
     permanent: true,
   );
+  Get.put<ScaleRemoteDataSource>(DemoScaleDataSource(), permanent: true);
 }

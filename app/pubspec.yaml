@@ -38,6 +38,10 @@ dependencies:
   qr_flutter: ^4.1.0
   web: ^1.1.1
 
+  # สแกนบาร์โค้ด/ฉลากตาชั่งด้วยกล้องมือถือ (docs/tickets/22-live-scale-camera-scan.md) — Android/iOS/
+  # เว็บในแพ็กเกจเดียว (เว็บใช้ getUserMedia ต้องเปิดผ่าน HTTPS หรือ localhost)
+  mobile_scanner: ^7.4.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

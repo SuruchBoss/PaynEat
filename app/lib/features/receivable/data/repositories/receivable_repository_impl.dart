@@ -41,4 +41,37 @@ class ReceivableRepositoryImpl implements ReceivableRepository {
   @override
   Future<Result<BillingNote>> voidBillingNote(int id, String reason) =>
       guard(() => _remote.voidBillingNote(id, reason));
+
+  @override
+  Future<Result<LateFeePreview>> previewLateFee(int customerId) =>
+      guard(() => _remote.previewLateFee(customerId));
+
+  @override
+  Future<Result<LateFeeCharge>> createLateFee(int customerId, {String? note}) =>
+      guard(() => _remote.createLateFee(customerId, note: note));
+
+  @override
+  Future<Result<LateFeeCharge>> getLateFee(int id) =>
+      guard(() => _remote.getLateFee(id));
+
+  @override
+  Future<Result<LateFeeCharge>> voidLateFee(int id, String reason) =>
+      guard(() => _remote.voidLateFee(id, reason));
+
+  @override
+  Future<Result<CreditNote>> createCreditNote(CreateCreditNoteParams params) =>
+      guard(() => _remote.createCreditNote(params));
+
+  @override
+  Future<Result<CreditNote>> getCreditNote(int id) =>
+      guard(() => _remote.getCreditNote(id));
+
+  @override
+  Future<Result<List<int>>> downloadPdf(ReceivableDocumentKind kind, int id) =>
+      guard(() => _remote.downloadPdf(kind, id));
+
+  @override
+  Future<Result<List<DocumentEmail>>> emailDocument(
+    EmailDocumentParams params,
+  ) => guard(() => _remote.emailDocument(params));
 }

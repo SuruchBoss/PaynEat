@@ -26,6 +26,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     String? promptPayId,
     String? scaleLabelPrefix,
     int? scaleLabelPluDigits,
+    double? lateFeeAnnualRatePercent,
+    int? lateFeeGraceDays,
   }) => guard(
     () => _remote.update({
       'storeName': ?storeName,
@@ -40,6 +42,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
       'promptPayId': ?promptPayId,
       'scaleLabelPrefix': ?scaleLabelPrefix,
       'scaleLabelPluDigits': ?scaleLabelPluDigits,
+      'lateFeeAnnualRatePercent': ?lateFeeAnnualRatePercent,
+      'lateFeeGraceDays': ?lateFeeGraceDays,
     }),
   );
 }

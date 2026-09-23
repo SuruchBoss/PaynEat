@@ -13,6 +13,7 @@ import '../../../menu/presentation/widgets/menu_item_card.dart';
 import '../../domain/services/barcode_resolver.dart';
 import '../controllers/cart_controller.dart';
 import '../widgets/cart_panel.dart';
+import '../widgets/barcode_scan_field.dart';
 import '../widgets/option_selection_sheet.dart';
 import '../widgets/weight_entry_dialog.dart';
 
@@ -112,7 +113,7 @@ class _MenuSection extends GetView<MenuBrowseController> {
                 ),
               ),
               const SizedBox(width: 10),
-              Expanded(child: _ScanField(onScanned: _handleScan)),
+              Expanded(child: BarcodeScanField(onScanned: _handleScan)),
             ],
           ),
         ),
@@ -241,55 +242,6 @@ class _MenuSection extends GetView<MenuBrowseController> {
       case ScanNotFound(:final code):
         AppDialogs.error('order_scan_not_found'.trParams({'code': code}));
     }
-  }
-}
-
-/// ช่องรับรหัสจากเครื่องสแกนบาร์โค้ด — เครื่องสแกน USB/บลูทูธทำตัวเป็นคีย์บอร์ด พิมพ์รหัสแล้วกด
-/// Enter เอง จึงใช้ TextField ธรรมดาได้ (ไม่ต้องมีไดรเวอร์) เคลียร์และโฟกัสคืนทุกครั้งหลังสแกน
-/// ให้สแกนชิ้นต่อไปได้ทันทีโดยไม่ต้องแตะจอ — จอกว้าง (เคาน์เตอร์) โฟกัสช่องนี้ตั้งแต่เปิดหน้า
-/// ส่วนมือถือไม่ออโต้โฟกัส ไม่งั้นคีย์บอร์ดเด้งบังเมนูทุกครั้งที่เข้าหน้า
-class _ScanField extends StatefulWidget {
-  const _ScanField({required this.onScanned});
-
-  final Future<void> Function(String code) onScanned;
-
-  @override
-  State<_ScanField> createState() => _ScanFieldState();
-}
-
-class _ScanFieldState extends State<_ScanField> {
-  final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit(String value) async {
-    _controller.clear();
-    if (value.trim().isEmpty) return;
-    await widget.onScanned(value);
-    if (mounted) _focusNode.requestFocus();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      key: const ValueKey('order-scan-field'),
-      controller: _controller,
-      focusNode: _focusNode,
-      autofocus: Responsive.isWide(context),
-      textInputAction: TextInputAction.done,
-      onSubmitted: _submit,
-      decoration: InputDecoration(
-        hintText: 'order_scan_hint'.tr,
-        prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
-        isDense: true,
-      ),
-    );
   }
 }
 

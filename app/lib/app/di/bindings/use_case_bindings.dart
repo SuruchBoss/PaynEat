@@ -27,6 +27,8 @@ import '../../../features/promotion/domain/repositories/promotion_repository.dar
 import '../../../features/promotion/domain/usecases/promotion_usecases.dart';
 import '../../../features/report/domain/repositories/report_repository.dart';
 import '../../../features/report/domain/usecases/report_usecases.dart';
+import '../../../features/scale/domain/repositories/scale_repository.dart';
+import '../../../features/scale/domain/usecases/scale_usecases.dart';
 import '../../../features/self_order/domain/repositories/self_order_repository.dart';
 import '../../../features/self_order/domain/usecases/add_self_order_items_usecase.dart';
 import '../../../features/self_order/domain/usecases/get_self_order_menu_usecase.dart';
@@ -306,6 +308,48 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => VoidBillingNoteUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => PreviewLateFeeUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => CreateLateFeeUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetLateFeeUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => VoidLateFeeUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => CreateCreditNoteUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetCreditNoteUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => DownloadReceivablePdfUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => EmailReceivableDocumentUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+
+  // ตาชั่งต่อสาย (ดู docs/tickets/22-live-scale-camera-scan.md)
+  Get.lazyPut(
+    () => GetScaleStatusUseCase(Get.find<ScaleRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => WatchScaleUseCase(Get.find<ScaleRepository>()),
     fenix: true,
   );
 

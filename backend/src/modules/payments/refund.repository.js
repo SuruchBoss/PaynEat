@@ -5,9 +5,10 @@ export const refundRepository = {
     return getDb()
       .prepare(
         `
-        SELECT r.*, u.name AS refunded_by_name
+        SELECT r.*, u.name AS refunded_by_name, cn.id AS credit_note_id, cn.note_no AS credit_note_no
           FROM refunds r
           LEFT JOIN users u ON u.id = r.refunded_by
+          LEFT JOIN credit_notes cn ON cn.refund_id = r.id
          WHERE r.order_id = ?
          ORDER BY r.id
       `,
@@ -36,16 +37,21 @@ export const refundRepository = {
       `,
       )
       .run(paymentId, orderId, amount, reason, refundedBy, shiftId ?? null);
+    return this.findById(info.lastInsertRowid);
+  },
+
+  findById(id) {
     return getDb()
       .prepare(
         `
-        SELECT r.*, u.name AS refunded_by_name
+        SELECT r.*, u.name AS refunded_by_name, cn.id AS credit_note_id, cn.note_no AS credit_note_no
           FROM refunds r
           LEFT JOIN users u ON u.id = r.refunded_by
+          LEFT JOIN credit_notes cn ON cn.refund_id = r.id
          WHERE r.id = ?
       `,
       )
-      .get(info.lastInsertRowid);
+      .get(id);
   },
 };
 

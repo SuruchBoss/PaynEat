@@ -13,6 +13,7 @@ class SocketEvents {
   static const String orderPaid = 'order:paid';
   static const String kitchenTicket = 'kitchen:ticket';
   static const String tableUpdated = 'table:updated';
+  static const String scaleReading = 'scale:reading';
 }
 
 /// ห่อ socket.io ให้ใช้ง่ายและ mock ได้
@@ -27,11 +28,12 @@ class SocketClient {
 
   bool get isConnected => _socket?.connected ?? false;
 
-  void connect(String token) {
+  /// [url] ใช้ในเทสต์ E2E ที่ backend สุ่มพอร์ตตอนรัน — แอปจริงใช้ [AppConfig.baseUrl] เสมอ
+  void connect(String token, {String? url}) {
     if (_socket != null) disconnect();
 
     _socket = io.io(
-      AppConfig.baseUrl,
+      url ?? AppConfig.baseUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})

@@ -7,6 +7,7 @@ import { migrate } from './db/migrate.js';
 import { seed } from './db/seed.js';
 import { initSocket } from './realtime/socket.js';
 import { closeDb } from './db/index.js';
+import { scaleService } from './modules/scale/scale.service.js';
 
 migrate();
 if (process.env.AUTO_SEED !== 'false') seed();
@@ -14,6 +15,7 @@ if (process.env.AUTO_SEED !== 'false') seed();
 const app = createApp();
 const server = http.createServer(app);
 initSocket(server);
+scaleService.start();
 
 server.listen(env.port, env.host, () => {
   console.log(`
@@ -23,12 +25,14 @@ server.listen(env.port, env.host, () => {
    ▸ Health    : http://localhost:${env.port}/health
    ▸ Realtime  : ws://localhost:${env.port} (socket.io)
    ▸ Database  : ${env.databaseFile}
+   ▸ Scale     : ${env.scale.driver}
    ▸ Env       : ${env.nodeEnv}
 `);
 });
 
 const shutdown = (signal) => {
   console.log(`\n${signal} received — กำลังปิดเซิร์ฟเวอร์...`);
+  scaleService.stop();
   server.close(() => {
     closeDb();
     process.exit(0);

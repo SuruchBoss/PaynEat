@@ -4,6 +4,9 @@ import { getDb } from '../../db/index.js';
  * "ใบแจ้งหนี้" หนึ่งใบคือ payments แถวที่ method = 'credit' (ดู docs/DECISIONS.md #50) — ยอดคืนเงิน
  * และยอดที่ตัดชำระแล้วคำนวณสดทุกครั้งจากตารางต้นทาง ไม่เก็บ "ยอดค้าง" แยกไว้ ตัวเลขจึงไม่มีทางเพี้ยน
  * จากกันเวลามีคนคืนเงินหรือยกเลิกใบเสร็จ (ใบเสร็จที่ถูกยกเลิกไม่นับ)
+ *
+ * ดอกเบี้ยผิดนัด (charged) บวกเข้ายอดค้างของบิลนั้นเลย (DECISIONS #55) — ใบแจ้งดอกเบี้ยที่ถูกยกเลิกไม่นับ
+ * และ interest_through คือวันสุดท้ายที่คิดดอกเบี้ยไปแล้ว รอบถัดไปเริ่มนับวันถัดจากนี้
  */
 const INVOICE_SELECT = `
   SELECT p.id         AS payment_id,
@@ -18,6 +21,14 @@ const INVOICE_SELECT = `
                    FROM ar_allocations a
                    JOIN ar_receipts rc ON rc.id = a.receipt_id
                   WHERE a.payment_id = p.id AND rc.voided_at IS NULL), 0) AS settled,
+         IFNULL((SELECT SUM(ci.amount)
+                   FROM ar_charge_items ci
+                   JOIN ar_charges ch ON ch.id = ci.charge_id
+                  WHERE ci.payment_id = p.id AND ch.voided_at IS NULL), 0) AS charged,
+         (SELECT MAX(ci.period_to)
+            FROM ar_charge_items ci
+            JOIN ar_charges ch ON ch.id = ci.charge_id
+           WHERE ci.payment_id = p.id AND ch.voided_at IS NULL) AS interest_through,
          (SELECT bn.note_no
             FROM billing_note_items bi
             JOIN billing_notes bn ON bn.id = bi.billing_note_id
@@ -32,7 +43,7 @@ const INVOICE_SELECT = `
 const OLDEST_FIRST = 'ORDER BY p.due_date, p.created_at, p.id';
 
 const withOutstanding = (row) =>
-  row ? { ...row, outstanding: row.amount - row.refunded - row.settled } : row;
+  row ? { ...row, outstanding: row.amount + row.charged - row.refunded - row.settled } : row;
 
 const RECEIPT_SELECT = `
   SELECT rc.*, c.name AS customer_name, u.name AS received_by_name, v.name AS voided_by_name
@@ -98,7 +109,13 @@ export const receivableRepository = {
   },
 
   countByPrefix(table, column, prefix) {
-    if (!['ar_receipts:receipt_no', 'billing_notes:note_no'].includes(`${table}:${column}`)) {
+    const allowed = [
+      'ar_receipts:receipt_no',
+      'billing_notes:note_no',
+      'ar_charges:charge_no',
+      'credit_notes:note_no',
+    ];
+    if (!allowed.includes(`${table}:${column}`)) {
       throw new Error(`เลขที่เอกสารไม่รองรับ ${table}.${column}`);
     }
     return getDb()

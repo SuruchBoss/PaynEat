@@ -29,6 +29,9 @@ export const updateCreditSchema = z.object({
     .optional()
     .or(z.literal('')),
   address: z.string().trim().max(300).optional(),
+  // อีเมลรับใบวางบิล/เอกสารลูกหนี้ (docs/tickets/23-document-pdf-email.md) — ไม่ส่งมา = คงค่าเดิม
+  // (แอปรุ่นก่อนไม่มีช่องนี้) ส่ง '' = ล้างค่า
+  email: z.string().trim().email('อีเมลไม่ถูกต้อง').max(120).optional().or(z.literal('')),
 });
 
 export const idParamSchema = z.object({ id: z.coerce.number().int().positive() });

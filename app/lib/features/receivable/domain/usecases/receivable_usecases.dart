@@ -91,3 +91,105 @@ class VoidBillingNoteUseCase
   Future<Result<BillingNote>> call(VoidDocumentParams params) =>
       _repository.voidBillingNote(params.id, params.reason);
 }
+
+// ดอกเบี้ยผิดนัด / ใบลดหนี้ (ดู docs/tickets/21-late-fees-credit-notes.md)
+
+class CreateLateFeeParams {
+  const CreateLateFeeParams({required this.customerId, this.note});
+
+  final int customerId;
+  final String? note;
+}
+
+class PreviewLateFeeUseCase implements UseCase<LateFeePreview, int> {
+  const PreviewLateFeeUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<LateFeePreview>> call(int params) =>
+      _repository.previewLateFee(params);
+}
+
+class CreateLateFeeUseCase
+    implements UseCase<LateFeeCharge, CreateLateFeeParams> {
+  const CreateLateFeeUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<LateFeeCharge>> call(CreateLateFeeParams params) =>
+      _repository.createLateFee(params.customerId, note: params.note);
+}
+
+class GetLateFeeUseCase implements UseCase<LateFeeCharge, int> {
+  const GetLateFeeUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<LateFeeCharge>> call(int params) =>
+      _repository.getLateFee(params);
+}
+
+class VoidLateFeeUseCase implements UseCase<LateFeeCharge, VoidDocumentParams> {
+  const VoidLateFeeUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<LateFeeCharge>> call(VoidDocumentParams params) =>
+      _repository.voidLateFee(params.id, params.reason);
+}
+
+class CreateCreditNoteUseCase
+    implements UseCase<CreditNote, CreateCreditNoteParams> {
+  const CreateCreditNoteUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<CreditNote>> call(CreateCreditNoteParams params) =>
+      _repository.createCreditNote(params);
+}
+
+class GetCreditNoteUseCase implements UseCase<CreditNote, int> {
+  const GetCreditNoteUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<CreditNote>> call(int params) =>
+      _repository.getCreditNote(params);
+}
+
+// PDF + อีเมล (ดู docs/tickets/23-document-pdf-email.md)
+
+class ReceivableDocumentRef {
+  const ReceivableDocumentRef(this.kind, this.id);
+
+  final ReceivableDocumentKind kind;
+  final int id;
+}
+
+class DownloadReceivablePdfUseCase
+    implements UseCase<List<int>, ReceivableDocumentRef> {
+  const DownloadReceivablePdfUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<List<int>>> call(ReceivableDocumentRef params) =>
+      _repository.downloadPdf(params.kind, params.id);
+}
+
+class EmailReceivableDocumentUseCase
+    implements UseCase<List<DocumentEmail>, EmailDocumentParams> {
+  const EmailReceivableDocumentUseCase(this._repository);
+
+  final ReceivableRepository _repository;
+
+  @override
+  Future<Result<List<DocumentEmail>>> call(EmailDocumentParams params) =>
+      _repository.emailDocument(params);
+}

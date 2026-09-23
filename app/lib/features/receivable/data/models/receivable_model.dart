@@ -1,4 +1,5 @@
 import '../../../customer/data/models/customer_model.dart';
+import '../../../customer/domain/entities/customer.dart';
 import '../../domain/entities/receivable.dart';
 
 /// แปลง JSON จาก /receivables/* เป็น entity — ใช้ร่วมกันทั้ง API จริงและโหมดสาธิต
@@ -46,6 +47,8 @@ class ReceivableModel {
         dueDate: json['dueDate'] as String?,
         daysOverdue: (json['daysOverdue'] as num?)?.toInt() ?? 0,
         billingNoteNo: json['billingNoteNo'] as String?,
+        interest: _money(json['interest']),
+        interestThrough: json['interestThrough'] as String?,
       );
 
   static DocumentLine lineFromJson(Map<String, dynamic> json) => DocumentLine(
@@ -66,6 +69,90 @@ class ReceivableModel {
       branch: json['branch'] as String?,
     );
   }
+
+  static Customer? _customerFromJson(Object? raw) =>
+      raw is Map ? CustomerModel.fromJson(raw.cast<String, dynamic>()) : null;
+
+  static List<Map<String, dynamic>> _maps(Object? raw) =>
+      (raw as List? ?? const [])
+          .whereType<Map>()
+          .map((row) => row.cast<String, dynamic>())
+          .toList(growable: false);
+
+  static DocumentEmail emailFromJson(Map<String, dynamic> json) =>
+      DocumentEmail(
+        to: json['to'] as String? ?? '',
+        subject: json['subject'] as String? ?? '',
+        sentByName: json['sentByName'] as String?,
+        sentAt: json['sentAt'] as String?,
+      );
+
+  static List<DocumentEmail> emailsFromJson(Object? raw) =>
+      _maps(raw).map(emailFromJson).toList(growable: false);
+
+  static LateFeeLine lateFeeLineFromJson(Map<String, dynamic> json) =>
+      LateFeeLine(
+        paymentId: (json['paymentId'] as num).toInt(),
+        orderCode: json['orderCode'] as String? ?? '',
+        dueDate: json['dueDate'] as String?,
+        principal: _money(json['principal']),
+        periodFrom: json['periodFrom'] as String? ?? '',
+        periodTo: json['periodTo'] as String? ?? '',
+        days: (json['days'] as num?)?.toInt() ?? 0,
+        amount: _money(json['amount']),
+      );
+
+  static LateFeePreview lateFeePreviewFromJson(Map<String, dynamic> json) =>
+      LateFeePreview(
+        annualRate: _money(json['annualRate']),
+        graceDays: (json['graceDays'] as num?)?.toInt() ?? 0,
+        asOf: json['asOf'] as String? ?? '',
+        total: _money(json['total']),
+        items: _maps(json['items']).map(lateFeeLineFromJson).toList(),
+      );
+
+  static LateFeeCharge lateFeeFromJson(Map<String, dynamic> json) =>
+      LateFeeCharge(
+        id: (json['id'] as num).toInt(),
+        chargeNo: json['chargeNo'] as String? ?? '',
+        customerId: (json['customerId'] as num?)?.toInt() ?? 0,
+        customerName: json['customerName'] as String? ?? '',
+        total: _money(json['total']),
+        annualRate: _money(json['annualRate']),
+        asOf: json['asOf'] as String? ?? '',
+        note: json['note'] as String?,
+        issuedByName: json['issuedByName'] as String?,
+        issuedAt: json['issuedAt'] as String?,
+        isVoided: json['isVoided'] as bool? ?? false,
+        voidReason: json['voidReason'] as String?,
+        items: _maps(json['items']).map(lateFeeLineFromJson).toList(),
+        store: _storeFromJson(json['store']),
+        customer: _customerFromJson(json['customer']),
+        emails: emailsFromJson(json['emails']),
+      );
+
+  static CreditNote creditNoteFromJson(Map<String, dynamic> json) => CreditNote(
+    id: (json['id'] as num).toInt(),
+    noteNo: json['noteNo'] as String? ?? '',
+    customerId: (json['customerId'] as num?)?.toInt() ?? 0,
+    customerName: json['customerName'] as String? ?? '',
+    paymentId: (json['paymentId'] as num?)?.toInt() ?? 0,
+    orderCode: json['orderCode'] as String? ?? '',
+    originalAmount: _money(json['originalAmount']),
+    previousCredited: _money(json['previousCredited']),
+    amount: _money(json['amount']),
+    correctAmount: _money(json['correctAmount']),
+    vatAmount: _money(json['vatAmount']),
+    baseAmount: _money(json['baseAmount']),
+    taxInvoiceNo: json['taxInvoiceNo'] as String?,
+    reason: json['reason'] as String? ?? '',
+    issuedByName: json['issuedByName'] as String?,
+    issuedAt: json['issuedAt'] as String?,
+    invoiceDate: json['invoiceDate'] as String?,
+    store: _storeFromJson(json['store']),
+    customer: _customerFromJson(json['customer']),
+    emails: emailsFromJson(json['emails']),
+  );
 
   static List<DocumentLine> _lines(Object? raw) => (raw as List? ?? const [])
       .whereType<Map>()
@@ -88,11 +175,8 @@ class ReceivableModel {
     voidReason: json['voidReason'] as String?,
     allocations: _lines(json['allocations']),
     store: _storeFromJson(json['store']),
-    customer: json['customer'] is Map
-        ? CustomerModel.fromJson(
-            (json['customer'] as Map).cast<String, dynamic>(),
-          )
-        : null,
+    customer: _customerFromJson(json['customer']),
+    emails: emailsFromJson(json['emails']),
   );
 
   static BillingNote billingNoteFromJson(Map<String, dynamic> json) =>
@@ -112,11 +196,8 @@ class ReceivableModel {
         voidReason: json['voidReason'] as String?,
         items: _lines(json['items']),
         store: _storeFromJson(json['store']),
-        customer: json['customer'] is Map
-            ? CustomerModel.fromJson(
-                (json['customer'] as Map).cast<String, dynamic>(),
-              )
-            : null,
+        customer: _customerFromJson(json['customer']),
+        emails: emailsFromJson(json['emails']),
       );
 
   static CustomerStatement statementFromJson(Map<String, dynamic> json) =>
@@ -135,5 +216,9 @@ class ReceivableModel {
             .whereType<Map>()
             .map((row) => billingNoteFromJson(row.cast<String, dynamic>()))
             .toList(growable: false),
+        creditNotes: _maps(
+          json['creditNotes'],
+        ).map(creditNoteFromJson).toList(),
+        lateFees: _maps(json['lateFees']).map(lateFeeFromJson).toList(),
       );
 }

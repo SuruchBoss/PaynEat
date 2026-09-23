@@ -35,6 +35,8 @@ import '../../features/report/data/datasources/report_remote_data_source.dart';
 import '../../features/report/data/models/report_model.dart';
 import '../../features/report/domain/entities/report.dart';
 import '../../features/self_order/data/datasources/self_order_remote_data_source.dart';
+import '../../features/scale/data/datasources/scale_remote_data_source.dart';
+import '../../features/scale/domain/entities/scale_status.dart';
 import '../../features/self_order/data/models/self_order_table_model.dart';
 import '../../features/settings/data/datasources/settings_remote_data_source.dart';
 import '../../features/settings/domain/entities/store_settings.dart';
@@ -45,6 +47,7 @@ import '../../features/tax_invoice/data/datasources/tax_invoice_remote_data_sour
 import '../../features/tax_invoice/data/models/tax_invoice_model.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
+import '../utils/app_clock.dart';
 import '../utils/promptpay.dart';
 import 'demo_names.dart';
 import 'demo_store.dart';
@@ -66,6 +69,7 @@ part 'demo_customer_data_source.dart';
 part 'demo_ai_assistant_data_source.dart';
 part 'demo_self_order_data_source.dart';
 part 'demo_receivable_data_source.dart';
+part 'demo_scale_data_source.dart';
 
 /// Data source ชุด "Demo Mode"
 ///
