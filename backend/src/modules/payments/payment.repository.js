@@ -45,15 +45,16 @@ export const paymentRepository = {
     cashierId,
     pointsRedeemed,
     pointsRedeemedValue,
+    dueDate,
   }) {
     const info = getDb()
       .prepare(
         `
         INSERT INTO payments (
           order_id, shift_id, method, amount, received, change_amount, reference, cashier_id,
-          points_redeemed, points_redeemed_value
+          points_redeemed, points_redeemed_value, due_date
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -67,6 +68,7 @@ export const paymentRepository = {
         cashierId ?? null,
         pointsRedeemed ?? 0,
         pointsRedeemedValue ?? 0,
+        dueDate ?? null,
       );
     return this.findById(info.lastInsertRowid);
   },

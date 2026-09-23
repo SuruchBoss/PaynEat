@@ -15,6 +15,7 @@ List<OrderItemPayload> cartToPayload(List<CartLine> lines) => lines
         quantity: line.quantity,
         optionIds: line.optionIds,
         note: line.note,
+        weightGrams: line.weightGrams,
       ),
     )
     .toList(growable: false);

@@ -225,6 +225,31 @@ extension DemoStorePayments on DemoStore {
         );
       }
     }
+
+    // ขายเชื่อ — mirror ของ payment.service.js#pay (ดู docs/tickets/20-b2b-credit.md)
+    String? dueDate;
+    if (method == PaymentMethod.credit) {
+      if (cashierId != null &&
+          _findUser(cashierId)['role'] == UserRole.waiter) {
+        throw ApiException(
+          message: 'payment_error_credit_role'.tr,
+          statusCode: 403,
+        );
+      }
+      if (customerId == null) {
+        throw ApiException(
+          message: 'payment_error_credit_requires_customer'.tr,
+          statusCode: 400,
+        );
+      }
+      if (pointsToRedeem > 0) {
+        throw ApiException(
+          message: 'payment_error_credit_no_points'.tr,
+          statusCode: 400,
+        );
+      }
+      dueDate = assertCanChargeCredit(customerId, resolvedAmount);
+    }
     final chargedAmount = resolvedAmount - pointsRedeemedValue;
 
     final actualReceived = method == PaymentMethod.cash
@@ -255,6 +280,7 @@ extension DemoStorePayments on DemoStore {
           : DemoNames.of(_findUser(cashierId)),
       'pointsRedeemed': pointsToRedeem,
       'pointsRedeemedValue': pointsRedeemedValue,
+      'dueDate': dueDate,
       'createdAt': _now(),
     };
     payments.add(payment);
@@ -272,6 +298,16 @@ extension DemoStorePayments on DemoStore {
 
     final isFullyPaid = alreadyPaid + resolvedAmount >= total - 0.001;
     if (isFullyPaid) {
+      // ของที่ขายไปต้องออกจากสต๊อกเสมอ แม้บิลนี้ไม่เคยกด "ส่งเข้าครัว" — mirror ของ
+      // payment.service.js#pay (docs/DECISIONS.md #51)
+      for (final item
+          in (order['items'] as List).cast<Map<String, dynamic>>()) {
+        if (item['status'] != OrderItemStatus.cancelled &&
+            item['stockDeducted'] != true) {
+          deductForOrderItem(item);
+          item['stockDeducted'] = true;
+        }
+      }
       order['status'] = OrderStatus.paid;
       order['closedAt'] = _now();
       _freeTable(order);

@@ -35,12 +35,17 @@ class TopItem {
     required this.quantity,
     required this.revenue,
     this.menuItemId,
+    this.weightKg,
   });
 
   final int? menuItemId;
   final String name;
   final int quantity;
   final double revenue;
+
+  /// น้ำหนักรวมที่ขายได้ของสินค้าขายตามน้ำหนัก (กก.) — null = ขายเป็นชิ้น
+  /// ([quantity] ของสินค้าแบบนี้คือจำนวนถุง ไม่ใช่ปริมาณที่ขายจริง)
+  final double? weightKg;
 }
 
 /// ยอดขายรายชั่วโมง (ใช้วาดกราฟช่วงเวลาที่ลูกค้าเยอะ)
@@ -138,6 +143,7 @@ class ZReport {
     required this.refundTotal,
     required this.netSales,
     this.paymentMethods = const [],
+    this.receivableReceipts = const [],
     this.shiftId,
     this.date,
     this.openedByName,
@@ -162,6 +168,10 @@ class ZReport {
   final double refundTotal;
   final double netSales;
   final List<PaymentMethodSales> paymentMethods;
+
+  /// รับชำระหนี้ลูกค้าเครดิตระหว่างกะแยกตามช่องทาง — ไม่ใช่ยอดขายของกะนี้ แต่เงินสดส่วนนี้
+  /// อยู่ในลิ้นชัก (ดู docs/DECISIONS.md #50)
+  final List<PaymentMethodSales> receivableReceipts;
 
   // เฉพาะ Z-report ต่อกะ
   final int? shiftId;

@@ -15,6 +15,8 @@ export const toPaymentDto = (row) => {
     cashierName: row.cashier_name,
     pointsRedeemed: row.points_redeemed ?? 0,
     pointsRedeemedValue: toBaht(row.points_redeemed_value ?? 0),
+    // วันครบกำหนดชำระของบิลขายเชื่อ (method = 'credit') — ช่องทางอื่นเป็น null
+    dueDate: row.due_date ?? null,
     createdAt: row.created_at,
   };
 };

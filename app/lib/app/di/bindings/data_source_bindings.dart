@@ -12,6 +12,7 @@ import '../../../features/menu/data/datasources/menu_remote_data_source.dart';
 import '../../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../../features/payment/data/datasources/payment_remote_data_source.dart';
 import '../../../features/promotion/data/datasources/promotion_remote_data_source.dart';
+import '../../../features/receivable/data/datasources/receivable_remote_data_source.dart';
 import '../../../features/report/data/datasources/report_remote_data_source.dart';
 import '../../../features/self_order/data/datasources/self_order_remote_data_source.dart';
 import '../../../features/settings/data/datasources/settings_remote_data_source.dart';
@@ -97,6 +98,10 @@ void bindDataSources() {
     () => SelfOrderRemoteDataSourceImpl(client),
     fenix: true,
   );
+  Get.lazyPut<ReceivableRemoteDataSource>(
+    () => ReceivableRemoteDataSourceImpl(client),
+    fenix: true,
+  );
 }
 
 /// โหมดสาธิต: เปลี่ยนเฉพาะชั้น data source ชั้นอื่นทั้งหมดไม่ต้องแก้แม้แต่บรรทัดเดียว
@@ -148,7 +153,7 @@ void _bindDemoDataSources() {
     permanent: true,
   );
   Get.put<CustomerRemoteDataSource>(
-    DemoCustomerDataSource(store),
+    DemoCustomerDataSource(store, auth),
     permanent: true,
   );
   Get.put<AiAssistantRemoteDataSource>(
@@ -157,6 +162,10 @@ void _bindDemoDataSources() {
   );
   Get.put<SelfOrderRemoteDataSource>(
     DemoSelfOrderDataSource(store),
+    permanent: true,
+  );
+  Get.put<ReceivableRemoteDataSource>(
+    DemoReceivableDataSource(store, auth),
     permanent: true,
   );
 }

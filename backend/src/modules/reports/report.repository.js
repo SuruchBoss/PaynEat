@@ -129,6 +129,7 @@ export const reportRepository = {
         SELECT oi.menu_item_id,
                oi.name_snapshot            AS name,
                SUM(oi.quantity)            AS quantity,
+               IFNULL(SUM(oi.weight_grams), 0) AS weight_grams,
                IFNULL(SUM(oi.line_total), 0) AS revenue
           FROM order_items oi
           JOIN orders o ON o.id = oi.order_id

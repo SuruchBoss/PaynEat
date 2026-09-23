@@ -79,6 +79,17 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_points_baht_per_point': 'บาท',
   'settings_points_earn_rate_error': 'อัตราสะสมแต้มต้องมากกว่า 0',
   'settings_points_redeem_value_error': 'มูลค่าแต้มต้องไม่ติดลบ',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'settings_scale_title': 'ฉลากตาชั่ง (บาร์โค้ดน้ำหนัก)',
+  'settings_scale_subtitle':
+      'ให้ตรงกับที่ตั้งไว้ในตาชั่งพิมพ์ฉลาก — สแกนฉลากแล้วได้ทั้งสินค้าและน้ำหนัก',
+  'settings_scale_prefix_label': 'รหัสนำหน้า (prefix)',
+  'settings_scale_plu_digits_label': 'จำนวนหลักของ PLU',
+  'settings_scale_example':
+      'EAN-13 = prefix + PLU @plu หลัก + น้ำหนัก (กรัม) + check digit',
+  'settings_scale_label_invalid':
+      'รูปแบบฉลากตาชั่ง: prefix ขึ้นต้นด้วย 2 (1–3 หลัก) และต้องเหลือหลักน้ำหนัก 4–6 หลัก',
 };
 
 const Map<String, String> settingsTranslationsEn = {
@@ -163,6 +174,16 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_points_baht_per_point': 'baht',
   'settings_points_earn_rate_error': 'The earn rate must be greater than 0',
   'settings_points_redeem_value_error': 'The redeem value cannot be negative',
+
+  'settings_scale_title': 'Scale labels (weight barcodes)',
+  'settings_scale_subtitle':
+      'Match your label-printing scale — scanning a label gives both the item and its weight',
+  'settings_scale_prefix_label': 'Prefix',
+  'settings_scale_plu_digits_label': 'PLU digits',
+  'settings_scale_example':
+      'EAN-13 = prefix + @plu-digit PLU + weight (grams) + check digit',
+  'settings_scale_label_invalid':
+      'Scale label: prefix must start with 2 (1–3 digits) and leave 4–6 weight digits',
 };
 
 const Map<String, String> settingsTranslationsKo = {
@@ -234,4 +255,12 @@ const Map<String, String> settingsTranslationsKo = {
   'settings_points_baht_per_point': '바트',
   'settings_points_earn_rate_error': '적립 기준 금액은 0보다 커야 합니다',
   'settings_points_redeem_value_error': '사용 금액은 음수일 수 없습니다',
+
+  'settings_scale_title': '저울 라벨 (무게 바코드)',
+  'settings_scale_subtitle': '라벨 저울 설정과 맞추세요 — 라벨을 스캔하면 상품과 무게를 함께 읽습니다',
+  'settings_scale_prefix_label': '접두어',
+  'settings_scale_plu_digits_label': 'PLU 자릿수',
+  'settings_scale_example': 'EAN-13 = 접두어 + PLU @plu자리 + 무게(그램) + 체크 디지트',
+  'settings_scale_label_invalid':
+      '저울 라벨: 접두어는 2로 시작(1–3자리)하고 무게 자릿수가 4–6자리 남아야 합니다',
 };

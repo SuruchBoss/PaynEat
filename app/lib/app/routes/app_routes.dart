@@ -18,6 +18,7 @@ abstract class AppRoutes {
   static const String promotionForm = '/admin/promotions/form';
   static const String ingredientForm = '/admin/ingredients/form';
   static const String customerDetail = '/admin/customers/detail';
+  static const String customerStatement = '/receivables/statement';
 
   // ลูกค้าสแกน QR ที่โต๊ะแล้วสั่งอาหารเอง — ไม่ต้อง login เลย (ดู docs/tickets/17-qr-self-order.md)
   static const String selfOrder = '/order/:qrToken';

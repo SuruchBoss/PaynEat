@@ -24,6 +24,8 @@ class UpdateSettingsParams {
     this.pointsEarnRateBaht,
     this.pointsRedeemValueBaht,
     this.promptPayId,
+    this.scaleLabelPrefix,
+    this.scaleLabelPluDigits,
   });
 
   final String? storeName;
@@ -36,6 +38,8 @@ class UpdateSettingsParams {
   final double? pointsEarnRateBaht;
   final double? pointsRedeemValueBaht;
   final String? promptPayId;
+  final String? scaleLabelPrefix;
+  final int? scaleLabelPluDigits;
 }
 
 class UpdateSettingsUseCase
@@ -57,5 +61,7 @@ class UpdateSettingsUseCase
         pointsEarnRateBaht: params.pointsEarnRateBaht,
         pointsRedeemValueBaht: params.pointsRedeemValueBaht,
         promptPayId: params.promptPayId,
+        scaleLabelPrefix: params.scaleLabelPrefix,
+        scaleLabelPluDigits: params.scaleLabelPluDigits,
       );
 }

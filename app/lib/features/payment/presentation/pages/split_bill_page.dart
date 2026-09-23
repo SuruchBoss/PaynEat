@@ -88,6 +88,8 @@ class SplitBillPage extends GetView<SplitBillController> {
                       subtitle: Text(
                         item.isPaid
                             ? 'payment_item_paid_label'.tr
+                            : item.isWeighed
+                            ? Formatters.weight(item.weightGrams!)
                             : 'payment_item_quantity_label'.trParams({
                                 'count': item.quantity.toString(),
                               }),

@@ -1,5 +1,6 @@
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
+import '../../domain/entities/customer.dart';
 import '../models/customer_model.dart';
 
 abstract class CustomerRemoteDataSource {
@@ -16,6 +17,8 @@ abstract class CustomerRemoteDataSource {
     required String phone,
     String? email,
   });
+
+  Future<CustomerModel> updateCredit(int id, CustomerCreditTerms terms);
 }
 
 class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
@@ -60,6 +63,15 @@ class CustomerRemoteDataSourceImpl implements CustomerRemoteDataSource {
         'phone': phone,
         if (email != null && email.isNotEmpty) 'email': email,
       },
+    );
+    return CustomerModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<CustomerModel> updateCredit(int id, CustomerCreditTerms terms) async {
+    final result = await _client.patch(
+      ApiEndpoints.customerCredit(id),
+      body: terms.toJson(),
     );
     return CustomerModel.fromJson(result.asMap);
   }

@@ -132,6 +132,16 @@ class DemoSeed {
       'sortOrder': 7,
       'isActive': true,
     },
+    // เคาน์เตอร์ขายเนื้อสด/ของฝากกลับบ้าน (ดู docs/tickets/18-sell-by-weight.md, 19-barcode-scale.md)
+    {
+      'id': 8,
+      'name': 'เนื้อสด & ของกลับบ้าน',
+      'nameEn': 'Fresh Meat & Take-home',
+      'nameKo': '정육 · 포장',
+      'icon': '🥩',
+      'sortOrder': 8,
+      'isActive': true,
+    },
   ];
 
   /// กลุ่มตัวเลือกมาตรฐานที่ใช้ซ้ำหลายเมนู
@@ -397,6 +407,63 @@ class DemoSeed {
       ),
       _menu(23, 7, 'บัวลอยไข่หวาน', 'Bua Loy', '부아로이', 70),
       _menu(24, 7, 'ไอศกรีมกะทิ', 'Coconut Ice Cream', '코코넛 아이스크림', 65),
+      // ขายตามน้ำหนัก — price คือราคาต่อกิโลกรัม, scalePlu คือรหัสสินค้าบนฉลากตาชั่ง
+      // (mirror ของ backend/src/db/seed.js — ดู docs/tickets/18-sell-by-weight.md)
+      _menu(
+        25,
+        8,
+        'หมูสามชั้นสไลซ์',
+        'Sliced Pork Belly',
+        '삼겹살 슬라이스',
+        280,
+        description: 'ราคาต่อกิโลกรัม ชั่งตามจริง',
+        ingredients: [_ingredientUsage(7, 1)],
+        soldByWeight: true,
+        scalePlu: '101',
+      ),
+      _menu(
+        26,
+        8,
+        'เนื้อวัวริบอาย',
+        'Beef Ribeye',
+        '소고기 꽃등심',
+        1200,
+        description: 'ราคาต่อกิโลกรัม ชั่งตามจริง',
+        ingredients: [_ingredientUsage(8, 1)],
+        soldByWeight: true,
+        scalePlu: '102',
+      ),
+      _menu(
+        27,
+        8,
+        'หมูหมักบุลโกกิ',
+        'Bulgogi Marinated Pork',
+        '돼지 불고기',
+        320,
+        description: 'ราคาต่อกิโลกรัม ชั่งตามจริง',
+        ingredients: [_ingredientUsage(7, 1)],
+        soldByWeight: true,
+        scalePlu: '103',
+      ),
+      // สินค้าสำเร็จรูป มีบาร์โค้ด EAN-13 จริง (check digit ถูกต้อง) สแกนแล้วลงตะกร้า 1 ชิ้น
+      _menu(
+        28,
+        8,
+        'ซอสหมักบุลโกกิ (ขวด)',
+        'Bulgogi Marinade (bottle)',
+        '불고기 양념 (병)',
+        159,
+        barcode: '8850999320014',
+      ),
+      _menu(
+        29,
+        8,
+        'กิมจิ 500 กรัม',
+        'Kimchi 500 g',
+        '김치 500g',
+        129,
+        barcode: '8850999320021',
+      ),
     ];
     return items;
   }
@@ -412,6 +479,9 @@ class DemoSeed {
     String? description,
     List<Map<String, dynamic>> groups = const [],
     List<Map<String, dynamic>> ingredients = const [],
+    bool soldByWeight = false,
+    String? barcode,
+    String? scalePlu,
   }) {
     final categoryName = categories().firstWhere(
       (c) => c['id'] == categoryId,
@@ -432,6 +502,9 @@ class DemoSeed {
       'sortOrder': id,
       'optionGroups': groups,
       'ingredients': ingredients,
+      'soldByWeight': soldByWeight,
+      'barcode': barcode,
+      'scalePlu': scalePlu,
       // เก็บไว้ใช้ภายใน demo store เท่านั้น (ไม่ใช่ฟิลด์ที่ API จริงส่งกลับ) — ดู
       // demo_store_ingredients.dart: แยก "ระบบปิดขายเพราะสต๊อกหมด" ออกจาก "พนักงานปิดขายเอง"
       'autoDisabledByStock': false,
@@ -483,6 +556,21 @@ class DemoSeed {
       'unit': 'ตัว',
       'currentStock': 3.0,
       'lowStockThreshold': 5.0,
+    },
+    // วัตถุดิบของเมนูขายตามน้ำหนัก หน่วยกิโลกรัม ผูกเมนู "1 ต่อ 1 กก." ขาย 0.485 กก. ลด 0.485
+    {
+      'id': 7,
+      'name': 'หมูสามชั้น',
+      'unit': 'กก.',
+      'currentStock': 25.0,
+      'lowStockThreshold': 5.0,
+    },
+    {
+      'id': 8,
+      'name': 'เนื้อริบอาย',
+      'unit': 'กก.',
+      'currentStock': 8.0,
+      'lowStockThreshold': 2.0,
     },
   ];
 
@@ -564,5 +652,27 @@ class DemoSeed {
     // เลขพร้อมเพย์ของร้านตัวอย่าง (ดู docs/tickets/16-promptpay-qr.md) — seed ไว้ให้เห็น QR
     // จริงได้ทันทีตอนเลือกช่องทางจ่าย "qr" โดยไม่ต้องตั้งค่าเอง
     'promptPayId': '0812345678',
+    // รูปแบบฉลากตาชั่ง (ดู docs/tickets/19-barcode-scale.md) — ค่าเริ่มต้นเดียวกับ backend
+    'scaleLabelPrefix': '20',
+    'scaleLabelPluDigits': 5,
   };
+
+  /// ลูกค้าเครดิตตัวอย่าง (ดู docs/tickets/20-b2b-credit.md) — mirror ของ backend seed
+  /// ชื่อ/ที่อยู่บริษัท **จงใจไม่แปล** เหมือนที่อยู่ร้านบนใบกำกับภาษี: เป็นชื่อตามทะเบียนที่ต้อง
+  /// พิมพ์ลงใบวางบิล/ใบกำกับภาษีตามจริง
+  static List<Map<String, dynamic>> customers() => [
+    {
+      'id': 900,
+      'name': 'บริษัท โซลบาร์บีคิว จำกัด',
+      'phone': '021234567',
+      'email': null,
+      'pointsBalance': 0,
+      'creditLimit': 50000.0,
+      'creditTermDays': 30,
+      'taxId': '0105561234567',
+      'address': '88 ถนนสุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
+      'createdAt': '2026-09-01T03:00:00.000Z',
+      'updatedAt': '2026-09-01T03:00:00.000Z',
+    },
+  ];
 }

@@ -242,7 +242,7 @@ class _PaymentForm extends GetView<CheckoutController> {
             () => Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: PaymentMethod.all
+              children: controller.availableMethods
                   .map((method) {
                     final selected = controller.method.value == method;
                     return ChoiceChip(
@@ -374,6 +374,7 @@ class _PaymentForm extends GetView<CheckoutController> {
                     children: [
                       if (controller.method.value == PaymentMethod.qr)
                         const PromptPayQrView(),
+                      if (controller.isCredit) const _CreditInfo(),
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: TextField(
@@ -431,8 +432,57 @@ class _PaymentForm extends GetView<CheckoutController> {
     PaymentMethod.qr => Icons.qr_code_2_rounded,
     PaymentMethod.card => Icons.credit_card_rounded,
     PaymentMethod.transfer => Icons.account_balance_rounded,
+    PaymentMethod.credit => Icons.request_quote_rounded,
     _ => Icons.payment_rounded,
   };
+}
+
+/// วงเงินคงเหลือ/เครดิตเทอมตอนเลือก "ขายเชื่อ" (ดู docs/tickets/20-b2b-credit.md) — ยอดเกินวงเงิน
+/// ปุ่มจ่ายจะกดไม่ได้พร้อมบอกเหตุผลตรงนี้ แทนที่จะปล่อยให้กดแล้วค่อยโดน backend ปฏิเสธ
+class _CreditInfo extends GetView<CheckoutController> {
+  const _CreditInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final customer = controller.customer.value;
+      if (customer == null) return const SizedBox.shrink();
+      final overLimit =
+          controller.amount.value > controller.creditAvailable + 0.001;
+      final ink = overLimit ? AppColors.dangerInk : AppColors.brandInk;
+      return Container(
+        key: const ValueKey('checkout-credit-info'),
+        margin: const EdgeInsets.only(top: 12),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: overLimit
+              ? AppColors.danger.withValues(alpha: 0.08)
+              : AppColors.primarySoft,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'payment_credit_available'.trParams({
+                'amount': Formatters.baht(controller.creditAvailable),
+              }),
+              style: TextStyle(fontWeight: FontWeight.w800, color: ink),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              overLimit
+                  ? 'payment_credit_over_limit'.tr
+                  : 'payment_credit_due_in'.trParams({
+                      'days': '${customer.creditTermDays}',
+                    }),
+              style: TextStyle(fontSize: 12.5, color: ink),
+            ),
+          ],
+        ),
+      );
+    });
+  }
 }
 
 /// แสดงข้อมูลลูกค้าที่ผูกกับออเดอร์นี้ + ให้เลือกใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้
@@ -492,7 +542,18 @@ class _LoyaltySection extends GetView<CheckoutController> {
                 ),
               ],
             ),
-            if (maxPoints > 0) ...[
+            if (controller.isCredit)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  'payment_credit_no_points'.tr,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              )
+            else if (maxPoints > 0) ...[
               const SizedBox(height: 8),
               Row(
                 children: [

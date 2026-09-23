@@ -36,6 +36,7 @@ tags:
   - name: Customers
   - name: AiAssistant
   - name: PublicOrder
+  - name: Receivables
 
 components:
   securitySchemes:
@@ -136,6 +137,21 @@ components:
           type: array
           description: วัตถุดิบที่ผูกไว้ — ระบบตัดสต๊อกอัตโนมัติเมื่อขาย (ดู ticket 06)
           items: { $ref: '#/components/schemas/MenuItemIngredient' }
+        soldByWeight:
+          type: boolean
+          description: >-
+            ขายตามน้ำหนัก (ดู ticket 18) — price คือบาทต่อกิโลกรัม สั่งต้องส่ง weightGrams และวัตถุดิบที่ผูก
+            คิดเป็นปริมาณต่อ 1 กก. ไม่แสดงในเมนู QR สั่งเอง
+        barcode:
+          type: string
+          nullable: true
+          example: '8850999320014'
+          description: บาร์โค้ดสินค้า (ตัวเลข/อังกฤษ/ขีด ≤ 32) ไม่ซ้ำในสาขาเดียวกัน ส่ง '' เพื่อล้าง (ดู ticket 19)
+        scalePlu:
+          type: string
+          nullable: true
+          example: '101'
+          description: รหัสสินค้าบนฉลากตาชั่ง 1–6 หลัก เก็บแบบตัด 0 นำหน้า ใช้ได้เฉพาะเมนูขายตามน้ำหนัก
     Ingredient:
       type: object
       properties:
@@ -243,6 +259,13 @@ components:
         note: { type: string, nullable: true }
         status: { type: string, enum: [pending, cooking, ready, served, cancelled] }
         isPaid: { type: boolean, description: จ่ายไปแล้วในรอบแยกบิลรายการอาหารหรือยัง }
+        weightGrams:
+          type: integer
+          nullable: true
+          example: 485
+          description: >-
+            น้ำหนักที่ชั่งได้ (กรัม) ของสินค้าขายตามน้ำหนัก — quantity เป็น 1 เสมอ และ lineTotal =
+            round((unitPrice + optionsPrice) สตางค์ × weightGrams / 1000) (ดู ticket 18, DECISIONS #48)
     PublicOrderPreview:
       type: object
       description: >-
@@ -324,9 +347,14 @@ components:
       properties:
         id: { type: integer }
         orderId: { type: integer }
-        method: { type: string, enum: [cash, qr, card, transfer] }
+        method: { type: string, enum: [cash, qr, card, transfer, credit] }
         amount: { type: number }
         received: { type: number }
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: วันครบกำหนดของบิลขายเชื่อ (method = credit) = วันนี้ + เครดิตเทอมของลูกค้า (ดู ticket 20)
         change: { type: number }
         reference: { type: string, nullable: true }
         pointsRedeemed: { type: integer, example: 0, description: แต้มสะสมที่ใช้แลกส่วนลดรอบจ่ายนี้ }
@@ -342,6 +370,80 @@ components:
         pointsBalance: { type: integer, example: 120 }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
+        creditLimit: { type: number, example: 50000, description: วงเงินขายเชื่อ — 0 = ขายเชื่อไม่ได้ (ดู ticket 20) }
+        creditTermDays: { type: integer, example: 30 }
+        taxId: { type: string, nullable: true, example: '0105561234567' }
+        address: { type: string, nullable: true }
+        creditOutstanding:
+          type: number
+          description: ยอดค้างชำระ ณ ตอนดึง — มีเฉพาะ GET /customers/{id}
+        creditAvailable:
+          type: number
+          description: วงเงินที่ยังใช้ได้ — มีเฉพาะ GET /customers/{id}
+    ReceivableSummary:
+      type: object
+      description: บัญชีลูกหนี้ของลูกค้าหนึ่งราย (ดู ticket 20)
+      properties:
+        customer: { $ref: '#/components/schemas/Customer' }
+        creditLimit: { type: number }
+        creditTermDays: { type: integer }
+        outstanding: { type: number, description: ยอดบิล − คืนเงิน − ยอดที่ตัดด้วยใบเสร็จที่ยังไม่ยกเลิก }
+        overdue: { type: number }
+        available: { type: number }
+        openInvoiceCount: { type: integer }
+        oldestDueDate: { type: string, format: date, nullable: true }
+        aging:
+          type: object
+          properties:
+            current: { type: number }
+            days1to30: { type: number }
+            days31to60: { type: number }
+            days61to90: { type: number }
+            over90: { type: number }
+    DocumentLine:
+      type: object
+      properties:
+        paymentId: { type: integer }
+        orderCode: { type: string }
+        amount: { type: number }
+        createdAt: { type: string, format: date-time }
+        dueDate: { type: string, format: date }
+    ArReceipt:
+      type: object
+      description: ใบเสร็จรับชำระหนี้ — เงินสดต้องมีกะเปิดอยู่และนับเข้ายอดที่ควรมีตอนปิดกะ
+      properties:
+        id: { type: integer }
+        receiptNo: { type: string, example: RC69-000001 }
+        customerId: { type: integer }
+        customerName: { type: string }
+        amount: { type: number }
+        method: { type: string, enum: [cash, qr, card, transfer] }
+        reference: { type: string, nullable: true }
+        shiftId: { type: integer, nullable: true }
+        receivedAt: { type: string, format: date-time }
+        isVoided: { type: boolean }
+        voidReason: { type: string, nullable: true }
+        allocations:
+          type: array
+          description: บิลที่ใบเสร็จนี้ตัดชำระ (เก่าสุดก่อน)
+          items: { $ref: '#/components/schemas/DocumentLine' }
+    BillingNote:
+      type: object
+      description: ใบวางบิล — total คงที่ ณ วันออก, remaining/status คำนวณสด
+      properties:
+        id: { type: integer }
+        noteNo: { type: string, example: BN69-000001 }
+        customerId: { type: integer }
+        customerName: { type: string }
+        total: { type: number }
+        remaining: { type: number }
+        status: { type: string, enum: [open, paid, void] }
+        dueDate: { type: string, format: date }
+        issuedAt: { type: string, format: date-time }
+        isVoided: { type: boolean }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/DocumentLine' }
 
 security:
   - bearerAuth: []
@@ -853,7 +955,12 @@ paths:
                     type: object
                     properties:
                       menuItemId: { type: integer }
-                      quantity: { type: integer }
+                      quantity: { type: integer, description: สินค้าขายตามน้ำหนักต้องเป็น 1 }
+                      weightGrams:
+                        type: integer
+                        minimum: 1
+                        maximum: 99999
+                        description: บังคับสำหรับเมนูขายตามน้ำหนัก ห้ามส่งกับเมนูชิ้น (ดู ticket 18)
                       optionIds:
                         type: array
                         items: { type: integer }
@@ -1093,7 +1200,12 @@ paths:
                 (แยกบิลรายการอาหาร ระบบคำนวณยอดเองจากรายการที่เลือก)
               properties:
                 orderId: { type: integer }
-                method: { type: string, enum: [cash, qr, card, transfer] }
+                method:
+                  type: string
+                  enum: [cash, qr, card, transfer, credit]
+                  description: >-
+                    credit = ขายเชื่อ (ดู ticket 20) — ออเดอร์ต้องผูกลูกค้าที่มีวงเงินพอ, ผู้ทำรายการไม่ใช่
+                    waiter (403), ใช้ร่วมกับ pointsToRedeem ไม่ได้, เกินวงเงินได้ 409
                 amount: { type: number, example: 211.86 }
                 itemIds:
                   type: array
@@ -1307,7 +1419,7 @@ paths:
   /reports/top-items:
     get:
       tags: [Reports]
-      summary: เมนูขายดี
+      summary: เมนูขายดี — สินค้าขายตามน้ำหนักมี weightKg (น้ำหนักรวม) เพิ่ม quantity คือจำนวนถุง
       responses:
         '200': { description: สำเร็จ }
   /reports/sales-by-day:
@@ -1366,6 +1478,7 @@ paths:
         Z-report ต่อกะ (ดู docs/tickets/12-report-export.md, docs/tickets/01-shift-cash-reconciliation.md)
         — สรุปยอดขาย/ภาษี/ส่วนลด/ช่องทางชำระเงินเฉพาะออเดอร์ที่จ่ายจริงในกะนี้ (ผูกผ่าน
         payments.shift_id ไม่ใช่วันที่เปิดออเดอร์) พร้อมกระทบยอดเงินสด (opening/expected/counted/variance)
+        — receivableReceipts แยกยอดรับชำระหนี้ตามช่องทาง (เงินสดนับรวมใน expected แล้ว ดู ticket 20)
       parameters:
         - { in: path, name: shiftId, required: true, schema: { type: integer } }
       responses:
@@ -1439,6 +1552,17 @@ paths:
                   type: string
                   example: '0812345678'
                   description: เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษีที่ผูกกับพร้อมเพย์ของร้าน
+                scaleLabelPrefix:
+                  type: string
+                  example: '20'
+                  description: prefix ของฉลากตาชั่ง EAN-13 ขึ้นต้นด้วย 2 ยาว 1–3 หลัก (ดู ticket 19)
+                scaleLabelPluDigits:
+                  type: integer
+                  enum: [4, 5, 6]
+                  example: 5
+                  description: >-
+                    จำนวนหลักของ PLU บนฉลาก — prefix + PLU ต้องเหลือหลักน้ำหนัก 4–6 หลัก ไม่งั้น 400
+                    (ตรวจเทียบค่าที่บันทึกไว้ด้วยเมื่อส่งมาแค่ช่องเดียว)
       responses:
         '200': { description: สำเร็จ }
 
@@ -1624,6 +1748,165 @@ paths:
                   success: { type: boolean }
                   data: { $ref: '#/components/schemas/Customer' }
         '404': { description: ไม่พบลูกค้านี้ }
+  /customers/{id}/credit:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    patch:
+      tags: [Customers]
+      summary: ตั้งวงเงินเครดิต/เครดิตเทอม/ข้อมูลออกเอกสาร (admin/manager — บันทึก audit log customer.credit_update)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [creditLimit, creditTermDays]
+              properties:
+                creditLimit: { type: number, minimum: 0, maximum: 100000000 }
+                creditTermDays: { type: integer, minimum: 0, maximum: 365 }
+                taxId: { type: string, description: ตัวเลข 13 หลัก หรือ '' เพื่อล้าง }
+                address: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: สำเร็จ }
+        '403': { description: ไม่ใช่ผู้จัดการขึ้นไป }
+  /receivables/customers:
+    get:
+      tags: [Receivables]
+      summary: รายชื่อลูกค้าเครดิตพร้อมยอดค้าง/เกินกำหนด เรียงเกินกำหนดมากสุดก่อน (admin/manager/cashier)
+      responses:
+        '200':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/ReceivableSummary' }
+  /receivables/customers/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: รายการเดินบัญชีของลูกค้า — สรุป + บิลขายเชื่อทุกใบ + ใบเสร็จรับชำระ + ใบวางบิล
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบลูกค้านี้ }
+  /receivables/receipts:
+    post:
+      tags: [Receivables]
+      summary: >-
+        รับชำระหนี้ — ตัดบิลเก่าสุดก่อน (ครบกำหนดก่อน → ขายก่อน) หรือเฉพาะบิลในใบวางบิลที่ระบุ
+        รับเกินยอดค้างได้ 400 เงินสดต้องมีกะเปิดอยู่ (409)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId, amount, method]
+              properties:
+                customerId: { type: integer }
+                amount: { type: number, example: 1500 }
+                method: { type: string, enum: [cash, qr, card, transfer] }
+                reference: { type: string, maxLength: 80 }
+                note: { type: string, maxLength: 300 }
+                billingNoteId: { type: integer }
+      responses:
+        '201':
+          description: ออกใบเสร็จสำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/ArReceipt' }
+  /receivables/receipts/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: ใบเสร็จรับชำระหนี้แบบเอกสารเต็ม (รวมข้อมูลร้าน/ลูกค้า)
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบใบเสร็จรับชำระนี้ }
+  /receivables/receipts/{id}/void:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    post:
+      tags: [Receivables]
+      summary: >-
+        ยกเลิกใบเสร็จรับชำระ (admin/manager) — หนี้กลับมาค้าง ใบเสร็จเงินสดยกเลิกได้เฉพาะตอนกะที่รับเงิน
+        ยังเปิดอยู่ (409)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: สำเร็จ }
+  /receivables/billing-notes:
+    post:
+      tags: [Receivables]
+      summary: >-
+        ออกใบวางบิล — รวบบิลค้างที่ยังไม่อยู่ในใบวางบิลอื่น (หรือเฉพาะ paymentIds) ไม่มีบิลให้รวบได้ 409
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customerId]
+              properties:
+                customerId: { type: integer }
+                paymentIds:
+                  type: array
+                  items: { type: integer }
+                dueDate: { type: string, format: date, description: ไม่ระบุ = วันครบกำหนดที่ช้าสุดของบิลที่รวบ }
+                note: { type: string, maxLength: 300 }
+      responses:
+        '201':
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/BillingNote' }
+  /receivables/billing-notes/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      tags: [Receivables]
+      summary: ใบวางบิลแบบเอกสารเต็ม (รวมข้อมูลร้าน/ลูกค้า)
+      responses:
+        '200': { description: สำเร็จ }
+        '404': { description: ไม่พบใบวางบิลนี้ }
+  /receivables/billing-notes/{id}/void:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    post:
+      tags: [Receivables]
+      summary: ยกเลิกใบวางบิล (admin/manager) — บิลในใบนี้วางบิลใหม่ได้
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, maxLength: 300 }
+      responses:
+        '200': { description: สำเร็จ }
   /ai/ask:
     post:
       tags: [AiAssistant]

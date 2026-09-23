@@ -4,14 +4,17 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../menu/domain/entities/menu_item.dart';
 import '../../../menu/presentation/controllers/menu_controller.dart';
 import '../../../menu/presentation/widgets/category_filter_bar.dart';
 import '../../../menu/presentation/widgets/menu_item_card.dart';
+import '../../domain/services/barcode_resolver.dart';
 import '../controllers/cart_controller.dart';
 import '../widgets/cart_panel.dart';
 import '../widgets/option_selection_sheet.dart';
+import '../widgets/weight_entry_dialog.dart';
 
 /// หน้าจอรับออเดอร์ — ด้านซ้ายเลือกเมนู ด้านขวาคือตะกร้า
 ///
@@ -96,13 +99,21 @@ class _MenuSection extends GetView<MenuBrowseController> {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
-          child: TextField(
-            onChanged: controller.search,
-            decoration: InputDecoration(
-              hintText: 'order_search_menu_hint'.tr,
-              prefixIcon: const Icon(Icons.search_rounded),
-              isDense: true,
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: controller.search,
+                  decoration: InputDecoration(
+                    hintText: 'order_search_menu_hint'.tr,
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    isDense: true,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(child: _ScanField(onScanned: _handleScan)),
+            ],
           ),
         ),
         Obx(
@@ -164,22 +175,120 @@ class _MenuSection extends GetView<MenuBrowseController> {
   }
 
   /// มีตัวเลือกให้เลือก → เปิดแผ่นเลือกก่อน, ไม่มี → ใส่ตะกร้าเลย 1 ที่
-  Future<void> _addToCart(MenuItem item) async {
+  ///
+  /// สินค้าขายตามน้ำหนักต้องได้น้ำหนักก่อนเสมอ — จากฉลากตาชั่งที่สแกน ([scannedGrams]) หรือให้
+  /// พนักงานกรอกตามหน้าจอตาชั่ง (ดู docs/tickets/18-sell-by-weight.md)
+  Future<void> _addToCart(MenuItem item, {int? scannedGrams}) async {
     final cart = Get.find<CartController>();
 
-    if (!item.requiresSelection) {
-      cart.addItem(item);
+    var result = const OptionSelectionResult(quantity: 1, options: []);
+    if (item.requiresSelection) {
+      final picked = await OptionSelectionSheet.show(item);
+      if (picked == null) return;
+      result = picked;
+    }
+
+    if (!item.soldByWeight) {
+      cart.addItem(
+        item,
+        quantity: result.quantity,
+        options: result.options,
+        note: result.note,
+      );
       return;
     }
 
-    final result = await OptionSelectionSheet.show(item);
-    if (result == null) return;
-
-    cart.addItem(
+    final grams =
+        scannedGrams ??
+        await WeightEntryDialog.show(item, options: result.options);
+    if (grams == null) return;
+    cart.addWeighedItem(
       item,
-      quantity: result.quantity,
+      grams,
       options: result.options,
       note: result.note,
+    );
+  }
+
+  /// รหัสจากเครื่องสแกน (ดู docs/tickets/19-barcode-scale.md) — กรณีที่ใส่ตะกร้าได้เลย
+  /// [CartController.applyScan] จัดการให้แล้ว ที่เหลือ (ต้องเลือกตัวเลือก/ต้องชั่ง/อ่านไม่ออก) ทำต่อที่นี่
+  Future<void> _handleScan(String code) async {
+    final result = Get.find<CartController>().applyScan(code, controller.items);
+    switch (result) {
+      case ScannedUnitItem(:final item):
+        if (item.requiresSelection) {
+          await _addToCart(item);
+        } else {
+          AppDialogs.success(
+            'order_scan_added'.trParams({'name': item.displayName}),
+          );
+        }
+      case ScannedWeighedItem(:final item, :final weightGrams):
+        if (item.requiresSelection) {
+          await _addToCart(item, scannedGrams: weightGrams);
+        } else {
+          AppDialogs.success(
+            'order_scan_added_weight'.trParams({
+              'name': item.displayName,
+              'weight': Formatters.weight(weightGrams),
+            }),
+          );
+        }
+      case ScannedNeedsWeighing(:final item):
+        await _addToCart(item);
+      case ScanBadCheckDigit():
+        AppDialogs.error('order_scan_bad_label'.tr);
+      case ScanNotFound(:final code):
+        AppDialogs.error('order_scan_not_found'.trParams({'code': code}));
+    }
+  }
+}
+
+/// ช่องรับรหัสจากเครื่องสแกนบาร์โค้ด — เครื่องสแกน USB/บลูทูธทำตัวเป็นคีย์บอร์ด พิมพ์รหัสแล้วกด
+/// Enter เอง จึงใช้ TextField ธรรมดาได้ (ไม่ต้องมีไดรเวอร์) เคลียร์และโฟกัสคืนทุกครั้งหลังสแกน
+/// ให้สแกนชิ้นต่อไปได้ทันทีโดยไม่ต้องแตะจอ — จอกว้าง (เคาน์เตอร์) โฟกัสช่องนี้ตั้งแต่เปิดหน้า
+/// ส่วนมือถือไม่ออโต้โฟกัส ไม่งั้นคีย์บอร์ดเด้งบังเมนูทุกครั้งที่เข้าหน้า
+class _ScanField extends StatefulWidget {
+  const _ScanField({required this.onScanned});
+
+  final Future<void> Function(String code) onScanned;
+
+  @override
+  State<_ScanField> createState() => _ScanFieldState();
+}
+
+class _ScanFieldState extends State<_ScanField> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit(String value) async {
+    _controller.clear();
+    if (value.trim().isEmpty) return;
+    await widget.onScanned(value);
+    if (mounted) _focusNode.requestFocus();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      key: const ValueKey('order-scan-field'),
+      controller: _controller,
+      focusNode: _focusNode,
+      autofocus: Responsive.isWide(context),
+      textInputAction: TextInputAction.done,
+      onSubmitted: _submit,
+      decoration: InputDecoration(
+        hintText: 'order_scan_hint'.tr,
+        prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
+        isDense: true,
+      ),
     );
   }
 }

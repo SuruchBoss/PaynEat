@@ -11,6 +11,8 @@ import { settingsService } from '../settings/settings.service.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { customerRepository } from '../customers/customer.repository.js';
+import { ingredientService } from '../ingredients/ingredient.service.js';
+import { receivableService } from '../receivables/receivable.service.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
 import { toPaymentDto } from './payment.mapper.js';
@@ -128,6 +130,24 @@ export const paymentService = {
     // ที่ลดลง เพื่อไม่ให้บัญชี alreadyPaid/isFullyPaid ของออเดอร์คลาดเคลื่อน
     const pointsToRedeem = payload.pointsToRedeem ?? 0;
     const settings = settingsService.get();
+
+    // ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md) — ปิดบิลโดยยังไม่มีเงินเข้า ยอดนี้กลายเป็นหนี้ของ
+    // ลูกค้าที่ผูกกับออเดอร์ จึงต้องมีลูกค้าเครดิตที่วงเงินพอ และเป็นการตัดสินใจให้ลูกค้าติดเงินร้าน
+    // พนักงานเสิร์ฟ (ที่รับชำระเงินสด/QR ได้ปกติ) จึงทำไม่ได้ แต้มสะสมใช้ร่วมไม่ได้ เพราะหนี้ต้องเท่ากับ
+    // ยอดที่บันทึกในบิลพอดี ไม่งั้นยอดค้างจะไม่ตรงกับใบวางบิล
+    let dueDate = null;
+    if (payload.method === 'credit') {
+      if (user?.role === 'waiter') {
+        throw ApiError.forbidden('ขายเชื่อต้องให้แคชเชียร์หรือผู้จัดการเป็นคนทำรายการ');
+      }
+      if (!order.customer_id) {
+        throw ApiError.badRequest('ขายเชื่อต้องผูกออเดอร์กับลูกค้าเครดิตก่อน');
+      }
+      if (pointsToRedeem > 0) {
+        throw ApiError.badRequest('ขายเชื่อใช้แต้มสะสมแลกส่วนลดร่วมด้วยไม่ได้');
+      }
+      ({ dueDate } = receivableService.assertCanCharge(order.customer_id, amount));
+    }
     let pointsRedeemedValue = 0;
     if (pointsToRedeem > 0) {
       if (!order.customer_id) {
@@ -164,6 +184,7 @@ export const paymentService = {
         cashierId: user?.id,
         pointsRedeemed: pointsToRedeem,
         pointsRedeemedValue,
+        dueDate,
       });
 
       // รับชำระเงินกระทบเงินสด/ยอดขายโดยตรง audit เหมือนคืนเงิน (refund) — ดู
@@ -189,6 +210,15 @@ export const paymentService = {
       if (itemIds) orderRepository.markItemsPaid(itemIds);
 
       if (isFullyPaid) {
+        // สินค้าที่ขายไปต้องออกจากสต๊อกเสมอ แม้บิลนั้นไม่เคยผ่านปุ่ม "ส่งเข้าครัว" — หน้าร้านขายของ
+        // (เช่นเคาน์เตอร์เนื้อที่ชั่งแล้วจ่ายเลย) หรือบิลที่จ่ายก่อนทำอาหาร เดิมไม่ถูกตัดสต๊อกเลย
+        // stock_deducted กันตัดซ้ำรายการที่ส่งครัวไปแล้ว (ดู docs/DECISIONS.md #51)
+        for (const item of activeItems) {
+          if (!item.stock_deducted) {
+            ingredientService.deductForOrderItem(item);
+            orderRepository.updateItem(item.id, { stockDeducted: true });
+          }
+        }
         orderRepository.updateStatus(order.id, 'paid', { closedAt: new Date().toISOString() });
         if (order.table_id) tableRepository.setStatus(order.table_id, 'available');
         // สะสมแต้มให้ลูกค้าที่ผูกไว้ครั้งเดียวตอนออเดอร์นี้จ่ายครบ (ไม่ผูกลูกค้า = ไม่ได้แต้ม)
@@ -274,6 +304,17 @@ export const paymentService = {
     const refundable = payment.amount - alreadyRefunded;
     if (amountSatang > refundable) {
       throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
+    }
+    // บิลขายเชื่อไม่มีเงินให้คืน การคืนคือ "ลดหนี้" จึงลดได้ไม่เกินยอดที่ยังค้าง — ส่วนที่ลูกค้าชำระหนี้
+    // มาแล้วต้องยกเลิกใบเสร็จรับชำระก่อน ไม่งั้นยอดค้างติดลบกลายเป็นร้านเป็นหนี้ลูกค้าโดยไม่มีใครเห็น
+    if (payment.method === 'credit') {
+      const creditRefundable = receivableService.creditRefundable(paymentId);
+      if (amountSatang > creditRefundable) {
+        throw ApiError.badRequest(
+          `บิลขายเชื่อนี้ค้างชำระอยู่ ${toBaht(creditRefundable)} บาท ลดหนี้ได้ไม่เกินยอดนี้ ` +
+            '(ส่วนที่ชำระแล้วต้องยกเลิกใบเสร็จรับชำระก่อน)',
+        );
+      }
     }
 
     // เงินสดที่คืนลูกค้าออกจากลิ้นชักจริง จึงต้องมีกะเปิดอยู่ให้ผูก — กฎเดียวกับตอนรับเงิน (ดู pay())

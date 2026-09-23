@@ -17,6 +17,7 @@ import auditLogRoutes from './modules/audit-logs/audit-log.routes.js';
 import customerRoutes from './modules/customers/customer.routes.js';
 import aiAssistantRoutes from './modules/ai-assistant/ai-assistant.routes.js';
 import publicOrderRoutes from './modules/public-order/public-order.routes.js';
+import receivableRoutes from './modules/receivables/receivable.routes.js';
 
 const router = Router();
 
@@ -38,5 +39,6 @@ router.use('/audit-logs', auditLogRoutes);
 router.use('/customers', customerRoutes);
 router.use('/ai', aiAssistantRoutes);
 router.use('/public', publicOrderRoutes);
+router.use('/receivables', receivableRoutes);
 
 export default router;

@@ -115,10 +115,15 @@ extension DemoStoreIngredients on DemoStore {
       );
       if (!touchesChangedIngredient) continue;
 
+      // เมนูขายตามน้ำหนักขายได้ตราบที่ยังเหลือ (qtyPerUnit คือปริมาณต่อ 1 กก. เหลือไม่ถึงกิโล
+      // ก็ยังชั่งขายเป็นถุงเล็กได้) — mirror ของ ingredient.service.js (docs/DECISIONS.md #48)
+      final soldByWeight = menu['soldByWeight'] == true;
       final isOrderable = links.every((link) {
         final raw = _rawIngredient(link['ingredientId'] as int);
-        return (raw['currentStock'] as num).toDouble() >=
-            (link['qtyPerUnit'] as num).toDouble();
+        final stock = (raw['currentStock'] as num).toDouble();
+        return soldByWeight
+            ? stock > 1e-9
+            : stock >= (link['qtyPerUnit'] as num).toDouble();
       });
 
       if (!isOrderable && menu['isAvailable'] == true) {
@@ -143,7 +148,11 @@ extension DemoStoreIngredients on DemoStore {
         .cast<Map<String, dynamic>>();
     if (links.isEmpty) return;
 
-    final quantity = (item['quantity'] as num).toDouble();
+    // บรรทัดชั่งน้ำหนักนับเป็นกิโลกรัม (mirror ของ core/weight.js#effectiveQuantity)
+    final grams = item['weightGrams'] as int?;
+    final quantity = grams != null
+        ? grams / 1000
+        : (item['quantity'] as num).toDouble();
     for (final link in links) {
       final ingredientId = link['ingredientId'] as int;
       final qtyPerUnit = (link['qtyPerUnit'] as num).toDouble();

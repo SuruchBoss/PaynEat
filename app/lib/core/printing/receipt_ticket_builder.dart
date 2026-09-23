@@ -90,6 +90,14 @@ class ReceiptTicketBuilder {
           ),
         ]),
       );
+      if (item.isWeighed) {
+        bytes.addAll(
+          generator.text(
+            '   ${Formatters.weight(item.weightGrams!)} x '
+            '${Formatters.money(item.unitPrice + item.optionsPrice)}${'common_per_kg'.tr}',
+          ),
+        );
+      }
       if (item.options.isNotEmpty) {
         bytes.addAll(generator.text('   ${item.optionsSummary}'));
       }

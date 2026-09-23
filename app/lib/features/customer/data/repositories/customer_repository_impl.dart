@@ -32,4 +32,8 @@ class CustomerRepositoryImpl implements CustomerRepository {
     required String phone,
     String? email,
   }) => guard(() => _remote.create(name: name, phone: phone, email: email));
+
+  @override
+  Future<Result<Customer>> updateCredit(int id, CustomerCreditTerms terms) =>
+      guard(() => _remote.updateCredit(id, terms));
 }

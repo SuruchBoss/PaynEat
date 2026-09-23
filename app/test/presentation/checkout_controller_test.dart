@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
+import 'package:payneat_pos/core/network/socket_client.dart';
+import 'package:payneat_pos/core/services/session_service.dart';
+import 'package:payneat_pos/core/services/storage_service.dart';
+import 'package:payneat_pos/features/auth/domain/entities/user.dart';
 import 'package:payneat_pos/core/usecases/result.dart';
 import 'package:payneat_pos/features/customer/domain/entities/customer.dart';
 import 'package:payneat_pos/features/customer/domain/repositories/customer_repository.dart';
@@ -347,5 +351,132 @@ void main() {
 
       expect(controller.hasOpenShift.value, isTrue);
     });
+  });
+
+  // ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md) — ปุ่ม "ขายเชื่อ" โผล่เฉพาะเมื่อใช้ได้จริง
+  group('CheckoutController ขายเชื่อ', () {
+    late SessionService session;
+    late CheckoutController credit;
+    var initialized = false;
+
+    Customer b2b({double limit = 5000, double available = 1000}) => Customer(
+      id: 900,
+      name: 'บริษัท โซลบาร์บีคิว จำกัด',
+      phone: '021234567',
+      pointsBalance: 40,
+      creditLimit: limit,
+      creditTermDays: 30,
+      creditOutstanding: limit - available,
+      creditAvailable: available,
+    );
+
+    Future<void> open({required String role, Customer? customer}) async {
+      session.updateUser(
+        User(
+          id: 6,
+          name: 'แคชเชียร์',
+          username: 'cashier',
+          role: role,
+          isActive: true,
+        ),
+      );
+      orderRepository.nextOrderResult = Result.success(
+        Order(
+          id: 1,
+          code: 'T001',
+          type: 'takeaway',
+          status: 'open',
+          subtotal: 800,
+          total: 856,
+          customerId: 900,
+        ),
+      );
+      paymentRepository.nextSummaryResult = Result.success(
+        _summary(total: 856),
+      );
+      customerRepository.nextGetByIdResult = Result.success(customer ?? b2b());
+      // เปิดหน้าครั้งแรก = onInit, ครั้งต่อไปในเทสต์เดียวกัน = โหลดซ้ำ (orderId เป็น late final)
+      if (initialized) {
+        await credit.load();
+      } else {
+        initialized = true;
+        credit.onInit();
+      }
+      await Future<void>.delayed(Duration.zero);
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    setUp(() {
+      initialized = false;
+      session = SessionService(
+        storage: StorageService.memory(),
+        socket: SocketClient(),
+      );
+      credit = CheckoutController(
+        getOrder: GetOrderUseCase(orderRepository),
+        getSummary: GetPaymentSummaryUseCase(paymentRepository),
+        pay: PayOrderUseCase(paymentRepository),
+        getCurrentShift: GetCurrentShiftUseCase(shiftRepository),
+        getCustomer: GetCustomerUseCase(customerRepository),
+        getSettings: GetSettingsUseCase(settingsRepository),
+        getPromptPayQr: GetPromptPayQrUseCase(paymentRepository),
+        session: session,
+      );
+    });
+
+    tearDown(() => credit.onClose());
+
+    test('ลูกค้ามีวงเงิน + แคชเชียร์ → มีช่องทาง "ขายเชื่อ"', () async {
+      await open(role: UserRole.cashier);
+
+      expect(credit.canSellOnCredit, isTrue);
+      expect(credit.availableMethods, contains(PaymentMethod.credit));
+      expect(credit.creditAvailable, 1000);
+    });
+
+    test(
+      'พนักงานเสิร์ฟ / ลูกค้าไม่มีวงเงิน → ไม่มีช่องทาง "ขายเชื่อ"',
+      () async {
+        await open(role: UserRole.waiter);
+        expect(credit.availableMethods, isNot(contains(PaymentMethod.credit)));
+
+        await open(
+          role: UserRole.cashier,
+          customer: b2b(limit: 0, available: 0),
+        );
+        expect(credit.availableMethods, isNot(contains(PaymentMethod.credit)));
+      },
+    );
+
+    test('ยอดไม่เกินวงเงินที่เหลือจ่ายได้ เกินแล้วปุ่มจ่ายกดไม่ได้', () async {
+      await open(role: UserRole.cashier);
+      credit.selectMethod(PaymentMethod.credit);
+
+      credit.setAmount(856);
+      expect(credit.canPay, isTrue);
+
+      await open(role: UserRole.cashier, customer: b2b(available: 500));
+      credit.selectMethod(PaymentMethod.credit);
+      credit.setAmount(856);
+      expect(credit.canPay, isFalse);
+      credit.setAmount(500);
+      expect(credit.canPay, isTrue, reason: 'จ่ายบางส่วนด้วยเครดิตได้');
+    });
+
+    test(
+      'เลือกขายเชื่อแล้วแต้มที่เลือกไว้ถูกล้าง และแลกแต้มเพิ่มไม่ได้',
+      () async {
+        await open(role: UserRole.cashier);
+        credit.setPointsToRedeem(10);
+        expect(credit.pointsToRedeem.value, 10);
+
+        credit.selectMethod(PaymentMethod.credit);
+
+        expect(credit.pointsToRedeem.value, 0);
+        expect(credit.maxRedeemablePoints, 0);
+        credit.setPointsToRedeem(10);
+        expect(credit.pointsToRedeem.value, 0);
+      },
+    );
   });
 }

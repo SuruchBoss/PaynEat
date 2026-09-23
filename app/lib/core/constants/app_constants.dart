@@ -29,6 +29,11 @@ class UserRole {
       role == admin || role == manager || role == cashier || role == waiter;
   static bool canSeeReports(String role) =>
       role == admin || role == manager || role == cashier;
+
+  /// ขายเชื่อ/รับชำระหนี้/วางบิล (ดู docs/tickets/20-b2b-credit.md) — ตรงกับ receivable.routes.js
+  /// และกฎใน payment.service.js ที่ห้ามพนักงานเสิร์ฟขายเชื่อ แม้จะรับเงินสดได้ปกติ
+  static bool canHandleCredit(String role) =>
+      role == admin || role == manager || role == cashier;
 }
 
 /// สถานะโต๊ะ
@@ -150,6 +155,11 @@ class PaymentMethod {
   static const String card = 'card';
   static const String transfer = 'transfer';
 
+  /// ขายเชื่อลงบัญชีลูกค้าเครดิต (ดู docs/tickets/20-b2b-credit.md) — ไม่อยู่ใน [all]
+  /// เพราะใช้ได้เฉพาะบิลที่ผูกลูกค้าเครดิต หน้าเก็บเงินจึงเพิ่มปุ่มนี้เองตามเงื่อนไข
+  static const String credit = 'credit';
+
+  /// ช่องทางที่ได้เงินทันที — ใช้ทั้งหน้าเก็บเงินและรับชำระหนี้ลูกค้าเครดิต
   static const List<String> all = [cash, qr, card, transfer];
 
   static const Map<String, String> _keys = {
@@ -157,6 +167,7 @@ class PaymentMethod {
     qr: 'payment_method_qr',
     card: 'payment_method_card',
     transfer: 'payment_method_transfer',
+    credit: 'payment_method_credit',
   };
 
   static String label(String method) => (_keys[method] ?? method).tr;

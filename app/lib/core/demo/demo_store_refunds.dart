@@ -37,6 +37,19 @@ extension DemoStoreRefunds on DemoStore {
       );
     }
 
+    // บิลขายเชื่อ: การคืนคือลดหนี้ ลดได้ไม่เกินยอดที่ยังค้าง (mirror ของ payment.service.js#refund)
+    if (payment['method'] == PaymentMethod.credit) {
+      final owed = creditRefundable(paymentId);
+      if (amount > owed + 0.001) {
+        throw ApiException(
+          message: 'payment_error_credit_refund_exceeds_owed'.trParams({
+            'amount': owed.toStringAsFixed(2),
+          }),
+          statusCode: 400,
+        );
+      }
+    }
+
     // mirror ของ payment.service.js#refund — เงินสดที่คืนออกจากลิ้นชักของกะที่เปิดอยู่ตอนคืน จึงต้องมี
     // กะเปิดอยู่ (กฎเดียวกับตอนรับเงิน) คืนผ่านช่องทางอื่นไม่แตะลิ้นชักจึงไม่บังคับ — ดู DECISIONS #44
     final shift = _openShift;

@@ -79,10 +79,12 @@ extension DemoStoreShifts on DemoStore {
       );
     }
 
-    // เงินทอนตั้งต้น + เงินสดที่รับเข้า − เงินสดที่คืนลูกค้าออกไประหว่างกะนี้ (mirror ของ shift.service.js)
+    // เงินทอนตั้งต้น + เงินสดที่รับเข้า (ค่าอาหาร + รับชำระหนี้ลูกค้าเครดิต) − เงินสดที่คืนลูกค้า
+    // ออกไประหว่างกะนี้ (mirror ของ shift.service.js — docs/DECISIONS.md #44, #50)
     final expected =
         (shift['openingCash'] as num).toDouble() +
-        _cashInDuring(id) -
+        _cashInDuring(id) +
+        receivableCashDuring(id) -
         _cashRefundedDuring(id);
     shift['status'] = ShiftStatus.closed;
     shift['closedBy'] = closedById;

@@ -40,6 +40,23 @@ export const createMenuItemSchema = z.object({
   sortOrder: z.number().int().min(0).optional(),
   optionGroups: z.array(optionGroupSchema).optional(),
   ingredients: ingredientLinksSchema,
+  // ขายตามน้ำหนัก — price กลายเป็นราคาต่อกิโลกรัม (ดู docs/tickets/18-sell-by-weight.md)
+  soldByWeight: z.boolean().optional(),
+  // บาร์โค้ดสินค้าสำเร็จรูป / รหัสสินค้าบนฉลากตาชั่ง (ดู docs/tickets/19-barcode-scale.md) — ส่ง ''
+  // เพื่อล้างค่า
+  barcode: z
+    .string()
+    .trim()
+    .max(32)
+    .regex(/^[0-9A-Za-z-]+$/, 'บาร์โค้ดใช้ได้เฉพาะตัวเลข ตัวอักษรอังกฤษ และขีด')
+    .optional()
+    .or(z.literal('')),
+  scalePlu: z
+    .string()
+    .trim()
+    .regex(/^\d{1,6}$/, 'รหัสสินค้าบนตาชั่ง (PLU) ต้องเป็นตัวเลข 1–6 หลัก')
+    .optional()
+    .or(z.literal('')),
   // ใช้เฉพาะตอนผู้สร้างเป็น admin ในโหมด "ทุกสาขา" (ดู docs/DECISIONS.md #36) — คนอื่นถูกกำหนด
   // สาขาให้อัตโนมัติจาก req.branchId เสมอ
   branchId: z.number().int().positive().optional(),

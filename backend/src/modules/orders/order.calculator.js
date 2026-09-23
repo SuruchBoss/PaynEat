@@ -1,5 +1,17 @@
 import { percentOf } from '../../core/money.js';
 
+/**
+ * ราคาของรายการอาหาร 1 บรรทัด (สตางค์) — ขายเป็นชิ้น: (ราคา + ตัวเลือก) × จำนวน, ขายตามน้ำหนัก:
+ * (ราคาต่อกก. + ตัวเลือก) × กรัม / 1000 ปัดเป็นสตางค์ (ตัวเลือกของสินค้าชั่งน้ำหนักจึงเป็น "บวกต่อกก."
+ * เช่น หมักซอส +40 บาท/กก.) ฝั่งแอปคิดด้วยสูตรเดียวกันใน cart_line.dart ต้องตรงกันทุกสตางค์
+ * (ดู docs/DECISIONS.md #48)
+ */
+export const lineTotalFor = ({ unitPrice, optionsPrice = 0, quantity = 1, weightGrams = null }) => {
+  const perUnit = Number(unitPrice) + Number(optionsPrice);
+  if (weightGrams) return Math.round((perUnit * Number(weightGrams)) / 1000);
+  return perUnit * Number(quantity);
+};
+
 /** ยอดรวมอาหารของรายการที่ยังไม่ถูกยกเลิก — ใช้ทั้งใน calculateBill และตอนประเมินโปรโมชัน */
 export const sumActiveSubtotal = (items) =>
   items

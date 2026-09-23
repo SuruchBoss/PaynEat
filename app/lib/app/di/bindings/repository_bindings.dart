@@ -46,6 +46,9 @@ import '../../../features/staff/domain/repositories/staff_repository.dart';
 import '../../../features/table/data/datasources/table_remote_data_source.dart';
 import '../../../features/table/data/repositories/table_repository_impl.dart';
 import '../../../features/table/domain/repositories/table_repository.dart';
+import '../../../features/receivable/data/datasources/receivable_remote_data_source.dart';
+import '../../../features/receivable/data/repositories/receivable_repository_impl.dart';
+import '../../../features/receivable/domain/repositories/receivable_repository.dart';
 import '../../../features/tax_invoice/data/datasources/tax_invoice_remote_data_source.dart';
 import '../../../features/tax_invoice/data/repositories/tax_invoice_repository_impl.dart';
 import '../../../features/tax_invoice/domain/repositories/tax_invoice_repository.dart';
@@ -118,6 +121,10 @@ void bindRepositories(StorageService storage) {
   );
   Get.lazyPut<SelfOrderRepository>(
     () => SelfOrderRepositoryImpl(Get.find<SelfOrderRemoteDataSource>()),
+    fenix: true,
+  );
+  Get.lazyPut<ReceivableRepository>(
+    () => ReceivableRepositoryImpl(Get.find<ReceivableRemoteDataSource>()),
     fenix: true,
   );
 }

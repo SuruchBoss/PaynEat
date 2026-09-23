@@ -8,6 +8,7 @@ import '../../../../core/widgets/quantity_stepper.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../customer/presentation/widgets/customer_picker_dialog.dart';
 import '../controllers/cart_controller.dart';
+import 'weight_entry_dialog.dart';
 
 /// แผงตะกร้า — ใช้ทั้งเป็นคอลัมน์ขวาบนแท็บเล็ต/เว็บ และเป็น bottom sheet บนมือถือ
 class CartPanel extends GetView<CartController> {
@@ -323,12 +324,31 @@ class _CartLineTile extends GetView<CartController> {
           const SizedBox(height: 6),
           Row(
             children: [
-              QuantityStepper(
-                value: line.quantity,
-                size: 30,
-                min: 1,
-                onChanged: (value) => controller.updateQuantity(index, value),
-              ),
+              // สินค้าชั่งน้ำหนักไม่มีปุ่ม +/- (บรรทัดละ 1 ถุง) แตะน้ำหนักเพื่อชั่งใหม่แทน
+              if (line.isWeighed)
+                ActionChip(
+                  avatar: const Icon(Icons.scale_rounded, size: 16),
+                  label: Text(
+                    '${Formatters.weight(line.weightGrams!)} × '
+                    '${Formatters.bahtPerKg(line.unitPrice)}',
+                  ),
+                  tooltip: 'order_weigh_again'.tr,
+                  onPressed: () async {
+                    final grams = await WeightEntryDialog.show(
+                      line.menuItem,
+                      options: line.selectedOptions,
+                      initialGrams: line.weightGrams,
+                    );
+                    if (grams != null) controller.updateWeight(index, grams);
+                  },
+                )
+              else
+                QuantityStepper(
+                  value: line.quantity,
+                  size: 30,
+                  min: 1,
+                  onChanged: (value) => controller.updateQuantity(index, value),
+                ),
               const Spacer(),
               Text(
                 Formatters.baht(line.lineTotal),

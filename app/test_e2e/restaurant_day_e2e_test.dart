@@ -129,8 +129,10 @@ void main() {
           expectOk(await waiter.menu.getMenuItem(item.id), 'เมนู ${item.id}'),
         );
       }
+      // สินค้าขายตามน้ำหนักมีชุดเทสต์ของตัวเอง (meat_shop_b2b_e2e_test.dart) — ตรงนี้ต้องเป็นจาน
       stockItem = details.firstWhere(
         (m) =>
+            !m.soldByWeight &&
             m.ingredients.isNotEmpty &&
             m.optionGroups.every((g) => !g.isRequired),
         orElse: () =>

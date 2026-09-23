@@ -13,6 +13,7 @@ class PaymentModel extends Payment {
     super.createdAt,
     super.pointsRedeemed,
     super.pointsRedeemedValue,
+    super.dueDate,
   });
 
   factory PaymentModel.fromJson(Map<String, dynamic> json) => PaymentModel(
@@ -27,6 +28,7 @@ class PaymentModel extends Payment {
     createdAt: json['createdAt'] as String?,
     pointsRedeemed: (json['pointsRedeemed'] as num?)?.toInt() ?? 0,
     pointsRedeemedValue: (json['pointsRedeemedValue'] as num?)?.toDouble() ?? 0,
+    dueDate: json['dueDate'] as String?,
   );
 }
 

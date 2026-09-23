@@ -38,6 +38,12 @@ const Map<String, String> commonTranslationsTh = {
   'common_time_minutes': '@minutes นาที',
   'common_time_hours_minutes': '@hours ชม. @minutes นาที',
   'common_time_days': '@days วัน',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'common_baht_per_kg': 'บาท/กก.',
+  'common_per_kg': '/กก.',
+  'common_unit_kg': 'กก.',
+  'common_weight_kg': '@kg กก.',
 };
 
 const Map<String, String> commonTranslationsEn = {
@@ -77,6 +83,11 @@ const Map<String, String> commonTranslationsEn = {
   'common_time_minutes': '@minutes min',
   'common_time_hours_minutes': '@hours hr @minutes min',
   'common_time_days': '@days days',
+
+  'common_baht_per_kg': 'THB/kg',
+  'common_per_kg': '/kg',
+  'common_unit_kg': 'kg',
+  'common_weight_kg': '@kg kg',
 };
 
 const Map<String, String> commonTranslationsKo = {
@@ -115,4 +126,9 @@ const Map<String, String> commonTranslationsKo = {
   'common_time_minutes': '@minutes분',
   'common_time_hours_minutes': '@hours시간 @minutes분',
   'common_time_days': '@days일',
+
+  'common_baht_per_kg': 'THB/kg',
+  'common_per_kg': '/kg',
+  'common_unit_kg': 'kg',
+  'common_weight_kg': '@kg kg',
 };

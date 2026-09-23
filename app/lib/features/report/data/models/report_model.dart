@@ -48,6 +48,7 @@ class ReportMapper {
     name: json['name'] as String? ?? '',
     quantity: (json['quantity'] as num?)?.toInt() ?? 0,
     revenue: (json['revenue'] as num?)?.toDouble() ?? 0,
+    weightKg: (json['weightKg'] as num?)?.toDouble(),
   );
 
   static DailySales dailyFromJson(Map<String, dynamic> json) => DailySales(
@@ -86,6 +87,18 @@ class ReportMapper {
     );
   }
 
+  static List<PaymentMethodSales> _methodsFromJson(Object? raw) =>
+      (raw as List? ?? const [])
+          .whereType<Map<String, dynamic>>()
+          .map(
+            (item) => PaymentMethodSales(
+              method: item['method'] as String? ?? '',
+              count: (item['count'] as num?)?.toInt() ?? 0,
+              amount: (item['amount'] as num?)?.toDouble() ?? 0,
+            ),
+          )
+          .toList(growable: false);
+
   static ZReport zReportFromJson(Map<String, dynamic> json) {
     final isShift = json['type'] == 'shift';
     final shift = json['shift'] as Map<String, dynamic>? ?? const {};
@@ -101,16 +114,8 @@ class ReportMapper {
       vat: (json['vat'] as num?)?.toDouble() ?? 0,
       refundTotal: (json['refundTotal'] as num?)?.toDouble() ?? 0,
       netSales: (json['netSales'] as num?)?.toDouble() ?? 0,
-      paymentMethods: (json['paymentMethods'] as List? ?? const [])
-          .whereType<Map<String, dynamic>>()
-          .map(
-            (item) => PaymentMethodSales(
-              method: item['method'] as String? ?? '',
-              count: (item['count'] as num?)?.toInt() ?? 0,
-              amount: (item['amount'] as num?)?.toDouble() ?? 0,
-            ),
-          )
-          .toList(growable: false),
+      paymentMethods: _methodsFromJson(json['paymentMethods']),
+      receivableReceipts: _methodsFromJson(json['receivableReceipts']),
       shiftId: isShift ? (shift['id'] as num?)?.toInt() : null,
       date: isShift ? null : json['date'] as String?,
       openedByName: isShift ? shift['openedByName'] as String? : null,

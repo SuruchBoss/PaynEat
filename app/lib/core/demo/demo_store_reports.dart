@@ -126,10 +126,14 @@ extension DemoStoreReports on DemoStore {
             'name': name,
             'quantity': 0,
             'revenue': 0.0,
+            'weightGrams': 0,
           },
         );
         entry['quantity'] =
             (entry['quantity'] as int) + (item['quantity'] as int);
+        entry['weightGrams'] =
+            (entry['weightGrams'] as int) +
+            ((item['weightGrams'] as int?) ?? 0);
         entry['revenue'] =
             (entry['revenue'] as double) +
             (item['lineTotal'] as num).toDouble();
@@ -138,7 +142,14 @@ extension DemoStoreReports on DemoStore {
 
     final result = counters.values.toList()
       ..sort((a, b) => (b['quantity'] as int).compareTo(a['quantity'] as int));
-    return result.take(limit).toList(growable: false);
+    // น้ำหนักรวมเป็นกิโลกรัม null = ขายเป็นชิ้น (mirror ของ report.service.js#topItems)
+    return result
+        .take(limit)
+        .map((row) {
+          final grams = row.remove('weightGrams') as int;
+          return {...row, 'weightKg': grams > 0 ? grams / 1000 : null};
+        })
+        .toList(growable: false);
   }
 
   List<Map<String, dynamic>> salesByDay({String? from, String? to}) {
@@ -264,6 +275,8 @@ extension DemoStoreReports on DemoStore {
       'refundTotal': refundTotal,
       'netSales': sum('total') - refundTotal,
       'paymentMethods': byMethod.values.toList(growable: false),
+      // รับชำระหนี้ลูกค้าเครดิตระหว่างกะ (mirror ของ report.service.js — docs/DECISIONS.md #50)
+      'receivableReceipts': receivableReceiptsByShift(shiftId),
     };
   }
 
@@ -308,6 +321,10 @@ extension DemoStoreReports on DemoStore {
       (
         label: 'จำนวนที่ขายได้',
         value: (Map<String, dynamic> r) => r['quantity'],
+      ),
+      (
+        label: 'น้ำหนักรวม (กก.)',
+        value: (Map<String, dynamic> r) => r['weightKg'] ?? '',
       ),
       (label: 'รายได้ (บาท)', value: (Map<String, dynamic> r) => r['revenue']),
     ]);
@@ -359,6 +376,13 @@ extension DemoStoreReports on DemoStore {
       for (final p in paymentMethods)
         (
           label: 'ช่องทาง: ${p['method']} (${p['count']} รายการ, บาท)',
+          value: p['amount'],
+        ),
+      for (final p
+          in (z['receivableReceipts'] as List<Map<String, dynamic>>?) ??
+              const <Map<String, dynamic>>[])
+        (
+          label: 'รับชำระหนี้: ${p['method']} (${p['count']} รายการ, บาท)',
           value: p['amount'],
         ),
       if (isShift) ...[

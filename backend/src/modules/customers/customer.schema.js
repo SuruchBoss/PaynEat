@@ -17,4 +17,18 @@ export const listCustomerQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
+// ตั้งค่าลูกค้าเครดิต (ดู docs/tickets/20-b2b-credit.md) — ส่งครบทุกช่องเสมอ (เป็นฟอร์มเดียวกันในแอป)
+// taxId/address ส่ง '' เพื่อล้างค่า
+export const updateCreditSchema = z.object({
+  creditLimit: z.number().min(0, 'วงเงินต้องไม่ติดลบ').max(100_000_000),
+  creditTermDays: z.number().int().min(0).max(365, 'เครดิตเทอมต้องไม่เกิน 365 วัน'),
+  taxId: z
+    .string()
+    .trim()
+    .regex(/^\d{13}$/, 'เลขประจำตัวผู้เสียภาษีต้องเป็นตัวเลข 13 หลัก')
+    .optional()
+    .or(z.literal('')),
+  address: z.string().trim().max(300).optional(),
+});
+
 export const idParamSchema = z.object({ id: z.coerce.number().int().positive() });

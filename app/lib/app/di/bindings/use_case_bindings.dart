@@ -40,6 +40,8 @@ import '../../../features/staff/domain/repositories/staff_repository.dart';
 import '../../../features/staff/domain/usecases/staff_usecases.dart';
 import '../../../features/table/domain/repositories/table_repository.dart';
 import '../../../features/table/domain/usecases/table_usecases.dart';
+import '../../../features/receivable/domain/repositories/receivable_repository.dart';
+import '../../../features/receivable/domain/usecases/receivable_usecases.dart';
 import '../../../features/tax_invoice/domain/repositories/tax_invoice_repository.dart';
 import '../../../features/tax_invoice/domain/usecases/tax_invoice_usecases.dart';
 
@@ -266,6 +268,44 @@ void bindUseCases() {
   );
   Get.lazyPut(
     () => CreateCustomerUseCase(Get.find<CustomerRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => UpdateCustomerCreditUseCase(Get.find<CustomerRepository>()),
+    fenix: true,
+  );
+
+  // ลูกหนี้ / ขายเชื่อ / ใบวางบิล (ดู docs/tickets/20-b2b-credit.md)
+  Get.lazyPut(
+    () => GetReceivableCustomersUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetCustomerStatementUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => CreateArReceiptUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetArReceiptUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => VoidArReceiptUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => CreateBillingNoteUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => GetBillingNoteUseCase(Get.find<ReceivableRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
+    () => VoidBillingNoteUseCase(Get.find<ReceivableRepository>()),
     fenix: true,
   );
 

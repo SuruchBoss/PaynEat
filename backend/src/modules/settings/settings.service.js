@@ -1,4 +1,5 @@
 import { env } from '../../config/env.js';
+import { ApiError } from '../../core/ApiError.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { settingsRepository } from './settings.repository.js';
@@ -8,6 +9,7 @@ const NUMBER_KEYS = new Set([
   'service_charge_rate',
   'points_earn_rate_baht',
   'points_redeem_value_baht',
+  'scale_label_plu_digits',
 ]);
 const BOOLEAN_KEYS = new Set(['vat_included']);
 
@@ -35,6 +37,10 @@ export const settingsService = {
       pointsRedeemValueBaht: Number(
         raw.points_redeem_value_baht ?? env.store.pointsRedeemValueBaht,
       ),
+      // รูปแบบฉลากตาชั่ง (ดู docs/tickets/19-barcode-scale.md) — ค่าเริ่มต้น "20" + PLU 5 หลัก +
+      // น้ำหนัก 5 หลัก (กรัม) เป็นรูปแบบที่ตาชั่งพิมพ์ฉลากส่วนใหญ่ตั้งมาจากโรงงาน แอปใช้แยกฉลากเอง
+      scaleLabelPrefix: raw.scale_label_prefix ?? '20',
+      scaleLabelPluDigits: Number(raw.scale_label_plu_digits ?? 5),
     };
   },
 
@@ -51,10 +57,21 @@ export const settingsService = {
       promptPayId: 'promptpay_id',
       pointsEarnRateBaht: 'points_earn_rate_baht',
       pointsRedeemValueBaht: 'points_redeem_value_baht',
+      scaleLabelPrefix: 'scale_label_prefix',
+      scaleLabelPluDigits: 'scale_label_plu_digits',
     };
     // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) ที่ต้อง log — ดู
     // docs/tickets/08-audit-log.md
     const before = this.get();
+
+    // ฉลากตาชั่งยาว 13 หลักเสมอ: prefix + PLU + น้ำหนัก + check digit — schema ตรวจได้เฉพาะตอนส่งมา
+    // คู่กัน ส่งมาแค่ช่องเดียวต้องเทียบกับค่าที่บันทึกไว้เดิมตรงนี้ (docs/tickets/19-barcode-scale.md)
+    const prefix = payload.scaleLabelPrefix ?? before.scaleLabelPrefix;
+    const pluDigits = payload.scaleLabelPluDigits ?? before.scaleLabelPluDigits;
+    const weightDigits = 12 - prefix.length - pluDigits;
+    if (weightDigits < 4 || weightDigits > 6) {
+      throw ApiError.badRequest('รูปแบบฉลากตาชั่ง: prefix + PLU ต้องเหลือหลักน้ำหนัก 4–6 หลัก');
+    }
 
     getDb().transaction(() => {
       for (const [field, key] of Object.entries(map)) {

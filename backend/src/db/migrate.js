@@ -69,6 +69,57 @@ const backfillTableQrTokens = (db) => {
   for (const row of rows) update.run(randomUUID(), row.id);
 };
 
+/**
+ * ticket 20 (ขายเชื่อ) — payments.method มี CHECK ที่ไม่รู้จัก 'credit' ในฐานข้อมูลที่สร้างก่อน
+ * ทิกเก็ตนี้ และ SQLite แก้ CHECK ของตารางที่มีอยู่แล้วไม่ได้ จึงต้องสร้างตารางใหม่แล้วย้ายข้อมูล
+ * (วิธีที่เอกสาร SQLite แนะนำ: สร้าง → คัดลอก → ลบเก่า → เปลี่ยนชื่อ ขณะปิด foreign_keys)
+ *
+ * นิยามตารางใหม่อ่านจากบล็อก CREATE TABLE payments ใน schema.sql ตรง ๆ ไม่เขียนซ้ำไว้ที่นี่ ให้มี
+ * แหล่งความจริงแหล่งเดียว — คอลัมน์ที่คัดลอกคือคอลัมน์ที่มีทั้งในตารางเดิมและตารางใหม่ (ตารางเดิมที่
+ * ยังไม่มีคอลัมน์ใหม่อย่าง due_date จะได้ค่า default แทน) id เดิมถูกคงไว้ทุกแถว refunds/ar_allocations
+ * ที่อ้าง payment_id จึงยังชี้ถูกแถว เรียกซ้ำได้: ตารางที่มี 'credit' แล้วจะถูกข้ามทันที
+ */
+const rebuildPaymentsForCreditMethod = (db, schemaSql) => {
+  const current = db
+    .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'payments'")
+    .get();
+  // ดูเฉพาะรายการใน CHECK (method IN (...)) ไม่ใช่ทั้งข้อความ — คอมเมนต์ในนิยามตารางที่เอ่ยถึง
+  // 'credit' ต้องไม่ทำให้ข้ามการย้ายไปทั้งที่ CHECK จริงยังไม่รับ
+  const allowed = current?.sql.match(/CHECK\s*\(\s*method\s+IN\s*\(([^)]*)\)\s*\)/i)?.[1] ?? '';
+  if (!current || allowed.includes("'credit'")) return;
+
+  const block = schemaSql.match(/CREATE TABLE IF NOT EXISTS payments \(([\s\S]*?)\n\);/);
+  if (!block) throw new Error('หานิยามตาราง payments ใน schema.sql ไม่เจอ');
+
+  const oldColumns = db
+    .prepare('PRAGMA table_info(payments)')
+    .all()
+    .map((row) => row.name);
+  db.pragma('foreign_keys = OFF');
+  try {
+    db.transaction(() => {
+      db.exec(`CREATE TABLE payments_rebuild (${block[1]}\n)`);
+      const newColumns = db
+        .prepare('PRAGMA table_info(payments_rebuild)')
+        .all()
+        .map((row) => row.name);
+      const shared = newColumns.filter((column) => oldColumns.includes(column)).join(', ');
+      db.exec(`INSERT INTO payments_rebuild (${shared}) SELECT ${shared} FROM payments`);
+      db.exec('DROP TABLE payments');
+      db.exec('ALTER TABLE payments_rebuild RENAME TO payments');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_payments_shift ON payments(shift_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_payments_created ON payments(created_at)');
+      const broken = db.pragma('foreign_key_check');
+      if (broken.length) {
+        throw new Error(`ย้ายตาราง payments แล้ว foreign key เสีย: ${JSON.stringify(broken)}`);
+      }
+    })();
+  } finally {
+    db.pragma('foreign_keys = ON');
+  }
+};
+
 export const migrate = () => {
   const db = getDb();
   const sql = fs.readFileSync(path.join(here, 'schema.sql'), 'utf8');
@@ -146,6 +197,37 @@ export const migrate = () => {
   db.exec(
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_dining_tables_qr_token ON dining_tables(qr_token)',
   );
+
+  // Ticket 18 (ขายตามน้ำหนัก) + 19 (บาร์โค้ด/ฉลากตาชั่ง) — เมนูเดิมทั้งหมดเป็นขายเป็นชิ้น ไม่มีบาร์โค้ด
+  addColumnIfMissing(db, 'menu_items', 'sold_by_weight', 'INTEGER NOT NULL DEFAULT 0');
+  addColumnIfMissing(db, 'menu_items', 'barcode', 'TEXT');
+  addColumnIfMissing(db, 'menu_items', 'scale_plu', 'TEXT');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_menu_items_barcode ON menu_items(barcode)');
+  db.exec('CREATE INDEX IF NOT EXISTS idx_menu_items_scale_plu ON menu_items(scale_plu)');
+  addColumnIfMissing(
+    db,
+    'order_items',
+    'weight_grams',
+    'INTEGER CHECK (weight_grams IS NULL OR weight_grams > 0)',
+  );
+
+  // Ticket 20 (ขายเชื่อ/ลูกหนี้) — ลูกค้าเดิมทั้งหมดไม่มีวงเงินเครดิต (0) จนกว่าผู้จัดการจะตั้งให้
+  addColumnIfMissing(
+    db,
+    'customers',
+    'credit_limit',
+    'INTEGER NOT NULL DEFAULT 0 CHECK (credit_limit >= 0)',
+  );
+  addColumnIfMissing(
+    db,
+    'customers',
+    'credit_term_days',
+    'INTEGER NOT NULL DEFAULT 30 CHECK (credit_term_days >= 0)',
+  );
+  addColumnIfMissing(db, 'customers', 'tax_id', 'TEXT');
+  addColumnIfMissing(db, 'customers', 'address', 'TEXT');
+  addColumnIfMissing(db, 'payments', 'due_date', 'TEXT');
+  rebuildPaymentsForCreditMethod(db, sql);
 
   const defaults = {
     store_name: env.store.name,

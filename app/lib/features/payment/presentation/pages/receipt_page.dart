@@ -151,6 +151,17 @@ class ReceiptPage extends GetView<ReceiptController> {
                                     item.name,
                                     style: const TextStyle(fontSize: 12.5),
                                   ),
+                                  // ใบเสร็จร้านขายเนื้อต้องบอกน้ำหนักและราคาต่อกก. ให้ลูกค้าคูณ
+                                  // ตรวจเองได้ (ดู docs/tickets/18-sell-by-weight.md)
+                                  if (item.isWeighed)
+                                    Text(
+                                      '${Formatters.weight(item.weightGrams!)} × '
+                                      '${Formatters.bahtPerKg(item.unitPrice + item.optionsPrice)}',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
                                   if (item.options.isNotEmpty)
                                     Text(
                                       item.optionsSummary,

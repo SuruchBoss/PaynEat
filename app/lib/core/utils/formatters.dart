@@ -42,6 +42,14 @@ class Formatters {
 
   static String compact(num value) => _compact.format(value);
 
+  /// น้ำหนักจากกรัม เช่น 485 → "0.485 กก." (ภาษาอังกฤษ/เกาหลี "0.485 kg") — ทศนิยม 3 ตำแหน่งเสมอ
+  /// ตรงกับความละเอียดของตาชั่ง (ดู docs/tickets/18-sell-by-weight.md)
+  static String weight(int grams) =>
+      'common_weight_kg'.trParams({'kg': (grams / 1000).toStringAsFixed(3)});
+
+  /// ราคาต่อกิโลกรัม เช่น "฿280.00/กก."
+  static String bahtPerKg(num value) => '${baht(value)}${'common_per_kg'.tr}';
+
   /// backend เก็บเวลาเป็น UTC → แปลงเป็นเวลาเครื่องก่อนแสดง
   static DateTime? parse(String? value) {
     if (value == null || value.isEmpty) return null;

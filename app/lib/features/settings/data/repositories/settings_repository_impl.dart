@@ -24,6 +24,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
     double? pointsEarnRateBaht,
     double? pointsRedeemValueBaht,
     String? promptPayId,
+    String? scaleLabelPrefix,
+    int? scaleLabelPluDigits,
   }) => guard(
     () => _remote.update({
       'storeName': ?storeName,
@@ -36,6 +38,8 @@ class SettingsRepositoryImpl implements SettingsRepository {
       'pointsEarnRateBaht': ?pointsEarnRateBaht,
       'pointsRedeemValueBaht': ?pointsRedeemValueBaht,
       'promptPayId': ?promptPayId,
+      'scaleLabelPrefix': ?scaleLabelPrefix,
+      'scaleLabelPluDigits': ?scaleLabelPluDigits,
     }),
   );
 }

@@ -186,8 +186,8 @@ export const orderRepository = {
       .prepare(
         `
         INSERT INTO order_items
-          (order_id, menu_item_id, name_snapshot, unit_price, quantity, options_json, options_price, line_total, note)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (order_id, menu_item_id, name_snapshot, unit_price, quantity, options_json, options_price, line_total, weight_grams, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -199,6 +199,7 @@ export const orderRepository = {
         JSON.stringify(item.options ?? []),
         item.optionsPrice,
         item.lineTotal,
+        item.weightGrams ?? null,
         item.note ?? null,
       );
     return this.findItemById(info.lastInsertRowid);

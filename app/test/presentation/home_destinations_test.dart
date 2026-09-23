@@ -95,5 +95,24 @@ void main() {
         );
       },
     );
+
+    // ลูกหนี้/ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md) — mirror ของ receivable.routes.js
+    // ที่ให้ admin/manager/cashier รับชำระหนี้ได้ ส่วนพนักงานเสิร์ฟและครัวไม่เกี่ยวกับเงินเชื่อ
+    test('เมนูลูกหนี้เห็นเฉพาะ admin/manager/cashier', () {
+      for (final role in [UserRole.admin, UserRole.manager, UserRole.cashier]) {
+        expect(
+          HomeBinding.destinationsForRole(role).map((d) => d.label),
+          contains('home_nav_receivables'),
+          reason: role,
+        );
+      }
+      for (final role in [UserRole.waiter, UserRole.kitchen]) {
+        expect(
+          HomeBinding.destinationsForRole(role).map((d) => d.label),
+          isNot(contains('home_nav_receivables')),
+          reason: role,
+        );
+      }
+    });
   });
 }

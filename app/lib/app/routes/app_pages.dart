@@ -17,6 +17,8 @@ import '../../features/payment/presentation/pages/checkout_page.dart';
 import '../../features/payment/presentation/pages/receipt_page.dart';
 import '../../features/payment/presentation/pages/split_bill_page.dart';
 import '../../features/promotion/presentation/pages/promotion_form_page.dart';
+import '../../features/receivable/presentation/bindings/receivable_bindings.dart';
+import '../../features/receivable/presentation/pages/customer_statement_page.dart';
 import '../../features/self_order/presentation/bindings/self_order_binding.dart';
 import '../../features/self_order/presentation/pages/self_order_page.dart';
 import '../../features/shift/presentation/pages/shift_page.dart';
@@ -77,6 +79,11 @@ class AppPages {
       name: AppRoutes.customerDetail,
       page: () => const CustomerDetailPage(),
       binding: CustomerDetailBinding(),
+    ),
+    GetPage<void>(
+      name: AppRoutes.customerStatement,
+      page: () => const CustomerStatementPage(),
+      binding: CustomerStatementBinding(),
     ),
     // ลูกค้าสแกน QR เข้ามาตรงนี้ — ไม่มี login gate ใดๆ เลย (ดู docs/tickets/17-qr-self-order.md)
     GetPage<void>(

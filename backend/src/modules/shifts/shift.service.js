@@ -3,6 +3,7 @@ import { toBaht, toSatang } from '../../core/money.js';
 import { getDb } from '../../db/index.js';
 import { emit, EVENTS } from '../../realtime/socket.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
+import { receivableRepository } from '../receivables/receivable.repository.js';
 import { shiftRepository } from './shift.repository.js';
 import { toShiftDto } from './shift.mapper.js';
 
@@ -49,10 +50,12 @@ export const shiftService = {
     if (!shift) throw ApiError.notFound('ไม่พบกะนี้');
     if (shift.status !== 'open') throw ApiError.conflict('กะนี้ปิดไปแล้ว');
 
-    // เงินที่ควรอยู่ในลิ้นชัก = เงินทอนตั้งต้น + เงินสดที่รับเข้า − เงินสดที่คืนลูกค้าออกไประหว่างกะนี้
+    // เงินที่ควรอยู่ในลิ้นชัก = เงินทอนตั้งต้น + เงินสดที่รับเข้า (ค่าอาหาร + รับชำระหนี้ลูกค้าเครดิต)
+    // − เงินสดที่คืนลูกค้าออกไประหว่างกะนี้ (ดู docs/DECISIONS.md #44, #50)
     const expectedCash =
       shift.opening_cash +
-      shiftRepository.cashInDuring(id) -
+      shiftRepository.cashInDuring(id) +
+      receivableRepository.cashReceivedDuring(id) -
       shiftRepository.cashRefundedDuring(id);
     const counted = toSatang(countedCash);
     const variance = counted - expectedCash;

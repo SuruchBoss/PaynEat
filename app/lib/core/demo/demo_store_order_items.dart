@@ -23,11 +23,18 @@ extension DemoStoreOrderItems on DemoStore {
       entityId: order['id'] as int,
       summary:
           'เพิ่ม ${added.length} รายการเข้าออเดอร์ #${order['code']}: '
-          '${added.map((row) => '${row['name']} x${row['quantity']}').join(', ')}',
+          '${added.map(_describeLine).join(', ')}',
       metadata: {
         'orderCode': order['code'],
         'items': added
-            .map((row) => {'name': row['name'], 'quantity': row['quantity']})
+            .map(
+              (row) => {
+                'name': row['name'],
+                'quantity': row['quantity'],
+                if (row['weightGrams'] != null)
+                  'weightGrams': row['weightGrams'],
+              },
+            )
             .toList(),
       },
     );
@@ -80,6 +87,35 @@ extension DemoStoreOrderItems on DemoStore {
       final unitPrice = (menu['price'] as num).toDouble();
       final quantity = input['quantity'] as int;
 
+      // ขายตามน้ำหนัก — mirror ของ order.service.js#buildItemRow (docs/tickets/18-sell-by-weight.md)
+      final soldByWeight = menu['soldByWeight'] == true;
+      final weightGrams = (input['weightGrams'] as num?)?.toInt();
+      if (soldByWeight && weightGrams == null) {
+        throw ApiException(
+          message: 'order_error_weight_required'.trParams({
+            'name': DemoNames.of(menu),
+          }),
+          statusCode: 400,
+        );
+      }
+      if (!soldByWeight && weightGrams != null) {
+        throw ApiException(
+          message: 'order_error_not_sold_by_weight'.trParams({
+            'name': DemoNames.of(menu),
+          }),
+          statusCode: 400,
+        );
+      }
+      if (soldByWeight && quantity != 1) {
+        throw ApiException(
+          message: 'order_error_weighed_one_per_line'.tr,
+          statusCode: 400,
+        );
+      }
+      if (weightGrams != null && (weightGrams < 1 || weightGrams > 99999)) {
+        throw ApiException(message: 'order_weigh_invalid'.tr, statusCode: 422);
+      }
+
       final item = {
         'id': _nextId(),
         'orderId': order['id'],
@@ -88,9 +124,12 @@ extension DemoStoreOrderItems on DemoStore {
         'name': DemoNames.of(menu),
         'unitPrice': unitPrice,
         'quantity': quantity,
+        'weightGrams': weightGrams,
         'options': selected,
         'optionsPrice': optionsPrice,
-        'lineTotal': (unitPrice + optionsPrice) * quantity,
+        'lineTotal': weightGrams == null
+            ? (unitPrice + optionsPrice) * quantity
+            : _weighedLineTotal(unitPrice, selected, weightGrams),
         'note': input['note'],
         'status': OrderItemStatus.pending,
         'stockDeducted': false,
@@ -124,6 +163,13 @@ extension DemoStoreOrderItems on DemoStore {
       throw ApiException(
         message: 'order_error_item_locked_edit'.tr,
         statusCode: 409,
+      );
+    }
+
+    if (quantity != null && item['weightGrams'] != null && quantity != 1) {
+      throw ApiException(
+        message: 'order_error_weighed_quantity_locked'.tr,
+        statusCode: 400,
       );
     }
 
@@ -186,12 +232,13 @@ extension DemoStoreOrderItems on DemoStore {
       entityType: 'order',
       entityId: orderId,
       summary:
-          'ลบรายการ "${item['name']}" (${item['quantity']} ชิ้น) '
+          'ลบรายการ "${_describeLine(item)}" '
           'ออกจากออเดอร์ #${order['code']}',
       metadata: {
         'orderCode': order['code'],
         'itemName': item['name'],
         'quantity': item['quantity'],
+        if (item['weightGrams'] != null) 'weightGrams': item['weightGrams'],
       },
     );
 
@@ -284,4 +331,29 @@ extension DemoStoreOrderItems on DemoStore {
           statusCode: 404,
         ),
       );
+
+  /// "ข้าวผัด x2" หรือ "หมูสามชั้น 0.485 กก." — mirror ของ core/weight.js#describeLine
+  String _describeLine(Map<String, dynamic> row) {
+    final grams = row['weightGrams'] as int?;
+    return grams == null
+        ? '${row['name']} x${row['quantity']}'
+        : '${row['name']} ${(grams / 1000).toStringAsFixed(3)} กก.';
+  }
+
+  /// ราคาบรรทัดชั่งน้ำหนัก — คิดเป็นสตางค์เต็มก่อนแล้วค่อยปัด เหมือน CartLine.lineTotal และ
+  /// order.calculator.js#lineTotalFor (ดู docs/DECISIONS.md #48)
+  double _weighedLineTotal(
+    double unitPrice,
+    List<Map<String, dynamic>> options,
+    int weightGrams,
+  ) {
+    final perKgSatang =
+        (unitPrice * 100).round() +
+        options.fold<int>(
+          0,
+          (sum, option) =>
+              sum + ((option['priceDelta'] as num).toDouble() * 100).round(),
+        );
+    return (perKgSatang * weightGrams / 1000).round() / 100;
+  }
 }

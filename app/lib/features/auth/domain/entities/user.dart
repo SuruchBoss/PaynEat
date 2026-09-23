@@ -28,6 +28,7 @@ class User {
   bool get canTakeOrder => UserRole.canTakeOrder(role);
   bool get canCollectPayment => UserRole.canCollectPayment(role);
   bool get canSeeReports => UserRole.canSeeReports(role);
+  bool get canHandleCredit => UserRole.canHandleCredit(role);
   bool get isKitchen => role == UserRole.kitchen;
 
   /// ตัวอักษรย่อสำหรับแสดงใน avatar

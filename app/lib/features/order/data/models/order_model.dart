@@ -37,6 +37,7 @@ class OrderItemModel extends OrderItem {
     super.orderCode,
     super.tableName,
     super.orderType,
+    super.weightGrams,
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) => OrderItemModel(
@@ -46,6 +47,7 @@ class OrderItemModel extends OrderItem {
     name: json['name'] as String? ?? '',
     unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0,
     quantity: (json['quantity'] as num?)?.toInt() ?? 1,
+    weightGrams: (json['weightGrams'] as num?)?.toInt(),
     optionsPrice: (json['optionsPrice'] as num?)?.toDouble() ?? 0,
     lineTotal: (json['lineTotal'] as num?)?.toDouble() ?? 0,
     note: json['note'] as String?,

@@ -14,6 +14,7 @@ import 'translations/order_translations.dart';
 import 'translations/payment_translations.dart';
 import 'translations/printing_translations.dart';
 import 'translations/promotion_translations.dart';
+import 'translations/receivable_translations.dart';
 import 'translations/report_translations.dart';
 import 'translations/self_order_translations.dart';
 import 'translations/settings_translations.dart';
@@ -52,6 +53,7 @@ class AppTranslations extends Translations {
       ...paymentTranslationsTh,
       ...printingTranslationsTh,
       ...promotionTranslationsTh,
+      ...receivableTranslationsTh,
       ...reportTranslationsTh,
       ...selfOrderTranslationsTh,
       ...settingsTranslationsTh,
@@ -75,6 +77,7 @@ class AppTranslations extends Translations {
       ...paymentTranslationsEn,
       ...printingTranslationsEn,
       ...promotionTranslationsEn,
+      ...receivableTranslationsEn,
       ...reportTranslationsEn,
       ...selfOrderTranslationsEn,
       ...settingsTranslationsEn,
@@ -98,6 +101,7 @@ class AppTranslations extends Translations {
       ...paymentTranslationsKo,
       ...printingTranslationsKo,
       ...promotionTranslationsKo,
+      ...receivableTranslationsKo,
       ...reportTranslationsKo,
       ...selfOrderTranslationsKo,
       ...settingsTranslationsKo,

@@ -224,10 +224,19 @@ class ReportsPage extends GetView<ReportController> {
                               entry.value.name,
                               style: const TextStyle(fontSize: 13.5),
                             ),
+                            // สินค้าขายตามน้ำหนักบอกน้ำหนักรวม ไม่ใช่ "จาน" (จำนวนถุงไม่บอก
+                            // ว่าขายไปเท่าไหร่จริง — ดู docs/tickets/18-sell-by-weight.md)
                             subtitle: Text(
-                              'report_quantity_plates'.trParams({
-                                'count': entry.value.quantity.toString(),
-                              }),
+                              entry.value.weightKg != null
+                                  ? 'report_weight_sold'.trParams({
+                                      'weight': Formatters.weight(
+                                        (entry.value.weightKg! * 1000).round(),
+                                      ),
+                                      'count': entry.value.quantity.toString(),
+                                    })
+                                  : 'report_quantity_plates'.trParams({
+                                      'count': entry.value.quantity.toString(),
+                                    }),
                             ),
                             trailing: Text(
                               Formatters.baht(entry.value.revenue),

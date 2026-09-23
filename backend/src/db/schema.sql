@@ -65,6 +65,14 @@ CREATE TABLE IF NOT EXISTS menu_items (
   is_recommended INTEGER NOT NULL DEFAULT 0,
   prep_minutes   INTEGER NOT NULL DEFAULT 10,
   sort_order     INTEGER NOT NULL DEFAULT 0,
+  -- ขายตามน้ำหนัก (ดู docs/tickets/18-sell-by-weight.md) — 1 = price คือราคาต่อกิโลกรัม และทุกบรรทัด
+  -- ที่สั่งต้องระบุ order_items.weight_grams
+  sold_by_weight INTEGER NOT NULL DEFAULT 0,
+  -- บาร์โค้ดสินค้าสำเร็จรูป (สแกนแล้วใส่ตะกร้า 1 ชิ้น) และรหัสสินค้าบนฉลากตาชั่ง (PLU — ฉลาก EAN-13
+  -- ขึ้นต้นด้วย 2 ที่ตาชั่งพิมพ์ออกมาพร้อมน้ำหนัก) ดู docs/tickets/19-barcode-scale.md — index สร้าง
+  -- ใน migrate.js หลังเพิ่มคอลัมน์ให้ฐานข้อมูลเดิม
+  barcode        TEXT,
+  scale_plu      TEXT,
   created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at     TEXT    NOT NULL DEFAULT (datetime('now'))
 );
@@ -159,6 +167,13 @@ CREATE TABLE IF NOT EXISTS customers (
   phone          TEXT    NOT NULL UNIQUE,
   email          TEXT,
   points_balance INTEGER NOT NULL DEFAULT 0 CHECK (points_balance >= 0),
+  -- ลูกค้าเครดิต/ขายส่ง (ดู docs/tickets/20-b2b-credit.md) — credit_limit เป็นสตางค์ 0 = ไม่ให้เครดิต
+  -- (ขายเชื่อไม่ได้) credit_term_days ใช้คำนวณวันครบกำหนดของบิลขายเชื่อ ณ ตอนขาย (snapshot ไว้ที่
+  -- payments.due_date) tax_id/address ใช้ออกใบวางบิลและเติมใบกำกับภาษีเต็มรูปให้อัตโนมัติ
+  credit_limit     INTEGER NOT NULL DEFAULT 0 CHECK (credit_limit >= 0),
+  credit_term_days INTEGER NOT NULL DEFAULT 30 CHECK (credit_term_days >= 0),
+  tax_id           TEXT,
+  address          TEXT,
   created_at     TEXT    NOT NULL DEFAULT (datetime('now')),
   updated_at     TEXT    NOT NULL DEFAULT (datetime('now'))
 );
@@ -212,6 +227,9 @@ CREATE TABLE IF NOT EXISTS order_items (
   options_json  TEXT    NOT NULL DEFAULT '[]',
   options_price INTEGER NOT NULL DEFAULT 0,
   line_total    INTEGER NOT NULL DEFAULT 0,
+  -- น้ำหนักที่ชั่งได้ของสินค้าขายตามน้ำหนัก (NULL = ขายเป็นชิ้น) — บรรทัดชั่งน้ำหนัก quantity = 1 เสมอ
+  -- line_total = ปัด((unit_price + options_price) × weight_grams / 1000) เป็นสตางค์
+  weight_grams  INTEGER CHECK (weight_grams IS NULL OR weight_grams > 0),
   note          TEXT,
   status        TEXT    NOT NULL DEFAULT 'pending'
                 CHECK (status IN ('pending', 'cooking', 'ready', 'served', 'cancelled')),
@@ -242,7 +260,10 @@ CREATE TABLE IF NOT EXISTS payments (
   id                    INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id              INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   shift_id              INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
-  method                TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
+  -- 'credit' = ขายเชื่อลงบัญชีลูกค้า (ดู docs/tickets/20-b2b-credit.md) ปิดบิลได้โดยยังไม่มีเงินเข้า
+  -- กลายเป็นลูกหนี้ที่รับชำระภายหลังผ่าน ar_receipts — ฐานข้อมูลเดิมที่ CHECK ยังไม่มี 'credit'
+  -- ถูกสร้างตารางใหม่ให้ใน migrate.js (SQLite แก้ CHECK ของตารางที่มีอยู่แล้วไม่ได้)
+  method                TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer', 'credit')),
   amount                INTEGER NOT NULL CHECK (amount >= 0),
   received              INTEGER NOT NULL DEFAULT 0,
   change_amount         INTEGER NOT NULL DEFAULT 0,
@@ -253,6 +274,8 @@ CREATE TABLE IF NOT EXISTS payments (
   -- เพราะ settings เปลี่ยนอัตราได้ภายหลัง)
   points_redeemed       INTEGER NOT NULL DEFAULT 0,
   points_redeemed_value INTEGER NOT NULL DEFAULT 0,
+  -- วันครบกำหนดชำระของบิลขายเชื่อ (YYYY-MM-DD) — เฉพาะ method = 'credit'
+  due_date              TEXT,
   created_at            TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_payments_order ON payments(order_id);
@@ -355,3 +378,67 @@ CREATE TABLE IF NOT EXISTS ai_assistant_queries (
 );
 CREATE INDEX IF NOT EXISTS idx_ai_assistant_queries_actor_date
   ON ai_assistant_queries(actor_user_id, created_at);
+
+-- ============================================================================================
+-- ลูกหนี้การค้า / ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md, docs/DECISIONS.md #50)
+-- "ใบแจ้งหนี้" แต่ละใบคือ payments แถวที่ method = 'credit' — ยอดค้าง = amount − คืนเงิน (refunds)
+-- − ยอดที่ตัดชำระแล้ว (ar_allocations จากใบเสร็จที่ยังไม่ถูกยกเลิก) ไม่มีคอลัมน์ "ยอดค้าง" เก็บแยก
+-- เพื่อไม่ให้ตัวเลขสองแหล่งเพี้ยนจากกัน
+-- ============================================================================================
+
+-- ใบเสร็จรับชำระหนี้ — เงินสดเข้าลิ้นชักของกะที่เปิดอยู่ตอนรับ (shift_id) เหมือนรับชำระค่าอาหาร
+CREATE TABLE IF NOT EXISTS ar_receipts (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  receipt_no   TEXT    NOT NULL UNIQUE,
+  customer_id  INTEGER NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+  amount       INTEGER NOT NULL CHECK (amount > 0),
+  method       TEXT    NOT NULL CHECK (method IN ('cash', 'qr', 'card', 'transfer')),
+  reference    TEXT,
+  note         TEXT,
+  shift_id     INTEGER REFERENCES shifts(id) ON DELETE SET NULL,
+  received_by  INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  received_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+  voided_at    TEXT,
+  void_reason  TEXT,
+  voided_by    INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_ar_receipts_customer ON ar_receipts(customer_id);
+CREATE INDEX IF NOT EXISTS idx_ar_receipts_shift ON ar_receipts(shift_id);
+
+-- ใบเสร็จหนึ่งใบตัดชำระได้หลายบิลขายเชื่อ (เก่าสุดก่อน) — บันทึกไว้ตอนรับเงินเลย ไม่คำนวณใหม่ทุกครั้ง
+-- บิลที่ถูกตัดไปแล้วจึงไม่ย้ายไปมาเมื่อมีบิลใหม่หรือมีการคืนเงินภายหลัง
+CREATE TABLE IF NOT EXISTS ar_allocations (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  receipt_id  INTEGER NOT NULL REFERENCES ar_receipts(id) ON DELETE CASCADE,
+  payment_id  INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  amount      INTEGER NOT NULL CHECK (amount > 0)
+);
+CREATE INDEX IF NOT EXISTS idx_ar_allocations_receipt ON ar_allocations(receipt_id);
+CREATE INDEX IF NOT EXISTS idx_ar_allocations_payment ON ar_allocations(payment_id);
+
+-- ใบวางบิล — รวบบิลขายเชื่อที่ยังค้างของลูกค้าหนึ่งรายไว้ในเอกสารเดียวพร้อมวันนัดชำระ snapshot ยอด
+-- ณ วันที่ออกไว้ที่ billing_note_items (เอกสารที่ส่งให้ลูกค้าไปแล้วต้องพิมพ์ซ้ำได้ตัวเลขเดิม) — บิลหนึ่ง
+-- อยู่ในใบวางบิลที่ยังไม่ถูกยกเลิกได้ใบเดียว (เช็คใน service) ยกเลิกแล้ววางบิลใหม่ได้
+CREATE TABLE IF NOT EXISTS billing_notes (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  note_no      TEXT    NOT NULL UNIQUE,
+  customer_id  INTEGER NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
+  total        INTEGER NOT NULL CHECK (total > 0),
+  due_date     TEXT    NOT NULL,
+  note         TEXT,
+  issued_by    INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
+  issued_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  voided_at    TEXT,
+  void_reason  TEXT,
+  voided_by    INTEGER REFERENCES users(id) ON DELETE SET NULL
+);
+CREATE INDEX IF NOT EXISTS idx_billing_notes_customer ON billing_notes(customer_id);
+
+CREATE TABLE IF NOT EXISTS billing_note_items (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  billing_note_id  INTEGER NOT NULL REFERENCES billing_notes(id) ON DELETE CASCADE,
+  payment_id       INTEGER NOT NULL REFERENCES payments(id) ON DELETE RESTRICT,
+  amount           INTEGER NOT NULL CHECK (amount > 0)
+);
+CREATE INDEX IF NOT EXISTS idx_billing_note_items_note ON billing_note_items(billing_note_id);
+CREATE INDEX IF NOT EXISTS idx_billing_note_items_payment ON billing_note_items(payment_id);

@@ -15,4 +15,7 @@ abstract class CustomerRepository {
     required String phone,
     String? email,
   });
+
+  /// ตั้งวงเงินเครดิต/เครดิตเทอม/ข้อมูลออกเอกสาร (ผู้จัดการขึ้นไป — ดู docs/tickets/20-b2b-credit.md)
+  Future<Result<Customer>> updateCredit(int id, CustomerCreditTerms terms);
 }

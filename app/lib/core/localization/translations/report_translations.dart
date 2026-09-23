@@ -55,6 +55,9 @@ const Map<String, String> reportTranslationsTh = {
   'report_export_sales_by_day_option': 'ยอดขายรายวัน',
   'report_export_unsupported_platform':
       'ส่งออก CSV รองรับเฉพาะบนเว็บ (หน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็นเว็บเท่านั้น)',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'report_weight_sold': '@weight (@count ถุง)',
 };
 
 const Map<String, String> reportTranslationsEn = {
@@ -113,6 +116,8 @@ const Map<String, String> reportTranslationsEn = {
   'report_export_sales_by_day_option': 'Sales by day',
   'report_export_unsupported_platform':
       'CSV export is only supported on the web (this page is admin/web-only)',
+
+  'report_weight_sold': '@weight (@count bags)',
 };
 
 const Map<String, String> reportTranslationsKo = {
@@ -154,4 +159,6 @@ const Map<String, String> reportTranslationsKo = {
   'report_export_sales_by_day_option': '일자별 매출',
   'report_export_unsupported_platform':
       'CSV 내보내기는 웹에서만 지원됩니다 (이 화면은 관리자 웹 전용입니다)',
+
+  'report_weight_sold': '@weight (@count 봉지)',
 };

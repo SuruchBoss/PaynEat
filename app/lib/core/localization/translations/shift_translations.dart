@@ -53,6 +53,9 @@ const Map<String, String> shiftTranslationsTh = {
   'shift_z_report_variance_label': 'ส่วนต่างเงินสด',
   'shift_z_report_export_button': 'ส่งออก CSV',
   'shift_z_report_export_unsupported_platform': 'ส่งออก CSV รองรับเฉพาะบนเว็บ',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'shift_z_report_receivables_title': 'รับชำระหนี้ (ลูกหนี้)',
 };
 
 const Map<String, String> shiftTranslationsEn = {
@@ -112,6 +115,8 @@ const Map<String, String> shiftTranslationsEn = {
   'shift_z_report_export_button': 'Export CSV',
   'shift_z_report_export_unsupported_platform':
       'CSV export is only supported on the web',
+
+  'shift_z_report_receivables_title': 'Debt collected (receivables)',
 };
 
 const Map<String, String> shiftTranslationsKo = {
@@ -157,4 +162,6 @@ const Map<String, String> shiftTranslationsKo = {
   'shift_z_report_variance_label': '현금 차액',
   'shift_z_report_export_button': 'CSV 내보내기',
   'shift_z_report_export_unsupported_platform': 'CSV 내보내기는 웹에서만 지원됩니다',
+
+  'shift_z_report_receivables_title': '외상 수금',
 };

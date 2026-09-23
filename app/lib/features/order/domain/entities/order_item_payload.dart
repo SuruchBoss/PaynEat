@@ -5,6 +5,7 @@ class OrderItemPayload {
     required this.quantity,
     this.optionIds = const [],
     this.note,
+    this.weightGrams,
   });
 
   final int menuItemId;
@@ -12,11 +13,15 @@ class OrderItemPayload {
   final List<int> optionIds;
   final String? note;
 
+  /// น้ำหนักที่ชั่ง (กรัม) — ต้องมีเฉพาะเมนูขายตามน้ำหนัก
+  final int? weightGrams;
+
   Map<String, dynamic> toJson() => {
     'menuItemId': menuItemId,
     'quantity': quantity,
     'optionIds': optionIds,
     if (note != null && note!.isNotEmpty) 'note': note,
+    if (weightGrams != null) 'weightGrams': weightGrams,
   };
 
   /// ย้อนกลับจาก JSON — ใช้ตอนอ่านคิวออฟไลน์ที่เก็บไว้ใน local storage กลับมา
@@ -28,5 +33,6 @@ class OrderItemPayload {
             .map((id) => id as int)
             .toList(growable: false),
         note: json['note'] as String?,
+        weightGrams: (json['weightGrams'] as num?)?.toInt(),
       );
 }

@@ -3,6 +3,7 @@ import { tableRepository } from '../tables/table.repository.js';
 import { branchRepository } from '../branches/branch.repository.js';
 import { categoryService } from '../categories/category.service.js';
 import { menuService } from '../menu/menu.service.js';
+import { menuRepository } from '../menu/menu.repository.js';
 import { orderService } from '../orders/order.service.js';
 
 // ใช้แทน req.user ปกติ (ดู order.service.js#create/#addItems — เดิมรับ user ของพนักงานเสมอ) เพื่อให้
@@ -76,7 +77,12 @@ export const publicOrderService = {
     const { table } = resolveTable(qrToken);
     const categories = categoryService.list({ activeOnly: true });
     const { items } = menuService.list({ availableOnly: true }, table.branch_id);
-    return { categories, items };
+    // สินค้าขายตามน้ำหนักต้องให้พนักงานชั่งจริงก่อนถึงรู้ราคา ลูกค้าสั่งเองจากโต๊ะไม่ได้ จึงไม่แสดง
+    // ในเมนูฝั่งลูกค้าเลย (ดู docs/tickets/18-sell-by-weight.md) — ไม่ส่งรหัสสินค้าภายในไปด้วย
+    const orderable = items
+      .filter((item) => !item.soldByWeight)
+      .map(({ barcode: _barcode, scalePlu: _scalePlu, ...item }) => item);
+    return { categories, items: orderable };
   },
 
   /**
@@ -87,6 +93,15 @@ export const publicOrderService = {
    */
   addItems(qrToken, items) {
     const { table } = resolveTable(qrToken);
+    // กันยิง API ตรงด้วย id ของเมนูชั่งน้ำหนักที่ถูกซ่อนจากเมนูลูกค้าไว้แล้ว (getMenu ด้านบน)
+    for (const item of items) {
+      const menuItem = menuRepository.findById(item.menuItemId);
+      if (menuItem?.sold_by_weight) {
+        throw ApiError.conflict(
+          `"${menuItem.name}" ขายตามน้ำหนัก ต้องให้พนักงานชั่งให้ กรุณาเรียกพนักงาน`,
+        );
+      }
+    }
     const existingOrder = orderService.getOpenByTable(table.id);
 
     const order = existingOrder

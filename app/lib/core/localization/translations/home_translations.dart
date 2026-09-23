@@ -41,6 +41,9 @@ const Map<String, String> homeTranslationsTh = {
 
   // Drawer header
   'home_drawer_brand_name': 'PaynEat POS',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'home_nav_receivables': 'ลูกหนี้/ขายเชื่อ',
 };
 
 const Map<String, String> homeTranslationsEn = {
@@ -86,6 +89,8 @@ const Map<String, String> homeTranslationsEn = {
 
   // Drawer header
   'home_drawer_brand_name': 'PaynEat POS',
+
+  'home_nav_receivables': 'Receivables',
 };
 
 const Map<String, String> homeTranslationsKo = {
@@ -118,4 +123,6 @@ const Map<String, String> homeTranslationsKo = {
   'home_connection_offline_badge': '오프라인',
   'home_logout_menu_item': '로그아웃',
   'home_drawer_brand_name': 'PaynEat POS',
+
+  'home_nav_receivables': '외상 매출',
 };

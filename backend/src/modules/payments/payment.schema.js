@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
-export const PAYMENT_METHODS = ['cash', 'qr', 'card', 'transfer'];
+// 'credit' = ขายเชื่อลงบัญชีลูกค้าเครดิต (ดู docs/tickets/20-b2b-credit.md)
+export const PAYMENT_METHODS = ['cash', 'qr', 'card', 'transfer', 'credit'];
 
 export const createPaymentSchema = z
   .object({

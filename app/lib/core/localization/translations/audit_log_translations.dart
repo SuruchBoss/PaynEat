@@ -35,6 +35,13 @@ const Map<String, String> auditLogTranslationsTh = {
   'audit_log_export_csv_button': 'ส่งออก CSV',
   'audit_log_export_unsupported_platform':
       'ส่งออก CSV รองรับเฉพาะบนเว็บ (หน้านี้อยู่ในโซนผู้ดูแลระบบซึ่งเป็นเว็บเท่านั้น)',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'audit_log_action_customer_credit_update': 'ตั้งวงเงินเครดิต',
+  'audit_log_action_receivable_receipt': 'รับชำระหนี้',
+  'audit_log_action_receivable_receipt_void': 'ยกเลิกใบเสร็จรับชำระหนี้',
+  'audit_log_action_receivable_billing_note': 'ออกใบวางบิล',
+  'audit_log_action_receivable_billing_note_void': 'ยกเลิกใบวางบิล',
 };
 
 const Map<String, String> auditLogTranslationsEn = {
@@ -73,6 +80,12 @@ const Map<String, String> auditLogTranslationsEn = {
   'audit_log_export_csv_button': 'Export CSV',
   'audit_log_export_unsupported_platform':
       'CSV export is only supported on the web (this page is admin/web-only)',
+
+  'audit_log_action_customer_credit_update': 'Credit terms change',
+  'audit_log_action_receivable_receipt': 'Debt collected',
+  'audit_log_action_receivable_receipt_void': 'Debt receipt voided',
+  'audit_log_action_receivable_billing_note': 'Billing note issued',
+  'audit_log_action_receivable_billing_note_void': 'Billing note voided',
 };
 
 const Map<String, String> auditLogTranslationsKo = {
@@ -108,4 +121,10 @@ const Map<String, String> auditLogTranslationsKo = {
   'audit_log_export_csv_button': 'CSV 내보내기',
   'audit_log_export_unsupported_platform':
       'CSV 내보내기는 웹에서만 지원됩니다 (이 화면은 관리자 웹 전용입니다)',
+
+  'audit_log_action_customer_credit_update': '신용 조건 변경',
+  'audit_log_action_receivable_receipt': '외상 수금',
+  'audit_log_action_receivable_receipt_void': '수금 영수증 취소',
+  'audit_log_action_receivable_billing_note': '청구서 발행',
+  'audit_log_action_receivable_billing_note_void': '청구서 취소',
 };

@@ -14,6 +14,10 @@ export const customerController = {
   ),
 
   create: asyncHandler(async (req, res) => created(res, customerService.create(req.body))),
+
+  updateCredit: asyncHandler(async (req, res) =>
+    ok(res, customerService.updateCredit(req.validated.params.id, req.body, req.user)),
+  ),
 };
 
 export default customerController;

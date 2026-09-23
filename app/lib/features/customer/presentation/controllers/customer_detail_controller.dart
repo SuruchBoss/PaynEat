@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 
+import '../../../../core/services/session_service.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../order/domain/entities/order.dart';
 import '../../../order/domain/usecases/order_usecases.dart';
 import '../../domain/entities/customer.dart';
@@ -12,11 +14,17 @@ class CustomerDetailController extends GetxController {
   CustomerDetailController({
     required GetCustomerUseCase getCustomer,
     required GetOrdersUseCase getOrders,
+    UpdateCustomerCreditUseCase? updateCredit,
+    SessionService? session,
   }) : _getCustomer = getCustomer,
-       _getOrders = getOrders;
+       _getOrders = getOrders,
+       _updateCredit = updateCredit,
+       _session = session;
 
   final GetCustomerUseCase _getCustomer;
   final GetOrdersUseCase _getOrders;
+  final UpdateCustomerCreditUseCase? _updateCredit;
+  final SessionService? _session;
 
   final Rxn<Customer> customer = Rxn<Customer>();
   final RxList<Order> orders = <Order>[].obs;
@@ -24,6 +32,13 @@ class CustomerDetailController extends GetxController {
   final RxnString errorMessage = RxnString();
 
   late final int customerId;
+
+  /// ตั้งวงเงิน/เครดิตเทอมได้เฉพาะผู้จัดการขึ้นไป (ตรงกับ PATCH /customers/:id/credit)
+  bool get canEditCredit =>
+      _updateCredit != null && (_session?.currentUser?.isManagement ?? false);
+
+  /// เปิดบัญชีลูกหนี้ได้ทั้งแคชเชียร์ (รับชำระหนี้) และผู้จัดการ
+  bool get canOpenStatement => _session?.currentUser?.canHandleCredit ?? false;
 
   @override
   void onInit() {
@@ -54,5 +69,22 @@ class CustomerDetailController extends GetxController {
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
+  }
+
+  /// บันทึกวงเงินเครดิต — คืน true ถ้าสำเร็จ (ข้อความผิดพลาดโชว์ให้แล้ว)
+  Future<bool> saveCredit(CustomerCreditTerms terms) async {
+    final updateCredit = _updateCredit;
+    if (updateCredit == null) return false;
+    final result = await updateCredit(
+      UpdateCustomerCreditParams(id: customerId, terms: terms),
+    );
+    final failure = result.failureOrNull;
+    if (failure != null) {
+      AppDialogs.error(failure.message);
+      return false;
+    }
+    AppDialogs.success('customer_credit_saved'.tr);
+    await load();
+    return true;
   }
 }

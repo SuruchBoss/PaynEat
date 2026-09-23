@@ -106,6 +106,26 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_loyalty_redeem_max_button': 'ใช้สูงสุด',
   'payment_loyalty_redeem_value': 'ลด @value บาทจากแต้มสะสม',
   'payment_loyalty_no_points_available': 'ยังใช้แต้มแลกส่วนลดไม่ได้ตอนนี้',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'payment_method_credit': 'ขายเชื่อ',
+  'payment_credit_available': 'วงเงินคงเหลือ @amount',
+  'payment_credit_due_in': 'ลงบัญชีลูกหนี้ ครบกำหนดชำระใน @days วัน',
+  'payment_credit_no_points': 'ขายเชื่อใช้แต้มสะสมร่วมไม่ได้',
+  'payment_credit_over_limit':
+      'ยอดนี้เกินวงเงินที่เหลือ — ลดยอดหรือรับชำระหนี้เก่าก่อน',
+  'payment_error_credit_limit_exceeded':
+      'เกินวงเงินเครดิตของ "@name" — วงเงิน @limit บาท ค้างอยู่ @outstanding บาท ใช้ได้อีก @available บาท',
+  'payment_error_credit_no_limit':
+      'ลูกค้า "@name" ยังไม่มีวงเงินเครดิต — ผู้จัดการตั้งวงเงินได้ที่หน้าลูกค้า',
+  'payment_error_credit_no_points':
+      'ขายเชื่อใช้แต้มสะสมแลกส่วนลดร่วมด้วยไม่ได้',
+  'payment_error_credit_refund_exceeds_owed':
+      'บิลขายเชื่อนี้ค้างชำระอยู่ @amount บาท ลดหนี้ได้ไม่เกินยอดนี้',
+  'payment_error_credit_requires_customer':
+      'ขายเชื่อต้องผูกออเดอร์กับลูกค้าเครดิตก่อน',
+  'payment_error_credit_role':
+      'ขายเชื่อต้องให้แคชเชียร์หรือผู้จัดการเป็นคนทำรายการ',
 };
 
 const Map<String, String> paymentTranslationsEn = {
@@ -222,6 +242,25 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_loyalty_redeem_max_button': 'Use max',
   'payment_loyalty_redeem_value': '@value THB off from redeemed points',
   'payment_loyalty_no_points_available': 'Points cannot be redeemed right now',
+
+  'payment_method_credit': 'On credit',
+  'payment_credit_available': 'Credit available @amount',
+  'payment_credit_due_in': 'Charged to account — due in @days days',
+  'payment_credit_no_points': 'Points cannot be used on a credit sale',
+  'payment_credit_over_limit':
+      'This amount exceeds the remaining credit — lower it or collect old debt first',
+  'payment_error_credit_limit_exceeded':
+      'Over the credit limit of "@name" — limit @limit THB, owing @outstanding THB, available @available THB',
+  'payment_error_credit_no_limit':
+      'Customer "@name" has no credit limit — a manager can set one on the customer page',
+  'payment_error_credit_no_points':
+      'Points cannot be redeemed on a credit sale',
+  'payment_error_credit_refund_exceeds_owed':
+      'This credit bill still owes @amount THB — the reduction cannot exceed that',
+  'payment_error_credit_requires_customer':
+      'Link the order to a credit customer before selling on credit',
+  'payment_error_credit_role':
+      'Credit sales must be made by a cashier or manager',
 };
 
 const Map<String, String> paymentTranslationsKo = {
@@ -309,4 +348,19 @@ const Map<String, String> paymentTranslationsKo = {
   'payment_loyalty_redeem_max_button': '최대 사용',
   'payment_loyalty_redeem_value': '적립금 사용으로 @value THB 할인',
   'payment_loyalty_no_points_available': '지금은 적립금을 사용할 수 없습니다',
+
+  'payment_method_credit': '외상',
+  'payment_credit_available': '사용 가능 한도 @amount',
+  'payment_credit_due_in': '외상 장부에 기록 — @days일 후 결제 기한',
+  'payment_credit_no_points': '외상 판매에는 적립금을 사용할 수 없습니다',
+  'payment_credit_over_limit': '남은 한도를 초과합니다 — 금액을 줄이거나 기존 외상을 먼저 받으세요',
+  'payment_error_credit_limit_exceeded':
+      '"@name" 의 신용 한도 초과 — 한도 @limit THB, 미수금 @outstanding THB, 사용 가능 @available THB',
+  'payment_error_credit_no_limit':
+      '고객 "@name" 은(는) 신용 한도가 없습니다 — 매니저가 고객 화면에서 설정할 수 있습니다',
+  'payment_error_credit_no_points': '외상 판매에는 적립금 할인을 함께 사용할 수 없습니다',
+  'payment_error_credit_refund_exceeds_owed':
+      '이 외상 전표의 미수금은 @amount THB입니다 — 그 이상 감액할 수 없습니다',
+  'payment_error_credit_requires_customer': '외상 판매 전에 주문을 신용 고객과 연결하세요',
+  'payment_error_credit_role': '외상 판매는 캐셔 또는 매니저만 할 수 있습니다',
 };

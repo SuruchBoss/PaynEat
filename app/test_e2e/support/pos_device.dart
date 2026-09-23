@@ -10,6 +10,8 @@ import 'package:payneat_pos/features/auth/data/datasources/auth_remote_data_sour
 import 'package:payneat_pos/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:payneat_pos/features/auth/domain/entities/login_result.dart';
 import 'package:payneat_pos/features/auth/domain/entities/user.dart';
+import 'package:payneat_pos/features/customer/data/datasources/customer_remote_data_source.dart';
+import 'package:payneat_pos/features/customer/data/repositories/customer_repository_impl.dart';
 import 'package:payneat_pos/features/ingredient/data/datasources/ingredient_remote_data_source.dart';
 import 'package:payneat_pos/features/ingredient/data/repositories/ingredient_repository_impl.dart';
 import 'package:payneat_pos/features/menu/data/datasources/menu_remote_data_source.dart';
@@ -18,6 +20,8 @@ import 'package:payneat_pos/features/order/data/datasources/order_remote_data_so
 import 'package:payneat_pos/features/order/data/repositories/order_repository_impl.dart';
 import 'package:payneat_pos/features/payment/data/datasources/payment_remote_data_source.dart';
 import 'package:payneat_pos/features/payment/data/repositories/payment_repository_impl.dart';
+import 'package:payneat_pos/features/receivable/data/datasources/receivable_remote_data_source.dart';
+import 'package:payneat_pos/features/receivable/data/repositories/receivable_repository_impl.dart';
 import 'package:payneat_pos/features/report/data/datasources/report_remote_data_source.dart';
 import 'package:payneat_pos/features/report/data/repositories/report_repository_impl.dart';
 import 'package:payneat_pos/features/self_order/data/datasources/self_order_remote_data_source.dart';
@@ -80,6 +84,10 @@ class PosDevice {
     auditLogs = AuditLogRepositoryImpl(AuditLogRemoteDataSourceImpl(client));
     settings = SettingsRepositoryImpl(SettingsRemoteDataSourceImpl(client));
     staff = StaffRepositoryImpl(StaffRemoteDataSourceImpl(client));
+    customers = CustomerRepositoryImpl(CustomerRemoteDataSourceImpl(client));
+    receivables = ReceivableRepositoryImpl(
+      ReceivableRemoteDataSourceImpl(client),
+    );
   }
 
   final StorageService storage = StorageService.memory();
@@ -101,6 +109,8 @@ class PosDevice {
   late final AuditLogRepositoryImpl auditLogs;
   late final SettingsRepositoryImpl settings;
   late final StaffRepositoryImpl staff;
+  late final CustomerRepositoryImpl customers;
+  late final ReceivableRepositoryImpl receivables;
 
   /// ล็อกอินผ่าน repository จริง — ถ้าผู้ใช้มีหลายสาขา backend จะตอบ pendingToken มาให้เลือกสาขา
   /// ก่อน (ticket 11) จึงเลือกสาขาตาม [branchCode] ต่อให้ในขั้นเดียว เหมือนผู้ใช้กดเลือกบนหน้าจอ

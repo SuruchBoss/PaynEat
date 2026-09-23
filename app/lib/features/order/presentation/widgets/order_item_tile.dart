@@ -48,14 +48,18 @@ class OrderItemTile extends StatelessWidget {
                 color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Text(
-                '${item.quantity}',
-                style: TextStyle(
-                  fontWeight: FontWeight.w800,
-                  color: color,
-                  fontSize: 14,
-                ),
-              ),
+              // สินค้าชั่งน้ำหนักเป็นบรรทัดละ 1 ถุงเสมอ ตัวเลข "1" ไม่บอกอะไร — โชว์ไอคอนตาชั่ง
+              // แล้วบอกน้ำหนักจริงใต้ชื่อแทน
+              child: item.isWeighed
+                  ? Icon(Icons.scale_rounded, size: 18, color: color)
+                  : Text(
+                      '${item.quantity}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        color: color,
+                        fontSize: 14,
+                      ),
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -86,6 +90,19 @@ class OrderItemTile extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (item.isWeighed)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        '${Formatters.weight(item.weightGrams!)} × '
+                        '${Formatters.bahtPerKg(item.unitPrice + item.optionsPrice)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
                   if (item.options.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 2),

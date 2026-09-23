@@ -14,5 +14,7 @@ abstract class SettingsRepository {
     double? pointsEarnRateBaht,
     double? pointsRedeemValueBaht,
     String? promptPayId,
+    String? scaleLabelPrefix,
+    int? scaleLabelPluDigits,
   });
 }

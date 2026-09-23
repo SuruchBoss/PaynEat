@@ -56,6 +56,8 @@ const CATEGORIES = [
   { name: 'ของทานเล่น', nameEn: 'Appetizers', icon: '🍤', sortOrder: 5 },
   { name: 'เครื่องดื่ม', nameEn: 'Drinks', icon: '🥤', sortOrder: 6 },
   { name: 'ของหวาน', nameEn: 'Desserts', icon: '🍨', sortOrder: 7 },
+  // เคาน์เตอร์ขายเนื้อสด/ของฝากกลับบ้าน (ดู docs/tickets/18-sell-by-weight.md, 19-barcode-scale.md)
+  { name: 'เนื้อสด & ของกลับบ้าน', nameEn: 'Fresh Meat & Take-home', icon: '🥩', sortOrder: 8 },
 ];
 
 // prettier-ignore
@@ -90,6 +92,13 @@ const MENU = [
   { cat: 'ของหวาน', name: 'ข้าวเหนียวมะม่วง', nameEn: 'Mango Sticky Rice', price: 120, prep: 6, recommended: true },
   { cat: 'ของหวาน', name: 'บัวลอยไข่หวาน', nameEn: 'Bua Loy', price: 70, prep: 6 },
   { cat: 'ของหวาน', name: 'ไอศกรีมกะทิ', nameEn: 'Coconut Ice Cream', price: 65, prep: 3 },
+  // ขายตามน้ำหนัก — price คือราคาต่อกิโลกรัม, plu คือรหัสสินค้าบนฉลากตาชั่ง
+  { cat: 'เนื้อสด & ของกลับบ้าน', name: 'หมูสามชั้นสไลซ์', nameEn: 'Sliced Pork Belly', price: 280, prep: 2, soldByWeight: true, plu: '101', desc: 'ราคาต่อกิโลกรัม ชั่งตามจริง' },
+  { cat: 'เนื้อสด & ของกลับบ้าน', name: 'เนื้อวัวริบอาย', nameEn: 'Beef Ribeye', price: 1200, prep: 2, soldByWeight: true, plu: '102', desc: 'ราคาต่อกิโลกรัม ชั่งตามจริง' },
+  { cat: 'เนื้อสด & ของกลับบ้าน', name: 'หมูหมักบุลโกกิ', nameEn: 'Bulgogi Marinated Pork', price: 320, prep: 2, soldByWeight: true, plu: '103', desc: 'ราคาต่อกิโลกรัม ชั่งตามจริง' },
+  // สินค้าสำเร็จรูป มีบาร์โค้ด EAN-13 จริง (check digit ถูกต้อง) สแกนแล้วลงตะกร้า 1 ชิ้น
+  { cat: 'เนื้อสด & ของกลับบ้าน', name: 'ซอสหมักบุลโกกิ (ขวด)', nameEn: 'Bulgogi Marinade (bottle)', price: 159, prep: 1, barcode: '8850999320014' },
+  { cat: 'เนื้อสด & ของกลับบ้าน', name: 'กิมจิ 500 กรัม', nameEn: 'Kimchi 500 g', price: 129, prep: 1, barcode: '8850999320021' },
 ];
 
 // ตัวเลือกเสริมของบางเมนู (ระดับความเผ็ด / ท็อปปิ้ง / ระดับความหวาน)
@@ -164,6 +173,10 @@ const INGREDIENTS = [
   { name: 'ไข่ไก่', unit: 'ฟอง', currentStock: 60, lowStockThreshold: 12 },
   { name: 'เนื้อปู', unit: 'กรัม', currentStock: 500, lowStockThreshold: 300 },
   { name: 'ปลาทับทิม', unit: 'ตัว', currentStock: 3, lowStockThreshold: 5 },
+  // วัตถุดิบของเมนูขายตามน้ำหนัก ตั้งหน่วยเป็นกิโลกรัม และผูกเมนู "1 ต่อ 1 กก." ขายไป 0.485 กก.
+  // สต๊อกลด 0.485 พอดี (ดู docs/DECISIONS.md #48)
+  { name: 'หมูสามชั้น', unit: 'กก.', currentStock: 25, lowStockThreshold: 5 },
+  { name: 'เนื้อริบอาย', unit: 'กก.', currentStock: 8, lowStockThreshold: 2 },
 ];
 
 // เมนู → วัตถุดิบที่ใช้ + ปริมาณต่อ 1 ที่ (ผูกไว้แค่บางเมนูเป็นตัวอย่าง ไม่ใช่ทุกเมนู)
@@ -177,6 +190,9 @@ const MENU_ITEM_INGREDIENTS = {
     { ingredient: 'ข้าวสวย', qtyPerUnit: 1 },
   ],
   ปลาทับทิมนึ่งมะนาว: [{ ingredient: 'ปลาทับทิม', qtyPerUnit: 1 }],
+  หมูสามชั้นสไลซ์: [{ ingredient: 'หมูสามชั้น', qtyPerUnit: 1 }],
+  หมูหมักบุลโกกิ: [{ ingredient: 'หมูสามชั้น', qtyPerUnit: 1 }],
+  เนื้อวัวริบอาย: [{ ingredient: 'เนื้อริบอาย', qtyPerUnit: 1 }],
   ไข่เจียวปู: [
     { ingredient: 'ไข่ไก่', qtyPerUnit: 2 },
     { ingredient: 'เนื้อปู', qtyPerUnit: 50 },
@@ -191,6 +207,12 @@ const STORE_TAX_INFO = {
   store_address: '123/45 ถนนสุขุมวิท แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
   store_branch: 'สำนักงานใหญ่',
 };
+
+// prettier-ignore
+const B2B_CUSTOMER = [
+  'บริษัท โซลบาร์บีคิว จำกัด', '021234567', toSatang(50000), 30, '0105561234567',
+  '88 ถนนสุขุมวิท 24 แขวงคลองตัน เขตคลองเตย กรุงเทพมหานคร 10110',
+];
 
 // prettier-ignore
 const TABLES = [
@@ -327,8 +349,9 @@ export const seed = () => {
           .map((row) => [row.name, row.id]),
       );
       const insertMenu = db.prepare(`
-        INSERT INTO menu_items (category_id, name, name_en, description, price, is_recommended, prep_minutes, sort_order, branch_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO menu_items (category_id, name, name_en, description, price, is_recommended, prep_minutes, sort_order, branch_id,
+                                sold_by_weight, barcode, scale_plu)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const insertGroup = db.prepare(`
         INSERT INTO option_groups (menu_item_id, name, min_select, max_select, is_required, sort_order)
@@ -351,6 +374,9 @@ export const seed = () => {
             item.prep,
             index,
             branchId,
+            item.soldByWeight ? 1 : 0,
+            item.barcode ?? null,
+            item.plu ?? null,
           );
           const menuItemId = result.lastInsertRowid;
           menuItemIdByName.set(item.name, menuItemId);
@@ -460,6 +486,16 @@ export const seed = () => {
         'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO NOTHING',
       );
       for (const [key, value] of Object.entries(STORE_TAX_INFO)) upsertSetting.run(key, value);
+    }
+
+    // ลูกค้าเครดิตตัวอย่าง (ดู docs/tickets/20-b2b-credit.md) — ร้านอาหาร/ร้านเนื้อที่ซื้อส่งแล้ววางบิล
+    // เก็บเงินปลายเดือน ใส่เฉพาะตอนยังไม่มีลูกค้าเลย ฐานข้อมูลที่ใช้งานจริงอยู่แล้วจะไม่มีลูกค้าปลอมโผล่
+    const customerCount = db.prepare('SELECT COUNT(*) AS c FROM customers').get().c;
+    if (customerCount === 0) {
+      db.prepare(
+        `INSERT INTO customers (name, phone, credit_limit, credit_term_days, tax_id, address)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      ).run(...B2B_CUSTOMER);
     }
 
     // เปิดกะแรกให้พร้อมใช้งานทันที (ร้านจริงจะเปิด/ปิดกะเองทุกวันหลังจากนี้)

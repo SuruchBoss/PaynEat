@@ -4,6 +4,7 @@ import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/services/offline_order_queue_service.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../customer/domain/entities/customer.dart';
 import '../../../menu/domain/entities/menu_item.dart';
@@ -11,6 +12,7 @@ import '../../../menu/domain/entities/menu_option.dart';
 import '../../../settings/domain/entities/store_settings.dart';
 import '../../../settings/domain/usecases/settings_usecases.dart';
 import '../../domain/entities/cart_line.dart';
+import '../../domain/services/barcode_resolver.dart';
 import '../../domain/services/bill_calculator.dart';
 import '../../domain/usecases/order_usecases.dart';
 
@@ -121,12 +123,62 @@ class CartController extends GetxController {
     }
   }
 
+  /// ใส่สินค้าขายตามน้ำหนักที่ชั่งแล้ว — บรรทัดใหม่เสมอ ไม่รวมกับถุงก่อนหน้า (ดู CartLine.signature)
+  void addWeighedItem(
+    MenuItem menuItem,
+    int weightGrams, {
+    List<MenuOption> options = const [],
+    String? note,
+  }) {
+    lines.add(
+      CartLine(
+        menuItem: menuItem,
+        weightGrams: weightGrams,
+        selectedOptions: List<MenuOption>.from(options),
+        note: (note?.trim().isEmpty ?? true) ? null : note!.trim(),
+      ),
+    );
+  }
+
+  /// ชั่งใหม่ก่อนส่ง (กรอกผิด/เพิ่มของในถุง) — แก้ได้เฉพาะในตะกร้า หลังส่งแล้วต้องลบแล้วชั่งใหม่
+  void updateWeight(int index, int weightGrams) {
+    if (index < 0 || index >= lines.length) return;
+    if (!lines[index].isWeighed || weightGrams <= 0) return;
+    lines[index].weightGrams = weightGrams;
+    lines.refresh();
+  }
+
+  /// รหัสจากเครื่องสแกนบาร์โค้ด (ดู docs/tickets/19-barcode-scale.md) — ใส่ตะกร้าให้เลยถ้าไม่ต้อง
+  /// ถามอะไรเพิ่ม ส่วนกรณีที่ต้องเลือกตัวเลือก/ชั่งน้ำหนัก/แจ้งเตือน คืนผลให้หน้าจอจัดการต่อ
+  ScanResult applyScan(String code, List<MenuItem> menu) {
+    final result = BarcodeResolver.resolve(
+      code,
+      menu,
+      format: ScaleLabelFormat(
+        prefix: settings.value.scaleLabelPrefix,
+        pluDigits: settings.value.scaleLabelPluDigits,
+      ),
+    );
+    switch (result) {
+      case ScannedUnitItem(:final item) when !item.requiresSelection:
+        addItem(item);
+      case ScannedWeighedItem(:final item, :final weightGrams)
+          when !item.requiresSelection:
+        addWeighedItem(item, weightGrams);
+      default:
+        break;
+    }
+    return result;
+  }
+
   void updateQuantity(int index, int quantity) {
     if (index < 0 || index >= lines.length) return;
     if (quantity <= 0) {
       lines.removeAt(index);
       return;
     }
+    // สินค้าชั่งน้ำหนักเป็นบรรทัดละ 1 ถุงเสมอ — เพิ่มถุงต้องชั่งใหม่เป็นอีกบรรทัด
+    if (lines[index].isWeighed) return;
     lines[index].quantity = quantity;
     lines.refresh();
   }
@@ -211,7 +263,11 @@ class CartController extends GetxController {
                   }),
             items: cartToPayload(queuedLines),
             summary: queuedLines
-                .map((line) => '${line.menuItem.name} x${line.quantity}')
+                .map(
+                  (line) => line.isWeighed
+                      ? '${line.menuItem.name} ${Formatters.weight(line.weightGrams!)}'
+                      : '${line.menuItem.name} x${line.quantity}',
+                )
                 .join(', '),
           );
           clear();

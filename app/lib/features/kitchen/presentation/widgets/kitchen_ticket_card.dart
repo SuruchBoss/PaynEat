@@ -108,7 +108,9 @@ class KitchenTicketCard extends StatelessWidget {
                         borderRadius: BorderRadius.circular(7),
                       ),
                       child: Text(
-                        'x${item.quantity}',
+                        item.isWeighed
+                            ? Formatters.weight(item.weightGrams!)
+                            : 'x${item.quantity}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,

@@ -60,6 +60,9 @@ class MenuItemModel extends MenuItem {
     super.sortOrder,
     super.optionGroups,
     super.ingredients,
+    super.soldByWeight,
+    super.barcode,
+    super.scalePlu,
   });
 
   factory MenuItemModel.fromJson(Map<String, dynamic> json) => MenuItemModel(
@@ -76,6 +79,9 @@ class MenuItemModel extends MenuItem {
     isRecommended: json['isRecommended'] as bool? ?? false,
     prepMinutes: (json['prepMinutes'] as num?)?.toInt() ?? 10,
     sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
+    soldByWeight: json['soldByWeight'] as bool? ?? false,
+    barcode: json['barcode'] as String?,
+    scalePlu: json['scalePlu'] as String?,
     optionGroups: (json['optionGroups'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(MenuOptionGroupModel.fromJson)

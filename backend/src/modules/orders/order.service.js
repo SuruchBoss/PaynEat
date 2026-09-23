@@ -1,6 +1,7 @@
 import { ApiError } from '../../core/ApiError.js';
 import { resolveBranchIdForWrite } from '../../core/branchScope.js';
 import { toSatang, toBaht } from '../../core/money.js';
+import { describeLine } from '../../core/weight.js';
 import { getDb } from '../../db/index.js';
 import { emit, EVENTS, ROOMS } from '../../realtime/socket.js';
 import { menuRepository } from '../menu/menu.repository.js';
@@ -11,7 +12,7 @@ import { ingredientService } from '../ingredients/ingredient.service.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { customerRepository } from '../customers/customer.repository.js';
 import { orderRepository } from './order.repository.js';
-import { calculateBill } from './order.calculator.js';
+import { calculateBill, lineTotalFor } from './order.calculator.js';
 import {
   evaluatePromotion,
   findBestAutoPromotion,
@@ -71,11 +72,26 @@ const buildItemRow = (input) => {
 
   const optionsPrice = selected.reduce((acc, option) => acc + option.price_delta, 0);
 
+  // ขายตามน้ำหนัก (ดู docs/tickets/18-sell-by-weight.md) — ชั่งทีละถุงเป็นคนละบรรทัดเสมอ ไม่รวม
+  // จำนวน เพราะแต่ละถุงหนักไม่เท่ากัน และฉลากตาชั่งหนึ่งใบคือหนึ่งถุง
+  const soldByWeight = Boolean(menuItem.sold_by_weight);
+  if (soldByWeight && !input.weightGrams) {
+    throw ApiError.badRequest(`เมนู "${menuItem.name}" ขายตามน้ำหนัก ต้องระบุน้ำหนักที่ชั่งได้`);
+  }
+  if (!soldByWeight && input.weightGrams) {
+    throw ApiError.badRequest(`เมนู "${menuItem.name}" ขายเป็นชิ้น ไม่ได้ขายตามน้ำหนัก`);
+  }
+  if (soldByWeight && input.quantity !== 1) {
+    throw ApiError.badRequest('สินค้าชั่งน้ำหนักใส่ได้บรรทัดละ 1 ถุง — ชั่งถุงถัดไปเป็นอีกบรรทัด');
+  }
+  const weightGrams = soldByWeight ? input.weightGrams : null;
+
   return {
     menuItemId: menuItem.id,
     nameSnapshot: menuItem.name,
     unitPrice: menuItem.price,
     quantity: input.quantity,
+    weightGrams,
     options: selected.map((option) => ({
       id: option.id,
       groupName: option.group.name,
@@ -83,7 +99,12 @@ const buildItemRow = (input) => {
       priceDelta: option.price_delta,
     })),
     optionsPrice,
-    lineTotal: (menuItem.price + optionsPrice) * input.quantity,
+    lineTotal: lineTotalFor({
+      unitPrice: menuItem.price,
+      optionsPrice,
+      quantity: input.quantity,
+      weightGrams,
+    }),
     note: input.note,
   };
 };
@@ -265,11 +286,15 @@ export const orderService = {
         entityType: 'order',
         entityId: order.id,
         summary: `เพิ่ม ${itemRows.length} รายการเข้าออเดอร์ #${order.code}: ${itemRows
-          .map((row) => `${row.nameSnapshot} x${row.quantity}`)
+          .map((row) => describeLine(row.nameSnapshot, row))
           .join(', ')}`,
         metadata: {
           orderCode: order.code,
-          items: itemRows.map((row) => ({ name: row.nameSnapshot, quantity: row.quantity })),
+          items: itemRows.map((row) => ({
+            name: row.nameSnapshot,
+            quantity: row.quantity,
+            ...(row.weightGrams ? { weightGrams: row.weightGrams } : {}),
+          })),
         },
       });
     });
@@ -291,13 +316,21 @@ export const orderService = {
     if (item.status !== 'pending') {
       throw ApiError.conflict('แก้ไขไม่ได้ เพราะครัวเริ่มทำรายการนี้แล้ว');
     }
+    if (item.weight_grams && payload.quantity !== undefined && payload.quantity !== 1) {
+      throw ApiError.badRequest('สินค้าชั่งน้ำหนักแก้จำนวนไม่ได้ — ลบรายการนี้แล้วชั่งใหม่');
+    }
 
     const quantity = payload.quantity ?? item.quantity;
     const run = getDb().transaction(() => {
       orderRepository.updateItem(itemId, {
         quantity,
         note: payload.note,
-        lineTotal: (item.unit_price + item.options_price) * quantity,
+        lineTotal: lineTotalFor({
+          unitPrice: item.unit_price,
+          optionsPrice: item.options_price,
+          quantity,
+          weightGrams: item.weight_grams,
+        }),
       });
       if (item.stock_deducted) {
         ingredientService.adjustForQuantityChange(item, item.quantity, quantity);
@@ -345,11 +378,15 @@ export const orderService = {
         action: 'order.item.remove',
         entityType: 'order',
         entityId: order.id,
-        summary: `ลบรายการ "${item.name_snapshot}" (${item.quantity} ชิ้น) ออกจากออเดอร์ #${order.code}`,
+        summary: `ลบรายการ "${describeLine(item.name_snapshot, {
+          quantity: item.quantity,
+          weightGrams: item.weight_grams,
+        })}" ออกจากออเดอร์ #${order.code}`,
         metadata: {
           orderCode: order.code,
           itemName: item.name_snapshot,
           quantity: item.quantity,
+          ...(item.weight_grams ? { weightGrams: item.weight_grams } : {}),
         },
       });
     });

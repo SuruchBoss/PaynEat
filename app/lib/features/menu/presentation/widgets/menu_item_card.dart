@@ -126,7 +126,11 @@ class MenuItemCard extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
-                                Formatters.baht(item.price),
+                                // ขายตามน้ำหนักโชว์ราคาต่อกก. ให้ชัด ไม่งั้นพนักงานเข้าใจว่า
+                                // 280 บาทคือราคาต่อถุง (ดู docs/tickets/18-sell-by-weight.md)
+                                item.soldByWeight
+                                    ? Formatters.bahtPerKg(item.price)
+                                    : Formatters.baht(item.price),
                                 style: TextStyle(
                                   fontSize: 14.5,
                                   fontWeight: FontWeight.w800,

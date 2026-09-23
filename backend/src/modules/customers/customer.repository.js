@@ -52,6 +52,24 @@ export const customerRepository = {
       .all(start, end, limit);
   },
 
+  /** ตั้งวงเงิน/เครดิตเทอม/ข้อมูลออกเอกสารของลูกค้าเครดิต — tax_id/address ส่ง null เพื่อล้างค่า */
+  updateCredit(id, { creditLimit, creditTermDays, taxId, address }) {
+    getDb()
+      .prepare(
+        `
+        UPDATE customers
+           SET credit_limit     = ?,
+               credit_term_days = ?,
+               tax_id           = ?,
+               address          = ?,
+               updated_at       = datetime('now')
+         WHERE id = ?
+      `,
+      )
+      .run(creditLimit, creditTermDays, taxId, address, id);
+    return this.findById(id);
+  },
+
   /** บวก/ลบแต้มสะสม (delta ติดลบ = ใช้แต้ม, บวก = สะสมแต้ม) — ทางเดียวที่แก้ points_balance ได้ */
   adjustPoints(id, delta) {
     getDb()

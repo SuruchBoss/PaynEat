@@ -40,6 +40,9 @@ export const toMenuItemDto = (row, optionGroups = [], ingredientLinks = []) => {
     prepMinutes: row.prep_minutes,
     sortOrder: row.sort_order,
     branchId: row.branch_id ?? null,
+    soldByWeight: Boolean(row.sold_by_weight),
+    barcode: row.barcode ?? null,
+    scalePlu: row.scale_plu ?? null,
     optionGroups: optionGroups.map(toOptionGroupDto),
     ingredients: ingredientLinks.map(toIngredientLinkDto),
   };

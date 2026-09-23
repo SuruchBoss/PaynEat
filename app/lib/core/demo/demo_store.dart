@@ -28,6 +28,8 @@ part 'demo_store_tax_invoices.dart';
 part 'demo_store_settings.dart';
 part 'demo_store_audit_logs.dart';
 part 'demo_store_customers.dart';
+part 'demo_store_receivables.dart';
+part 'demo_store_ar_documents.dart';
 
 /// "เซิร์ฟเวอร์จำลอง" ที่อยู่ในหน่วยความจำของแอป
 ///
@@ -68,6 +70,10 @@ class DemoStore {
   final List<Map<String, dynamic>> auditLogs = [];
   final List<Map<String, dynamic>> customers = [];
 
+  /// ลูกหนี้/ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md) — [DemoStoreReceivables]
+  final List<Map<String, dynamic>> arReceipts = [];
+  final List<Map<String, dynamic>> billingNotes = [];
+
   /// ผู้ใช้แคชเชียร์ที่ seed ไว้ให้ — ใช้เปิดกะแรกอัตโนมัติเหมือนวันแรกที่ร้านเปิดใช้ระบบ
   static const int _defaultCashierId = 6;
 
@@ -94,7 +100,11 @@ class DemoStore {
     promotions.clear();
     taxInvoices.clear();
     auditLogs.clear();
-    customers.clear();
+    customers
+      ..clear()
+      ..addAll(DemoSeed.customers());
+    arReceipts.clear();
+    billingNotes.clear();
     _orderSequence = 0;
     _idSequence = 1000;
     _seedHistoricalSales();

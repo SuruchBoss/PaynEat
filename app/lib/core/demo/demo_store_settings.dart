@@ -12,6 +12,23 @@ extension DemoStoreSettings on DemoStore {
     final previousVatRate = settings['vatRate'] as double;
     final previousServiceChargeRate = settings['serviceChargeRate'] as double;
 
+    // ฉลากตาชั่ง 13 หลัก: prefix + PLU + น้ำหนัก 4–6 หลัก + check digit (mirror ของ
+    // settings.service.js — ดู docs/tickets/19-barcode-scale.md)
+    final prefix =
+        (changes['scaleLabelPrefix'] ?? settings['scaleLabelPrefix']) as String;
+    final pluDigits =
+        (changes['scaleLabelPluDigits'] ?? settings['scaleLabelPluDigits'])
+            as int;
+    final weightDigits = 12 - prefix.length - pluDigits;
+    if (!RegExp(r'^2\d{0,2}$').hasMatch(prefix) ||
+        weightDigits < 4 ||
+        weightDigits > 6) {
+      throw ApiException(
+        message: 'settings_scale_label_invalid'.tr,
+        statusCode: 400,
+      );
+    }
+
     changes.forEach((key, value) => settings[key] = value);
 
     final newVatRate = changes['vatRate'] as double?;

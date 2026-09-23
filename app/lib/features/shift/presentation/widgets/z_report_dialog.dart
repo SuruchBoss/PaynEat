@@ -116,6 +116,25 @@ class ZReportDialog extends StatelessWidget {
                           Formatters.baht(method.amount),
                         ),
                     ],
+                    // รับชำระหนี้ลูกค้าเครดิต — ไม่ใช่ยอดขายของกะนี้ แต่เงินสดส่วนนี้อยู่ในลิ้นชัก
+                    // ต้องเห็นว่าเงินสดที่คาดไว้มาจากไหน (ดู docs/DECISIONS.md #50)
+                    if (report.receivableReceipts.isNotEmpty) ...[
+                      const Divider(height: 22),
+                      Text(
+                        'shift_z_report_receivables_title'.tr,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      for (final method in report.receivableReceipts)
+                        _row(
+                          '${method.label} (${method.count})',
+                          Formatters.baht(method.amount),
+                        ),
+                    ],
                     if (report.isShiftReport) ...[
                       const Divider(height: 22),
                       Text(

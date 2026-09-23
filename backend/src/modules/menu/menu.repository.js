@@ -24,8 +24,9 @@ export const menuRepository = {
       params.push(categoryId);
     }
     if (search) {
-      clauses.push("(m.name LIKE ? OR IFNULL(m.name_en, '') LIKE ?)");
-      params.push(`%${search}%`, `%${search}%`);
+      // บาร์โค้ดต้องตรงทั้งรหัส (ไม่ใช้ LIKE) — ค้น "885" ไม่ควรได้ทุกสินค้าไทยที่ขึ้นต้นด้วยรหัสประเทศ
+      clauses.push("(m.name LIKE ? OR IFNULL(m.name_en, '') LIKE ? OR m.barcode = ?)");
+      params.push(`%${search}%`, `%${search}%`, search);
     }
     if (availableOnly) clauses.push('m.is_available = 1');
     if (recommendedOnly) clauses.push('m.is_recommended = 1');
@@ -138,8 +139,9 @@ export const menuRepository = {
       .prepare(
         `
         INSERT INTO menu_items
-          (category_id, name, name_en, description, price, image_url, is_available, is_recommended, prep_minutes, sort_order, branch_id)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          (category_id, name, name_en, description, price, image_url, is_available, is_recommended,
+           prep_minutes, sort_order, branch_id, sold_by_weight, barcode, scale_plu)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       )
       .run(
@@ -154,6 +156,9 @@ export const menuRepository = {
         payload.prepMinutes ?? 10,
         payload.sortOrder ?? 0,
         payload.branchId,
+        payload.soldByWeight ? 1 : 0,
+        payload.barcode ?? null,
+        payload.scalePlu ?? null,
       );
     return this.findById(info.lastInsertRowid);
   },
@@ -173,6 +178,7 @@ export const menuRepository = {
                prep_minutes           = COALESCE(?, prep_minutes),
                sort_order             = COALESCE(?, sort_order),
                auto_disabled_by_stock = COALESCE(?, auto_disabled_by_stock),
+               sold_by_weight         = COALESCE(?, sold_by_weight),
                updated_at             = datetime('now')
          WHERE id = ?
       `,
@@ -187,8 +193,17 @@ export const menuRepository = {
       payload.prepMinutes ?? null,
       payload.sortOrder ?? null,
       payload.autoDisabledByStock === undefined ? null : Number(payload.autoDisabledByStock),
+      payload.soldByWeight === undefined ? null : Number(payload.soldByWeight),
       id,
     );
+
+    // barcode/scale_plu ล้างเป็น NULL ได้ (ส่ง null มา) จึงแก้แยกจาก COALESCE เหมือน image_url ด้านล่าง
+    if (payload.barcode !== undefined) {
+      db.prepare('UPDATE menu_items SET barcode = ? WHERE id = ?').run(payload.barcode, id);
+    }
+    if (payload.scalePlu !== undefined) {
+      db.prepare('UPDATE menu_items SET scale_plu = ? WHERE id = ?').run(payload.scalePlu, id);
+    }
 
     // image_url ต้องแก้แยกจาก COALESCE ด้านบน — COALESCE(?, col) ไม่มีทางเซ็ตเป็น NULL ได้เลย
     // (พารามิเตอร์ null กับ "ไม่ได้ส่งมา" กลายเป็นค่าเดียวกันไปหมด) ทำให้ "ลบรูปเมนู" ใช้ไม่ได้จริง
@@ -198,6 +213,18 @@ export const menuRepository = {
     }
 
     return this.findById(id);
+  },
+
+  /** เมนูอื่นในสาขาเดียวกันที่ใช้บาร์โค้ด/PLU นี้อยู่แล้ว — ใช้กันรหัสซ้ำ (สแกนแล้วต้องได้สินค้าเดียว) */
+  findConflictingCode({ column, value, branchId, excludeId }) {
+    if (!['barcode', 'scale_plu'].includes(column)) throw new Error(`คอลัมน์ไม่ถูกต้อง: ${column}`);
+    return getDb()
+      .prepare(
+        `SELECT id, name FROM menu_items
+          WHERE ${column} = ? AND IFNULL(branch_id, 0) = IFNULL(?, 0) AND id != ?
+          LIMIT 1`,
+      )
+      .get(value, branchId ?? null, excludeId ?? 0);
   },
 
   /** เปิด/ปิดขายเมนูจากระบบสต๊อกโดยตรง — ตั้งทั้ง is_available และ auto_disabled_by_stock

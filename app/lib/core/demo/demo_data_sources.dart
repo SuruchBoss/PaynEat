@@ -10,6 +10,7 @@ import '../../features/auth/data/models/user_model.dart';
 import '../../features/auth/domain/entities/login_result.dart';
 import '../../features/customer/data/datasources/customer_remote_data_source.dart';
 import '../../features/customer/data/models/customer_model.dart';
+import '../../features/customer/domain/entities/customer.dart';
 import '../../features/ingredient/data/datasources/ingredient_remote_data_source.dart';
 import '../../features/ingredient/data/models/ingredient_model.dart';
 import '../../features/menu/data/datasources/menu_remote_data_source.dart';
@@ -20,6 +21,10 @@ import '../../features/order/data/datasources/order_remote_data_source.dart';
 import '../../features/order/domain/entities/order_item_payload.dart';
 import '../../features/promotion/data/datasources/promotion_remote_data_source.dart';
 import '../../features/promotion/data/models/promotion_model.dart';
+import '../../features/receivable/data/datasources/receivable_remote_data_source.dart';
+import '../../features/receivable/data/models/receivable_model.dart';
+import '../../features/receivable/domain/entities/receivable.dart';
+import '../../features/receivable/domain/repositories/receivable_repository.dart';
 import '../../features/table/data/datasources/table_remote_data_source.dart';
 import '../../features/table/data/models/dining_table_model.dart';
 import '../../features/order/data/models/order_model.dart';
@@ -41,6 +46,7 @@ import '../../features/tax_invoice/data/models/tax_invoice_model.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 import '../utils/promptpay.dart';
+import 'demo_names.dart';
 import 'demo_store.dart';
 
 part 'demo_auth_data_source.dart';
@@ -59,6 +65,7 @@ part 'demo_audit_log_data_source.dart';
 part 'demo_customer_data_source.dart';
 part 'demo_ai_assistant_data_source.dart';
 part 'demo_self_order_data_source.dart';
+part 'demo_receivable_data_source.dart';
 
 /// Data source ชุด "Demo Mode"
 ///

@@ -9,6 +9,7 @@ import 'package:payneat_pos/features/menu/domain/entities/menu_option.dart';
 import 'package:payneat_pos/features/order/domain/entities/order_item_payload.dart';
 import 'package:payneat_pos/features/order/domain/entities/order.dart';
 import 'package:payneat_pos/features/order/domain/repositories/order_repository.dart';
+import 'package:payneat_pos/features/order/domain/services/barcode_resolver.dart';
 import 'package:payneat_pos/features/order/domain/usecases/order_usecases.dart';
 import 'package:payneat_pos/features/order/presentation/controllers/cart_controller.dart';
 import 'package:payneat_pos/features/settings/domain/entities/store_settings.dart';
@@ -56,6 +57,8 @@ class _FakeSettingsRepository implements SettingsRepository {
     double? pointsEarnRateBaht,
     double? pointsRedeemValueBaht,
     String? promptPayId,
+    String? scaleLabelPrefix,
+    int? scaleLabelPluDigits,
   }) async => get();
 }
 
@@ -159,6 +162,78 @@ void main() {
         expect(controller.orderType.value, OrderType.takeaway);
       },
     );
+  });
+
+  // ขายตามน้ำหนัก + สแกนบาร์โค้ด/ฉลากตาชั่ง (ดู docs/tickets/18-sell-by-weight.md, 19-barcode-scale.md)
+  group('CartController สินค้าชั่งน้ำหนักและการสแกน', () {
+    const ribeye = MenuItem(
+      id: 20,
+      categoryId: 8,
+      name: 'ริบอาย',
+      price: 890,
+      soldByWeight: true,
+      scalePlu: '101',
+    );
+    const sauce = MenuItem(
+      id: 21,
+      categoryId: 2,
+      name: 'ซอสจิ้มจุ่ม',
+      price: 59,
+      barcode: '8851234567898',
+    );
+    const menu = [ribeye, sauce, padkrapao];
+
+    test(
+      'สินค้าชั่งน้ำหนักเป็นบรรทัดใหม่ทุกถุง และส่ง weightGrams ไป backend',
+      () {
+        controller.addWeighedItem(ribeye, 485);
+        controller.addWeighedItem(ribeye, 485);
+
+        expect(controller.lines.length, 2);
+        expect(controller.subtotal, 863.3); // 431.65 × 2
+        final payload = cartToPayload(controller.lines);
+        expect(payload.map((item) => item.weightGrams), [485, 485]);
+        expect(payload.map((item) => item.quantity), [1, 1]);
+      },
+    );
+
+    test('ปรับจำนวนสินค้าชั่งน้ำหนักไม่ได้ แต่ชั่งใหม่ได้', () {
+      controller.addWeighedItem(ribeye, 485);
+
+      controller.updateQuantity(0, 3);
+      expect(controller.lines.first.quantity, 1);
+
+      controller.updateWeight(0, 1000);
+      expect(controller.lines.first.weightGrams, 1000);
+      expect(controller.subtotal, 890);
+
+      controller.updateQuantity(0, 0);
+      expect(controller.isEmpty, isTrue, reason: 'ลดเป็น 0 ยังลบบรรทัดได้');
+    });
+
+    test('สแกนฉลากตาชั่งแล้วลงตะกร้าพร้อมน้ำหนักทันที', () {
+      // 20 + 00101 + 00485 + check digit 1
+      final result = controller.applyScan('2000101004851', menu);
+
+      expect(result, isA<ScannedWeighedItem>());
+      expect(controller.lines.single.weightGrams, 485);
+    });
+
+    test('สแกนบาร์โค้ดสินค้าชิ้นซ้ำ = เพิ่มจำนวนในบรรทัดเดิม', () {
+      controller.applyScan('8851234567898', menu);
+      controller.applyScan('8851234567898', menu);
+
+      expect(controller.lines.single.quantity, 2);
+    });
+
+    test('สแกนแล้วไม่พบ/check digit ผิด → ตะกร้าไม่เปลี่ยน', () {
+      expect(controller.applyScan('0000', menu), isA<ScanNotFound>());
+      expect(
+        controller.applyScan('2000101004850', menu),
+        isA<ScanBadCheckDigit>(),
+      );
+      expect(controller.isEmpty, isTrue);
+    });
   });
 }
 

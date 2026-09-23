@@ -10,6 +10,14 @@ export const orderItemInputSchema = z.object({
   quantity: z.number().int().min(1, 'จำนวนต้องมากกว่า 0').max(99),
   optionIds: z.array(z.number().int().positive()).default([]),
   note: z.string().max(200).optional(),
+  // น้ำหนักที่ชั่งได้ (กรัม) — ต้องมีเฉพาะเมนูขายตามน้ำหนัก (ดู docs/tickets/18-sell-by-weight.md)
+  // เพดาน 99,999 กรัม เท่ากับช่องน้ำหนัก 5 หลักบนฉลากตาชั่ง (docs/tickets/19-barcode-scale.md)
+  weightGrams: z
+    .number()
+    .int('น้ำหนักต้องเป็นกรัมเต็มหน่วย')
+    .min(1, 'น้ำหนักต้องมากกว่า 0')
+    .max(99999, 'น้ำหนักต่อบรรทัดต้องไม่เกิน 99.999 กก.')
+    .optional(),
 });
 
 export const createOrderSchema = z

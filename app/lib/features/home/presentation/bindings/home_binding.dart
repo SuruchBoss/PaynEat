@@ -29,6 +29,9 @@ import '../../../order/presentation/pages/orders_page.dart';
 import '../../../promotion/domain/usecases/promotion_usecases.dart';
 import '../../../promotion/presentation/controllers/promotions_controller.dart';
 import '../../../promotion/presentation/pages/promotions_page.dart';
+import '../../../receivable/domain/usecases/receivable_usecases.dart';
+import '../../../receivable/presentation/controllers/receivables_controller.dart';
+import '../../../receivable/presentation/pages/receivables_page.dart';
 import '../../../report/domain/usecases/report_usecases.dart';
 import '../../../report/presentation/controllers/dashboard_controller.dart';
 import '../../../report/presentation/controllers/report_controller.dart';
@@ -176,6 +179,12 @@ class HomeBinding extends Bindings {
       fenix: true,
     );
     Get.lazyPut(
+      () => ReceivablesController(
+        getCustomers: Get.find<GetReceivableCustomersUseCase>(),
+      ),
+      fenix: true,
+    );
+    Get.lazyPut(
       () => AiAssistantController(
         askAiAssistant: Get.find<AskAiAssistantUseCase>(),
       ),
@@ -243,6 +252,14 @@ class HomeBinding extends Bindings {
       selectedIcon: Icons.card_giftcard_rounded,
       page: CustomersPage(),
     );
+    // ลูกหนี้/ขายเชื่อ — admin, manager, cashier (คนรับชำระหนี้หน้าร้าน) ตรงกับ receivable.routes.js
+    // ดู docs/tickets/20-b2b-credit.md
+    const receivables = HomeDestination(
+      label: 'home_nav_receivables',
+      icon: Icons.request_quote_outlined,
+      selectedIcon: Icons.request_quote_rounded,
+      page: ReceivablesPage(),
+    );
     const reports = HomeDestination(
       label: 'home_nav_reports',
       icon: Icons.insights_outlined,
@@ -295,6 +312,7 @@ class HomeBinding extends Bindings {
         promotions,
         staff,
         customers,
+        receivables,
         auditLog,
         reports,
         aiAssistant,
@@ -312,13 +330,21 @@ class HomeBinding extends Bindings {
         promotions,
         staff,
         customers,
+        receivables,
         reports,
         aiAssistant,
         shift,
         settings,
         profile,
       ],
-      UserRole.cashier => const [tables, orders, shift, reports, profile],
+      UserRole.cashier => const [
+        tables,
+        orders,
+        receivables,
+        shift,
+        reports,
+        profile,
+      ],
       UserRole.kitchen => const [kitchen, profile],
       // ตั้งใจให้เห็น "ครัว" ด้วย — backend อนุญาตให้ waiter แก้สถานะอาหารได้เช่นกัน (ดู
       // authorize('admin', 'manager', 'kitchen', 'waiter') ใน order.routes.js) สำหรับร้านเล็ก

@@ -208,6 +208,8 @@ class AppColors {
     PaymentMethod.qr => info,
     PaymentMethod.card => warning,
     PaymentMethod.transfer => purple,
+    // ขายเชื่อ — สีแดงอมส้มสื่อว่า "ยังไม่ได้เงิน" แยกจากช่องทางที่ได้เงินทันทีชัด ๆ
+    PaymentMethod.credit => danger,
     _ => textSecondary,
   };
 

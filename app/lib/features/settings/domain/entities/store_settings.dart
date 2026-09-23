@@ -12,6 +12,8 @@ class StoreSettings {
     this.pointsEarnRateBaht = 25,
     this.pointsRedeemValueBaht = 1,
     this.promptPayId,
+    this.scaleLabelPrefix = '20',
+    this.scaleLabelPluDigits = 5,
   });
 
   final String storeName;
@@ -34,6 +36,12 @@ class StoreSettings {
   /// เลขพร้อมเพย์ของร้าน (เบอร์โทร/เลขบัตรประชาชน/เลขผู้เสียภาษี) — ต้องตั้งก่อนช่องทางจ่าย
   /// "qr" จะแสดง QR จริงได้ (ดู docs/tickets/16-promptpay-qr.md) เป็น null ได้จนกว่าจะตั้งค่าเอง
   final String? promptPayId;
+
+  /// รูปแบบฉลากตาชั่ง EAN-13 (ดู docs/tickets/19-barcode-scale.md): prefix + PLU [scaleLabelPluDigits]
+  /// หลัก + น้ำหนักกรัม (หลักที่เหลือ) + check digit — ค่าเริ่มต้น "20" + 5 + 5 ตรงกับค่าโรงงาน
+  /// ของตาชั่งพิมพ์ฉลากส่วนใหญ่
+  final String scaleLabelPrefix;
+  final int scaleLabelPluDigits;
 
   double get vatPercent => vatRate * 100;
   double get serviceChargePercent => serviceChargeRate * 100;

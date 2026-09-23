@@ -53,6 +53,25 @@ class CreateCustomerParams {
   final String? email;
 }
 
+class UpdateCustomerCreditParams {
+  const UpdateCustomerCreditParams({required this.id, required this.terms});
+
+  final int id;
+  final CustomerCreditTerms terms;
+}
+
+/// ตั้งวงเงินเครดิตให้ลูกค้า — ขายเชื่อได้เมื่อวงเงินมากกว่า 0 (ดู docs/tickets/20-b2b-credit.md)
+class UpdateCustomerCreditUseCase
+    implements UseCase<Customer, UpdateCustomerCreditParams> {
+  const UpdateCustomerCreditUseCase(this._repository);
+
+  final CustomerRepository _repository;
+
+  @override
+  Future<Result<Customer>> call(UpdateCustomerCreditParams params) =>
+      _repository.updateCredit(params.id, params.terms);
+}
+
 class CreateCustomerUseCase implements UseCase<Customer, CreateCustomerParams> {
   const CreateCustomerUseCase(this._repository);
 

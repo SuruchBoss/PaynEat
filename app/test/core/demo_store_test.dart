@@ -3,6 +3,7 @@ import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/demo/demo_data_sources.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/errors/exceptions.dart';
+import 'package:payneat_pos/core/utils/app_clock.dart';
 import 'package:payneat_pos/features/order/domain/entities/order_item_payload.dart';
 
 /// เทสต์ตรงต่อ DemoStore เอง (ไม่ผ่าน data source/repository) เพื่อยืนยันว่าเมธอด
@@ -1741,4 +1742,413 @@ void main() {
       });
     },
   );
+
+  // เคาน์เตอร์เนื้อสดของร้านที่ขายส่งด้วย — ขายตามน้ำหนัก, สแกนบาร์โค้ด, ขายเชื่อ/วางบิล
+  // (ดู docs/tickets/18-sell-by-weight.md, 19-barcode-scale.md, 20-b2b-credit.md)
+  group('DemoStore ขายตามน้ำหนัก / บาร์โค้ด (tickets 18–19)', () {
+    const porkBelly =
+        25; // 280 บาท/กก. ตัดสต๊อกวัตถุดิบ 7 (หมูสามชั้น) 1 กก./กก.
+    const kimchi = 29; // ขายเป็นชิ้น มีบาร์โค้ด
+
+    Map<String, dynamic> takeaway(List<Map<String, dynamic>> items) =>
+        store.createOrder(type: 'takeaway', guestCount: 1, items: items);
+
+    double stockOf(int ingredientId) =>
+        (store.ingredients.firstWhere(
+                  (row) => row['id'] == ingredientId,
+                )['currentStock']
+                as num)
+            .toDouble();
+
+    test('ชั่ง 485 กรัม → ราคาบรรทัด = 280 × 0.485 และจำนวนเป็น 1 เสมอ', () {
+      final order = takeaway([
+        {'menuItemId': porkBelly, 'quantity': 1, 'weightGrams': 485},
+      ]);
+
+      final item = (order['items'] as List).single as Map;
+      expect(item['weightGrams'], 485);
+      expect(item['quantity'], 1);
+      expect(order['subtotal'], 135.8);
+    });
+
+    test(
+      'สินค้าชั่งน้ำหนักต้องมีน้ำหนัก / สินค้าชิ้นห้ามมีน้ำหนัก / บรรทัดละ 1 ถุง',
+      () {
+        expect(
+          () => takeaway([
+            {'menuItemId': porkBelly, 'quantity': 1},
+          ]),
+          throwsA(isA<ApiException>()),
+        );
+        expect(
+          () => takeaway([
+            {'menuItemId': kimchi, 'quantity': 1, 'weightGrams': 500},
+          ]),
+          throwsA(isA<ApiException>()),
+        );
+        expect(
+          () => takeaway([
+            {'menuItemId': porkBelly, 'quantity': 2, 'weightGrams': 500},
+          ]),
+          throwsA(isA<ApiException>()),
+        );
+      },
+    );
+
+    test('แก้จำนวนของบรรทัดชั่งน้ำหนักไม่ได้ ต้องลบแล้วชั่งใหม่', () {
+      final order = takeaway([
+        {'menuItemId': porkBelly, 'quantity': 1, 'weightGrams': 485},
+      ]);
+      final itemId = ((order['items'] as List).single as Map)['id'] as int;
+
+      expect(
+        () => store.updateItem(order['id'] as int, itemId, quantity: 2),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('จ่ายครบแล้วตัดสต๊อกเป็นกิโลกรัมตามน้ำหนักจริง ครั้งเดียว', () {
+      final before = stockOf(7);
+      final order = takeaway([
+        {'menuItemId': porkBelly, 'quantity': 1, 'weightGrams': 485},
+        {'menuItemId': porkBelly, 'quantity': 1, 'weightGrams': 1250},
+      ]);
+      final total = (order['total'] as num).toDouble();
+
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'cash',
+        amount: total,
+        received: total,
+      );
+
+      expect(stockOf(7), closeTo(before - 1.735, 1e-9));
+    });
+
+    test(
+      'บาร์โค้ด/PLU ซ้ำกับเมนูอื่นไม่ได้ และ PLU ใช้ได้เฉพาะเมนูขายตามน้ำหนัก',
+      () {
+        final base = {
+          'categoryId': 8,
+          'name': 'ของใหม่',
+          'price': 99.0,
+          'isAvailable': true,
+        };
+
+        expect(
+          () => store.saveMenuItem({...base, 'barcode': '8850999320021'}),
+          throwsA(isA<ApiException>()),
+        );
+        expect(
+          () => store.saveMenuItem({
+            ...base,
+            'soldByWeight': true,
+            'scalePlu': '00101',
+          }),
+          throwsA(isA<ApiException>()),
+          reason: 'PLU 00101 = 101 ของหมูสามชั้น',
+        );
+        expect(
+          () => store.saveMenuItem({...base, 'scalePlu': '555'}),
+          throwsA(isA<ApiException>()),
+        );
+
+        final saved = store.saveMenuItem({
+          ...base,
+          'soldByWeight': true,
+          'scalePlu': '00555',
+        });
+        expect(saved['scalePlu'], '555', reason: 'เก็บ PLU แบบตัดเลข 0 นำหน้า');
+      },
+    );
+
+    test(
+      'QR สั่งเองไม่เห็นและสั่งสินค้าชั่งน้ำหนักไม่ได้ (ต้องให้พนักงานชั่ง)',
+      () async {
+        final token = store.tableList().first['qrToken'] as String;
+        final source = DemoSelfOrderDataSource(store);
+
+        final menu = await source.getMenu(token);
+        expect(menu.items.map((item) => item.id), isNot(contains(porkBelly)));
+        expect(menu.items.map((item) => item.id), contains(kimchi));
+        await expectLater(
+          source.addItems(token, [
+            const OrderItemPayload(menuItemId: porkBelly, quantity: 1),
+          ]),
+          throwsA(isA<ApiException>()),
+        );
+      },
+    );
+  });
+
+  group('DemoStore ขายเชื่อ / ใบวางบิล / รับชำระหนี้ (ticket 20)', () {
+    const b2b = 900; // บริษัท โซลบาร์บีคิว วงเงิน 50,000 เครดิต 30 วัน
+    const cashier = 6;
+    const waiter = 3;
+
+    tearDown(AppClock.unfreeze);
+
+    Map<String, dynamic> creditSale(double kg, {int? customerId = b2b}) {
+      final order = store.createOrder(
+        type: 'takeaway',
+        guestCount: 1,
+        customerId: customerId,
+        items: [
+          {
+            'menuItemId': 26, // ริบอาย 1,200 บาท/กก.
+            'quantity': 1,
+            'weightGrams': (kg * 1000).round(),
+          },
+        ],
+      );
+      store.pay(
+        orderId: order['id'] as int,
+        method: 'credit',
+        amount: (order['total'] as num).toDouble(),
+        cashierId: cashier,
+      );
+      return store.findOrder(order['id'] as int);
+    }
+
+    double outstanding() =>
+        (store.receivableStatement(b2b)['outstanding'] as num).toDouble();
+
+    test(
+      'ขายเชื่อปิดบิลได้โดยไม่มีเงินเข้า ยอดไปค้างในบัญชีลูกค้า ครบกำหนด +30 วัน',
+      () {
+        AppClock.freeze(DateTime(2026, 9, 1, 12));
+
+        final order = creditSale(2);
+
+        expect(order['status'], OrderStatus.paid);
+        final statement = store.receivableStatement(b2b);
+        expect(statement['outstanding'], order['total']);
+        final invoice = (statement['invoices'] as List).single as Map;
+        expect(invoice['dueDate'], '2026-10-01');
+      },
+    );
+
+    test('ขายเชื่อเกินวงเงินถูกปฏิเสธ พร้อมบอกยอดที่ใช้ได้', () {
+      store.updateCustomerCredit(b2b, {
+        'creditLimit': 1000.0,
+        'creditTermDays': 30,
+      });
+
+      expect(
+        () => creditSale(2),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 409),
+        ),
+      );
+    });
+
+    test('ต้องผูกลูกค้า / พนักงานเสิร์ฟทำไม่ได้ / ใช้แต้มร่วมไม่ได้', () {
+      expect(
+        () => creditSale(1, customerId: null),
+        throwsA(isA<ApiException>()),
+      );
+
+      final order = store.createOrder(
+        type: 'takeaway',
+        guestCount: 1,
+        customerId: b2b,
+        items: [
+          {'menuItemId': 29, 'quantity': 1},
+        ],
+      );
+      final total = (order['total'] as num).toDouble();
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'credit',
+          amount: total,
+          cashierId: waiter,
+        ),
+        throwsA(
+          isA<ApiException>().having((e) => e.statusCode, 'statusCode', 403),
+        ),
+      );
+      store.adjustCustomerPoints(b2b, 50);
+      expect(
+        () => store.pay(
+          orderId: order['id'] as int,
+          method: 'credit',
+          amount: total,
+          cashierId: cashier,
+          pointsToRedeem: 10,
+        ),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test('รับชำระหนี้ตัดบิลเก่าสุดก่อน (FIFO) และรับเกินยอดค้างไม่ได้', () {
+      final first = creditSale(1);
+      final second = creditSale(0.5);
+      final firstTotal = (first['total'] as num).toDouble();
+
+      final receipt = store.createArReceipt({
+        'customerId': b2b,
+        'amount': firstTotal + 100,
+        'method': 'transfer',
+      }, actorId: cashier);
+
+      final allocations = (receipt['allocations'] as List).cast<Map>();
+      expect(allocations.map((line) => line['orderCode']), [
+        first['code'],
+        second['code'],
+      ]);
+      expect(allocations.first['amount'], firstTotal);
+      expect(allocations.last['amount'], 100);
+      expect(receipt['receiptNo'], startsWith('RC'));
+
+      expect(
+        () => store.createArReceipt({
+          'customerId': b2b,
+          'amount': outstanding() + 1,
+          'method': 'transfer',
+        }),
+        throwsA(isA<ApiException>()),
+      );
+    });
+
+    test(
+      'รับชำระเงินสดเข้าลิ้นชักกะ — ปิดกะแล้วยอดคาดหวังรวมหนี้ที่เก็บได้',
+      () {
+        creditSale(1);
+        final shift = store.currentShift()!;
+        final opening = (shift['openingCash'] as num).toDouble();
+
+        store.createArReceipt({
+          'customerId': b2b,
+          'amount': 500.0,
+          'method': 'cash',
+        }, actorId: cashier);
+
+        final closed = store.closeShift(
+          shift['id'] as int,
+          countedCash: opening + 500,
+          closedById: cashier,
+        );
+        expect(closed['variance'], 0);
+      },
+    );
+
+    test(
+      'ยกเลิกใบเสร็จเงินสดหลังปิดกะไม่ได้ ส่วนโอนยกเลิกได้และหนี้กลับมาค้าง',
+      () {
+        creditSale(1);
+        final before = outstanding();
+        final cash = store.createArReceipt({
+          'customerId': b2b,
+          'amount': 300.0,
+          'method': 'cash',
+        }, actorId: cashier);
+        final transfer = store.createArReceipt({
+          'customerId': b2b,
+          'amount': 200.0,
+          'method': 'transfer',
+        }, actorId: cashier);
+        final shift = store.currentShift()!;
+        store.closeShift(
+          shift['id'] as int,
+          countedCash: 0,
+          closedById: cashier,
+        );
+
+        expect(
+          () => store.voidArReceipt(cash['id'] as int, 'กรอกผิด', actorId: 2),
+          throwsA(isA<ApiException>()),
+        );
+        store.voidArReceipt(transfer['id'] as int, 'เช็คเด้ง', actorId: 2);
+        expect(outstanding(), before - 300);
+      },
+    );
+
+    test(
+      'ใบวางบิลรวบบิลที่ยังไม่วาง — ออกซ้ำไม่ได้, รับตามใบจนครบแล้วสถานะ paid',
+      () {
+        creditSale(1);
+        creditSale(0.5);
+        final total = outstanding();
+
+        final note = store.createBillingNote({'customerId': b2b}, actorId: 2);
+        expect(note['noteNo'], startsWith('BN'));
+        expect(note['total'], total);
+        expect((note['items'] as List), hasLength(2));
+        expect(
+          () => store.createBillingNote({'customerId': b2b}),
+          throwsA(isA<ApiException>()),
+          reason: 'บิลทุกใบอยู่ในใบวางบิลแล้ว',
+        );
+
+        store.createArReceipt({
+          'customerId': b2b,
+          'amount': total,
+          'method': 'transfer',
+          'billingNoteId': note['id'],
+        }, actorId: cashier);
+
+        final after = store.billingNoteDocument(note['id'] as int);
+        expect(after['status'], 'paid');
+        expect(after['remaining'], 0);
+        expect(after['total'], total, reason: 'ยอดบนใบวางบิลคงเดิมเสมอ');
+      },
+    );
+
+    test('ยกเลิกใบวางบิลแล้ววางบิลใหม่ได้', () {
+      creditSale(1);
+      final note = store.createBillingNote({'customerId': b2b}, actorId: 2);
+
+      store.voidBillingNote(note['id'] as int, 'ที่อยู่ผิด', actorId: 2);
+
+      final again = store.createBillingNote({'customerId': b2b}, actorId: 2);
+      expect(again['noteNo'], isNot(note['noteNo']));
+    });
+
+    test('คืนเงินบิลขายเชื่อ (ลดหนี้) ได้ไม่เกินยอดที่ยังค้าง', () {
+      final order = creditSale(1);
+      final payment = store.payments.lastWhere(
+        (row) => row['orderId'] == order['id'],
+      );
+      store.createArReceipt({
+        'customerId': b2b,
+        'amount': 1000.0,
+        'method': 'transfer',
+      }, actorId: cashier);
+      final owed = outstanding();
+
+      expect(
+        () => store.refundPayment(
+          paymentId: payment['id'] as int,
+          amount: owed + 1,
+          reason: 'ของเสีย',
+          refundedById: 2,
+        ),
+        throwsA(isA<ApiException>()),
+      );
+      store.refundPayment(
+        paymentId: payment['id'] as int,
+        amount: owed,
+        reason: 'ของเสีย',
+        refundedById: 2,
+      );
+      expect(outstanding(), 0);
+    });
+
+    test(
+      'อายุหนี้: เลยกำหนด 10 วัน → ช่อง 1–30 วัน และขึ้นเป็นยอดเกินกำหนด',
+      () {
+        AppClock.freeze(DateTime(2026, 9, 1, 12));
+        creditSale(1);
+
+        AppClock.freeze(DateTime(2026, 10, 11, 12));
+        final summary = store.receivableCustomers().firstWhere(
+          (row) => (row['customer'] as Map)['id'] == b2b,
+        );
+
+        expect(summary['overdue'], summary['outstanding']);
+        expect((summary['aging'] as Map)['days1to30'], summary['outstanding']);
+      },
+    );
+  });
 }

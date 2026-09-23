@@ -30,8 +30,11 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
           .categoryList()
           .map(CategoryModel.fromJson)
           .toList(growable: false),
+      // สินค้าขายตามน้ำหนักต้องให้พนักงานชั่ง ลูกค้าสั่งเองไม่ได้ — mirror ของ
+      // public-order.service.js#getMenu (docs/tickets/18-sell-by-weight.md)
       items: _store
           .menuList(availableOnly: true)
+          .where((item) => item['soldByWeight'] != true)
           .map(MenuItemModel.fromJson)
           .toList(growable: false),
     );
@@ -44,6 +47,17 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
   ) => _delayed(() {
     final table = _store.resolveTableByQrToken(qrToken);
     final tableId = table['id'] as int;
+    for (final item in items) {
+      final menu = _store.menuItem(item.menuItemId);
+      if (menu['soldByWeight'] == true) {
+        throw ApiException(
+          message: 'self_order_error_weighed_item'.trParams({
+            'name': DemoNames.of(menu),
+          }),
+          statusCode: 409,
+        );
+      }
+    }
     final itemsJson = items
         .map((item) => item.toJson())
         .toList(growable: false);

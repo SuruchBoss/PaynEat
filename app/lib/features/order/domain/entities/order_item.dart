@@ -35,6 +35,7 @@ class OrderItem {
     this.orderCode,
     this.tableName,
     this.orderType,
+    this.weightGrams,
   });
 
   final int id;
@@ -43,6 +44,9 @@ class OrderItem {
   final String name;
   final double unitPrice;
   final int quantity;
+
+  /// น้ำหนักที่ชั่งได้ของสินค้าขายตามน้ำหนัก (กรัม) — null = ขายเป็นชิ้น
+  final int? weightGrams;
   final List<SelectedOption> options;
   final double optionsPrice;
   final double lineTotal;
@@ -66,6 +70,8 @@ class OrderItem {
   String? get nextActionLabel => OrderItemStatus.nextActionLabel(status);
 
   String get optionsSummary => options.map((option) => option.name).join(' • ');
+
+  bool get isWeighed => weightGrams != null;
 
   @override
   bool operator ==(Object other) =>

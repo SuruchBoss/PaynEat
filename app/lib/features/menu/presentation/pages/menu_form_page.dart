@@ -31,6 +31,8 @@ class _MenuFormPageState extends State<MenuFormPage> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _prepController = TextEditingController(text: '10');
+  final _barcodeController = TextEditingController();
+  final _pluController = TextEditingController();
 
   final MenuManagementController _controller =
       Get.find<MenuManagementController>();
@@ -39,6 +41,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
   int? _categoryId;
   bool _isAvailable = true;
   bool _isRecommended = false;
+
+  /// ขายตามน้ำหนัก — ราคาในฟอร์มกลายเป็นราคาต่อกิโลกรัม (ดู docs/tickets/18-sell-by-weight.md)
+  bool _soldByWeight = false;
   final List<MenuOptionGroup> _optionGroups = [];
   final List<MenuItemIngredientUsage> _ingredientLinks = [];
 
@@ -70,6 +75,9 @@ class _MenuFormPageState extends State<MenuFormPage> {
       _categoryId = item.categoryId;
       _isAvailable = item.isAvailable;
       _isRecommended = item.isRecommended;
+      _soldByWeight = item.soldByWeight;
+      _barcodeController.text = item.barcode ?? '';
+      _pluController.text = item.scalePlu ?? '';
       _optionGroups.addAll(item.optionGroups);
       _imageUrl = (item.imageUrl?.isNotEmpty ?? false) ? item.imageUrl : null;
       _ingredientLinks.addAll(item.ingredients);
@@ -144,6 +152,8 @@ class _MenuFormPageState extends State<MenuFormPage> {
     _descriptionController.dispose();
     _priceController.dispose();
     _prepController.dispose();
+    _barcodeController.dispose();
+    _pluController.dispose();
     super.dispose();
   }
 
@@ -166,6 +176,10 @@ class _MenuFormPageState extends State<MenuFormPage> {
         isRecommended: _isRecommended,
         optionGroups: _optionGroups,
         ingredients: _ingredientLinks,
+        soldByWeight: _soldByWeight,
+        // ส่ง '' เสมอเมื่อช่องว่าง = ตั้งใจล้างรหัสเดิม — PLU ใช้ได้เฉพาะเมนูขายตามน้ำหนัก
+        barcode: _barcodeController.text.trim(),
+        scalePlu: _soldByWeight ? _pluController.text.trim() : '',
       ),
     );
   }
@@ -324,8 +338,12 @@ class _MenuFormPageState extends State<MenuFormPage> {
                             ),
                           ],
                           decoration: InputDecoration(
-                            labelText: 'menu_form_price_label'.tr,
-                            suffixText: 'common_baht'.tr,
+                            labelText: _soldByWeight
+                                ? 'menu_form_price_per_kg_label'.tr
+                                : 'menu_form_price_label'.tr,
+                            suffixText: _soldByWeight
+                                ? 'common_baht_per_kg'.tr
+                                : 'common_baht'.tr,
                           ),
                           validator: (value) {
                             final price = double.tryParse(value?.trim() ?? '');
@@ -359,6 +377,66 @@ class _MenuFormPageState extends State<MenuFormPage> {
                     decoration: InputDecoration(
                       labelText: 'menu_form_description_label'.tr,
                     ),
+                  ),
+                  const SizedBox(height: 6),
+                  SwitchListTile(
+                    key: const ValueKey('menu-form-sold-by-weight'),
+                    value: _soldByWeight,
+                    onChanged: (value) => setState(() => _soldByWeight = value),
+                    title: Text('menu_form_sold_by_weight_label'.tr),
+                    subtitle: Text('menu_form_sold_by_weight_subtitle'.tr),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  // เครื่องสแกนบาร์โค้ด USB/บลูทูธพิมพ์รหัสลงช่องนี้ได้เลยตอนตั้งค่าสินค้า
+                  // (ดู docs/tickets/19-barcode-scale.md)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _barcodeController,
+                          decoration: InputDecoration(
+                            labelText: 'menu_form_barcode_label'.tr,
+                            helperText: 'menu_form_barcode_helper'.tr,
+                            prefixIcon: const Icon(
+                              Icons.qr_code_scanner_rounded,
+                            ),
+                          ),
+                          validator: (value) {
+                            final text = value?.trim() ?? '';
+                            if (text.isEmpty) return null;
+                            return RegExp(
+                                  r'^[0-9A-Za-z-]{1,32}$',
+                                ).hasMatch(text)
+                                ? null
+                                : 'menu_form_barcode_invalid'.tr;
+                          },
+                        ),
+                      ),
+                      if (_soldByWeight) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _pluController,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            decoration: InputDecoration(
+                              labelText: 'menu_form_scale_plu_label'.tr,
+                              helperText: 'menu_form_scale_plu_helper'.tr,
+                            ),
+                            validator: (value) {
+                              final text = value?.trim() ?? '';
+                              if (text.isEmpty) return null;
+                              return text.length <= 6
+                                  ? null
+                                  : 'menu_form_scale_plu_invalid'.tr;
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 6),
                   SwitchListTile(

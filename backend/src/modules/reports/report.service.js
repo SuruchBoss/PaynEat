@@ -3,6 +3,7 @@ import { toCsv } from '../../core/csv.js';
 import { toBaht } from '../../core/money.js';
 import { shiftRepository } from '../shifts/shift.repository.js';
 import { toShiftDto } from '../shifts/shift.mapper.js';
+import { receivableRepository } from '../receivables/receivable.repository.js';
 import { reportRepository } from './report.repository.js';
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -54,6 +55,9 @@ export const reportService = {
       menuItemId: row.menu_item_id,
       name: row.name,
       quantity: row.quantity,
+      // สินค้าขายตามน้ำหนัก quantity คือจำนวนถุง (บรรทัดละ 1) — น้ำหนักรวมบอกว่าขายไปกี่กิโลจริง
+      // (ดู docs/tickets/18-sell-by-weight.md) null = เมนูขายเป็นชิ้น
+      weightKg: row.weight_grams ? row.weight_grams / 1000 : null,
       revenue: toBaht(row.revenue),
     }));
   },
@@ -108,6 +112,9 @@ export const reportService = {
       refundTotal: toBaht(refundTotal),
       netSales: toBaht(orders.total - refundTotal),
       paymentMethods: paymentMethodsDto(reportRepository.byShiftPaymentMethod(shiftId)),
+      // รับชำระหนี้ลูกค้าเครดิตระหว่างกะ — ไม่ใช่ยอดขายของกะนี้ (ขายไปตั้งแต่วันที่เชื่อ) แต่เงินสด
+      // ส่วนนี้อยู่ในลิ้นชัก ต้องแสดงให้เห็นว่าเงินสดที่คาดไว้มาจากไหน (ดู docs/DECISIONS.md #50)
+      receivableReceipts: paymentMethodsDto(receivableRepository.byShiftMethod(shiftId)),
     };
   },
 
@@ -147,6 +154,7 @@ export const reportService = {
     return toCsv(this.topItems({ from, to, limit }, branchId), [
       { label: 'เมนู', value: (r) => r.name },
       { label: 'จำนวนที่ขายได้', value: (r) => r.quantity },
+      { label: 'น้ำหนักรวม (กก.)', value: (r) => r.weightKg ?? '' },
       { label: 'รายได้ (บาท)', value: (r) => r.revenue },
     ]);
   },
@@ -183,6 +191,10 @@ export const reportService = {
       { label: 'ยอดขายสุทธิ (บาท)', value: z.netSales },
       ...z.paymentMethods.map((p) => ({
         label: `ช่องทาง: ${p.method} (${p.count} รายการ, บาท)`,
+        value: p.amount,
+      })),
+      ...(z.receivableReceipts ?? []).map((p) => ({
+        label: `รับชำระหนี้: ${p.method} (${p.count} รายการ, บาท)`,
         value: p.amount,
       })),
     ];

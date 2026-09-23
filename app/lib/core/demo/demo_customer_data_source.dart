@@ -1,9 +1,10 @@
 part of 'demo_data_sources.dart';
 
 class DemoCustomerDataSource implements CustomerRemoteDataSource {
-  const DemoCustomerDataSource(this._store);
+  const DemoCustomerDataSource(this._store, this._auth);
 
   final DemoStore _store;
+  final DemoAuthDataSource _auth;
 
   @override
   Future<({List<CustomerModel> customers, int total})> search({
@@ -25,7 +26,7 @@ class DemoCustomerDataSource implements CustomerRemoteDataSource {
 
   @override
   Future<CustomerModel> getById(int id) =>
-      _delayed(() => CustomerModel.fromJson(_store.findCustomer(id)));
+      _delayed(() => CustomerModel.fromJson(_store.customerWithCredit(id)));
 
   @override
   Future<CustomerModel> create({
@@ -37,4 +38,16 @@ class DemoCustomerDataSource implements CustomerRemoteDataSource {
       _store.createCustomer(name: name, phone: phone, email: email),
     ),
   );
+
+  @override
+  Future<CustomerModel> updateCredit(int id, CustomerCreditTerms terms) =>
+      _delayed(
+        () => CustomerModel.fromJson(
+          _store.updateCustomerCredit(
+            id,
+            terms.toJson(),
+            actorId: _auth.currentUserId,
+          ),
+        ),
+      );
 }

@@ -130,7 +130,8 @@ test('GET /menu-items — เห็นเฉพาะเมนูของสา
   const sukhumvitMenu = await get('/api/v1/menu-items?limit=200', waiter1.token);
   const thonglorMenu = await get('/api/v1/menu-items?limit=200', waiter2Thonglor.body.data.token);
 
-  assert.equal(sukhumvitMenu.body.meta.total, 24);
+  // 24 เมนูร้านอาหาร + 5 เมนูเคาน์เตอร์เนื้อสด/ของกลับบ้าน (ticket 18/19)
+  assert.equal(sukhumvitMenu.body.meta.total, 29);
   assert.equal(thonglorMenu.body.meta.total, 7);
   const thonglorNames = thonglorMenu.body.data.map((item) => item.name);
   assert.ok(thonglorNames.includes('กุ้งเผา'));
@@ -146,7 +147,7 @@ test('GET /menu-items — admin โหมด "ทุกสาขา" เห็�
 
   const res = await get('/api/v1/menu-items?limit=200', allBranches.body.data.token);
 
-  assert.equal(res.body.meta.total, 31);
+  assert.equal(res.body.meta.total, 36);
 });
 
 test('GET /tables — เห็นเฉพาะโต๊ะของสาขาตัวเอง', async () => {
@@ -162,7 +163,8 @@ test('GET /ingredients — เห็นเฉพาะวัตถุดิบ�
 
   const res = await get('/api/v1/ingredients', token);
 
-  assert.equal(res.body.data.length, 6);
+  // 6 วัตถุดิบเดิม + หมูสามชั้น/เนื้อริบอาย (หน่วยกิโลกรัม ของเมนูขายตามน้ำหนัก)
+  assert.equal(res.body.data.length, 8);
 });
 
 test('POST /orders — ออเดอร์ใหม่ผูก branch_id ตามสาขาที่กำลังทำงานอยู่ และ list กรองตามสาขา', async () => {

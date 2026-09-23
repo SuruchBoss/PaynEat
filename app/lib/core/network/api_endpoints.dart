@@ -108,6 +108,19 @@ class ApiEndpoints {
   // Customers
   static const String customers = '/customers';
   static String customer(int id) => '/customers/$id';
+  static String customerCredit(int id) => '/customers/$id/credit';
+
+  // ลูกหนี้/ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md)
+  static const String receivableCustomers = '/receivables/customers';
+  static String receivableStatement(int customerId) =>
+      '/receivables/customers/$customerId';
+  static const String arReceipts = '/receivables/receipts';
+  static String arReceipt(int id) => '/receivables/receipts/$id';
+  static String arReceiptVoid(int id) => '/receivables/receipts/$id/void';
+  static const String billingNotes = '/receivables/billing-notes';
+  static String billingNote(int id) => '/receivables/billing-notes/$id';
+  static String billingNoteVoid(int id) =>
+      '/receivables/billing-notes/$id/void';
 
   // AI assistant
   static const String aiAssistantAsk = '/ai/ask';

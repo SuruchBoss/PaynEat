@@ -133,6 +133,30 @@ const Map<String, String> orderTranslationsTh = {
   'order_error_closed_cannot_edit': 'ออเดอร์นี้ปิดแล้ว ไม่สามารถแก้ไขได้',
   'order_offline_sync_failed':
       'ส่งรายการที่ค้างไว้ของ @label ไม่สำเร็จ: @message',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'order_continue_to_weigh': 'ถัดไป: ชั่งน้ำหนัก',
+  'order_error_not_sold_by_weight':
+      'เมนู "@name" ขายเป็นชิ้น ไม่ได้ขายตามน้ำหนัก',
+  'order_error_weighed_one_per_line':
+      'สินค้าชั่งน้ำหนักใส่ได้บรรทัดละ 1 ถุง — ชั่งถุงถัดไปเป็นอีกบรรทัด',
+  'order_error_weighed_quantity_locked':
+      'สินค้าชั่งน้ำหนักแก้จำนวนไม่ได้ — ลบรายการนี้แล้วชั่งใหม่',
+  'order_error_weight_required':
+      'เมนู "@name" ขายตามน้ำหนัก ต้องระบุน้ำหนักที่ชั่งได้',
+  'order_scan_added': 'เพิ่ม @name แล้ว',
+  'order_scan_added_weight': 'เพิ่ม @name @weight แล้ว',
+  'order_scan_bad_label':
+      'ฉลากตาชั่งอ่านไม่ถูกต้อง (check digit ไม่ตรง) — สแกนใหม่หรือชั่งใหม่',
+  'order_scan_hint': 'สแกนบาร์โค้ด / ฉลากตาชั่ง',
+  'order_scan_not_found': 'ไม่พบสินค้ารหัส @code',
+  'order_weigh_again': 'ชั่งใหม่',
+  'order_weigh_confirm': 'ใส่ตะกร้า',
+  'order_weigh_hint': 'กรอกน้ำหนักตามหน้าจอตาชั่ง เช่น 0.485',
+  'order_weigh_invalid': 'น้ำหนักต้องอยู่ระหว่าง 0.001–99.999 กก.',
+  'order_weigh_kg_label': 'น้ำหนัก',
+  'order_weigh_preview': '@weight = @price',
+  'order_weigh_title': 'ชั่ง @name',
 };
 
 const Map<String, String> orderTranslationsEn = {
@@ -260,6 +284,28 @@ const Map<String, String> orderTranslationsEn = {
   'order_error_closed_cannot_edit': 'This order is closed and cannot be edited',
   'order_offline_sync_failed':
       'Failed to sync pending items for @label: @message',
+
+  'order_continue_to_weigh': 'Next: weigh',
+  'order_error_not_sold_by_weight': '"@name" is sold per unit, not by weight',
+  'order_error_weighed_one_per_line':
+      'Weighed items are one bag per line — weigh the next bag as a new line',
+  'order_error_weighed_quantity_locked':
+      'Weighed items cannot change quantity — remove the line and weigh again',
+  'order_error_weight_required':
+      '"@name" is sold by weight — enter the weighed amount',
+  'order_scan_added': 'Added @name',
+  'order_scan_added_weight': 'Added @name @weight',
+  'order_scan_bad_label':
+      'Scale label misread (check digit mismatch) — scan or weigh again',
+  'order_scan_hint': 'Scan barcode / scale label',
+  'order_scan_not_found': 'No product with code @code',
+  'order_weigh_again': 'Re-weigh',
+  'order_weigh_confirm': 'Add to cart',
+  'order_weigh_hint': 'Enter the weight shown on the scale, e.g. 0.485',
+  'order_weigh_invalid': 'Weight must be 0.001–99.999 kg',
+  'order_weigh_kg_label': 'Weight',
+  'order_weigh_preview': '@weight = @price',
+  'order_weigh_title': 'Weigh @name',
 };
 
 const Map<String, String> orderTranslationsKo = {
@@ -368,4 +414,22 @@ const Map<String, String> orderTranslationsKo = {
   'order_error_item_not_found': '이 주문에서 해당 메뉴를 찾을 수 없습니다',
   'order_error_closed_cannot_edit': '마감된 주문이라 수정할 수 없습니다',
   'order_offline_sync_failed': '@label의 대기 항목 전송에 실패했습니다: @message',
+
+  'order_continue_to_weigh': '다음: 무게 측정',
+  'order_error_not_sold_by_weight': '"@name" 은(는) 개수 단위 상품이며 무게로 판매하지 않습니다',
+  'order_error_weighed_one_per_line': '무게 상품은 한 줄에 한 봉지만 — 다음 봉지는 새 줄로 계량하세요',
+  'order_error_weighed_quantity_locked': '무게 상품은 수량을 바꿀 수 없습니다 — 삭제 후 다시 계량하세요',
+  'order_error_weight_required': '"@name" 은(는) 무게 단위 상품입니다 — 계량한 무게를 입력하세요',
+  'order_scan_added': '@name 추가됨',
+  'order_scan_added_weight': '@name @weight 추가됨',
+  'order_scan_bad_label': '저울 라벨을 잘못 읽었습니다 (체크 디지트 불일치) — 다시 스캔하세요',
+  'order_scan_hint': '바코드 / 저울 라벨 스캔',
+  'order_scan_not_found': '코드 @code 상품을 찾을 수 없습니다',
+  'order_weigh_again': '다시 계량',
+  'order_weigh_confirm': '장바구니에 담기',
+  'order_weigh_hint': '저울에 표시된 무게를 입력하세요 (예: 0.485)',
+  'order_weigh_invalid': '무게는 0.001–99.999 kg 사이여야 합니다',
+  'order_weigh_kg_label': '무게',
+  'order_weigh_preview': '@weight = @price',
+  'order_weigh_title': '@name 계량',
 };

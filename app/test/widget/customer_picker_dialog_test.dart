@@ -48,6 +48,12 @@ class _FakeCustomerRepository implements CustomerRepository {
     required String phone,
     String? email,
   }) async => Result.failure(NetworkFailure('ไม่ได้ใช้ในเทสต์นี้'));
+
+  @override
+  Future<Result<Customer>> updateCredit(
+    int id,
+    CustomerCreditTerms terms,
+  ) async => Result.failure(NetworkFailure('ไม่ได้ใช้ในเทสต์นี้'));
 }
 
 void main() {

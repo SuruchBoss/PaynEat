@@ -28,6 +28,14 @@ class AuditLogAction {
   static const String promotionDelete = 'promotion.delete';
   static const String ingredientStockAdjust = 'ingredient.stock_adjust';
 
+  // ลูกหนี้/ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md)
+  static const String customerCreditUpdate = 'customer.credit_update';
+  static const String receivableReceipt = 'receivable.receipt';
+  static const String receivableReceiptVoid = 'receivable.receipt_void';
+  static const String receivableBillingNote = 'receivable.billing_note';
+  static const String receivableBillingNoteVoid =
+      'receivable.billing_note_void';
+
   static const List<String> all = [
     orderCreate,
     orderItemAdd,
@@ -50,6 +58,11 @@ class AuditLogAction {
     promotionUpdate,
     promotionDelete,
     ingredientStockAdjust,
+    customerCreditUpdate,
+    receivableReceipt,
+    receivableReceiptVoid,
+    receivableBillingNote,
+    receivableBillingNoteVoid,
   ];
 
   static const Map<String, String> _keys = {
@@ -74,6 +87,11 @@ class AuditLogAction {
     promotionUpdate: 'audit_log_action_promotion_update',
     promotionDelete: 'audit_log_action_promotion_delete',
     ingredientStockAdjust: 'audit_log_action_ingredient_stock_adjust',
+    customerCreditUpdate: 'audit_log_action_customer_credit_update',
+    receivableReceipt: 'audit_log_action_receivable_receipt',
+    receivableReceiptVoid: 'audit_log_action_receivable_receipt_void',
+    receivableBillingNote: 'audit_log_action_receivable_billing_note',
+    receivableBillingNoteVoid: 'audit_log_action_receivable_billing_note_void',
   };
 
   static String translationKey(String action) => _keys[action] ?? action;

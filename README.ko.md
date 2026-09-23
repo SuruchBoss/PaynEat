@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-704%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-794%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -110,11 +110,16 @@
 - 옵션(맵기, 추가 선택)과 주방 메모를 붙여 주문
 - 포장·배달 주문은 테이블 없이 버튼 하나로 열 수 있고, 포장이면 당일 대기번호 자동 부여
 - 연결이 끊겨도 기존 주문에 메뉴 추가 가능, 복구되면 자동 동기화
+- **무게 단위 판매** — kg당 가격 상품은 저울에 표시된 무게(예: 0.485)를 입력하면 가격이 바로 계산되고,
+  봉지마다 별도 줄로 담깁니다. 주방 티켓과 영수증에 무게가 찍힙니다
+- **바코드 · 저울 라벨 스캔** — USB/블루투스 스캐너로 상품 바코드를 찍으면 1개, 무게가 들어 있는
+  EAN-13 저울 라벨을 찍으면 무게까지 자동 입력됩니다. 체크 디지트가 틀린 라벨은 추측하지 않고 경고합니다
 
 ### 손님 (테이블 QR — 로그인 불필요)
 - QR을 찍으면 그 테이블의 메뉴가 바로 열립니다
 - 장바구니에 담아 직접 주방으로 전달
 - 직원이 넣은 주문과 완전히 같은 경로로 처리됩니다 (재고 차감, 프로모션 적용 포함)
+- 무게를 달아야 하는 정육 상품은 손님 메뉴에 나타나지 않습니다
 
 ### 주방
 - 대기 / 조리 중 / 조리 완료 세 개 열
@@ -124,7 +129,8 @@
 
 ### 캐셔
 - 분할 결제, 테이블 이동, 합산 결제 — 음식값·할인·서비스 차지·부가가치세를 비율대로 자동 배분
-- 현금, 신용카드, 계좌이체, **프롬프트페이 QR**
+- 현금, 신용카드, 계좌이체, **프롬프트페이 QR** — 신용 한도가 있는 거래처에는 **외상** 결제도
+  (한도 초과 시 결제 버튼 비활성, 만기일 자동 계산)
 - ESC/POS 영수증 프린터로 실제 출력 (58mm·80mm)
 - 약식 세금계산서 발행 및 취소
 - 전액·부분 환불 (사유 필수, 순매출에서 자동 차감)
@@ -135,6 +141,9 @@
 - 재료 재고 자동 차감, 떨어지면 해당 메뉴 자동 판매 중지
 - 조건부 프로모션 (시간대, 메뉴, 최소 금액, 할인 코드, 1+1)
 - 고객 · 적립금
+- **외상 매출 관리 (B2B)** — 거래처별 신용 한도·결제 기한, 미수금 연령 분석(기한 전/1–30/31–60/61–90/
+  90일 초과), 청구서 발행, 오래된 전표부터 차감하는 수금 영수증. 현금 수금은 해당 교대의 금고에 포함되어
+  마감 정산이 정확히 맞습니다
 - 수정할 수 없는 변경 이력
 - 여러 지점을 한 계정에서
 - **AI 어시스턴트** — 한국어로 물어보면 매장 데이터베이스에 연결된 도구를 호출해
@@ -207,20 +216,22 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **704건**의 자동화 테스트를 통과합니다.
+공개 전 **794건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 298건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 376건 — domain / controller / widget
-cd app && flutter test test_e2e   # 30건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+cd backend && npm test      # 325건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 427건 — domain / controller / widget
+cd app && flutter test test_e2e   # 42건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
 
-`app/test_e2e/`의 E2E 30건은 실제 백엔드(`node src/server.js`)를 매번 새 임시 DB로 띄우고, 앱의
+`app/test_e2e/`의 E2E 42건은 실제 백엔드(`node src/server.js`)를 매번 새 임시 DB로 띄우고, 앱의
 실제 data/domain 코드가 매장의 하루를 처음부터 끝까지 진행합니다 — 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 그리고 손님의 QR 주문과
 지점·권한까지. 다른 Flutter 테스트는 모두 데모 모드에서 돌기 때문에, 앱이 **백엔드가 실제로 보낸
 JSON을 읽는** 테스트는 이것뿐입니다. 첫 실행에서 기존 659건이 모두 통과하던 실제 버그 5개를 찾아
-모두 고쳤습니다 (`docs/DECISIONS.md` #43–#47).
+모두 고쳤습니다 (`docs/DECISIONS.md` #43–#47). 정육 카운터와 거래처 시나리오도 따로 있습니다 — 저울
+라벨 스캔 → 장바구니 금액이 백엔드와 1사탕 단위까지 일치 → 한도 초과 외상 거부 → 외상 판매 시 kg 단위
+재고 차감 → 청구서 → 현금 수금 → 교대 마감 차액 0 (`meat_shop_b2b_e2e_test.dart`).
 
 한국어 지원에도 전용 테스트가 있습니다:
 

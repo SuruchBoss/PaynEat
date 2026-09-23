@@ -14,6 +14,10 @@ const Map<String, String> selfOrderTranslationsTh = {
       'ยอดนี้ยังไม่รวมค่าบริการและภาษี ระบบจะคำนวณให้ครบหลังกดส่งเข้าครัว',
   'self_order_send_to_kitchen': 'ส่งเข้าครัว',
   'self_order_view_cart_button': 'ตะกร้า (@count) · @total',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'self_order_error_weighed_item':
+      '"@name" ขายตามน้ำหนัก ต้องให้พนักงานชั่งให้ กรุณาเรียกพนักงาน',
 };
 
 const Map<String, String> selfOrderTranslationsEn = {
@@ -33,6 +37,9 @@ const Map<String, String> selfOrderTranslationsEn = {
       "This total doesn't include service charge and VAT yet — those are added once you send it to the kitchen",
   'self_order_send_to_kitchen': 'Send to kitchen',
   'self_order_view_cart_button': 'Cart (@count) · @total',
+
+  'self_order_error_weighed_item':
+      '"@name" is sold by weight and must be weighed by staff — please call a staff member',
 };
 
 const Map<String, String> selfOrderTranslationsKo = {
@@ -49,4 +56,7 @@ const Map<String, String> selfOrderTranslationsKo = {
       '이 금액에는 서비스 차지와 부가가치세가 아직 포함되지 않았습니다 — 주방으로 전달할 때 합산됩니다',
   'self_order_send_to_kitchen': '주방으로 전달',
   'self_order_view_cart_button': '장바구니 (@count) · @total',
+
+  'self_order_error_weighed_item':
+      '"@name" 은(는) 무게 단위 상품이라 직원이 계량해야 합니다 — 직원을 불러 주세요',
 };

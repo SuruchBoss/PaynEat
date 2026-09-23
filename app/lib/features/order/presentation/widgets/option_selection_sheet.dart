@@ -227,12 +227,15 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
             ),
             child: Row(
               children: [
-                QuantityStepper(
-                  value: _quantity,
-                  size: 38,
-                  onChanged: (value) => setState(() => _quantity = value),
-                ),
-                const SizedBox(width: 14),
+                // สินค้าขายตามน้ำหนักไม่มีจำนวนชิ้น — เลือกตัวเลือกเสร็จแล้วไปหน้าชั่งต่อ
+                if (!widget.item.soldByWeight) ...[
+                  QuantityStepper(
+                    value: _quantity,
+                    size: 38,
+                    onChanged: (value) => setState(() => _quantity = value),
+                  ),
+                  const SizedBox(width: 14),
+                ],
                 Expanded(
                   child: FilledButton(
                     onPressed: _missingGroups.isEmpty
@@ -246,9 +249,13 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                         : null,
                     child: Text(
                       _missingGroups.isEmpty
-                          ? 'order_add_to_cart_button'.trParams({
-                              'price': Formatters.baht(_unitPrice * _quantity),
-                            })
+                          ? widget.item.soldByWeight
+                                ? 'order_continue_to_weigh'.tr
+                                : 'order_add_to_cart_button'.trParams({
+                                    'price': Formatters.baht(
+                                      _unitPrice * _quantity,
+                                    ),
+                                  })
                           : 'order_select_required_group'.trParams({
                               'group': _missingGroups.first,
                             }),

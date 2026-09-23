@@ -20,6 +20,9 @@ class MenuItem {
     this.sortOrder = 0,
     this.optionGroups = const [],
     this.ingredients = const [],
+    this.soldByWeight = false,
+    this.barcode,
+    this.scalePlu,
   });
 
   final int id;
@@ -40,6 +43,16 @@ class MenuItem {
   /// วัตถุดิบที่ผูกไว้ + ปริมาณที่ใช้ต่อ 1 ที่ — ระบบตัดสต๊อกอัตโนมัติเมื่อขาย
   /// (ดู docs/tickets/06-inventory-stock.md)
   final List<MenuItemIngredientUsage> ingredients;
+
+  /// ขายตามน้ำหนัก — [price] คือราคาต่อกิโลกรัม และต้องชั่งก่อนใส่ตะกร้าทุกครั้ง
+  /// (ดู docs/tickets/18-sell-by-weight.md)
+  final bool soldByWeight;
+
+  /// บาร์โค้ดสินค้าสำเร็จรูป — สแกนแล้วลงตะกร้า 1 ชิ้น (ดู docs/tickets/19-barcode-scale.md)
+  final String? barcode;
+
+  /// รหัสสินค้าบนฉลากตาชั่ง (PLU) เก็บแบบไม่มีเลข 0 นำหน้า — ใช้กับเมนูขายตามน้ำหนักเท่านั้น
+  final String? scalePlu;
 
   /// ชื่อที่จะแสดงตามภาษาปัจจุบัน
   ///

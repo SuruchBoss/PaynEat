@@ -138,6 +138,68 @@ class SettingsPage extends GetView<SettingsController> {
                     ),
                   ),
                   const SizedBox(height: 24),
+                  // ตาชั่งพิมพ์ฉลาก — รูปแบบต้องตรงกับที่ตั้งไว้ในตาชั่ง แอปจึงแยก PLU กับ
+                  // น้ำหนักจากบาร์โค้ดได้ถูก (ดู docs/tickets/19-barcode-scale.md)
+                  SectionHeader(
+                    title: 'settings_scale_title'.tr,
+                    subtitle: 'settings_scale_subtitle'.tr,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: controller.scaleLabelPrefixController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(3),
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'settings_scale_prefix_label'.tr,
+                            hintText: '20',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Obx(
+                          () => DropdownButtonFormField<int>(
+                            initialValue: controller.scaleLabelPluDigits.value,
+                            decoration: InputDecoration(
+                              labelText: 'settings_scale_plu_digits_label'.tr,
+                            ),
+                            items: const [4, 5, 6]
+                                .map(
+                                  (digits) => DropdownMenuItem(
+                                    value: digits,
+                                    child: Text('$digits'),
+                                  ),
+                                )
+                                .toList(growable: false),
+                            onChanged: (value) {
+                              if (value != null) {
+                                controller.scaleLabelPluDigits.value = value;
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Obx(
+                    () => Text(
+                      'settings_scale_example'.trParams({
+                        'plu': '${controller.scaleLabelPluDigits.value}',
+                      }),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   SectionHeader(
                     title: 'settings_loyalty_title'.tr,
                     subtitle: 'settings_loyalty_subtitle'.tr,

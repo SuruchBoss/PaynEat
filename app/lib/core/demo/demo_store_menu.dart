@@ -56,7 +56,11 @@ extension DemoStoreMenu on DemoStore {
           }
           if (search != null && search.isNotEmpty) {
             final name = (item['name'] as String).toLowerCase();
-            if (!name.contains(search.toLowerCase())) return false;
+            // บาร์โค้ดต้องตรงทั้งรหัส (mirror ของ menu.repository.js#findAll)
+            if (!name.contains(search.toLowerCase()) &&
+                item['barcode'] != search) {
+              return false;
+            }
           }
           return true;
         })
@@ -80,6 +84,10 @@ extension DemoStoreMenu on DemoStore {
       (row) => row['id'] == body['categoryId'],
       orElse: () => categories.first,
     )['name'];
+    final soldByWeight =
+        body['soldByWeight'] as bool? ??
+        (id == null ? false : menuItem(id)['soldByWeight'] as bool? ?? false);
+    final codes = _normalizeMenuCodes(body, id: id, soldByWeight: soldByWeight);
 
     if (id == null) {
       final item = {
@@ -98,6 +106,9 @@ extension DemoStoreMenu on DemoStore {
         'optionGroups': _normalizeOptionGroups(body['optionGroups']),
         'ingredients': _normalizeIngredientLinks(body['ingredients']),
         'autoDisabledByStock': false,
+        'soldByWeight': soldByWeight,
+        'barcode': codes['barcode'],
+        'scalePlu': codes['scalePlu'],
       };
       menuItems.add(item);
       return item;
@@ -115,6 +126,7 @@ extension DemoStoreMenu on DemoStore {
       }
     });
     item['categoryName'] = categoryName;
+    item.addAll(codes);
     // แก้ isAvailable เองผ่านฟอร์ม ถือเป็นการ override ระบบตัดสต๊อกอัตโนมัติ
     if (body.containsKey('isAvailable')) {
       item['autoDisabledByStock'] = false;
@@ -136,6 +148,51 @@ extension DemoStoreMenu on DemoStore {
       );
     }
     return item;
+  }
+
+  /// mirror ของ menu.service.js#normalizeCodes (ดู docs/tickets/19-barcode-scale.md) — คืนเฉพาะ
+  /// ช่องที่ต้องเขียนทับ ('' → null = ล้างค่า) PLU ตัดเลข 0 นำหน้าให้ตรงกับที่อ่านจากฉลาก
+  Map<String, dynamic> _normalizeMenuCodes(
+    Map<String, dynamic> body, {
+    int? id,
+    required bool soldByWeight,
+  }) {
+    final patch = <String, dynamic>{};
+    if (body.containsKey('barcode')) {
+      final code = (body['barcode'] as String?)?.trim() ?? '';
+      patch['barcode'] = code.isEmpty ? null : code;
+    }
+    if (body.containsKey('scalePlu')) {
+      final plu = (body['scalePlu'] as String?)?.trim() ?? '';
+      patch['scalePlu'] = plu.isEmpty ? null : int.parse(plu).toString();
+    }
+    if (patch['scalePlu'] != null && !soldByWeight) {
+      throw ApiException(
+        message: 'menu_error_plu_requires_weight'.tr,
+        statusCode: 400,
+      );
+    }
+    if (!soldByWeight &&
+        !body.containsKey('scalePlu') &&
+        body['soldByWeight'] == false) {
+      patch['scalePlu'] = null;
+    }
+    for (final field in const ['barcode', 'scalePlu']) {
+      final value = patch[field];
+      if (value == null) continue;
+      for (final row in menuItems) {
+        if (row['id'] != id && row[field] == value) {
+          throw ApiException(
+            message: 'menu_error_code_taken'.trParams({
+              'code': '$value',
+              'name': DemoNames.of(row),
+            }),
+            statusCode: 409,
+          );
+        }
+      }
+    }
+    return patch;
   }
 
   /// วัตถุดิบที่ผูกไว้ต้องมีอยู่จริงและห้ามซ้ำกันในเมนูเดียว — denormalize

@@ -15,6 +15,9 @@ class MenuItemPayload {
     this.prepMinutes,
     this.optionGroups,
     this.ingredients,
+    this.soldByWeight,
+    this.barcode,
+    this.scalePlu,
   });
 
   final String name;
@@ -28,6 +31,11 @@ class MenuItemPayload {
   final int? prepMinutes;
   final List<MenuOptionGroup>? optionGroups;
   final List<MenuItemIngredientUsage>? ingredients;
+  final bool? soldByWeight;
+
+  /// ส่ง '' เพื่อล้างบาร์โค้ด/PLU เดิม (null = ไม่แตะ)
+  final String? barcode;
+  final String? scalePlu;
 
   Map<String, dynamic> toJson() => {
     'name': name,
@@ -40,6 +48,9 @@ class MenuItemPayload {
     if (isAvailable != null) 'isAvailable': isAvailable,
     if (isRecommended != null) 'isRecommended': isRecommended,
     if (prepMinutes != null) 'prepMinutes': prepMinutes,
+    if (soldByWeight != null) 'soldByWeight': soldByWeight,
+    if (barcode != null) 'barcode': barcode,
+    if (scalePlu != null) 'scalePlu': scalePlu,
     if (optionGroups != null)
       'optionGroups': optionGroups!
           .map(

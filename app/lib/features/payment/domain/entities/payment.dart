@@ -14,6 +14,7 @@ class Payment {
     this.createdAt,
     this.pointsRedeemed = 0,
     this.pointsRedeemedValue = 0,
+    this.dueDate,
   });
 
   final int id;
@@ -28,6 +29,11 @@ class Payment {
   // ใช้แต้มสะสมแลกส่วนลดรอบจ่ายนี้ (ดู docs/tickets/09-customer-loyalty.md)
   final int pointsRedeemed;
   final double pointsRedeemedValue;
+
+  /// วันครบกำหนดชำระ (YYYY-MM-DD) ของบิลขายเชื่อ — ช่องทางอื่นเป็น null
+  final String? dueDate;
+
+  bool get isCredit => method == PaymentMethod.credit;
 
   String get methodLabel => PaymentMethod.label(method);
 

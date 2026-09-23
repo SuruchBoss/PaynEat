@@ -89,6 +89,22 @@ const Map<String, String> menuTranslationsTh = {
   'menu_delete_category_has_items_error':
       'ลบไม่ได้ เพราะยังมีเมนูอยู่ในหมวดหมู่นี้',
   'menu_item_not_found_error': 'ไม่พบเมนูนี้',
+
+  // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
+  'menu_error_code_taken': 'รหัส @code ถูกใช้กับเมนู "@name" แล้ว',
+  'menu_error_plu_requires_weight':
+      'รหัสบนตาชั่ง (PLU) ใช้ได้เฉพาะเมนูที่ขายตามน้ำหนัก',
+  'menu_form_barcode_label': 'บาร์โค้ด (ถ้ามี)',
+  'menu_form_barcode_helper': 'สแกนหรือพิมพ์รหัสที่พิมพ์บนสินค้า',
+  'menu_form_barcode_invalid':
+      'บาร์โค้ดใช้ได้เฉพาะตัวเลข ตัวอักษรอังกฤษ และขีด (ไม่เกิน 32 ตัว)',
+  'menu_form_price_per_kg_label': 'ราคาต่อกิโลกรัม',
+  'menu_form_scale_plu_label': 'รหัสบนตาชั่ง (PLU)',
+  'menu_form_scale_plu_helper': 'เลขสินค้าที่ตั้งไว้ในตาชั่งพิมพ์ฉลาก',
+  'menu_form_scale_plu_invalid': 'รหัส PLU ต้องเป็นตัวเลข 1–6 หลัก',
+  'menu_form_sold_by_weight_label': 'ขายตามน้ำหนัก',
+  'menu_form_sold_by_weight_subtitle':
+      'ราคาเป็นบาทต่อกิโลกรัม ชั่งแล้วคิดเงินตามน้ำหนักจริง',
 };
 
 const Map<String, String> menuTranslationsEn = {
@@ -184,6 +200,21 @@ const Map<String, String> menuTranslationsEn = {
   'menu_delete_category_has_items_error':
       'Cannot delete: this category still has menu items',
   'menu_item_not_found_error': 'Menu item not found',
+
+  'menu_error_code_taken': 'Code @code is already used by "@name"',
+  'menu_error_plu_requires_weight':
+      'A scale PLU can only be set on items sold by weight',
+  'menu_form_barcode_label': 'Barcode (optional)',
+  'menu_form_barcode_helper': 'Scan or type the code printed on the product',
+  'menu_form_barcode_invalid':
+      'Barcode may only contain digits, English letters and dashes (max 32)',
+  'menu_form_price_per_kg_label': 'Price per kg',
+  'menu_form_scale_plu_label': 'Scale PLU',
+  'menu_form_scale_plu_helper': 'Item number set in the label-printing scale',
+  'menu_form_scale_plu_invalid': 'PLU must be 1–6 digits',
+  'menu_form_sold_by_weight_label': 'Sold by weight',
+  'menu_form_sold_by_weight_subtitle':
+      'Price is per kg — charged by the actual weighed amount',
 };
 
 const Map<String, String> menuTranslationsKo = {
@@ -262,4 +293,16 @@ const Map<String, String> menuTranslationsKo = {
   'menu_category_deleted_success': '카테고리를 삭제했습니다',
   'menu_delete_category_has_items_error': '이 카테고리에는 아직 메뉴가 있어 삭제할 수 없습니다',
   'menu_item_not_found_error': '메뉴를 찾을 수 없습니다',
+
+  'menu_error_code_taken': '코드 @code 는 이미 "@name" 메뉴에 사용 중입니다',
+  'menu_error_plu_requires_weight': '저울 PLU는 무게 단위 판매 상품에만 지정할 수 있습니다',
+  'menu_form_barcode_label': '바코드 (선택)',
+  'menu_form_barcode_helper': '상품에 인쇄된 코드를 스캔하거나 입력하세요',
+  'menu_form_barcode_invalid': '바코드는 숫자, 영문자, 하이픈만 사용할 수 있습니다 (최대 32자)',
+  'menu_form_price_per_kg_label': 'kg당 가격',
+  'menu_form_scale_plu_label': '저울 PLU',
+  'menu_form_scale_plu_helper': '라벨 저울에 등록된 상품 번호',
+  'menu_form_scale_plu_invalid': 'PLU는 1–6자리 숫자여야 합니다',
+  'menu_form_sold_by_weight_label': '무게 단위 판매',
+  'menu_form_sold_by_weight_subtitle': 'kg당 가격 — 실제 계량한 무게만큼 계산됩니다',
 };

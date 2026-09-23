@@ -34,6 +34,11 @@ class SettingsController extends GetxController {
       TextEditingController();
   final TextEditingController promptPayIdController = TextEditingController();
 
+  /// รูปแบบฉลากตาชั่ง (ดู docs/tickets/19-barcode-scale.md)
+  final TextEditingController scaleLabelPrefixController =
+      TextEditingController();
+  final RxInt scaleLabelPluDigits = 5.obs;
+
   @override
   void onInit() {
     super.onInit();
@@ -51,6 +56,7 @@ class SettingsController extends GetxController {
     pointsEarnRateController.dispose();
     pointsRedeemValueController.dispose();
     promptPayIdController.dispose();
+    scaleLabelPrefixController.dispose();
     super.onClose();
   }
 
@@ -78,6 +84,8 @@ class SettingsController extends GetxController {
         pointsRedeemValueController.text = data.pointsRedeemValueBaht
             .toStringAsFixed(2);
         promptPayIdController.text = data.promptPayId ?? '';
+        scaleLabelPrefixController.text = data.scaleLabelPrefix;
+        scaleLabelPluDigits.value = data.scaleLabelPluDigits;
       },
       onFailure: (failure) => errorMessage.value = failure.message,
     );
@@ -109,6 +117,16 @@ class SettingsController extends GetxController {
       AppDialogs.error('settings_points_redeem_value_error'.tr);
       return;
     }
+    // ฉลาก EAN-13 = prefix + PLU + น้ำหนัก + check digit — ต้องเหลือหลักน้ำหนัก 4–6 หลัก
+    // (กฎเดียวกับ backend settings.routes.js ตรวจก่อนยิงให้ข้อความผิดพลาดชัดกว่า 422)
+    final scalePrefix = scaleLabelPrefixController.text.trim();
+    final weightDigits = 12 - scalePrefix.length - scaleLabelPluDigits.value;
+    if (!RegExp(r'^2\d{0,2}$').hasMatch(scalePrefix) ||
+        weightDigits < 4 ||
+        weightDigits > 6) {
+      AppDialogs.error('settings_scale_label_invalid'.tr);
+      return;
+    }
 
     isSaving.value = true;
     final result = await _updateSettings(
@@ -123,6 +141,8 @@ class SettingsController extends GetxController {
         pointsEarnRateBaht: pointsEarnRate,
         pointsRedeemValueBaht: pointsRedeemValue,
         promptPayId: promptPayIdController.text.trim(),
+        scaleLabelPrefix: scalePrefix,
+        scaleLabelPluDigits: scaleLabelPluDigits.value,
       ),
     );
     isSaving.value = false;

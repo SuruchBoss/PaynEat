@@ -15,6 +15,45 @@ const assertCategoryExists = (categoryId) => {
   }
 };
 
+/**
+ * ตรวจ/จัดรูปบาร์โค้ดและ PLU ก่อนบันทึก (ดู docs/tickets/19-barcode-scale.md) — คืน patch ที่พร้อม
+ * ส่งให้ repository ('' → null = ล้างค่า, undefined = ไม่แตะ)
+ *
+ * PLU เก็บแบบตัดเลข 0 นำหน้าออก เพราะฉลากตาชั่งพิมพ์เป็นช่องคงที่ ("00101") ส่วนคนพิมพ์ในฟอร์ม
+ * มักพิมพ์ "101" — ฝั่งแอปแปลงค่าจากฉลากแบบเดียวกันก่อนจับคู่ (scale_barcode.dart)
+ * PLU ใช้ได้เฉพาะเมนูขายตามน้ำหนัก ฉลากตาชั่งบอกน้ำหนัก ไม่มีความหมายกับสินค้าขายเป็นชิ้น
+ */
+const normalizeCodes = (payload, { id, branchId, soldByWeight }) => {
+  const patch = {};
+  if (payload.barcode !== undefined) patch.barcode = payload.barcode || null;
+  if (payload.scalePlu !== undefined) {
+    patch.scalePlu = payload.scalePlu ? String(Number(payload.scalePlu)) : null;
+  }
+  if (patch.scalePlu && !soldByWeight) {
+    throw ApiError.badRequest('รหัสบนตาชั่ง (PLU) ใช้ได้เฉพาะเมนูที่ขายตามน้ำหนัก');
+  }
+  // เลิกขายตามน้ำหนักแล้ว PLU เดิมไม่มีความหมาย ล้างทิ้งให้เอง ฉลากเก่าจะได้ไม่ชี้มาที่เมนูนี้อีก
+  if (!soldByWeight && patch.scalePlu === undefined && payload.soldByWeight === false) {
+    patch.scalePlu = null;
+  }
+
+  for (const [field, column, label] of [
+    ['barcode', 'barcode', 'บาร์โค้ด'],
+    ['scalePlu', 'scale_plu', 'รหัสบนตาชั่ง (PLU)'],
+  ]) {
+    if (!patch[field]) continue;
+    const other = menuRepository.findConflictingCode({
+      column,
+      value: patch[field],
+      branchId,
+      excludeId: id,
+    });
+    if (other)
+      throw ApiError.conflict(`${label} ${patch[field]} ถูกใช้กับเมนู "${other.name}" แล้ว`);
+  }
+  return patch;
+};
+
 const assertIngredientsExist = (ingredients) => {
   if (!ingredients?.length) return;
   for (const link of ingredients) {
@@ -84,9 +123,15 @@ export const menuService = {
     assertCategoryExists(payload.categoryId);
     assertIngredientsExist(payload.ingredients);
     const branchId = resolveBranchIdForWrite(currentBranchId, payload.branchId);
+    const codes = normalizeCodes(payload, {
+      id: null,
+      branchId,
+      soldByWeight: Boolean(payload.soldByWeight),
+    });
     const run = getDb().transaction(() => {
       const created = menuRepository.create({
         ...payload,
+        ...codes,
         price: toSatang(payload.price),
         imageUrl: payload.imageUrl || null,
         branchId,
@@ -109,10 +154,16 @@ export const menuService = {
 
     const newPriceSatang = payload.price === undefined ? undefined : toSatang(payload.price);
     const priceChanged = newPriceSatang !== undefined && newPriceSatang !== toSatang(before.price);
+    const codes = normalizeCodes(payload, {
+      id,
+      branchId: before.branchId,
+      soldByWeight: payload.soldByWeight ?? before.soldByWeight,
+    });
 
     const run = getDb().transaction(() => {
       menuRepository.update(id, {
         ...payload,
+        ...codes,
         price: newPriceSatang,
         imageUrl: payload.imageUrl === '' ? null : payload.imageUrl,
         // แก้ isAvailable ผ่านฟอร์มแก้ไขปกติ = พนักงานตั้งใจ override เอง เลยล้างสถานะ

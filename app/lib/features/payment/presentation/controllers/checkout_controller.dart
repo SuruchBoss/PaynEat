@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/services/session_service.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../customer/domain/entities/customer.dart';
 import '../../../customer/domain/usecases/customer_usecases.dart';
@@ -26,13 +27,15 @@ class CheckoutController extends GetxController {
     required GetCustomerUseCase getCustomer,
     required GetSettingsUseCase getSettings,
     required GetPromptPayQrUseCase getPromptPayQr,
+    SessionService? session,
   }) : _getOrder = getOrder,
        _getSummary = getSummary,
        _pay = pay,
        _getCurrentShift = getCurrentShift,
        _getCustomer = getCustomer,
        _getSettings = getSettings,
-       _getPromptPayQr = getPromptPayQr;
+       _getPromptPayQr = getPromptPayQr,
+       _session = session;
 
   final GetOrderUseCase _getOrder;
   final GetPaymentSummaryUseCase _getSummary;
@@ -41,6 +44,7 @@ class CheckoutController extends GetxController {
   final GetCustomerUseCase _getCustomer;
   final GetSettingsUseCase _getSettings;
   final GetPromptPayQrUseCase _getPromptPayQr;
+  final SessionService? _session;
 
   final Rxn<Order> order = Rxn<Order>();
   final Rxn<PaymentSummary> summary = Rxn<PaymentSummary>();
@@ -90,6 +94,22 @@ class CheckoutController extends GetxController {
 
   double get remaining => summary.value?.remaining ?? 0;
   bool get isCash => method.value == PaymentMethod.cash;
+  bool get isCredit => method.value == PaymentMethod.credit;
+
+  /// ขายเชื่อได้เมื่อออเดอร์ผูกลูกค้าที่มีวงเงิน และผู้ใช้ไม่ใช่พนักงานเสิร์ฟ — ตรงกับเงื่อนไขใน
+  /// payment.service.js (ดู docs/tickets/20-b2b-credit.md)
+  bool get canSellOnCredit =>
+      (customer.value?.hasCreditAccount ?? false) &&
+      (_session?.currentUser?.canHandleCredit ?? false);
+
+  /// ช่องทางที่โชว์ให้เลือก — "ขายเชื่อ" โผล่เฉพาะตอนใช้ได้จริง ไม่งั้นแคชเชียร์กดแล้วโดนปฏิเสธเปล่า ๆ
+  List<String> get availableMethods => [
+    ...PaymentMethod.all,
+    if (canSellOnCredit) PaymentMethod.credit,
+  ];
+
+  /// วงเงินที่ยังเหลือของลูกค้า ณ ตอนโหลดหน้า
+  double get creditAvailable => customer.value?.creditAvailable ?? 0;
 
   /// มูลค่าแต้มที่ใช้แลกรอบนี้ (บาท) — ลดแค่ยอดที่ต้องเก็บจริง (chargedAmount) เท่านั้น
   /// ไม่แตะยอด amount ที่นับเข้าบัญชีจ่ายของออเดอร์ (ดู docs/tickets/09-customer-loyalty.md)
@@ -105,7 +125,8 @@ class CheckoutController extends GetxController {
   /// แต้มสูงสุดที่แลกได้รอบนี้ — ไม่เกินแต้มคงเหลือของลูกค้า และมูลค่าต้องไม่เกินยอดจ่ายรอบนี้
   int get maxRedeemablePoints {
     final loyaltyCustomer = customer.value;
-    if (loyaltyCustomer == null) return 0;
+    // ขายเชื่อใช้แต้มร่วมไม่ได้ — หนี้ต้องเท่ากับยอดในบิลพอดี (backend ปฏิเสธเหมือนกัน)
+    if (loyaltyCustomer == null || isCredit) return 0;
     final rate = settings.value.pointsRedeemValueBaht;
     if (rate <= 0) return 0;
     final byAmount = (amount.value / rate).floor();
@@ -125,6 +146,10 @@ class CheckoutController extends GetxController {
     if (!hasOpenShift.value) return false;
     if (amount.value <= 0 || amount.value > remaining + 0.001) return false;
     if (isCash && received.value + 0.001 < chargedAmount) return false;
+    if (isCredit) {
+      if (!canSellOnCredit) return false;
+      if (amount.value > creditAvailable + 0.001) return false;
+    }
     return true;
   }
 
@@ -175,10 +200,12 @@ class CheckoutController extends GetxController {
   Future<void> _loadCustomer(int customerId) async {
     final result = await _getCustomer(customerId);
     result.fold(onSuccess: (data) => customer.value = data, onFailure: (_) {});
+    if (isCredit && !canSellOnCredit) selectMethod(PaymentMethod.cash);
   }
 
   void selectMethod(String value) {
     method.value = value;
+    if (value == PaymentMethod.credit) pointsToRedeem.value = 0;
     if (value != PaymentMethod.cash) {
       setReceived(amount.value);
     }

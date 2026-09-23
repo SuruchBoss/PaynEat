@@ -18,6 +18,8 @@ export const toOrderItemDto = (row) => {
     name: row.name_snapshot,
     unitPrice: toBaht(row.unit_price),
     quantity: row.quantity,
+    // ขายตามน้ำหนัก (docs/tickets/18-sell-by-weight.md) — null = ขายเป็นชิ้น
+    weightGrams: row.weight_grams ?? null,
     options: options.map((option) => ({ ...option, priceDelta: toBaht(option.priceDelta ?? 0) })),
     optionsPrice: toBaht(row.options_price),
     lineTotal: toBaht(row.line_total),
