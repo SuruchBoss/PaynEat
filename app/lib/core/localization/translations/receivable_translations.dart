@@ -248,9 +248,9 @@ const Map<String, String> receivableTranslationsKo = {
   'receivable_document_voided': '취소됨',
   'receivable_document_issued_by': '발행자 @name',
   'receivable_document_received_by': '수금자 @name',
-  'receivable_void_button': '취소',
+  'receivable_void_button': '발행 취소',
   'receivable_void_reason_label': '취소 사유',
-  'receivable_void_confirm_button': '취소 확인',
+  'receivable_void_confirm_button': '발행 취소 확정',
   'receivable_error_cash_needs_shift': '현금 수금 전에 교대를 먼저 열어야 합니다',
   'receivable_error_invoice_already_billed':
       '전표 #@code 는 이미 청구서 @note 에 포함되어 있습니다',

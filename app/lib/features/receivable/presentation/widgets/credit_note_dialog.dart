@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
+import '../../../../app/theme/app_colors.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/receivable.dart';
 
@@ -79,19 +80,45 @@ class _CreditNoteDialogState extends State<CreditNoteDialog> {
                 key: const ValueKey('credit-note-invoice'),
                 initialValue: _invoice.paymentId,
                 isExpanded: true,
+                // "#ORD-20260728-0001 (ค้าง 6,167.48)" บรรทัดเดียวยาวเกินช่องบนมือถือทุกภาษา ถูกตัดเหลือ
+                // "#ORD-20260728-0001 (…" — ในรายการแยกเป็นสองบรรทัด ส่วนช่องที่เลือกแล้วโชว์แค่เลขบิล
+                // (ยอดค้างสูงสุดมีบอกใต้ช่องยอดลดหนี้อยู่แล้ว)
+                itemHeight: null,
                 decoration: InputDecoration(
                   labelText: 'receivable_credit_note_invoice_label'.tr,
                 ),
+                selectedItemBuilder: (context) => [
+                  for (final invoice in widget.invoices)
+                    Text(
+                      '#${invoice.orderCode}',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                ],
                 items: [
                   for (final invoice in widget.invoices)
                     DropdownMenuItem(
                       value: invoice.paymentId,
-                      child: Text(
-                        'receivable_credit_note_invoice_option'.trParams({
-                          'code': invoice.orderCode,
-                          'amount': Formatters.money(invoice.outstanding),
-                        }),
-                        overflow: TextOverflow.ellipsis,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '#${invoice.orderCode}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            Text(
+                              'receivable_credit_note_invoice_owes'.trParams({
+                                'amount': Formatters.baht(invoice.outstanding),
+                              }),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                 ],

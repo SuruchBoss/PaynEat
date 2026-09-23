@@ -137,6 +137,6 @@ const Map<String, String> auditLogTranslationsKo = {
   'audit_log_action_receivable_billing_note_void': '청구서 취소',
   'audit_log_action_receivable_late_fee': '연체 이자 부과',
   'audit_log_action_receivable_late_fee_void': '연체 이자 면제',
-  'audit_log_action_receivable_credit_note': '대변전표 발행',
+  'audit_log_action_receivable_credit_note': '감액 전표 발행',
   'audit_log_action_receivable_document_email': '문서 이메일 발송',
 };

@@ -93,7 +93,8 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_receivable_title': 'ลูกหนี้ขายเชื่อ',
   'settings_receivable_subtitle': 'ดอกเบี้ยผิดนัดชำระ และการส่งเอกสารทางอีเมล',
   'settings_late_fee_rate_label': 'ดอกเบี้ยผิดนัด',
-  'settings_late_fee_rate_suffix': '% ต่อปี (0 = ไม่คิด)',
+  'settings_late_fee_rate_suffix': '% ต่อปี',
+  'settings_late_fee_rate_helper': 'ใส่ 0 = ไม่คิดดอกเบี้ย',
   'settings_late_fee_grace_label': 'ผ่อนผันหลังครบกำหนด',
   'settings_late_fee_grace_suffix': 'วัน',
   'settings_late_fee_invalid':
@@ -200,7 +201,8 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_receivable_subtitle':
       'Late-payment interest and e-mailing documents',
   'settings_late_fee_rate_label': 'Late-payment interest',
-  'settings_late_fee_rate_suffix': '% per year (0 = off)',
+  'settings_late_fee_rate_suffix': '% per year',
+  'settings_late_fee_rate_helper': 'Enter 0 to turn interest off',
   'settings_late_fee_grace_label': 'Grace after due date',
   'settings_late_fee_grace_suffix': 'days',
   'settings_late_fee_invalid':
@@ -291,7 +293,8 @@ const Map<String, String> settingsTranslationsKo = {
   'settings_receivable_title': '외상 고객',
   'settings_receivable_subtitle': '연체 이자 및 문서 이메일 발송',
   'settings_late_fee_rate_label': '연체 이자',
-  'settings_late_fee_rate_suffix': '% / 년 (0 = 부과 안 함)',
+  'settings_late_fee_rate_suffix': '% / 년',
+  'settings_late_fee_rate_helper': '0을 입력하면 이자를 부과하지 않습니다',
   'settings_late_fee_grace_label': '만기 후 유예',
   'settings_late_fee_grace_suffix': '일',
   'settings_late_fee_invalid': '연체 이자는 연 0–15%, 유예는 0–365일이어야 합니다',

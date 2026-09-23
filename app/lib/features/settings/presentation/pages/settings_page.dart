@@ -206,7 +206,7 @@ class SettingsPage extends GetView<SettingsController> {
                     subtitle: 'settings_receivable_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  _FieldPair(
                     children: [
                       Expanded(
                         child: TextField(
@@ -223,6 +223,7 @@ class SettingsPage extends GetView<SettingsController> {
                           decoration: InputDecoration(
                             labelText: 'settings_late_fee_rate_label'.tr,
                             suffixText: 'settings_late_fee_rate_suffix'.tr,
+                            helperText: 'settings_late_fee_rate_helper'.tr,
                           ),
                         ),
                       ),
@@ -260,7 +261,7 @@ class SettingsPage extends GetView<SettingsController> {
                     subtitle: 'settings_loyalty_subtitle'.tr,
                   ),
                   const SizedBox(height: 16),
-                  Row(
+                  _FieldPair(
                     children: [
                       Expanded(
                         child: TextField(
@@ -550,6 +551,41 @@ class _InfoRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// ช่องกรอกสองช่องคู่กัน — จอกว้างวางข้างกัน จอแคบกว่า 560px เรียงลงมา
+/// (วางคู่บนมือถือแล้วป้ายถูกตัด "Late-payment intere…" / "Baht spent per 1 poi…" ทุกภาษา)
+/// รับ children แบบเดียวกับ Row เดิม (Expanded + SizedBox + Expanded) จะได้ไม่ต้องรื้อโค้ดช่อง
+class _FieldPair extends StatelessWidget {
+  const _FieldPair({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 560) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: children,
+          );
+        }
+        final fields = children
+            .map((child) => child is Expanded ? child.child : null)
+            .whereType<Widget>()
+            .toList(growable: false);
+        return Column(
+          children: [
+            for (var i = 0; i < fields.length; i++) ...[
+              if (i > 0) const SizedBox(height: 14),
+              fields[i],
+            ],
+          ],
+        );
+      },
     );
   }
 }

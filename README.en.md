@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-856%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-859%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 856 automated tests.
+control and 859 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 856 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **856 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **859 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -554,7 +554,7 @@ The login page has one-tap buttons for each account — no need to type anything
 
 ```bash
 cd backend && npm test      # 352 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 456 cases — domain / controller / widget
+cd app && flutter test      # 459 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -1146,7 +1146,7 @@ Every endpoint shares the same response shape:
 
 ```bash
 cd backend && npm test      # 352 cases
-cd app && flutter test      # 456 cases
+cd app && flutter test      # 459 cases
 cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
 ```
 
@@ -1378,7 +1378,7 @@ nothing, unpaid interest keeps a bill open while waiving it earns the points wit
 and a split bill whose credit part was paid off first earns when the bill closes (see
 `docs/DECISIONS.md` #59)
 
-**Flutter (456 cases)** — split into 3 levels:
+**Flutter (459 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1415,6 +1415,7 @@ and a split bill whose credit part was paid off first earns when the bill closes
 | Widget | `widgets_test.dart` | Button taps and widget state, including `KitchenTicketCard` rendering the correct icon/label for all 3 order types (table/takeaway/delivery) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Widget | `weight_entry_dialog_test.dart` | Turning the typed weight (kg, a comma works as the decimal point) into whole grams, rounding, and rejecting anything outside 1–99,999 g (ticket 18) |
+| Core | `destructive_labels_test.dart` | The accounts-receivable "void document" button must never share a label with the ordinary Cancel/Close buttons, in every language — the Korean edition had "취소" for both, sitting next to "닫기" (see `docs/DECISIONS.md` #60) |
 | Widget | `cart_panel_locale_test.dart` | The cart must show item names in the chosen language (English/Korean), matching the card just tapped — it had used the always-Thai `menuItem.name` since the first commit; also checks a weighed line doesn't overflow when glyphs are wide (see `docs/DECISIONS.md` #58) |
 | Core | `formatters_due_date_test.dart` | Due dates render in the current language ("11 Oct 2026" / "2026년 10월 11일") instead of a raw `2026-10-11`, without shifting a day with the device timezone |
 | Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |

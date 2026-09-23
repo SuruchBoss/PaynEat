@@ -38,18 +38,15 @@ class BackendProcess {
   /// เวลาจริงไม่ได้ จึงแก้วันที่ตรงในไฟล์ SQLite ด้วย better-sqlite3 ของ backend เอง (WAL mode ให้
   /// process อื่นเขียนพร้อมกับ server ได้) ใช้กับข้อมูลวันที่เท่านั้น ไม่ใช่ทางลัดสร้างข้อมูลเงิน
   Future<void> execSql(String statement) async {
-    final result = await Process.run(
-      Platform.environment['E2E_NODE'] ?? 'node',
-      [
-        '-e',
-        "const Database = require('better-sqlite3');"
-            'const db = new Database(process.argv[1]);'
-            'db.exec(process.argv[2]); db.close();',
-        _databaseFile,
-        statement,
-      ],
-      workingDirectory: _backendDir.path,
-    );
+    final result =
+        await Process.run(Platform.environment['E2E_NODE'] ?? 'node', [
+          '-e',
+          "const Database = require('better-sqlite3');"
+              'const db = new Database(process.argv[1]);'
+              'db.exec(process.argv[2]); db.close();',
+          _databaseFile,
+          statement,
+        ], workingDirectory: _backendDir.path);
     if (result.exitCode != 0) {
       throw StateError('execSql ล้มเหลว: ${result.stderr}');
     }

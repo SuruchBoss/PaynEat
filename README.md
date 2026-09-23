@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-856%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-859%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 856 automated tests.
+control and 859 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -50,7 +50,7 @@ control and 856 automated tests.
   บาร์โค้ดด้วยเครื่องสแกนหรือกล้องมือถือ ขายเชื่อลูกค้าประจำตามวงเงิน ออกใบวางบิล รับชำระหนี้ คิดดอกเบี้ย
   ผิดนัด ออกใบลดหนี้ และส่งเอกสารเป็น PDF ภาษาไทยทางอีเมล — เงินสดที่รับชำระยังกระทบยอดลิ้นชักตอนปิดกะได้ตรง
   (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **ทดสอบอัตโนมัติ 856 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 859 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -494,7 +494,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 
 ```bash
 cd backend && npm test      # 352 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 456 เคส — domain / controller / widget
+cd app && flutter test      # 459 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 48 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -1029,7 +1029,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 
 ```bash
 cd backend && npm test      # 352 เคส
-cd app && flutter test      # 456 เคส
+cd app && flutter test      # 459 เคส
 cd app && flutter test test_e2e   # 48 เคส (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -1224,7 +1224,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 ดอกเบี้ยค้างยังไม่ครบ-ยกเว้นดอกเบี้ยแล้วได้แต้มโดยไม่นับดอกเบี้ย, บิลแยกจ่ายที่ส่วนขายเชื่อชำระครบก่อนได้แต้มตอนบิลปิด
 (ดู `docs/DECISIONS.md` #59)
 
-**Flutter (456 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (459 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1262,6 +1262,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 | Widget | `widgets_test.dart` | การกดปุ่มและสถานะของ widget รวมถึง `KitchenTicketCard` ต้องแยกไอคอน/ป้ายถูกต้องครบทั้ง 3 ประเภทออเดอร์ (โต๊ะ/กลับบ้าน/เดลิเวอรี) (ticket 10) |
 | Widget | `hourly_chart_range_test.dart` | ช่วงเวลาบนกราฟต้องมาจากยอดจริง ไม่ใช่ค่าตายตัว |
 | Widget | `weight_entry_dialog_test.dart` | แปลงน้ำหนักที่พิมพ์ (กก. รับจุลภาคแทนจุดได้) เป็นกรัมเต็ม ปัดเศษกรัม และปฏิเสธค่านอกช่วง 1–99,999 กรัม (ticket 18) |
+| Core | `destructive_labels_test.dart` | ปุ่มยกเลิกเอกสารลูกหนี้ (void) ต้องไม่ใช้คำเดียวกับปุ่ม "ยกเลิก"/"ปิด" ทั่วไปในทุกภาษา — ฉบับเกาหลีเคยเขียน "취소" ทั้งคู่ วางข้าง "닫기" (ดู `docs/DECISIONS.md` #60) |
 | Widget | `cart_panel_locale_test.dart` | ตะกร้าต้องโชว์ชื่อเมนูตามภาษา (อังกฤษ/เกาหลี) เหมือนการ์ดที่เพิ่งแตะ — เดิมใช้ `menuItem.name` ไทยเสมอมาตั้งแต่คอมมิตแรก และบรรทัดชั่งน้ำหนักต้องไม่ล้นเมื่อตัวอักษรกว้าง (ดู `docs/DECISIONS.md` #58) |
 | Core | `formatters_due_date_test.dart` | วันครบกำหนดชำระแสดงตามภาษา ("11 Oct 2026" / "2026년 10월 11일") ไม่ใช่ `2026-10-11` ดิบ และไม่เลื่อนวันตามโซนเวลาเครื่อง |
 | Widget | `customer_picker_dialog_test.dart` | กล่องผูกลูกค้ากับออเดอร์ — เน็ตสะดุดครั้งเดียวแล้วค้นใหม่สำเร็จต้องกลับมาเห็นรายชื่อ (เคยค้างที่หน้า error ถาวร), มีปุ่มลองใหม่ให้กดกู้ได้, และดีบาวซ์ต้องยุบการพิมพ์ 6 ตัวอักษรเหลือยิงค้นหาครั้งเดียว |
