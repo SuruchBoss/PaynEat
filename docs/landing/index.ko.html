@@ -21,7 +21,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.3' fill='%23FF6B2C'/%3E%3Crect x='5.6' y='3.6' width='3.8' height='16.8' rx='1.9' fill='white'/%3E%3Cpath d='M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z' fill='white'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <!-- ป้าย "ไทย" ใช้อักษรไทย ซึ่งไม่มีใน IBM Plex Sans KR — subset เฉพาะ 3 ตัวอักษรนี้ -->
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&amp;text=%E0%B9%84%E0%B8%97%E0%B8%A2&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@500&amp;text=%E0%B9%84%E0%B8%97%E0%B8%A2%E0%B8%BF&amp;display=swap">
 <style>
   /* reset — ต้องอยู่ "ก่อน" <style> ของหน้าเว็บเสมอ
      ถ้าวางทีหลัง body{background:#faf9f7} จะทับ body{background:var(--bg)}
@@ -120,9 +120,11 @@
   @media(min-width:900px){.navlinks{display:flex}}
 
   /* ── ส่วนหัว ───────────────────────────────────────────────────── */
+  /* เดิมเป็น mono ถ่าง .08em เพราะมีเลข "01 —" นำหน้า พอลบเลขตกแต่งออก (#53) เหลือแต่ฮันกึล
+     ซึ่ง IBM Plex Mono ไม่มี ตัวอักษรเลยหล่นไปฟอนต์อื่นและห่างเป็นพยางค์ ๆ → ใช้ Plex Sans KR */
   .eyebrow{
-    font-family:'IBM Plex Mono',ui-monospace,monospace;
-    font-size:.78rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+    font-family:'IBM Plex Sans KR','Noto Sans KR',system-ui,sans-serif;
+    font-size:.84rem;font-weight:600;letter-spacing:.01em;text-transform:uppercase;
     color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:14px;
   }
   .eyebrow::before{content:'';width:22px;height:2px;background:var(--brand);border-radius:2px;flex:none}
@@ -157,15 +159,49 @@
   .head{max-width:52ch;margin-bottom:clamp(30px,4vw,54px)}
   .head p{color:var(--ink-2);margin-top:16px}
 
-  /* ── การ์ดเงื่อนไขหน้างาน ──────────────────────────────────────── */
-  .conds{display:grid;gap:var(--gap)}
-  .cond{background:var(--bg);border-radius:var(--r);padding:24px;box-shadow:var(--shadow-sm)}
-  .cond .n{font-family:'IBM Plex Mono',monospace;font-size:.78rem;font-weight:600;
-           color:var(--brand-deep);letter-spacing:.1em;display:block;margin-bottom:12px}
-  .cond h3{margin-bottom:8px}
-  .cond p{color:var(--muted);font-size:.95rem}
-  @media(min-width:620px){.conds{grid-template-columns:1fr 1fr}}
-  @media(min-width:1000px){.conds{grid-template-columns:repeat(4,1fr)}}
+  /* ── ตั๋วครัวแขวนราว (แทนการ์ดเลข 01–04) ─────────────────────────
+     ทำแบบเดียวกับหน้าไทย/อังกฤษ (docs/DECISIONS.md #53) แต่ปรับให้เข้ากับพื้นสว่างของหน้านี้:
+     เงาอ่อนแบบ --shadow แทนเงาดำหนัก และตัวหนังสือเกาหลีใช้ IBM Plex Sans KR
+     (IBM Plex Mono ไม่มีฮันกึล — เวลาอย่างเดียวที่เป็น mono)
+     ราวเป็น ::before ของตั๋วแต่ละใบ ยื่นเลยขอบไปครึ่งช่องว่าง ตั๋วแถวเดียวกันจึงต่อเป็นราวเส้นเดียว */
+  .rail{
+    --cg:var(--gap);
+    list-style:none;margin:0;padding:0;
+    display:grid;grid-template-columns:minmax(0,1fr);column-gap:var(--cg);row-gap:clamp(28px,4vw,44px);align-items:start;
+  }
+  @media(min-width:561px){.rail{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(min-width:1001px){.rail{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .tk{position:relative;padding-top:6px}
+  .tk::before{
+    content:'';position:absolute;z-index:2;top:0;height:12px;border-radius:4px;
+    left:calc(var(--cg) / -2 - 4px);right:calc(var(--cg) / -2 - 4px);
+    background:linear-gradient(#FBFCFD,#C3C9D2 42%,#8B939F 58%,#B8BFC9);
+    box-shadow:inset 0 -1px 0 rgba(16,24,40,.25),0 5px 5px -5px rgba(16,24,40,.45);
+  }
+  /* เงาอยู่ที่ .hang เพราะ mask ของ .slip ตัดเงาของตัวเองทิ้ง */
+  .hang{position:relative;z-index:1;transform-origin:50% 0;transform:rotate(var(--r,0deg));
+         filter:drop-shadow(0 12px 16px rgba(16,24,40,.16)) drop-shadow(0 1px 1px rgba(16,24,40,.08))}
+  .tk:nth-child(1) .hang{--r:-1deg}
+  .tk:nth-child(2) .hang{--r:.7deg}
+  .tk:nth-child(3) .hang{--r:-.4deg}
+  .tk:nth-child(4) .hang{--r:1.1deg}
+  .slip{
+    background:var(--bg);padding:22px 22px 32px;
+    -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) 50%/14px 100%;
+  }
+  .slip .when{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);
+               padding-bottom:11px;margin-bottom:14px;border-bottom:1px dashed #C9D1DB}
+  .slip .when b{font-family:'IBM Plex Mono','IBM Plex Sans KR',ui-monospace,monospace;font-weight:600;color:var(--ink)}
+  .slip h3{margin-bottom:8px}
+  .slip .d{color:var(--muted);font-size:.95rem}
+  .slip .fix{margin-top:14px;padding-top:11px;border-top:1px dashed #C9D1DB;font-size:.86rem;font-weight:500;color:var(--brand-deep);line-height:1.55}
+  @media (prefers-reduced-motion: no-preference){
+    @supports (animation-timeline: view()){
+      .hang{animation:swing linear both;animation-timeline:view();animation-range:entry 0% cover 30%}
+    }
+  }
+  /* แกว่งแล้วนิ่ง เริ่มจากมุมเอียงอื่น ไม่เริ่มจากโปร่งใส — อ่านได้ตลอด */
+  @keyframes swing{from{transform:rotate(calc(var(--r,0deg) * -3))}to{transform:rotate(var(--r,0deg))}}
 
   /* ── กรอบภาพหน้าจอ ─────────────────────────────────────────────── */
   figure{margin:0}
@@ -204,7 +240,7 @@
     /* การ์ดที่วางเรียงข้างกันต้องให้ย่อหน้าแรกเริ่มที่ระดับเดียวกัน
        หัวข้อเกาหลีบางอันยาวสองบรรทัดบางอันบรรทัดเดียว ถ้าไม่ตรึงไว้
        ตาจะอ่านเป็นคนละแถว — บนจอแคบการ์ดเรียงลงมาทีละใบ จึงไม่ตรึง */
-    .feat h3,.cond h3{min-height:calc(1.45em * 2)}
+    .feat h3{min-height:calc(1.45em * 2)}
   }
   @media(min-width:1000px){.feats.three{grid-template-columns:repeat(3,1fr)}}
 
@@ -241,6 +277,54 @@
   @media(prefers-reduced-motion:no-preference){
     a,.btn{transition:color .16s ease,background-color .16s ease,border-color .16s ease}
   }
+  /* ── ความปลอดภัย: เช็กลิสต์ + กล่องเตือน ──────────────────────────
+     เดิมเป็นการ์ด 6 ใบหน้าตาเหมือนกันหมด ทั้งที่ 5 ข้อคือ "ทำแล้ว" และ 1 ข้อคือ "ต้องทำเอง" */
+  .checks{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:26px clamp(28px,4vw,56px)}
+  @media(min-width:820px){.checks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .checks li,.caveat{display:grid;grid-template-columns:26px minmax(0,1fr);gap:14px;align-items:start}
+  .checks svg,.caveat svg{width:26px;height:26px;margin-top:2px}
+  .checks svg{color:var(--jade)}
+  .checks h3,.caveat h3{margin-bottom:6px}
+  .checks p{color:var(--muted);font-size:.95rem}
+  /* กล่องเตือนเป็นช่องที่ 6 ของกริด ข้อ 5 จึงไม่โดดอยู่แถวเดียว */
+  .caveat{padding:clamp(18px,2.6vw,26px) clamp(18px,2.8vw,28px);
+           background:var(--tint-warm);border:1px solid #FFD9C6;border-radius:var(--r)}
+  .caveat svg,.caveat h3{color:var(--brand-deep)}
+  .caveat p{color:var(--ink-2);font-size:.95rem}
+  .caveat p+p{margin-top:8px}
+
+  /* ── ราคา: ใบเสร็จ (แทนการ์ด 6 ใบ) ──────────────────────────────── */
+  .bill{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(36px,5vw,64px);align-items:start}
+  @media(min-width:900px){.bill{grid-template-columns:minmax(0,1fr) minmax(0,380px)}}
+  .bill .head{margin-bottom:0}
+  .steps{margin-top:clamp(26px,3.4vw,36px);display:grid;gap:20px;max-width:52ch}
+  .steps h3{font-size:1.05rem;margin-bottom:4px}
+  .steps p{color:var(--muted);font-size:.95rem}
+  .steps .cta{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+  .rcpt-wrap{filter:drop-shadow(0 18px 26px rgba(16,24,40,.16)) drop-shadow(0 1px 2px rgba(16,24,40,.08));width:100%;max-width:380px;justify-self:center}
+  .rcpt{
+    background:var(--bg);color:var(--ink);padding:32px clamp(20px,3vw,30px) 36px;font-size:.9rem;line-height:1.5;
+    -webkit-mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/14px 51% repeat-x,conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) top/14px 51% repeat-x;
+    mask:conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/14px 51% repeat-x,conic-gradient(from 135deg at top,#0000,#000 1deg 89deg,#0000 90deg) top/14px 51% repeat-x;
+  }
+  .rcpt .hd{text-align:center}
+  .rcpt .hd b{display:block;font-size:1.2rem;letter-spacing:-.03em}
+  .rcpt .hd span{color:var(--muted);font-size:.82rem}
+  .rcpt hr{border:0;border-top:1px dashed #AEB6C1;margin:16px 0}
+  .rcpt hr.dbl{border-top:3px double var(--ink)}
+  .rcpt .ln{display:flex;align-items:baseline;gap:6px}
+  .rcpt .ln>span:first-child{flex:0 1 auto;min-width:0}
+  .rcpt .ln i{flex:1 1 auto;min-width:14px;border-bottom:2px dotted #C9D1DB;transform:translateY(-.3em)}
+  /* IBM Plex Mono ไม่มี ฿ — ให้ Noto Sans Thai (โหลดแบบ subset เฉพาะ "ไทย฿" ที่ <head>) รับแทน
+     ไม่งั้นเบราว์เซอร์หยิบฟอนต์ระบบมาวาดได้หน้าตาคนละแบบ ส่วนค่าที่เป็นคำเกาหลีใช้ .kr */
+  .rcpt .ln b{flex:none;white-space:nowrap;font-family:'IBM Plex Mono','Noto Sans Thai',ui-monospace,monospace;font-weight:500;font-variant-numeric:tabular-nums}
+  .rcpt .ln b.kr{font-family:'IBM Plex Sans KR',sans-serif;font-weight:600}
+  .rcpt .note{color:var(--muted);font-size:.8rem;margin:1px 0 11px}
+  .rcpt .total{font-size:1.25rem;font-weight:700;margin-top:4px}
+  .rcpt .ft{text-align:center;margin-top:16px;color:var(--muted);font-size:.82rem}
+  .rcpt .ft b{display:block;color:var(--ink);font-weight:600;font-size:.9rem}
+  .bars{width:214px;max-width:100%;height:40px;margin:16px auto 0;background:linear-gradient(90deg,var(--ink) 0px 2px,#0000 2px 4px,var(--ink) 4px 6px,#0000 6px 7px,var(--ink) 7px 8px,#0000 8px 9px,var(--ink) 9px 11px,#0000 11px 12px,var(--ink) 12px 15px,#0000 15px 17px,var(--ink) 17px 18px,#0000 18px 19px,var(--ink) 19px 21px,#0000 21px 24px,var(--ink) 24px 25px,#0000 25px 27px,var(--ink) 27px 28px,#0000 28px 31px,var(--ink) 31px 32px,#0000 32px 33px,var(--ink) 33px 34px,#0000 34px 35px,var(--ink) 35px 38px,#0000 38px 41px,var(--ink) 41px 42px,#0000 42px 44px,var(--ink) 44px 45px,#0000 45px 47px,var(--ink) 47px 49px,#0000 49px 52px,var(--ink) 52px 53px,#0000 53px 54px,var(--ink) 54px 57px,#0000 57px 59px,var(--ink) 59px 62px,#0000 62px 64px,var(--ink) 64px 65px,#0000 65px 67px,var(--ink) 67px 69px,#0000 69px 70px,var(--ink) 70px 73px,#0000 73px 74px,var(--ink) 74px 77px,#0000 77px 78px,var(--ink) 78px 81px,#0000 81px 83px,var(--ink) 83px 85px,#0000 85px 88px,var(--ink) 88px 90px,#0000 90px 93px,var(--ink) 93px 96px,#0000 96px 99px,var(--ink) 99px 101px,#0000 101px 103px,var(--ink) 103px 104px,#0000 104px 106px,var(--ink) 106px 110px,#0000 110px 112px,var(--ink) 112px 113px,#0000 113px 115px,var(--ink) 115px 118px,#0000 118px 121px,var(--ink) 121px 123px,#0000 123px 126px,var(--ink) 126px 128px,#0000 128px 129px,var(--ink) 129px 130px,#0000 130px 133px,var(--ink) 133px 134px,#0000 134px 136px,var(--ink) 136px 137px,#0000 137px 140px,var(--ink) 140px 142px,#0000 142px 143px,var(--ink) 143px 147px,#0000 147px 148px,var(--ink) 148px 151px,#0000 151px 153px,var(--ink) 153px 155px,#0000 155px 157px,var(--ink) 157px 160px,#0000 160px 163px,var(--ink) 163px 166px,#0000 166px 169px,var(--ink) 169px 170px,#0000 170px 171px,var(--ink) 171px 173px,#0000 173px 176px,var(--ink) 176px 180px,#0000 180px 181px,var(--ink) 181px 182px,#0000 182px 184px,var(--ink) 184px 188px,#0000 188px 191px,var(--ink) 191px 193px,#0000 193px 196px,var(--ink) 196px 200px,#0000 200px 202px,var(--ink) 202px 203px,#0000 203px 206px,var(--ink) 206px 208px,#0000 208px 210px,var(--ink) 210px 213px,#0000 213px 214px)}
+
   :focus-visible{outline:2px solid var(--cobalt);outline-offset:3px;border-radius:6px}
   .lang a[lang="th"]{font-family:'Noto Sans Thai',sans-serif}
 </style>
@@ -288,44 +372,24 @@
 <section class="band soft" id="conditions">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">01 — 현장 조건</p>
+      <p class="eyebrow">현장 조건</p>
       <h2>식당은 회의실이 아닙니다</h2>
       <p>기준이 무엇이어야 할까요. 조용한 실내의 깨끗한 화면은 아닙니다.
         이 시스템의 모든 설계 결정은 매 영업마다 실제로 벌어지는 네 가지 조건에 맞춰 검증을 거쳤습니다.</p>
     </div>
-    <div class="conds">
-      <article class="cond">
-        <span class="n">01</span>
-        <h3>직사광선</h3>
-        <p>낮 시간 창가 자리에서는 화면 반사가 명암비를 한 번 더 깎아냅니다.
-          옅게 그린 카드 테두리는 그대로 사라집니다.</p>
-      </article>
-      <article class="cond">
-        <span class="n">02</span>
-        <h3>수증기</h3>
-        <p>주방 모니터는 아무도 닦을 틈이 없는 자리에 놓입니다.
-          3미터 거리에서도 글자가 읽혀야 합니다.</p>
-      </article>
-      <article class="cond">
-        <span class="n">03</span>
-        <h3>젖은 손</h3>
-        <p>한 번 잘못 누르면 한 접시가 잘못 나갑니다. 주방 화면의 버튼은
-          기름 묻은 손으로도 정확히 눌리는 크기입니다.</p>
-      </article>
-      <article class="cond">
-        <span class="n">04</span>
-        <h3>끊기는 네트워크</h3>
-        <p>매장 와이파이는 수시로 끊깁니다. 시스템은 그 사실을 알려야 합니다.
-          주문이 조용히 사라지게 두어서는 안 됩니다.</p>
-      </article>
-    </div>
+    <ol class="rail" aria-label="한 번의 영업, 네 가지 현장 조건">
+      <li class="tk"><div class="hang"><div class="slip"><p class="when"><b>12:40</b><span>창가 테이블</span></p><h3>직사광선</h3><p class="d">낮 시간 창가 자리에서는 화면 반사가 명암비를 한 번 더 깎아냅니다. 옅게 그린 카드 테두리는 그대로 사라집니다.</p><p class="fix">→ 글자색은 실제 배경색에서 골라, 최소 4.5:1</p></div></div></li>
+      <li class="tk"><div class="hang"><div class="slip"><p class="when"><b>19:05</b><span>주방 모니터</span></p><h3>수증기</h3><p class="d">주방 모니터는 아무도 닦을 틈이 없는 자리에 놓입니다. 3미터 거리에서도 글자가 읽혀야 합니다.</p><p class="fix">→ 큰 글자, 색으로 순서 표시 · 3미터에서 읽힘</p></div></div></li>
+      <li class="tk"><div class="hang"><div class="slip"><p class="when"><b>19:32</b><span>화구 앞</span></p><h3>젖은 손</h3><p class="d">한 번 잘못 누르면 한 접시가 잘못 나갑니다. 누르는 사람의 다른 손에는 웍이 들려 있습니다.</p><p class="fix">→ 주방 버튼은 휴대폰보다 거의 두 배 크기</p></div></div></li>
+      <li class="tk"><div class="hang"><div class="slip"><p class="when"><b>20:10</b><span>매장 와이파이</span></p><h3>끊기는 네트워크</h3><p class="d">매장 와이파이는 수시로 끊깁니다. 시스템은 그 사실을 알려야 합니다. 주문이 조용히 사라지게 두어서는 안 됩니다.</p><p class="fix">→ 화면 전체 폭 경고 · 30초마다 주문 다시 불러오기</p></div></div></li>
+    </ol>
   </div>
 </section>
 
 <section class="band" id="kitchen">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">02 — 주방 화면</p>
+      <p class="eyebrow">주방 화면</p>
       <h2>가장 오래 기다린 주문이<br>항상 맨 위에 있습니다</h2>
       <p>주방은 주문서를 한 장씩 읽지 않습니다. 무엇을 먼저 해야 하는지 한눈에 훑습니다.
         그래서 색은 장식이 아니라 우선순위를 나타냅니다. 기준 시간을 넘긴 주문에는
@@ -366,7 +430,7 @@
 <section class="band soft" id="legible">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">03 — 가독성</p>
+      <p class="eyebrow">가독성</p>
       <h2>조명이 나빠도 읽힙니다</h2>
       <p>‘대기’ 상태 배지는 원래 호박색 바탕에 흰 글씨였습니다.
         보기에는 좋았지만 화면에 반사된 햇빛에 그대로 묻혔습니다.</p>
@@ -401,7 +465,7 @@
 <section class="band" id="payment">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">04 — 결제</p>
+      <p class="eyebrow">결제</p>
       <h2>계산이<br>맞아떨어지는 영수증</h2>
       <p>결제 수단 줄에는 청구액이 아니라 손님이 실제로 낸 금액이 찍힙니다.
         그래서 영수증 한 장 안에서 검산이 됩니다 — 받은 금액 − 거스름돈 = 청구액.</p>
@@ -454,7 +518,7 @@
 <section class="band soft" id="backoffice">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">05 — 매출 관리</p>
+      <p class="eyebrow">매출 관리</p>
       <h2>마감 전에 사장님이 보는 숫자</h2>
       <p>오늘 장사가 어땠는지, 마감을 해야 아시나요.
         오늘 매출과 시간대별 그래프, 결제 수단 비율이 영업 중에도 실시간으로 갱신됩니다.</p>
@@ -503,7 +567,7 @@
 <section class="band" id="different">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">06 — 차별점</p>
+      <p class="eyebrow">차별점</p>
       <h2>다른 시스템이<br>아직 따라오지 못한 것</h2>
       <p>“기능이 있다”에서 멈추지 않았습니다.
         가장 바쁜 매장에서 실제로 쓸 수 있는지까지 맞춘 부분입니다.</p>
@@ -556,7 +620,7 @@
 <section class="band soft" id="ai">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">07 — AI 어시스턴트</p>
+      <p class="eyebrow">AI 어시스턴트</p>
       <h2>리포트를 열지 않고<br>말로 물어봅니다</h2>
       <p>한국어·태국어·영어로 질문을 입력하면 AI 어시스턴트(Claude 기반)가
         매장 데이터베이스에 연결된 도구를 호출해 실제 숫자를 가져와 답합니다.
@@ -601,94 +665,78 @@
 <section class="band" id="security">
   <div class="wrap">
     <div class="head">
-      <p class="eyebrow">08 — 보안과 데이터</p>
+      <p class="eyebrow">보안과 데이터</p>
       <h2>돈을 다루는 시스템입니다</h2>
       <p>POS는 매출과 고객 정보를 동시에 들고 있습니다. 그래서 보안은 나중에 붙이는 기능이 아니라
         처음부터 막아두어야 하는 조건입니다.</p>
     </div>
-    <div class="feats three">
-      <article class="feat">
-        <h3>OWASP Top 10 점검 완료</h3>
-        <p>발견된 7건을 모두 수정했고, 전부 <b>막는 쪽이 기본값</b>입니다.
+    <ul class="checks">
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.4 12.4l3.1 3.1 6.1-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3>OWASP Top 10 점검 완료</h3><p>발견된 7건을 모두 수정했고, 전부 <b>막는 쪽이 기본값</b>입니다.
           코드에 예비 JWT 비밀키를 두지 않았고, 비활성화되거나 권한이 바뀐 계정은
-          토큰 만료를 기다리지 않고 즉시 접근을 잃습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>권한은 서버에서 막습니다</h3>
-        <p>화면에서 버튼을 감추는 것으로 끝내지 않습니다. 같은 요청을 직접 보내도
-          서버가 거부합니다. 매니저가 스스로를 승격하거나 관리자 계정을 건드릴 수 없습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>지울 수 없는 변경 이력</h3>
-        <p>주문 취소, 할인 적용, 직원 권한 변경, 환불, 메뉴 가격 수정 —
+          토큰 만료를 기다리지 않고 즉시 접근을 잃습니다.</p></div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.4 12.4l3.1 3.1 6.1-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3>권한은 서버에서 막습니다</h3><p>화면에서 버튼을 감추는 것으로 끝내지 않습니다. 같은 요청을 직접 보내도
+          서버가 거부합니다. 매니저가 스스로를 승격하거나 관리자 계정을 건드릴 수 없습니다.</p></div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.4 12.4l3.1 3.1 6.1-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3>지울 수 없는 변경 이력</h3><p>주문 취소, 할인 적용, 직원 권한 변경, 환불, 메뉴 가격 수정 —
           매장에서 사고가 나기 쉬운 지점은 수정할 수 없는 형태로 남습니다.
-          누가, 언제, 왜 했는지가 항상 함께 기록됩니다.</p>
-      </article>
-      <article class="feat">
-        <h3>데이터는 매장 안에 있습니다</h3>
-        <p>매장의 서버나 PC에서 직접 돌아갑니다. 매출과 고객 정보가 남의 서버로
-          올라가지 않습니다. 서비스가 문을 닫아서 데이터를 잃을 일도 없습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>취약점 신고 창구</h3>
-        <p>GitHub 저장소의 Security 탭에서 비공개로 신고할 수 있습니다.
-          공개 이슈로 올리지 않도록 절차를 따로 안내하고 있습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>운영 배포 전 확인 사항</h3>
-        <p>이 프로젝트는 포트폴리오로 시작했습니다. 그래서 일부 기본값은 그대로
+          누가, 언제, 왜 했는지가 항상 함께 기록됩니다.</p></div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.4 12.4l3.1 3.1 6.1-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3>데이터는 매장 안에 있습니다</h3><p>매장의 서버나 PC에서 직접 돌아갑니다. 매출과 고객 정보가 남의 서버로
+          올라가지 않습니다. 서비스가 문을 닫아서 데이터를 잃을 일도 없습니다.</p></div></li>
+      <li><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.6" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M7.4 12.4l3.1 3.1 6.1-6.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><h3>취약점 신고 창구</h3><p>GitHub 저장소의 Security 탭에서 비공개로 신고할 수 있습니다.
+          공개 이슈로 올리지 않도록 절차를 따로 안내하고 있습니다.</p></div></li>
+      <li class="caveat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 21.6 20H2.4L12 3.2Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 9.6v4.8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.1" r="1.15" fill="currentColor"/></svg><div><h3>운영 배포 전 확인 사항</h3><p>이 프로젝트는 포트폴리오로 시작했습니다. 그래서 일부 기본값은 그대로
           운영에 쓰기에 안전하지 않습니다.</p>
-        <span class="why">숨기지 않고 코드로 막아두었습니다 — 운영 모드
+        <p>숨기지 않고 코드로 막아두었습니다 — 운영 모드
           (<code>NODE_ENV=production</code>)에서는 데모 비밀번호로 계정을 만들려고 하면
           <b>서버가 아예 켜지지 않습니다</b>. JWT 비밀키도 직접 바꿔야 합니다.
-          전체 목록은 저장소의 SECURITY.md에 있습니다.</span>
-      </article>
-    </div>
+          전체 목록은 저장소의 <a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md" target="_blank" rel="noopener">SECURITY.md</a>에 있습니다.</p></div></li>
+    </ul>
   </div>
 </section>
 
 <section class="band soft" id="adopt">
   <div class="wrap">
-    <div class="head">
-      <p class="eyebrow">09 — 도입 안내</p>
-      <h2>얼마인가요?</h2>
-      <p>무료입니다. 그리고 앞으로도 요금제가 생기지 않습니다 —
-        애초에 저희 서버를 쓰지 않는 구조이기 때문입니다.</p>
+    <div class="bill">
+    <div>
+      <div class="head">
+        <p class="eyebrow">도입 안내</p>
+        <h2>얼마인가요?</h2>
+        <p>무료입니다. 그리고 앞으로도 요금제가 생기지 않습니다 —
+          애초에 저희 서버를 쓰지 않는 구조이기 때문입니다.</p>
+      </div>
+      <div class="steps">
+        <div><h3>드는 비용은 이것뿐입니다</h3><p>기기 값과 영수증 프린터 값, 그리고 설치하실 시간. 전용 단말을 따로 사실 필요가 없습니다.</p></div>
+        <div><h3>먼저 써보고 결정하세요</h3><p>데모에는 매장 데이터가 이미 들어 있습니다. 가입도, 설치도 필요 없습니다. 역할을 고르면 바로 들어갑니다.</p></div>
+        <div><h3>문의와 설치 도움</h3><p>GitHub 저장소의 <b>Issues</b>에 남겨주시면 확인합니다. 한국어로 적으셔도 됩니다.
+          설치 과정은 README에 단계별로 적어두었고, 막히는 부분은 Issues에서 함께 봅니다.</p>
+          <span class="why">도입 문의, 기능 요청, 버그 신고 모두 같은 창구를 씁니다.
+            공개된 기록으로 남기 때문에 같은 질문을 가진 다른 매장에도 도움이 됩니다.</span></div>
+        <div class="cta">
+          <a class="btn ghost" href="https://github.com/SuruchBoss/PaynEat/issues" target="_blank" rel="noopener">Issues에 문의하기</a>
+          <a class="btn ghost" href="https://www.linkedin.com/in/suruchboss" target="_blank" rel="noopener">LinkedIn</a>
+          <a class="btn ghost" href="https://github.com/SuruchBoss/PaynEat/blob/main/README.ko.md" target="_blank" rel="noopener">설치 안내 (README)</a>
+        </div>
+      </div>
     </div>
-    <div class="feats three">
-      <article class="feat">
-        <h3>라이선스</h3>
-        <p><b>Apache License 2.0</b> · 상업적 사용, 수정, 재배포까지 모두 허용됩니다.
-          매장 사정에 맞게 고쳐 쓰셔도 됩니다.</p>
-      </article>
-      <article class="feat">
-        <h3>월 구독료 없음</h3>
-        <p>매장의 서버나 PC 한 대에 설치해 운영합니다. 단말 수 제한이 없어
-          휴대폰을 몇 대 더 늘려도 추가 비용이 붙지 않습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>드는 비용</h3>
-        <p>기기 값과 영수증 프린터 값, 그리고 설치하실 시간. 그게 전부입니다.
-          전용 단말을 따로 사실 필요가 없습니다.</p>
-      </article>
-      <article class="feat">
-        <h3>먼저 써보고 결정하세요</h3>
-        <p>데모에는 매장 데이터가 이미 들어 있습니다. 가입도, 설치도 필요 없습니다.
-          역할을 고르면 바로 들어갑니다.</p>
-      </article>
-      <article class="feat">
-        <h3>문의</h3>
-        <p>GitHub 저장소의 <b>Issues</b>에 남겨주시면 확인합니다.
-          한국어로 적으셔도 됩니다. 직접 연락을 원하시면
-          <a href="https://www.linkedin.com/in/suruchboss">LinkedIn</a>으로 주셔도 됩니다.</p>
-        <span class="why">도입 문의, 기능 요청, 버그 신고 모두 같은 창구를 씁니다.
-          공개된 기록으로 남기 때문에 같은 질문을 가진 다른 매장에도 도움이 됩니다.</span>
-      </article>
-      <article class="feat">
-        <h3>직접 설치가 어렵다면</h3>
-        <p>설치 과정은 저장소의 README에 단계별로 적어두었습니다.
-          막히는 부분은 Issues에 남겨주시면 함께 봅니다.</p>
-      </article>
+    <div class="rcpt-wrap"><div class="rcpt" role="group" aria-label="영수증 형식의 비용 요약">
+      <div class="hd"><b>PaynEat POS</b><span>매장: 사장님 매장 · 지점: 몇 개든</span></div>
+      <hr>
+      <div class="ln"><span>라이선스</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <p class="note">Apache License 2.0 · 상업적 사용, 수정, 재배포 허용</p>
+      <div class="ln"><span>월 구독료</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <p class="note">매장의 서버나 PC 한 대에 설치해 운영</p>
+      <div class="ln"><span>추가 단말 (무제한)</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <p class="note">휴대폰을 몇 대 늘려도 추가 비용 없음</p>
+      <div class="ln"><span>전용 단말</span><i aria-hidden="true"></i><b class="kr">필요 없음</b></div>
+      <p class="note">가지고 계신 휴대폰·태블릿·PC를 그대로</p>
+      <hr>
+      <div class="ln"><span>소계</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <div class="ln"><span>VAT 7%</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <hr class="dbl">
+      <div class="ln total"><span>합계</span><i aria-hidden="true"></i><b>฿0.00</b></div>
+      <hr>
+      <div class="ft"><b>감사합니다</b>나중에 요금제가 생기지 않습니다</div>
+      <div class="bars" aria-hidden="true"></div>
+    </div></div>
     </div>
     <!-- 직접 연락 채널(이메일 / 카카오톡 채널 / 전화)을 여기에 추가하세요.
          소유자의 개인 연락처를 임의로 공개할 수 없어 비워 두었습니다.
