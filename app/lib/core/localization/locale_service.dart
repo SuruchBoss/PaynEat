@@ -26,6 +26,14 @@ class LocaleService {
   /// ไม่ใช่ "เป็นอังกฤษ" เพื่อให้ภาษาที่เพิ่มเข้ามาทีหลังได้พฤติกรรมนี้เอง
   static bool get prefersLatinNames => !isThai;
 
+  /// ภาษาของเครื่องถ้าแอปรองรับ ไม่งั้นไทย — ใช้ตอนผู้ใช้ยังไม่เคยเลือกภาษาเอง
+  static String get deviceLanguageCode {
+    // อ่านผ่าน binding (ไม่ใช่ Get.deviceLocale ที่ชี้ PlatformDispatcher.instance ตรง ๆ)
+    // ผลบนเครื่องจริงเหมือนกัน แต่เทสต์จำลองภาษาเครื่องได้
+    final code = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    return const {'th', 'en', 'ko'}.contains(code) ? code : 'th';
+  }
+
   static Locale localeOf(String code) => switch (code) {
     'en' => english,
     'ko' => korean,

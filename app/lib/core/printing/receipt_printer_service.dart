@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:get/get.dart';
 
 import '../../features/order/domain/entities/order.dart';
@@ -54,9 +54,14 @@ class ReceiptPrinterService {
           .timeout(const Duration(seconds: 8));
       return const Result.success(null);
     } catch (e) {
+      // ข้อความ exception ดิบ (SocketException: OS Error ...) อ่านไม่รู้เรื่องสำหรับพนักงานหน้าร้าน
+      // บอกแค่ที่อยู่เครื่องพิมพ์ที่ลองต่อ + วิธีเช็ค ส่วนรายละเอียดทิ้งไว้ใน log สำหรับช่าง
+      debugPrint('ReceiptPrinterService: $e');
       return Result.failure(
         NetworkFailure(
-          'settings_printer_print_failed'.trParams({'error': e.toString()}),
+          'settings_printer_print_failed'.trParams({
+            'error': '${printer.ipAddress}:${printer.port}',
+          }),
         ),
       );
     }

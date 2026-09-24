@@ -7,6 +7,7 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_card.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../../table/domain/usecases/table_usecases.dart';
@@ -37,10 +38,12 @@ class OrderDetailPage extends GetView<OrderDetailController> {
             final order = controller.order.value;
             if (order == null) return const SizedBox.shrink();
             return PopupMenuButton<String>(
+              tooltip: 'order_menu_tooltip'.tr,
               icon: const Icon(Icons.more_vert_rounded),
               onSelected: (value) => _handleMenu(value, order),
               itemBuilder: (context) => [
-                if (order.isActive)
+                // ส่วนลดท้ายบิลเป็นสิทธิ์คนเก็บเงิน (backend ตอบ 403 กับพนักงานเสิร์ฟ) — ไม่โชว์ให้กดแล้วเจอ error
+                if (order.isActive && controller.canCollectPayment)
                   PopupMenuItem(
                     value: 'discount',
                     child: ListTile(
@@ -209,7 +212,20 @@ class OrderDetailPage extends GetView<OrderDetailController> {
         .where((row) => row.id != order.id)
         .toList(growable: false);
     final sourceOrderId = await OrderPickerDialog.show(orders);
-    if (sourceOrderId != null) {
+    if (sourceOrderId == null) return;
+    final source = orders.firstWhereOrNull((row) => row.id == sourceOrderId);
+    // รวมบิลย้อนกลับไม่ได้ (ออเดอร์ต้นทางถูกปิด) — กดแถวผิดในรายการต้องมีจังหวะให้ถอย
+    final confirmed = await AppDialogs.confirm(
+      title: 'order_merge_confirm_title'.tr,
+      message: 'order_merge_confirm_message'.trParams({
+        'source': source?.displayTarget ?? '#$sourceOrderId',
+        'code': source?.code ?? '',
+        'amount': Formatters.baht(source?.total ?? 0),
+        'target': order.displayTarget,
+      }),
+      confirmLabel: 'order_merge_confirm_button'.tr,
+    );
+    if (confirmed) {
       await controller.mergeInto(sourceOrderId);
     }
   }
@@ -239,6 +255,7 @@ class OrderDetailPage extends GetView<OrderDetailController> {
           decoration: InputDecoration(
             labelText: 'order_cancel_order_reason_label'.tr,
             hintText: 'order_cancel_order_reason_hint'.tr,
+            helperText: 'order_cancel_order_reason_required'.tr,
           ),
         ),
         actions: [
@@ -246,10 +263,17 @@ class OrderDetailPage extends GetView<OrderDetailController> {
             onPressed: () => Get.back<void>(),
             child: Text('common_close'.tr),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Get.back(result: reasonController.text.trim()),
-            child: Text('order_cancel_order_confirm_button'.tr),
+          // ปุ่มยืนยันกดได้เมื่อพิมพ์เหตุผลแล้วเท่านั้น — เดิมกดได้แต่ไม่เกิดอะไรขึ้นเลย
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: reasonController,
+            builder: (context, value, _) => FilledButton(
+              key: const ValueKey('order-cancel-confirm'),
+              style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
+              onPressed: value.text.trim().isEmpty
+                  ? null
+                  : () => Get.back(result: value.text.trim()),
+              child: Text('order_cancel_order_confirm_button'.tr),
+            ),
           ),
         ],
       ),

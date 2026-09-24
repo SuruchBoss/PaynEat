@@ -229,6 +229,7 @@ class _StaffRow extends GetView<StaffController> {
   @override
   Widget build(BuildContext context) {
     final color = StaffPage.roleColor(user.role);
+    final isSelf = user.id == controller.currentUserId;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -295,49 +296,61 @@ class _StaffRow extends GetView<StaffController> {
               ],
             ),
           ),
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, size: 20),
-            onSelected: (value) {
-              switch (value) {
-                case 'toggle':
-                  controller.toggleActive(user);
-                case 'delete':
-                  controller.delete(user);
-                default:
-                  controller.updateRole(user, value);
-              }
-            },
-            itemBuilder: (context) => [
-              ...UserRole.all
-                  .where((role) => role != user.role)
-                  .map(
-                    (role) => PopupMenuItem(
-                      value: role,
-                      child: Text(
-                        'staff_change_role_to'.trParams({
-                          'role': UserRole.label(role),
-                        }),
+          // แถวของบัญชีตัวเอง: ไม่มีเมนูให้กดลดสิทธิ์/ปิด/ลบตัวเองพลาด แสดงป้าย "คุณ" แทน
+          if (isSelf)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: StatusChip(
+                label: 'staff_you_badge'.tr,
+                color: AppColors.primary,
+                dense: true,
+              ),
+            )
+          else
+            PopupMenuButton<String>(
+              tooltip: 'staff_actions_tooltip'.tr,
+              icon: const Icon(Icons.more_vert_rounded, size: 20),
+              onSelected: (value) {
+                switch (value) {
+                  case 'toggle':
+                    controller.toggleActive(user);
+                  case 'delete':
+                    controller.delete(user);
+                  default:
+                    controller.updateRole(user, value);
+                }
+              },
+              itemBuilder: (context) => [
+                ...UserRole.all
+                    .where((role) => role != user.role)
+                    .map(
+                      (role) => PopupMenuItem(
+                        value: role,
+                        child: Text(
+                          'staff_change_role_to'.trParams({
+                            'role': UserRole.label(role),
+                          }),
+                        ),
                       ),
                     ),
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: 'toggle',
+                  child: Text(
+                    user.isActive
+                        ? 'staff_deactivate_action'.tr
+                        : 'staff_activate_action'.tr,
                   ),
-              const PopupMenuDivider(),
-              PopupMenuItem(
-                value: 'toggle',
-                child: Text(
-                  user.isActive
-                      ? 'staff_deactivate_action'.tr
-                      : 'staff_activate_action'.tr,
                 ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: Text(
-                  'staff_delete_account'.tr,
-                  style: TextStyle(color: AppColors.dangerInk),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(
+                    'staff_delete_account'.tr,
+                    style: TextStyle(color: AppColors.dangerInk),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
         ],
       ),
     );

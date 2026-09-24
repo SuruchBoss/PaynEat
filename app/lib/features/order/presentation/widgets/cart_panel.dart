@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/quantity_stepper.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../customer/presentation/widgets/customer_picker_dialog.dart';
@@ -81,7 +82,17 @@ class _CartHeader extends GetView<CartController> {
                 () => controller.isEmpty
                     ? const SizedBox.shrink()
                     : TextButton(
-                        onPressed: controller.clear,
+                        onPressed: () async {
+                          final ok = await AppDialogs.confirm(
+                            title: 'order_clear_cart_title'.tr,
+                            message: 'order_discard_cart_message'.trParams({
+                              'count': '${controller.totalQuantity}',
+                            }),
+                            confirmLabel: 'order_clear_button'.tr,
+                            destructive: true,
+                          );
+                          if (ok) controller.clear();
+                        },
                         child: Text('order_clear_button'.tr),
                       ),
               ),

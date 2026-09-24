@@ -422,6 +422,37 @@ class _PaymentForm extends GetView<CheckoutController> {
               ),
             ),
           ),
+          Obx(() {
+            final hint = controller.isPaying.value
+                ? null
+                : controller.payBlockedHint;
+            if (hint == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 16,
+                    color: AppColors.warningInk,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      hint,
+                      key: const ValueKey('checkout-pay-blocked-hint'),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: AppColors.warningInk,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
         ],
       ),
     );
@@ -570,6 +601,7 @@ class _LoyaltySection extends GetView<CheckoutController> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'common_decrease'.tr,
                     onPressed: redeemed > 0
                         ? () => controller.setPointsToRedeem(redeemed - 1)
                         : null,
@@ -588,6 +620,7 @@ class _LoyaltySection extends GetView<CheckoutController> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'common_increase'.tr,
                     onPressed: redeemed < maxPoints
                         ? () => controller.setPointsToRedeem(redeemed + 1)
                         : null,

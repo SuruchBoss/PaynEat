@@ -17,7 +17,7 @@ const Map<String, String> authTranslationsTh = {
       'รีเฟรชหน้าเว็บเพื่อเริ่มใหม่',
   'auth_login_footer_demo': 'PaynEat POS · โหมดสาธิต',
   'auth_login_footer_connected': 'เชื่อมต่อ @url',
-  'auth_demo_accounts_label': 'บัญชีทดลองใช้',
+  'auth_demo_accounts_label': 'บัญชีทดลองใช้ — แตะเพื่อเข้าสู่ระบบ',
   'auth_profile_connection_title': 'การเชื่อมต่อ',
   'auth_profile_realtime_connected': 'เชื่อมต่อเรียลไทม์อยู่',
   'auth_profile_realtime_disconnected': 'ไม่ได้เชื่อมต่อเรียลไทม์',
@@ -39,6 +39,7 @@ const Map<String, String> authTranslationsTh = {
   'branch_all_branches': 'ทุกสาขา',
   'branch_current_label': 'สาขาปัจจุบัน',
   'branch_switch_action': 'สลับสาขา',
+  'auth_demo_account_tooltip': 'เข้าสู่ระบบเป็น @username',
 };
 
 const Map<String, String> authTranslationsEn = {
@@ -62,7 +63,7 @@ const Map<String, String> authTranslationsEn = {
       'refresh the page to start over.',
   'auth_login_footer_demo': 'PaynEat POS · Demo mode',
   'auth_login_footer_connected': 'Connected to @url',
-  'auth_demo_accounts_label': 'Demo accounts',
+  'auth_demo_accounts_label': 'Demo accounts — tap to sign in',
   'auth_profile_connection_title': 'Connection',
   'auth_profile_realtime_connected': 'Real-time connection active',
   'auth_profile_realtime_disconnected': 'Not connected to real-time updates',
@@ -86,6 +87,7 @@ const Map<String, String> authTranslationsEn = {
   'branch_all_branches': 'All branches',
   'branch_current_label': 'Current branch',
   'branch_switch_action': 'Switch branch',
+  'auth_demo_account_tooltip': 'Sign in as @username',
 };
 
 const Map<String, String> authTranslationsKo = {
@@ -105,7 +107,7 @@ const Map<String, String> authTranslationsKo = {
       '데모 모드 — 모든 데이터는 기기에만 저장됩니다. 모든 기능을 사용할 수 있으며, 새로고침하면 처음 상태로 돌아갑니다.',
   'auth_login_footer_demo': 'PaynEat POS · 데모 모드',
   'auth_login_footer_connected': '@url 에 연결됨',
-  'auth_demo_accounts_label': '데모 계정',
+  'auth_demo_accounts_label': '데모 계정 — 누르면 바로 로그인',
   'auth_profile_connection_title': '연결 상태',
   'auth_profile_realtime_connected': '실시간 연결 사용 중',
   'auth_profile_realtime_disconnected': '실시간 연결이 끊겼습니다',
@@ -125,4 +127,5 @@ const Map<String, String> authTranslationsKo = {
   'branch_all_branches': '전체 지점',
   'branch_current_label': '현재 지점',
   'branch_switch_action': '지점 전환',
+  'auth_demo_account_tooltip': '@username(으)로 로그인',
 };

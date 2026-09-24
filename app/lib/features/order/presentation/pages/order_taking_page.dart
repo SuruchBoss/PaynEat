@@ -29,6 +29,33 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
   Widget build(BuildContext context) {
     final isWide = Responsive.isWide(context);
 
+    // กดย้อนกลับ (ปุ่มลูกศร/ปัดขอบจอ/ปุ่ม back ของ Android) ตอนตะกร้ายังมีของ → ถามก่อนทิ้ง
+    // เดิมหายเงียบ ๆ ทั้งตะกร้า ลูกค้า UAT กดลองแล้วของหายโดยไม่รู้ตัว (DECISIONS #62)
+    return Obx(
+      () => PopScope(
+        canPop: cart.isEmpty,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          final discard = await AppDialogs.confirm(
+            title: 'order_discard_cart_title'.tr,
+            message: 'order_discard_cart_message'.trParams({
+              'count': '${cart.totalQuantity}',
+            }),
+            confirmLabel: 'order_discard_cart_button'.tr,
+            cancelLabel: 'order_keep_cart_button'.tr,
+            destructive: true,
+          );
+          if (discard) {
+            cart.clear();
+            Get.back<void>();
+          }
+        },
+        child: _buildScaffold(context, isWide),
+      ),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, bool isWide) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -44,6 +71,7 @@ class OrderTakingPage extends GetView<MenuBrowseController> {
               () => cart.isEmpty
                   ? const SizedBox.shrink()
                   : IconButton(
+                      tooltip: 'order_open_cart_tooltip'.tr,
                       onPressed: () => _openCartSheet(context),
                       icon: Badge(
                         label: Text('${cart.totalQuantity}'),

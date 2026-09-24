@@ -1,3 +1,4 @@
+import '../../../../core/widgets/language_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -36,6 +37,8 @@ class SelfOrderPage extends GetView<SelfOrderController> {
           );
         }),
         actions: [
+          // ลูกค้าไม่มีหน้าตั้งค่าให้เปลี่ยนภาษา ปุ่มนี้คือทางเดียว (docs/DECISIONS.md #62)
+          const LanguageMenuButton(),
           Obx(() {
             final order = controller.currentOrder.value;
             final count =

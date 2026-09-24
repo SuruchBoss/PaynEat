@@ -100,6 +100,22 @@ class StaffController extends GetxController {
   }
 
   Future<void> updateRole(User user, String role) async {
+    // ลดสิทธิ์ตัวเองพลาดครั้งเดียว = หลุดจากหน้านี้ทันที (backend ก็กันไว้อีกชั้น ดู DECISIONS #62)
+    if (user.id == currentUserId) {
+      AppDialogs.error('staff_cannot_change_own_role'.tr);
+      return;
+    }
+    final confirmed = await AppDialogs.confirm(
+      title: 'staff_change_role_title'.tr,
+      message: 'staff_change_role_confirm'.trParams({
+        'name': user.name,
+        'from': UserRole.label(user.role),
+        'to': UserRole.label(role),
+      }),
+      confirmLabel: 'staff_change_role_button'.tr,
+    );
+    if (!confirmed) return;
+
     final result = await _updateStaff(
       UpdateStaffParams(id: user.id, role: role),
     );
@@ -115,6 +131,20 @@ class StaffController extends GetxController {
   }
 
   Future<void> toggleActive(User user) async {
+    if (user.isActive) {
+      if (user.id == currentUserId) {
+        AppDialogs.error('staff_cannot_deactivate_self'.tr);
+        return;
+      }
+      final confirmed = await AppDialogs.confirm(
+        title: 'staff_deactivate_title'.tr,
+        message: 'staff_deactivate_confirm'.trParams({'name': user.name}),
+        confirmLabel: 'staff_deactivate_action'.tr,
+        destructive: true,
+      );
+      if (!confirmed) return;
+    }
+
     final result = await _updateStaff(
       UpdateStaffParams(id: user.id, isActive: !user.isActive),
     );

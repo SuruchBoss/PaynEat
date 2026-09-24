@@ -144,6 +144,7 @@ class _OptionSelectionSheetState extends State<OptionSelectionSheet> {
                   ),
                 ),
                 IconButton(
+                  tooltip: 'common_close'.tr,
                   onPressed: () => Get.back<void>(),
                   icon: const Icon(Icons.close_rounded),
                 ),

@@ -28,6 +28,7 @@ const Map<String, String> tableTranslationsTh = {
   'table_qr_regenerate_confirm_message':
       'QR เดิมที่พิมพ์/แปะไว้ที่โต๊ะ @name จะใช้สั่งอาหารไม่ได้อีกทันที ต้องพิมพ์ QR ใหม่ไปติดแทน',
   'table_qr_regenerate_success': 'เปลี่ยน QR โต๊ะแล้ว',
+  'table_actions_tooltip': 'สถานะโต๊ะและ QR สั่งอาหาร',
 };
 
 const Map<String, String> tableTranslationsEn = {
@@ -59,6 +60,7 @@ const Map<String, String> tableTranslationsEn = {
   'table_qr_regenerate_confirm_message':
       'The QR code printed at table @name will stop working immediately. Print and place the new one.',
   'table_qr_regenerate_success': 'Table QR regenerated',
+  'table_actions_tooltip': 'Table status & QR ordering',
 };
 
 const Map<String, String> tableTranslationsKo = {
@@ -87,4 +89,5 @@ const Map<String, String> tableTranslationsKo = {
   'table_qr_regenerate_confirm_message':
       '@name 테이블에 붙여 둔 QR 코드가 즉시 사용할 수 없게 됩니다. 새 QR을 출력해 교체해 주세요.',
   'table_qr_regenerate_success': '테이블 QR을 재발급했습니다',
+  'table_actions_tooltip': '테이블 상태 · QR 주문',
 };

@@ -12,6 +12,7 @@ import '../../domain/entities/promotion.dart';
 import '../../domain/usecases/promotion_usecases.dart';
 import '../controllers/promotions_controller.dart';
 import '../../../../core/utils/app_clock.dart';
+import '../../../../core/utils/formatters.dart';
 
 const List<String> _dayLabels = [
   'promotion_day_sun',
@@ -463,6 +464,7 @@ class _TimePickerField extends StatelessWidget {
           suffixIcon: value == null
               ? const Icon(Icons.schedule_rounded, size: 18)
               : IconButton(
+                  tooltip: 'common_clear'.tr,
                   icon: const Icon(Icons.close_rounded, size: 16),
                   onPressed: () => onChanged(null),
                 ),
@@ -502,15 +504,12 @@ class _DatePickerField extends StatelessWidget {
           suffixIcon: value == null
               ? const Icon(Icons.calendar_today_rounded, size: 16)
               : IconButton(
+                  tooltip: 'common_clear'.tr,
                   icon: const Icon(Icons.close_rounded, size: 16),
                   onPressed: () => onChanged(null),
                 ),
         ),
-        child: Text(
-          value == null
-              ? '--'
-              : '${value!.year}-${value!.month.toString().padLeft(2, '0')}-${value!.day.toString().padLeft(2, '0')}',
-        ),
+        child: Text(value == null ? '--' : Formatters.date(value!)),
       ),
     );
   }

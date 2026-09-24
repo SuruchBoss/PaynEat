@@ -55,6 +55,16 @@ export const userService = {
   update(id, payload, actingUser) {
     const target = this.getById(id);
     assertAdminBoundary(actingUser, { targetRole: target.role, newRole: payload.role });
+    // ห้ามลดสิทธิ์/ปิดบัญชีตัวเอง — กดพลาดครั้งเดียวแล้วล็อกตัวเองออกจากหน้าจัดการพนักงานทันที
+    // (เหลือ admin คนเดียวในร้าน = ไม่มีใครเปิดคืนให้ได้) ดู docs/DECISIONS.md #62
+    if (Number(id) === Number(actingUser.id)) {
+      if (payload.role !== undefined && payload.role !== target.role) {
+        throw ApiError.badRequest('ไม่สามารถเปลี่ยนบทบาทของบัญชีตัวเองได้');
+      }
+      if (payload.isActive === false) {
+        throw ApiError.badRequest('ไม่สามารถปิดการใช้งานบัญชีตัวเองได้');
+      }
+    }
 
     const run = getDb().transaction(() => {
       const updated = userRepository.update(id, payload);

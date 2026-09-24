@@ -66,6 +66,22 @@ extension DemoStoreAuth on DemoStore {
     final previousRole = user['role'];
     final previousActive = user['isActive'];
 
+    // mirror ของ user.service.js#update — ห้ามลดสิทธิ์/ปิดบัญชีตัวเอง (DECISIONS #62)
+    if (actorId != null && actorId == id) {
+      if (changes.containsKey('role') && changes['role'] != previousRole) {
+        throw ApiException(
+          message: 'staff_cannot_change_own_role'.tr,
+          statusCode: 400,
+        );
+      }
+      if (changes['isActive'] == false) {
+        throw ApiException(
+          message: 'staff_cannot_deactivate_self'.tr,
+          statusCode: 400,
+        );
+      }
+    }
+
     changes.forEach((key, value) => user[key] = value);
 
     // แก้ role/ปิดการใช้งาน/ตั้งรหัสผ่านใหม่เป็นการกระทำที่เสี่ยง ต้อง log แยกกัน

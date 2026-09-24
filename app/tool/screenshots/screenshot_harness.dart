@@ -9,6 +9,7 @@ import 'package:payneat_pos/app/app.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
 import 'package:payneat_pos/core/demo/demo_names.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
+import 'package:payneat_pos/core/localization/locale_service.dart';
 import 'package:payneat_pos/core/services/session_service.dart';
 import 'package:payneat_pos/core/services/storage_service.dart';
 import 'package:payneat_pos/core/utils/app_clock.dart';
@@ -151,9 +152,9 @@ class ScreenshotHarness {
     if (highContrast) {
       await storage.saveContrast('high');
     }
-    if (locale != null) {
-      await storage.saveLocale(locale.languageCode);
-    }
+    // ไม่ส่งภาษามา = ไทย (ภาพเอกสารชุดหลัก) — ต้องบันทึกเอง เพราะแอปใช้ภาษาของเครื่องเมื่อยังไม่เคย
+    // เลือก และเครื่องทดสอบเป็น en_US (docs/DECISIONS.md #62)
+    await storage.saveLocale((locale ?? LocaleService.thai).languageCode);
     Get.put<StorageService>(storage, permanent: true);
 
     await tester.pumpWidget(const PaynEatApp());

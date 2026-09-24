@@ -182,58 +182,68 @@ class _KitchenHeader extends GetView<KitchenController> {
               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),
             ),
             const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primarySoft,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'kitchen_queue_count'.trParams({
-                  'count': controller.queue.length.toString(),
-                }),
-                style: TextStyle(
-                  fontSize: 12.5,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.brandInk,
-                ),
-              ),
-            ),
-            if (controller.lateCount > 0) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.danger.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.local_fire_department_rounded,
-                      size: 14,
-                      color: AppColors.dangerInk,
+            // ตัวนับคิว + ป้ายเกินเวลาอยู่ใน Wrap — บนมือถือ 360px ฉบับอังกฤษ ("Queue 5" + "3 late")
+            // ยาวเกินจนหัวจอครัวล้นขวา 30px ปุ่มรีเฟรชหลุดจอ — docs/DECISIONS.md #62
+            Expanded(
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 4,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'kitchen_late_count'.trParams({
-                        'count': controller.lateCount.toString(),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'kitchen_queue_count'.trParams({
+                        'count': controller.queue.length.toString(),
                       }),
                       style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.dangerInk,
+                        color: AppColors.brandInk,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  if (controller.lateCount > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.local_fire_department_rounded,
+                            size: 14,
+                            color: AppColors.dangerInk,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'kitchen_late_count'.trParams({
+                              'count': controller.lateCount.toString(),
+                            }),
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.dangerInk,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
               ),
-            ],
-            const Spacer(),
+            ),
             IconButton(
               onPressed: controller.load,
               icon: const Icon(Icons.refresh_rounded),

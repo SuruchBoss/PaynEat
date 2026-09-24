@@ -44,6 +44,12 @@ const Map<String, String> commonTranslationsTh = {
   'common_per_kg': '/กก.',
   'common_unit_kg': 'กก.',
   'common_weight_kg': '@kg กก.',
+  'common_show_password': 'แสดงรหัสผ่าน',
+  'common_hide_password': 'ซ่อนรหัสผ่าน',
+  'common_decrease': 'ลด',
+  'common_increase': 'เพิ่ม',
+  'common_remove': 'นำออก',
+  'common_clear': 'ล้างค่า',
 };
 
 const Map<String, String> commonTranslationsEn = {
@@ -88,6 +94,12 @@ const Map<String, String> commonTranslationsEn = {
   'common_per_kg': '/kg',
   'common_unit_kg': 'kg',
   'common_weight_kg': '@kg kg',
+  'common_show_password': 'Show password',
+  'common_hide_password': 'Hide password',
+  'common_decrease': 'Decrease',
+  'common_increase': 'Increase',
+  'common_remove': 'Remove',
+  'common_clear': 'Clear',
 };
 
 const Map<String, String> commonTranslationsKo = {
@@ -131,4 +143,10 @@ const Map<String, String> commonTranslationsKo = {
   'common_per_kg': '/kg',
   'common_unit_kg': 'kg',
   'common_weight_kg': '@kg kg',
+  'common_show_password': '비밀번호 보기',
+  'common_hide_password': '비밀번호 숨기기',
+  'common_decrease': '줄이기',
+  'common_increase': '늘리기',
+  'common_remove': '빼기',
+  'common_clear': '지우기',
 };

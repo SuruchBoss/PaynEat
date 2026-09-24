@@ -1,3 +1,4 @@
+import '../../../../core/widgets/language_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -143,6 +144,12 @@ class _LoginFormPanel extends GetView<AuthController> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // เลือกภาษาได้ตั้งแต่หน้าแรก ก่อนต้องอ่านอะไร (docs/DECISIONS.md #62)
+                const Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: LanguageMenuButton(),
+                ),
+                const SizedBox(height: 8),
                 if (showCompactBrand) ...[
                   const Center(child: _Logo(size: 56)),
                   const SizedBox(height: 20),
@@ -183,6 +190,9 @@ class _LoginFormPanel extends GetView<AuthController> {
                       labelText: 'auth_password_label'.tr,
                       prefixIcon: const Icon(Icons.lock_outline_rounded),
                       suffixIcon: IconButton(
+                        tooltip: controller.obscurePassword.value
+                            ? 'common_show_password'.tr
+                            : 'common_hide_password'.tr,
                         onPressed: controller.toggleObscure,
                         icon: Icon(
                           controller.obscurePassword.value

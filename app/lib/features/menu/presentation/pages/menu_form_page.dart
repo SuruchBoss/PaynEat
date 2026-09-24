@@ -649,6 +649,7 @@ class _OptionGroupRow extends StatelessWidget {
               ),
               const Spacer(),
               IconButton(
+                tooltip: 'common_remove'.tr,
                 onPressed: onRemove,
                 icon: const Icon(Icons.close_rounded, size: 17),
                 visualDensity: VisualDensity.compact,
@@ -811,6 +812,7 @@ class _OptionGroupDialogState extends State<_OptionGroupDialog> {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'common_add'.tr,
                     onPressed: _addOption,
                     icon: Icon(
                       Icons.add_circle_rounded,
@@ -912,6 +914,7 @@ class _IngredientLinkRow extends StatelessWidget {
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
           ),
           IconButton(
+            tooltip: 'common_remove'.tr,
             onPressed: onRemove,
             icon: const Icon(Icons.close_rounded, size: 17),
             visualDensity: VisualDensity.compact,

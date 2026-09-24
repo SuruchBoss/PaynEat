@@ -126,6 +126,25 @@ test('DELETE /users/:id — แอดมินลบพนักงานคน�
   assert.equal(deleteSelf.status, 400);
 });
 
+test('PATCH /users/:id — แอดมินเปลี่ยนบทบาท/ปิดใช้งานบัญชีตัวเองไม่ได้ แต่แก้ชื่อตัวเองได้', async () => {
+  const admin = await login('admin', 'admin123');
+  const me = await get('/api/v1/auth/me', admin.token);
+  const url = `/api/v1/users/${me.body.data.id}`;
+
+  const demote = await patch(url, admin.token, { role: 'waiter' });
+  assert.equal(demote.status, 400);
+
+  const deactivate = await patch(url, admin.token, { isActive: false });
+  assert.equal(deactivate.status, 400);
+
+  const rename = await patch(url, admin.token, { name: me.body.data.name });
+  assert.equal(rename.status, 200);
+
+  const still = await get('/api/v1/auth/me', admin.token);
+  assert.equal(still.body.data.role, 'admin');
+  assert.equal(still.body.data.isActive, true);
+});
+
 // ป้องกัน privilege escalation — ดูรายงาน security review (Vuln 2/3): manager ห้ามยกระดับ
 // ตัวเอง/คนอื่นเป็น admin และห้ามแตะบัญชี admin เลย (สร้าง/แก้ไข/ตั้งรหัสผ่านใหม่)
 test('POST /users — ผู้จัดการสร้างบัญชี admin ใหม่ไม่ได้ (กัน privilege escalation)', async () => {

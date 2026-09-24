@@ -52,7 +52,7 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_printer_not_configured':
       'ยังไม่ได้ตั้งค่าเครื่องพิมพ์ ไปที่ตั้งค่า > เครื่องพิมพ์ใบเสร็จ',
   'settings_printer_print_failed':
-      'พิมพ์ใบเสร็จไม่สำเร็จ: เชื่อมต่อเครื่องพิมพ์ไม่ได้ (@error)',
+      'พิมพ์ใบเสร็จไม่สำเร็จ: เชื่อมต่อเครื่องพิมพ์ @error ไม่ได้ — ตรวจว่าเปิดเครื่องและอยู่ Wi-Fi เดียวกัน',
   'settings_printer_platform_not_supported':
       'ไม่รองรับการเชื่อมต่อเครื่องพิมพ์บนแพลตฟอร์มนี้',
 
@@ -159,7 +159,7 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_printer_not_configured':
       'The printer is not set up yet. Go to Settings > Receipt Printer.',
   'settings_printer_print_failed':
-      'Print failed: could not connect to the printer (@error)',
+      'Print failed: could not reach the printer at @error — check it is on and on the same Wi-Fi',
   'settings_printer_platform_not_supported':
       'Printer connection is not supported on this platform',
 
@@ -259,7 +259,8 @@ const Map<String, String> settingsTranslationsKo = {
       '웹에서는 영수증 프린터 출력이 아직 지원되지 않습니다. 화면 영수증을 사용해 주세요.',
   'settings_printer_not_configured':
       '프린터가 아직 설정되지 않았습니다. 설정 > 영수증 프린터에서 등록해 주세요.',
-  'settings_printer_print_failed': '출력 실패: 프린터에 연결할 수 없습니다 (@error)',
+  'settings_printer_print_failed':
+      '출력 실패: 프린터(@error)에 연결할 수 없습니다 — 전원과 같은 Wi-Fi인지 확인하세요',
   'settings_printer_platform_not_supported': '이 플랫폼에서는 프린터 연결이 지원되지 않습니다',
   'settings_about_title': '정보',
   'settings_about_app_label': '애플리케이션',
