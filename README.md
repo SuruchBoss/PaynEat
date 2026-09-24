@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-859%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-861%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 859 automated tests.
+control and 861 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -50,7 +50,7 @@ control and 859 automated tests.
   บาร์โค้ดด้วยเครื่องสแกนหรือกล้องมือถือ ขายเชื่อลูกค้าประจำตามวงเงิน ออกใบวางบิล รับชำระหนี้ คิดดอกเบี้ย
   ผิดนัด ออกใบลดหนี้ และส่งเอกสารเป็น PDF ภาษาไทยทางอีเมล — เงินสดที่รับชำระยังกระทบยอดลิ้นชักตอนปิดกะได้ตรง
   (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **ทดสอบอัตโนมัติ 859 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 861 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -200,9 +200,11 @@ cd PaynEat
 ```bash
 cd backend
 npm install
+cp .env.example .env     # ครั้งแรกครั้งเดียว (Windows: copy .env.example .env)
 npm run dev
 ```
 
+`.env` มี `JWT_SECRET` สำหรับรันในเครื่อง — backend จงใจไม่มีค่าเริ่มต้นให้ ไม่ตั้งแล้วไม่ยอม start (ดู `SECURITY.md`)
 ถ้าขึ้นแบบนี้คือสำเร็จ (ฐานข้อมูลและข้อมูลตัวอย่างถูกสร้างให้อัตโนมัติ ไม่ต้องตั้งค่าอะไรเพิ่ม):
 
 ```
@@ -493,7 +495,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 352 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 354 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 459 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 48 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
@@ -507,6 +509,7 @@ cd app && flutter test test_e2e   # 48 เคส — แอปจริงคุ
 
 | อาการ | สาเหตุ | วิธีแก้ |
 |---|---|---|
+| `Error: ต้องตั้งค่า JWT_SECRET ใน environment` | ยังไม่ได้สร้างไฟล์ `.env` | `cp .env.example .env` (Windows: `copy .env.example .env`) แล้ว `npm run dev` ใหม่ |
 | `Error: listen EADDRINUSE :::3000` | มีโปรแกรมอื่นใช้พอร์ต 3000 อยู่ | เปลี่ยนพอร์ต: `PORT=3001 npm run dev` แล้วรันแอปด้วย `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3001` |
 | แอปขึ้น "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้" | backend ยังไม่ได้รัน หรือรันคนละพอร์ต | เปิด http://localhost:3000/health ในเบราว์เซอร์ ถ้าไม่ขึ้นแปลว่า backend ยังไม่ทำงาน |
 | มือถือจริงเชื่อมต่อไม่ได้ | มือถือไม่รู้จัก `localhost` ของคอม | ส่ง IP ของคอมเข้าไป: `--dart-define=API_BASE_URL=http://<IP ของคอม>:3000` และต้องอยู่ WiFi เดียวกัน |
@@ -1028,7 +1031,7 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 352 เคส
+cd backend && npm test      # 354 เคส
 cd app && flutter test      # 459 เคส
 cd app && flutter test test_e2e   # 48 เคส (ต้อง npm ci ใน backend ก่อน)
 ```
@@ -1068,7 +1071,7 @@ backend และโหมดสาธิต: ใบกำกับภาษี�
 เพี้ยน (#45), ลูกค้ากด "ส่งเข้าครัว" แล้วครัวไม่เห็น และลิงก์ QR ที่ถูกตัดท้ายขึ้นหน้า "ไม่มีอินเทอร์เน็ต"
 (#46) — การออกแบบชุดนี้ดู `docs/DECISIONS.md` #47
 
-**Backend (352 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (354 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -1222,7 +1225,9 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 ชำระครบได้ตามสูตรเดิม + audit, ใบเสร็จเดียวตัดหลายบิลได้เฉพาะบิลที่ครบ, ยกเลิกใบเสร็จดึงแต้มคืนแล้วรับชำระใหม่ไม่ได้
 ซ้ำ, ลูกค้าใช้แต้มไปก่อนถูกยกเลิก = ดึงคืนเท่าที่มี ไม่ติดลบ ไม่ได้ซ้ำ, ลดหนี้แล้วคิดจากยอดสุทธิ/ลดหนี้ทั้งบิลไม่ได้แต้ม,
 ดอกเบี้ยค้างยังไม่ครบ-ยกเว้นดอกเบี้ยแล้วได้แต้มโดยไม่นับดอกเบี้ย, บิลแยกจ่ายที่ส่วนขายเชื่อชำระครบก่อนได้แต้มตอนบิลปิด
-(ดู `docs/DECISIONS.md` #59)
+(ดู `docs/DECISIONS.md` #59) — `cors.test.js` (2 เคส) `CORS_ORIGIN=*` แบบที่ `.env.example`/docker-compose ตั้งไว้ต้องตอบ
+`Access-Control-Allow-Origin: *` ให้แอปเว็บที่รันคนละพอร์ตกับ API ล็อกอินได้ (เดิมกลายเป็น `['*']` ที่ไม่ match อะไรเลย
+ดู `docs/DECISIONS.md` #61)
 
 **Flutter (459 เคส)** — แบ่งเป็น 3 ระดับ:
 

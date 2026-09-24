@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseCorsOrigin } from './cors.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -32,12 +33,8 @@ export const env = {
     secret: process.env.JWT_SECRET,
     expiresIn: process.env.JWT_EXPIRES_IN ?? '12h',
   },
-  // ค่าเริ่มต้น (ไม่ตั้ง CORS_ORIGIN) คือ '*' แบบ string ตรงๆ ให้ cors ใช้ wildcard path จริง —
-  // เดิม .split(',') ทำให้ได้ array ['*'] ซึ่ง cors package เทียบแบบ exact-string จึงไม่ match
-  // origin จริงของเบราว์เซอร์เลยสักตัว (ปิดกั้น cross-origin ทั้งหมดโดยไม่ตั้งใจ ดู security review #6)
-  corsOrigin: process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map((item) => item.trim())
-    : '*',
+  // ไม่ตั้งค่า หรือมี '*' = wildcard เป็น string ตรง ๆ (array ['*'] ไม่ match origin ไหนเลย — ดู cors.js)
+  corsOrigin: parseCorsOrigin(process.env.CORS_ORIGIN),
   // ค่าเริ่มต้นของร้าน ใช้ตอนคำนวณบิล (ปรับได้ที่ตาราง settings)
   store: {
     name: process.env.STORE_NAME ?? 'PaynEat Restaurant',

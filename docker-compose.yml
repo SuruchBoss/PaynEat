@@ -7,12 +7,21 @@ services:
       context: ./backend
     container_name: payneat-api
     environment:
-      NODE_ENV: production
+      # ค่าเริ่มต้นคือรันดูในเครื่องด้วยบัญชีเดโม (admin/admin123 ฯลฯ) — production จะไม่ยอม seed บัญชีด้วย
+      # รหัสผ่านเดโมที่เผยแพร่อยู่ (SECURITY.md) เดิมตั้ง production ตายตัวไว้ API จึงไม่ยอมสตาร์ตเลย
+      # deploy จริง: NODE_ENV=production + SEED_*_PASSWORD ครบ 6 ตัว + JWT_SECRET/CORS_ORIGIN ของจริง
+      NODE_ENV: ${NODE_ENV:-development}
       PORT: 3000
       JWT_SECRET: ${JWT_SECRET:-payneat-local-demo-secret}
       CORS_ORIGIN: ${CORS_ORIGIN:-*}
       AUTO_SEED: "true"
       DATABASE_FILE: data/payneat.sqlite
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD:-}
+      SEED_MANAGER_PASSWORD: ${SEED_MANAGER_PASSWORD:-}
+      SEED_WAITER1_PASSWORD: ${SEED_WAITER1_PASSWORD:-}
+      SEED_WAITER2_PASSWORD: ${SEED_WAITER2_PASSWORD:-}
+      SEED_KITCHEN_PASSWORD: ${SEED_KITCHEN_PASSWORD:-}
+      SEED_CASHIER_PASSWORD: ${SEED_CASHIER_PASSWORD:-}
     ports:
       - "3000:3000"
     volumes:

@@ -21,6 +21,8 @@ Thumbs.db
 # Python
 __pycache__/
 *.pyc
+# แพ็กเกจ Python ที่ติดตั้งไว้ใช้ชั่วคราว (เช่นตัวถอดรหัสบาร์โค้ดตอนตรวจภาพ) ไม่ใช่ส่วนของโปรเจกต์
+*.whl
 
 # Video build workspace
 docs/video/.build/
