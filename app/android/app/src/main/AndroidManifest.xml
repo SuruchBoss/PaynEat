@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- แอปคุยกับ backend ของร้าน (REST + socket.io) — manifest ของ debug/profile มีสิทธิ์นี้ให้อยู่แล้ว
+         แต่ release build ไม่มี APK ที่ติดตั้งจริงจะต่อเซิร์ฟเวอร์ไม่ได้เลย สิทธิ์กล้องมากับ mobile_scanner -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="payneat_pos"
+        android:label="PaynEat POS"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

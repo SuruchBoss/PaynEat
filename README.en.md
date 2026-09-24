@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-859%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-861%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 859 automated tests.
+control and 861 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 859 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **859 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **861 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -214,9 +214,12 @@ cd PaynEat
 ```bash
 cd backend
 npm install
+cp .env.example .env     # first time only (Windows: copy .env.example .env)
 npm run dev
 ```
 
+`.env` holds a `JWT_SECRET` for local runs — the backend deliberately has no built-in default and refuses to
+start without one (see `SECURITY.md`).
 Success looks like this (the database and sample data are created automatically — nothing else to configure):
 
 ```
@@ -553,7 +556,7 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 352 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 354 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 459 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
@@ -567,6 +570,7 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
 
 | Symptom | Cause | Fix |
 |---|---|---|
+| `Error: ต้องตั้งค่า JWT_SECRET ใน environment` (JWT_SECRET must be set) | No `.env` file yet | `cp .env.example .env` (Windows: `copy .env.example .env`), then `npm run dev` again |
 | `Error: listen EADDRINUSE :::3000` | Something else is already using port 3000 | Change the port: `PORT=3001 npm run dev`, then run the app with `flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:3001` |
 | App shows "Can't connect to server" | The backend isn't running, or it's on a different port | Open http://localhost:3000/health in a browser — if it doesn't respond, the backend isn't running |
 | Real phone can't connect | The phone doesn't know your computer's `localhost` | Pass your computer's IP: `--dart-define=API_BASE_URL=http://<your computer's IP>:3000`, and make sure it's on the same Wi-Fi |
@@ -1145,7 +1149,7 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 352 cases
+cd backend && npm test      # 354 cases
 cd app && flutter test      # 459 cases
 cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
 ```
@@ -1195,7 +1199,7 @@ backend losing their BOM so Thai text garbled in Excel (#45), and a customer tap
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
 
-**Backend (352 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (354 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1376,7 +1380,9 @@ and paying again doesn't double them, a customer who already spent the points lo
 negative, never doubled), credit notes reduce the points to the net amount / a fully credited bill earns
 nothing, unpaid interest keeps a bill open while waiving it earns the points without counting interest,
 and a split bill whose credit part was paid off first earns when the bill closes (see
-`docs/DECISIONS.md` #59)
+`docs/DECISIONS.md` #59) — `cors.test.js` (2 cases) `CORS_ORIGIN=*`, as `.env.example`/docker-compose set it,
+must answer `Access-Control-Allow-Origin: *` so a web app on a different port from the API can log in (it used
+to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
 
 **Flutter (459 cases)** — split into 3 levels:
 

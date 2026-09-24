@@ -2302,3 +2302,38 @@ Dart ตัด BOM หัวข้อความทิ้งเสมอ** (ย
 `test_e2e/support/backend_process.dart` ยังไม่จัดรูปแบบ พอจัดตามนั้นแล้ว push CI (ล็อก Flutter 3.35.1)
 กลับล้มที่ขั้นตรวจรูปแบบ เพราะตัวจัดรูปแบบสองเวอร์ชันตัดบรรทัดต่างกัน — ไฟล์เดิมถูกต้องตามเวอร์ชันของ CI อยู่แล้ว
 จึงคืนค่าเดิม ถ้าเครื่องที่ตรวจไม่ใช่เวอร์ชันเดียวกับ CI ให้เชื่อ CI เป็นหลักเรื่องรูปแบบโค้ด
+
+## 61. รันจาก clone ใหม่ตาม README ต้องขึ้นจริง — ซ้อมเดโมบนเครื่องเปล่าแล้วเจอ 4 จุดที่รันไม่ขึ้น (2026-09-24)
+
+**โจทย์** — ผู้ดูแลโปรเจกต์จะเปิดระบบตัวจริง (backend + แอป + emulator) ให้บริษัทที่สนใจดู เทสต์ 859 ตัวผ่านหมด
+แต่ไม่มีเทสต์ไหนทำตาม README บนเครื่องเปล่า — ทุกชุดตั้ง env ให้ตัวเอง (เทสต์ backend ตั้ง `JWT_SECRET` เอง, E2E
+เปิด backend เอง, CI build แค่เว็บโหมดสาธิต) จึง clone ใหม่แล้วทำตาม README ทีละบรรทัด
+
+**เจอ (แก้ครบ)**
+
+- **ทางเลือก A ไม่ขึ้นเลย** — `npm install && npm run dev` ล้มที่ `JWT_SECRET` ซึ่งบังคับตั้งตั้งแต่ security
+  review (#20) แต่ README ยังเขียนว่า "ไม่ต้องตั้งค่าอะไรเพิ่ม" → เพิ่มขั้น `cp .env.example .env` + แถวในตาราง
+  แก้ปัญหา (ไม่ใส่ค่าเริ่มต้นกลับเข้าโค้ด — fail-closed เหมือนเดิม)
+- **แอปเว็บล็อกอินไม่ได้เมื่อมี `.env`** — `CORS_ORIGIN=*` ที่ `.env.example` และ docker-compose ตั้งไว้ถูกแยกเป็น
+  array `['*']` ซึ่งแพ็กเกจ cors เทียบแบบ exact-string จึงไม่ตรง origin จริงของเบราว์เซอร์สักตัว (การแก้ใน security
+  review #6 ครอบแค่กรณี "ไม่ตั้งค่า") ทั้ง `flutter run -d chrome` และ Docker (:8080 เรียก :3000) โดนหมด →
+  `config/cors.js` ถือว่ามี `*` = wildcard + `tests/cors.test.js` (ถอยการแก้แล้วเทสต์ล้มจริง)
+- **ทางเลือก B (Docker) API ไม่สตาร์ต** — compose ตั้ง `NODE_ENV=production` ตายตัวคู่กับ `AUTO_SEED=true` แต่ไม่มี
+  `SEED_*_PASSWORD` → seed ปฏิเสธรหัสผ่านเดโมตามที่ตั้งใจไว้ → ค่าเริ่มต้นของ compose เป็น development (รันดูใน
+  เครื่อง) และส่ง `SEED_*` จาก host เข้าไป deploy จริงตั้ง `NODE_ENV=production` ได้โดย guard เดิมยังทำงาน
+  (ค่าว่าง = ยังไม่ได้ตั้ง)
+- **Android** — manifest หลักไม่มีสิทธิ์ `INTERNET` (มีแค่ debug/profile) APK release จึงต่อ backend ไม่ได้เลย และชื่อ
+  แอปบนหน้าจอ launcher เป็น `payneat_pos` → "PaynEat POS" (iOS ด้วย)
+- เก็บกวาด: ลบ Python wheel 1.1 MB ที่หลุดเข้ามาใน `app/` และ ignore `*.whl`, `package-lock.json` ให้ตรงกับ
+  `package.json` (serialport เป็น optional) `npm install` บนเครื่องใหม่จะไม่แก้ไฟล์ใน git อีก
+
+**ตรวจแล้วไม่ต้องแก้** — Android emulator ชี้ `10.0.2.2` ให้เอง, `dart:io` ไม่บังคับนโยบาย cleartext ของ Android
+จึงไม่ต้องเปิด `usesCleartextTraffic`, minSdk ของ Flutter 3.35 (24) ≥ ที่ mobile_scanner ต้องการ (23), สิทธิ์กล้อง
+Android มากับ plugin และ iOS มี `NSCameraUsageDescription` แล้ว, Gradle/AGP/Kotlin ตรงกับ template ของ Flutter 3.35
+
+**ข้อจำกัดของการตรวจรอบนี้** — เครื่องที่ใช้ตรวจโหลด Android SDK ไม่ได้ (network policy) จึง**ยังไม่เคย build APK จริง**
+(CI build แค่เว็บ) และ build image Docker เต็มไม่ได้ (ต้องโหลด Flutter SDK) — API ตรวจด้วย env ชุดเดียวกับ compose,
+เว็บ + API ตัวจริงตรวจด้วย Chromium จริง (ล็อกอิน → แดชบอร์ดขึ้นยอดขายเชื่อที่เพิ่งทำผ่าน API, realtime เชื่อมต่อ)
+
+ผลตรวจ: backend 354 (+2) · Flutter 459 · E2E 48 = **861** ผ่านทั้งหมด
+
