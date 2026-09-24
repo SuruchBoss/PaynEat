@@ -175,9 +175,9 @@ void main() {
         testWidgets('$lang $sizeName ฟอร์มผู้จัดการ', (tester) async {
           await launch(tester, size);
           await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+          // ฟอร์มโต๊ะ/พนักงานเป็นกล่อง dialog ไม่ใช่ route (ค่าคงที่ tableForm/staffForm ไม่ได้ลงทะเบียน
+          // ใน app_pages) — เปิดผ่าน toNamed แล้ว Get.back จะไปปิดหน้าแรกแทน timer ของหน้านั้นเลยค้าง
           for (final (name, route) in [
-            ('form-01-table', AppRoutes.tableForm),
-            ('form-02-staff', AppRoutes.staffForm),
             ('form-03-promotion', AppRoutes.promotionForm),
             ('form-04-ingredient', AppRoutes.ingredientForm),
             ('form-05-menu', AppRoutes.menuForm),
@@ -189,6 +189,10 @@ void main() {
           }
           await open(tester, AppRoutes.shift);
           await shot(tester, sizeName, 'form-06-shift');
+          // timer ของหน้า shift/snackbar ยังค้างตอนจบเทสต์ → ปล่อยเวลาจำลองให้จบเอง (แบบเดียวกับ review2)
+          for (var i = 0; i < 10; i++) {
+            await tester.pump(const Duration(seconds: 1));
+          }
         });
       }
     });
