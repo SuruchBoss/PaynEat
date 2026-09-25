@@ -576,10 +576,33 @@ class ScreenshotHarness {
   }
 
   /// บันทึกภาพหน้าจอ
+  /// flutter_test ปิดการวาดเงา (debugDisableShadows) แล้ววาด elevation เป็นกรอบดำทึบแทน —
+  /// ภาพหน้าจอเลยมีกรอบดำรอบปุ่มลอยทุกรูป ทั้งที่เครื่องจริงไม่มี จึงเปิดเงาจริงเฉพาะจังหวะถ่าย
+  /// แล้วคืนค่าทันที (เทสต์ตรวจว่าตัวแปร debug ถูกคืนก่อน tearDown จะทำงาน) — DECISIONS #64
   static Future<void> capture(WidgetTester tester, String name) async {
-    await expectLater(
-      find.byType(MaterialApp).first,
-      matchesGoldenFile('images/$name.png'),
-    );
+    debugDisableShadows = false;
+    try {
+      _repaintAll(tester);
+      await tester.pump();
+      await expectLater(
+        find.byType(MaterialApp).first,
+        matchesGoldenFile('images/$name.png'),
+      );
+    } finally {
+      debugDisableShadows = true;
+      _repaintAll(tester);
+      await tester.pump();
+    }
+  }
+
+  static void _repaintAll(WidgetTester tester) {
+    void visit(RenderObject node) {
+      node.markNeedsPaint();
+      node.visitChildren(visit);
+    }
+
+    for (final view in tester.binding.renderViews) {
+      visit(view);
+    }
   }
 }

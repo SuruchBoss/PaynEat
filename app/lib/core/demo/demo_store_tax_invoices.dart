@@ -104,7 +104,9 @@ extension DemoStoreTaxInvoices on DemoStore {
       ),
       'vat': order['vat'],
       'total': order['total'],
-      'issuedByName': issuedById == null ? null : _findUser(issuedById)['name'],
+      'issuedByName': issuedById == null
+          ? null
+          : DemoNames.of(_findUser(issuedById)),
       'issuedAt': _now(),
       'isVoid': false,
       'voidedAt': null,
@@ -126,7 +128,7 @@ extension DemoStoreTaxInvoices on DemoStore {
     invoice['voidReason'] = reason;
     invoice['voidedByName'] = voidedById == null
         ? null
-        : _findUser(voidedById)['name'];
+        : DemoNames.of(_findUser(voidedById));
 
     // mirror ของ tax-invoice.service.js#void — ดู docs/tickets/08-audit-log.md
     final order = findOrder(orderId);

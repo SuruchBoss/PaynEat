@@ -14,6 +14,7 @@ import 'package:payneat_pos/features/kitchen/presentation/controllers/kitchen_co
 class _FakeOrderRepository implements OrderRepository {
   Result<List<OrderItem>> nextQueueResult = const Result.success([]);
   Result<Order> nextUpdateItemStatusResult = Result.success(_order());
+  final statusCalls = <String>[];
 
   @override
   Future<Result<List<OrderItem>>> getKitchenQueue({
@@ -25,7 +26,10 @@ class _FakeOrderRepository implements OrderRepository {
     int orderId,
     int itemId,
     String status,
-  ) async => nextUpdateItemStatusResult;
+  ) async {
+    statusCalls.add('$itemId:$status');
+    return nextUpdateItemStatusResult;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -180,6 +184,55 @@ void main() {
         expect(controller.queue.single.status, OrderItemStatus.served);
       },
     );
+
+    // กดผิดในครัวต้องย้อนได้ (DECISIONS #64) — ส่งสถานะเดิมกลับไปหนึ่งขั้น แล้วแถบเลิกทำหายไป
+    test(
+      'advance แล้ว undoLast → ส่งสถานะเดิมกลับไปที่เซิร์ฟเวอร์ และแถบเลิกทำหาย',
+      () async {
+        repository.nextQueueResult = Result.success([
+          _item(7, status: OrderItemStatus.cooking),
+        ]);
+        await controller.load();
+
+        await controller.advance(controller.queue.first);
+        expect(controller.lastChange.value?.from, OrderItemStatus.cooking);
+        expect(controller.lastChange.value?.to, OrderItemStatus.ready);
+
+        await controller.undoLast();
+        expect(repository.statusCalls, ['7:ready', '7:cooking']);
+        expect(controller.lastChange.value, isNull);
+
+        // กดซ้ำไม่มีอะไรให้ย้อนแล้ว
+        await controller.undoLast();
+        expect(repository.statusCalls, hasLength(2));
+      },
+    );
+
+    test(
+      'เสิร์ฟแล้ว (served) ไม่มีแถบเลิกทำ — backend ไม่ยอมย้อนจาก served',
+      () async {
+        repository.nextQueueResult = Result.success([
+          _item(8, status: OrderItemStatus.ready),
+        ]);
+        await controller.load();
+
+        await controller.advance(controller.queue.first);
+
+        expect(controller.lastChange.value, isNull);
+      },
+    );
+
+    testWidgets('แถบเลิกทำหายเองหลังหมดเวลา', (tester) async {
+      repository.nextQueueResult = Result.success([
+        _item(9, status: OrderItemStatus.pending),
+      ]);
+      await controller.load();
+      await controller.advance(controller.queue.first);
+      expect(controller.lastChange.value, isNotNull);
+
+      await tester.pump(KitchenController.undoWindow);
+      expect(controller.lastChange.value, isNull);
+    });
 
     test('onInit แล้ว onClose ต้องไม่โยน exception (unsubscribe/timer ครบ)', () {
       // advance path ที่ล้มเหลวแตะ AppDialogs.error จึงไม่ครอบคลุมในเทสต์ระดับ unit นี้

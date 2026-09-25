@@ -21,10 +21,16 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
   });
 
   @override
-  Future<({List<CategoryModel> categories, List<MenuItemModel> items})> getMenu(
-    String qrToken,
-  ) => _delayed(() {
+  Future<
+    ({
+      List<CategoryModel> categories,
+      List<MenuItemModel> items,
+      int staffOnlyCount,
+    })
+  >
+  getMenu(String qrToken) => _delayed(() {
     _store.resolveTableByQrToken(qrToken);
+    final available = _store.menuList(availableOnly: true);
     return (
       categories: _store
           .categoryList()
@@ -32,12 +38,14 @@ class DemoSelfOrderDataSource implements SelfOrderRemoteDataSource {
           .toList(growable: false),
       // สินค้าขายตามน้ำหนักต้องให้พนักงานชั่ง ลูกค้าสั่งเองไม่ได้ — mirror ของ
       // public-order.service.js#getMenu (docs/tickets/18-sell-by-weight.md)
-      items: _store
-          .menuList(availableOnly: true)
+      items: available
           .where((item) => item['soldByWeight'] != true)
           .map(_store.presentMenuItem)
           .map(MenuItemModel.fromJson)
           .toList(growable: false),
+      staffOnlyCount: available
+          .where((item) => item['soldByWeight'] == true)
+          .length,
     );
   });
 

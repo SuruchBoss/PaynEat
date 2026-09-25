@@ -13,8 +13,13 @@ import '../errors/exceptions.dart';
 /// - แกะ envelope `{ success, data, meta }` ของ backend ให้เหลือเฉพาะที่ใช้จริง
 /// - แปลง error ทุกแบบให้เป็น [ApiException] / [NetworkException] รูปแบบเดียว
 class ApiClient {
-  ApiClient({Dio? dio, this.tokenProvider, this.onUnauthorized})
-    : _dio = dio ?? Dio() {
+  ApiClient({
+    Dio? dio,
+    this.tokenProvider,
+    this.onUnauthorized,
+    String? Function()? languageProvider,
+  }) : _dio = dio ?? Dio(),
+       languageProvider = languageProvider ?? _currentLanguage {
     _dio.options
       ..baseUrl = AppConfig.apiBaseUrl
       ..connectTimeout = AppConfig.connectTimeout
@@ -33,6 +38,12 @@ class ApiClient {
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
             }
+          }
+          // backend แปลข้อความ error ตามภาษานี้ (ไม่ส่ง = ไทย) — อ่านทุก request
+          // เพราะผู้ใช้สลับภาษาได้กลางกะโดยไม่ต้องล็อกอินใหม่ (DECISIONS #64)
+          final language = this.languageProvider();
+          if (language != null && language.isNotEmpty) {
+            options.headers['Accept-Language'] = language;
           }
           return handler.next(options);
         },
@@ -53,6 +64,11 @@ class ApiClient {
 
   /// ถูกเรียกเมื่อเจอ 401 เพื่อให้แอปเด้งกลับหน้า login
   final void Function()? onUnauthorized;
+
+  /// ภาษาที่ส่งไปเป็น `Accept-Language` — ค่าเริ่มต้นคือภาษาที่แอปแสดงอยู่ตอนนี้
+  final String? Function() languageProvider;
+
+  static String? _currentLanguage() => Get.locale?.languageCode;
 
   Future<ApiResult> get(String path, {Map<String, dynamic>? query}) =>
       _request(() => _dio.get(path, queryParameters: _clean(query)));

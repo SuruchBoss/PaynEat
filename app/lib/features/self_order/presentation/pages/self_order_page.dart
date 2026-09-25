@@ -326,6 +326,31 @@ class _TableHeader extends GetView<SelfOrderController> {
                 ),
               ],
             ),
+            // เนื้อสดชั่งน้ำหนักถูกซ่อนจากเมนูลูกค้า (ราคาขึ้นกับน้ำหนักจริง) — บอกไว้ให้รู้ว่า
+            // ไม่ได้หมด แค่ต้องสั่งกับพนักงาน (DECISIONS #64)
+            if (controller.staffOnlyCount.value > 0) ...[
+              const SizedBox(height: 4),
+              Row(
+                key: const ValueKey('self-order-staff-only'),
+                children: [
+                  Icon(
+                    Icons.scale_rounded,
+                    size: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 5),
+                  Expanded(
+                    child: Text(
+                      'self_order_staff_only_hint'.tr,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ],
         ),
       );

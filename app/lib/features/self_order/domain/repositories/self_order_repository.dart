@@ -12,9 +12,12 @@ abstract class SelfOrderRepository {
     String qrToken,
   );
 
-  Future<Result<({List<Category> categories, List<MenuItem> items})>> getMenu(
-    String qrToken,
-  );
+  Future<
+    Result<
+      ({List<Category> categories, List<MenuItem> items, int staffOnlyCount})
+    >
+  >
+  getMenu(String qrToken);
 
   /// เพิ่มรายการเข้าออเดอร์ปัจจุบันของโต๊ะนี้ (เปิดออเดอร์ใหม่ให้อัตโนมัติถ้ายังไม่มี) — คืนพรีวิว
   /// ออเดอร์ล่าสุดหลังเพิ่มแล้ว

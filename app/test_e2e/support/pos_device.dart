@@ -51,12 +51,15 @@ import 'package:payneat_pos/features/tax_invoice/data/repositories/tax_invoice_r
 /// ถูกเก็บลง storage โดย `AuthRepositoryImpl` แล้ว `ApiClient` หยิบไปแนบเองทุก request ตามกลไก
 /// เดียวกับของจริง ไม่มีการยัด header เองในเทสต์
 class PosDevice {
-  PosDevice(String apiBaseUrl) {
+  /// [language] = ภาษาที่เครื่องนี้แสดงอยู่ (ส่งเป็น Accept-Language) — ไม่ระบุ = ไม่ส่ง
+  /// ได้ข้อความไทยเหมือนเดิม เทสต์เดิมที่เทียบข้อความไทยจึงไม่ต้องแก้
+  PosDevice(String apiBaseUrl, {String? language}) {
     final dio = Dio();
     client = ApiClient(
       dio: dio,
       tokenProvider: () => storage.token,
       onUnauthorized: () => unauthorizedCount++,
+      languageProvider: () => language,
     );
     // ApiClient ตั้ง baseUrl จาก AppConfig (compile-time) ในคอนสตรักเตอร์ แต่พอร์ตของ backend
     // ในเทสต์สุ่มตอนรัน จึงทับหลังสร้างแทน — ถือ Dio ตัวเดียวกันอยู่ จึงมีผลกับทุก request

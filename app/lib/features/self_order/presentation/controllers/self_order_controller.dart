@@ -40,6 +40,10 @@ class SelfOrderController extends GetxController {
   final Rxn<Order> currentOrder = Rxn<Order>();
   final RxList<Category> categories = <Category>[].obs;
   final RxList<MenuItem> items = <MenuItem>[].obs;
+
+  /// เมนูที่มีขายแต่ลูกค้าสั่งเองไม่ได้ (ขายตามน้ำหนัก ต้องให้พนักงานชั่ง) — เดิมหายไปจากเมนูเฉย ๆ
+  /// ลูกค้าที่เห็นเนื้อสดในตู้แต่หาในเมนูไม่เจอไม่รู้ว่าต้องทำยังไง (DECISIONS #64)
+  final RxInt staffOnlyCount = 0.obs;
   final RxnInt selectedCategoryId = RxnInt();
 
   final RxList<CartLine> cart = <CartLine>[].obs;
@@ -98,6 +102,7 @@ class SelfOrderController extends GetxController {
       onSuccess: (data) {
         categories.assignAll(data.categories);
         items.assignAll(data.items);
+        staffOnlyCount.value = data.staffOnlyCount;
       },
       onFailure: (menuFailure) => errorMessage.value = menuFailure.message,
     );

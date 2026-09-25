@@ -69,7 +69,7 @@ extension DemoStoreRefunds on DemoStore {
       'amount': amount,
       'reason': reason,
       'refundedBy': refundedById,
-      'refundedByName': _findUser(refundedById)['name'],
+      'refundedByName': DemoNames.of(_findUser(refundedById)),
       'createdAt': _now(),
       'creditNoteId': null,
       'creditNoteNo': null,

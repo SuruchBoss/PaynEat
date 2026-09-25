@@ -261,11 +261,14 @@ extension DemoStoreOrderItems on DemoStore {
         OrderItemStatus.ready,
         OrderItemStatus.cancelled,
       ],
+      // ย้อนได้หนึ่งขั้นสำหรับกดผิดในจอครัว — mirror ของ ITEM_TRANSITIONS ใน backend (#64)
       OrderItemStatus.cooking: [
+        OrderItemStatus.pending,
         OrderItemStatus.ready,
         OrderItemStatus.cancelled,
       ],
       OrderItemStatus.ready: [
+        OrderItemStatus.cooking,
         OrderItemStatus.served,
         OrderItemStatus.cancelled,
       ],

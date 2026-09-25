@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/demo/demo_names.dart';
 import 'package:payneat_pos/core/demo/demo_seed.dart';
@@ -12,7 +14,7 @@ import 'package:payneat_pos/core/utils/formatters.dart';
 /// ถ้ามีคนเพิ่มคำแปลเกาหลีที่ใช้ตัวอักษรนอก subset ตัวนั้นจะกลายเป็นกล่องสี่เหลี่ยม
 /// บนหน้าจอจริงโดยไม่มีอะไรเตือน — เทสต์นี้อ่าน cmap ของไฟล์ฟอนต์จริงมาเทียบ
 void main() {
-  test('ทุกตัวอักษรภาษาเกาหลีที่แอปแสดงต้องมี glyph อยู่ในฟอนต์ที่ฝังไว้', () {
+  test('ทุกตัวอักษรภาษาเกาหลีที่แอปแสดงต้องมี glyph อยู่ในฟอนต์ที่ฝังไว้', () async {
     final translations = AppTranslations().keys['ko_KR'];
     expect(translations, isNotNull, reason: 'ยังไม่ได้ลงทะเบียน ko_KR');
 
@@ -77,6 +79,21 @@ void main() {
       used.addAll(DemoNames.of(menu, lang: 'ko', key: 'description').runes);
     }
 
+    // ข้อความมาตรฐานของ Material (ปฏิทิน/นาฬิกา/ปุ่มยกเลิก-ตกลง/คัดลอก-วาง) มาจาก
+    // flutter_localizations ตั้งแต่ DECISIONS #64 — วาดด้วยฟอนต์เดียวกัน จึงต้องอยู่ใน subset ด้วย
+    used.addAll(await _materialKoreanRunes());
+
+    // ข้อความ error ภาษาเกาหลีจาก backend (ตอนต่อ backend จริง) ก็วาดด้วยฟอนต์นี้ (#64)
+    // อ่านจากไฟล์แคตตาล็อกฝั่ง backend ตรง ๆ — เพิ่มข้อความใหม่ที่นั่นแล้วลืม subset จะล้มที่นี่
+    final catalogue = File(
+      '../backend/src/i18n/errorMessages.js',
+    ).readAsStringSync();
+    for (final m in RegExp(
+      r'''ko:\s*(?:'((?:\\.|[^'\\])*)'|"((?:\\.|[^"\\])*)")''',
+    ).allMatches(catalogue)) {
+      used.addAll((m.group(1) ?? m.group(2)!).runes);
+    }
+
     final covered = _cmapOf('assets/fonts/NotoSansKR-400.ttf')
       ..addAll(_cmapOf('assets/fonts/NotoSansThai-400.ttf'));
 
@@ -95,6 +112,80 @@ void main() {
           'ต้อง subset ฟอนต์ใหม่ (ดู docs/DECISIONS.md)',
     );
   });
+}
+
+/// ตัวอักษรทุกตัวในข้อความ Material ภาษาเกาหลีที่แอปมีโอกาสแสดง — กล่องเลือกวัน/ช่วงวัน/เวลา
+/// (ใช้ในโปรโมชัน รายงาน ประวัติการทำรายการ), ปุ่มมาตรฐานของ dialog, เมนูคัดลอก-วางของช่องกรอก
+Future<Set<int>> _materialKoreanRunes() async {
+  final l = await GlobalMaterialLocalizations.delegate.load(const Locale('ko'));
+  final texts = <String>[
+    l.cancelButtonLabel,
+    l.okButtonLabel,
+    l.closeButtonLabel,
+    l.continueButtonLabel,
+    l.saveButtonLabel,
+    l.backButtonTooltip,
+    l.closeButtonTooltip,
+    l.deleteButtonTooltip,
+    l.moreButtonTooltip,
+    l.showMenuTooltip,
+    l.copyButtonLabel,
+    l.cutButtonLabel,
+    l.pasteButtonLabel,
+    l.selectAllButtonLabel,
+    l.lookUpButtonLabel,
+    l.searchWebButtonLabel,
+    l.shareButtonLabel,
+    l.searchFieldLabel,
+    l.modalBarrierDismissLabel,
+    l.dialogLabel,
+    l.alertDialogLabel,
+    l.datePickerHelpText,
+    l.dateRangePickerHelpText,
+    l.dateHelpText,
+    l.dateInputLabel,
+    l.dateRangeStartLabel,
+    l.dateRangeEndLabel,
+    l.dateOutOfRangeLabel,
+    l.invalidDateFormatLabel,
+    l.invalidDateRangeLabel,
+    l.unspecifiedDate,
+    l.unspecifiedDateRange,
+    l.calendarModeButtonLabel,
+    l.inputDateModeButtonLabel,
+    l.previousMonthTooltip,
+    l.nextMonthTooltip,
+    l.selectYearSemanticsLabel,
+    l.currentDateLabel,
+    l.timePickerDialHelpText,
+    l.timePickerInputHelpText,
+    l.timePickerHourLabel,
+    l.timePickerMinuteLabel,
+    l.timePickerHourModeAnnouncement,
+    l.timePickerMinuteModeAnnouncement,
+    l.dialModeButtonLabel,
+    l.inputTimeModeButtonLabel,
+    l.invalidTimeLabel,
+    l.anteMeridiemAbbreviation,
+    l.postMeridiemAbbreviation,
+    l.refreshIndicatorSemanticLabel,
+    l.drawerLabel,
+    l.popupMenuLabel,
+    l.menuDismissLabel,
+    l.clearButtonTooltip,
+    l.selectedDateLabel,
+    ...l.narrowWeekdays,
+  ];
+  for (var month = 1; month <= 12; month++) {
+    final date = DateTime(2026, month, 28);
+    texts
+      ..add(l.formatMonthYear(date))
+      ..add(l.formatMediumDate(date))
+      ..add(l.formatFullDate(date))
+      ..add(l.formatShortDate(date))
+      ..add(l.formatShortMonthDay(date));
+  }
+  return {for (final text in texts) ...text.runes};
 }
 
 /// อ่านตาราง cmap ของไฟล์ TrueType ตรง ๆ — คืนชุด code point ที่ฟอนต์รองรับ

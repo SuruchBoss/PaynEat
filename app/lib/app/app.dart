@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 
 import '../core/demo/demo_names.dart';
@@ -55,6 +56,13 @@ class PaynEatApp extends StatelessWidget {
       translations: AppTranslations(),
       locale: locale,
       fallbackLocale: AppTranslations.fallbackLocale,
+      // ไม่มีสามบรรทัดนี้ ปฏิทินเลือกวัน/ปุ่มคัดลอก-วาง/tooltip ย้อนกลับเป็นภาษาอังกฤษทุกภาษา
+      supportedLocales: AppTranslations.supportedLocales,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       // ล็อกขนาดตัวอักษรไม่ให้ใหญ่เกินจนผังโต๊ะเพี้ยนบนแท็บเล็ตร้าน
       builder: (context, child) => MediaQuery.withClampedTextScaling(
         minScaleFactor: 0.9,

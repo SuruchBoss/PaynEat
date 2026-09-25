@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/demo/demo_data_sources.dart';
+import 'package:payneat_pos/core/demo/demo_names.dart';
 import 'package:payneat_pos/core/demo/demo_store.dart';
 import 'package:payneat_pos/core/errors/exceptions.dart';
 import 'package:payneat_pos/core/utils/app_clock.dart';
@@ -1020,6 +1021,33 @@ void main() {
         final before = store.auditLogList(entityId: userId).rows.length;
         store.updateStaff(userId, {'name': 'ชื่อใหม่เฉยๆ'}, actorId: 1);
         expect(store.auditLogList(entityId: userId).rows, hasLength(before));
+      },
+    );
+
+    // หน้าจัดการพนักงานภาษาเกาหลีเคยเป็นชื่อไทยทั้งหน้า ทั้งที่ seed มี nameKo อยู่แล้ว (#64)
+    test(
+      'staff ส่งชื่อตามภาษาที่แสดง และแก้ชื่อเองแล้วได้ชื่อที่พิมพ์ทุกภาษา',
+      () {
+        addTearDown(() => DemoNames.language = 'th');
+        DemoNames.language = 'ko';
+        final hasThai = RegExp(r'[\u0E00-\u0E7F]');
+        final names = store.staff().map((u) => u['name'] as String).toList();
+        expect(
+          names.where(hasThai.hasMatch),
+          isEmpty,
+          reason: names.join(', '),
+        );
+
+        final manager = store.staff().firstWhere(
+          (u) => u['username'] == 'manager',
+        );
+        store.updateStaff(manager['id'] as int, {'name': '김매니저'}, actorId: 1);
+        DemoNames.language = 'th';
+        expect(
+          store.staff().firstWhere((u) => u['username'] == 'manager')['name'],
+          '김매니저',
+          reason: 'ชื่อที่ร้านพิมพ์เองต้องไม่ถูกคำแปลเก่าใน seed ทับ',
+        );
       },
     );
 

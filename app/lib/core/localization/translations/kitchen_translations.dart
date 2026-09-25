@@ -12,6 +12,8 @@ const Map<String, String> kitchenTranslationsTh = {
   'kitchen_column_count_label': '@title (@count)',
   'kitchen_column_empty': 'ไม่มีรายการ@title',
   'kitchen_table_label': 'โต๊ะ @table',
+  'kitchen_undo_message': '@item → @status',
+  'kitchen_undo_button': 'เลิกทำ',
 };
 
 const Map<String, String> kitchenTranslationsEn = {
@@ -27,6 +29,8 @@ const Map<String, String> kitchenTranslationsEn = {
   'kitchen_column_count_label': '@title (@count)',
   'kitchen_column_empty': 'No @title items',
   'kitchen_table_label': 'Table @table',
+  'kitchen_undo_message': '@item → @status',
+  'kitchen_undo_button': 'Undo',
 };
 
 const Map<String, String> kitchenTranslationsKo = {
@@ -41,4 +45,6 @@ const Map<String, String> kitchenTranslationsKo = {
   'kitchen_column_count_label': '@title (@count)',
   'kitchen_column_empty': '@title 항목이 없습니다',
   'kitchen_table_label': '테이블 @table',
+  'kitchen_undo_message': '@item → @status',
+  'kitchen_undo_button': '되돌리기',
 };

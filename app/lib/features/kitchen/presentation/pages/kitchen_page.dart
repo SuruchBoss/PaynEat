@@ -114,6 +114,7 @@ class KitchenPage extends GetView<KitchenController> {
             );
           }),
         ),
+        const _UndoBar(),
       ],
     );
   }
@@ -350,5 +351,63 @@ class _TicketList extends GetView<KitchenController> {
         );
       },
     );
+  }
+}
+
+/// แถบ "เลิกทำ" หลังกดเดินสถานะ — กดผิด (เช่น "ทำเสร็จแล้ว" ทั้งที่ยังไม่เสร็จ) ย้อนได้ในไม่กี่วินาที
+/// โดยไม่ต้องตามผู้จัดการ (DECISIONS #64) อยู่ล่างจอ ไม่บังตั๋ว ปุ่มใหญ่พอกดด้วยมือที่เปียก
+class _UndoBar extends GetView<KitchenController> {
+  const _UndoBar();
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final change = controller.lastChange.value;
+      if (change == null) return const SizedBox.shrink();
+      return Material(
+        key: const ValueKey('kitchen-undo-bar'),
+        color: AppColors.textPrimary,
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 6, 8, 6),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline_rounded,
+                  color: AppColors.surface,
+                  size: 20,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'kitchen_undo_message'.trParams({
+                      'item': change.item.name,
+                      'status': OrderItemStatus.label(change.to),
+                    }),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.surface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  key: const ValueKey('kitchen-undo'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.surface,
+                    minimumSize: const Size(0, 48),
+                  ),
+                  onPressed: controller.undoLast,
+                  icon: const Icon(Icons.undo_rounded),
+                  label: Text('kitchen_undo_button'.tr),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
   }
 }

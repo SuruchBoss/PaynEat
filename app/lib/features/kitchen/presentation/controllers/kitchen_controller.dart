@@ -40,8 +40,16 @@ class KitchenController extends GetxController {
   /// นาทีที่ถือว่า "ช้า" แล้วต้องเน้นสีให้ครัวเห็น
   static const int lateThresholdMinutes = 15;
 
+  /// การเดินสถานะล่าสุดที่ยังย้อนได้ — จอครัวโชว์แถบ "เลิกทำ" จากค่านี้ (DECISIONS #64)
+  /// เดิมกดผิด (เช่น "ทำเสร็จแล้ว" ทั้งที่ยังไม่เสร็จ) ต้องเดินหน้าต่อหรือตามผู้จัดการมายกเลิก
+  final Rxn<KitchenStatusChange> lastChange = Rxn<KitchenStatusChange>();
+
+  /// แถบเลิกทำค้างให้กดได้นานเท่านี้ พอให้คนเห็นว่ากดผิด แต่ไม่ค้างจนบังตั๋วถัดไป
+  static const undoWindow = Duration(seconds: 8);
+
   final List<VoidCallback> _unsubscribers = [];
   Timer? _elapsedTimer;
+  Timer? _undoTimer;
 
   @override
   void onInit() {
@@ -66,6 +74,7 @@ class KitchenController extends GetxController {
   @override
   void onClose() {
     _elapsedTimer?.cancel();
+    _undoTimer?.cancel();
     _session.socket.connected.removeListener(_syncConnectionState);
     for (final unsubscribe in _unsubscribers) {
       unsubscribe();
@@ -134,12 +143,48 @@ class KitchenController extends GetxController {
       onSuccess: (_) {
         if (next == OrderItemStatus.served && index >= 0) {
           queue.removeAt(index);
+          _clearUndo();
         } else {
+          // served ย้อนไม่ได้ (backend ไม่ยอม) — เสนอเลิกทำเฉพาะขั้นในครัว
+          _offerUndo(
+            KitchenStatusChange(item: item, from: item.status, to: next),
+          );
           load(showLoader: false);
         }
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
+  }
+
+  /// ย้อนการเดินสถานะล่าสุดกลับหนึ่งขั้น
+  Future<void> undoLast() async {
+    final change = lastChange.value;
+    if (change == null) return;
+    _clearUndo();
+
+    final result = await _updateItemStatus(
+      UpdateItemStatusParams(
+        orderId: change.item.orderId,
+        itemId: change.item.id,
+        status: change.from,
+      ),
+    );
+    result.fold(
+      onSuccess: (_) => load(showLoader: false),
+      onFailure: (failure) => AppDialogs.error(failure.message),
+    );
+  }
+
+  void _offerUndo(KitchenStatusChange change) {
+    _undoTimer?.cancel();
+    lastChange.value = change;
+    _undoTimer = Timer(undoWindow, _clearUndo);
+  }
+
+  void _clearUndo() {
+    _undoTimer?.cancel();
+    _undoTimer = null;
+    lastChange.value = null;
   }
 
   void _listenToRealtimeUpdates() {
@@ -152,4 +197,18 @@ class KitchenController extends GetxController {
       _unsubscribers.add(socket.on(event, (_) => load(showLoader: false)));
     }
   }
+}
+
+/// การเดินสถานะหนึ่งครั้งในจอครัว — เก็บไว้ให้กด "เลิกทำ" ย้อนกลับได้
+@immutable
+class KitchenStatusChange {
+  const KitchenStatusChange({
+    required this.item,
+    required this.from,
+    required this.to,
+  });
+
+  final OrderItem item;
+  final String from;
+  final String to;
 }

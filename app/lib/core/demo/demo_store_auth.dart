@@ -13,9 +13,11 @@ extension DemoStoreAuth on DemoStore {
     return {'token': 'demo-token-${user['id']}', 'user': _publicUser(user)};
   }
 
+  // ชื่อพนักงานตัวอย่างมี nameEn/nameKo ใน seed อยู่แล้วแต่เดิมส่งแต่ชื่อไทย หน้าจัดการพนักงาน
+  // ภาษาเกาหลีจึงเป็นชื่อไทยทั้งหน้า (#64) — บัญชีที่ร้านสร้างเองไม่มีคำแปล ได้ชื่อตามที่พิมพ์
   Map<String, dynamic> _publicUser(Map<String, dynamic> user) => {
     'id': user['id'],
-    'name': user['name'],
+    'name': DemoNames.of(user),
     'username': user['username'],
     'role': user['role'],
     'isActive': user['isActive'],
@@ -83,6 +85,12 @@ extension DemoStoreAuth on DemoStore {
     }
 
     changes.forEach((key, value) => user[key] = value);
+    // แก้ชื่อเอง = ชื่อที่พิมพ์คือชื่อจริงทุกภาษา ทิ้งคำแปลของ seed ไม่งั้นหน้าจอภาษาอื่นยังโชว์ชื่อเก่า
+    if (changes.containsKey('name')) {
+      user
+        ..remove('nameEn')
+        ..remove('nameKo');
+    }
 
     // แก้ role/ปิดการใช้งาน/ตั้งรหัสผ่านใหม่เป็นการกระทำที่เสี่ยง ต้อง log แยกกัน
     // (แก้ชื่อเฉยๆ ไม่ถือว่าเสี่ยง ไม่ต้อง log) — mirror ของ user.service.js#update

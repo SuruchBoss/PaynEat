@@ -70,4 +70,41 @@ void main() {
       expect(text, isEmpty);
     });
   });
+
+  // backend แปลข้อความ error ตาม Accept-Language (DECISIONS #64) — ภาษาอ่านใหม่ทุก request
+  // ไม่ใช่จำไว้ตอนสร้าง client เพราะผู้ใช้สลับภาษากลางกะได้โดยไม่ล็อกอินใหม่
+  test(
+    'ทุก request แนบ Accept-Language ตามภาษาที่แอปแสดงอยู่ตอนนั้น',
+    () async {
+      final adapter = _HeaderRecordingAdapter();
+      final dio = Dio()..httpClientAdapter = adapter;
+      var language = 'ko';
+      final client = ApiClient(dio: dio, languageProvider: () => language);
+      dio.interceptors.removeWhere((i) => i is LogInterceptor);
+
+      await client.getText('/a');
+      language = 'en';
+      await client.getText('/b');
+
+      expect(adapter.languages, ['ko', 'en']);
+    },
+  );
+}
+
+/// จดค่า Accept-Language ที่ออกจากเครื่องจริง ๆ (หลังผ่าน interceptor ทุกตัวแล้ว)
+class _HeaderRecordingAdapter implements HttpClientAdapter {
+  final languages = <Object?>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    languages.add(options.headers['Accept-Language']);
+    return ResponseBody.fromBytes(utf8.encode('ok'), 200);
+  }
+
+  @override
+  void close({bool force = false}) {}
 }

@@ -16,8 +16,12 @@ import 'package:payneat_pos/features/self_order/presentation/controllers/self_or
 class _FakeSelfOrderRepository implements SelfOrderRepository {
   Result<({SelfOrderTable table, Order? order})> nextGetTableResult =
       Result.success((table: _table(), order: null));
-  Result<({List<Category> categories, List<MenuItem> items})>
-  nextGetMenuResult = Result.success((categories: const [], items: const []));
+  Result<({List<Category> categories, List<MenuItem> items, int staffOnlyCount})>
+  nextGetMenuResult = Result.success((
+    categories: const [],
+    items: const [],
+    staffOnlyCount: 0,
+  ));
   Result<Order> nextAddItemsResult = Result.success(_order());
 
   @override
@@ -26,7 +30,7 @@ class _FakeSelfOrderRepository implements SelfOrderRepository {
   ) async => nextGetTableResult;
 
   @override
-  Future<Result<({List<Category> categories, List<MenuItem> items})>> getMenu(
+  Future<Result<({List<Category> categories, List<MenuItem> items, int staffOnlyCount})>> getMenu(
     String qrToken,
   ) async => nextGetMenuResult;
 
@@ -104,6 +108,7 @@ void main() {
       repository.nextGetMenuResult = Result.success((
         categories: [const Category(id: 1, name: 'อาหารจานเดียว')],
         items: [_menuItem(1), _menuItem(2, categoryId: 2)],
+        staffOnlyCount: 3,
       ));
 
       _setRouteQrToken('demo-table-9');
@@ -115,6 +120,8 @@ void main() {
       expect(controller.currentOrder.value?.id, 5);
       expect(controller.items.length, 2);
       expect(controller.categories.length, 1);
+      // เมนูชั่งน้ำหนักที่ซ่อนไว้ — หน้า QR ใช้ค่านี้บอกลูกค้าว่าต้องสั่งกับพนักงาน (#64)
+      expect(controller.staffOnlyCount.value, 3);
       expect(controller.errorMessage.value, isNull);
       expect(controller.isLoading.value, isFalse);
     });
@@ -205,6 +212,7 @@ void main() {
           _menuItem(2, categoryId: 2),
           _menuItem(3, categoryId: 1),
         ],
+        staffOnlyCount: 0,
       ));
       _setRouteQrToken('t');
       controller.onInit();

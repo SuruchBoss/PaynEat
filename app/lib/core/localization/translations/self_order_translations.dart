@@ -18,6 +18,7 @@ const Map<String, String> selfOrderTranslationsTh = {
   // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
   'self_order_error_weighed_item':
       '"@name" ขายตามน้ำหนัก ต้องให้พนักงานชั่งให้ กรุณาเรียกพนักงาน',
+  'self_order_staff_only_hint': 'เนื้อสดชั่งกิโล สั่งกับพนักงานได้เลย',
 };
 
 const Map<String, String> selfOrderTranslationsEn = {
@@ -40,6 +41,7 @@ const Map<String, String> selfOrderTranslationsEn = {
 
   'self_order_error_weighed_item':
       '"@name" is sold by weight and must be weighed by staff — please call a staff member',
+  'self_order_staff_only_hint': 'Meat sold by weight — order it from staff',
 };
 
 const Map<String, String> selfOrderTranslationsKo = {
@@ -59,4 +61,5 @@ const Map<String, String> selfOrderTranslationsKo = {
 
   'self_order_error_weighed_item':
       '"@name" 은(는) 무게 단위 상품이라 직원이 계량해야 합니다 — 직원을 불러 주세요',
+  'self_order_staff_only_hint': '무게로 파는 정육은 직원에게 주문해 주세요',
 };

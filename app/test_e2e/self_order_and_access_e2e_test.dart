@@ -282,6 +282,25 @@ void main() {
       expect(phone.storage.token, isNull);
     });
 
+    // แอปส่งภาษาที่ผู้ใช้เลือกไปกับทุก request แล้ว backend แปลข้อความ error ให้ (DECISIONS #64)
+    // — เดิมพนักงานเกาหลีที่ต่อ backend จริงเห็นข้อความปฏิเสธเป็นภาษาไทยทุกครั้ง
+    test(
+      'เครื่องที่ตั้งเป็นภาษาเกาหลี/อังกฤษได้ข้อความ error ภาษานั้นจาก backend จริง',
+      () async {
+        for (final (language, expected) in [
+          ('ko', '아이디 또는 비밀번호가 올바르지 않습니다'),
+          ('en', 'Incorrect username or password'),
+        ]) {
+          final phone = PosDevice(backend.apiBaseUrl, language: language);
+          final failure = expectFailure(
+            await phone.auth.login(username: 'cashier', password: 'ผิดแน่นอน'),
+            'รหัสผิด ($language)',
+          );
+          expect(failure.message, expected);
+        }
+      },
+    );
+
     test(
       'พนักงานหลายสาขาต้องเลือกสาขาก่อน และ pendingToken ไม่ถูกเก็บเป็น session',
       () async {

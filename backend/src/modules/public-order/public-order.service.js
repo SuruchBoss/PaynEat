@@ -82,7 +82,10 @@ export const publicOrderService = {
     const orderable = items
       .filter((item) => !item.soldByWeight)
       .map(({ barcode: _barcode, scalePlu: _scalePlu, ...item }) => item);
-    return { categories, items: orderable };
+    // บอกจำนวนที่ซ่อนไว้ด้วย หน้า QR จะได้บอกลูกค้าว่ามีของที่ต้องสั่งกับพนักงาน แทนที่จะหายเงียบ
+    // (DECISIONS #64) — ส่งแค่จำนวน ไม่ส่งชื่อ/ราคา เพราะราคาขึ้นกับน้ำหนักที่ชั่งจริง
+    const staffOnlyCount = items.length - orderable.length;
+    return { categories, items: orderable, staffOnlyCount };
   },
 
   /**

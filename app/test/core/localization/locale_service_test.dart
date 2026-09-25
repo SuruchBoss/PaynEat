@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/app.dart';
@@ -77,6 +77,34 @@ void main() {
               '${Get.locale} — ดู PaynEatApp._initialLocale',
         );
       });
+    }
+  });
+
+  // ปฏิทินเลือกวัน/ปุ่มคัดลอก-วาง/ปุ่มยกเลิกของกล่องมาตรฐานมาจาก MaterialLocalizations
+  // เดิมไม่ได้ผูก delegates ไว้ ทุกภาษาจึงได้ภาษาอังกฤษ (DECISIONS #64)
+  group('PaynEatApp ข้อความมาตรฐานของ Material ตามภาษาแอป', () {
+    tearDown(Get.reset);
+
+    for (final (locale, cancel) in [
+      (LocaleService.thai, 'ยกเลิก'),
+      (LocaleService.english, 'Cancel'),
+      (LocaleService.korean, '취소'),
+    ]) {
+      testWidgets(
+        '${locale.languageCode} → ปุ่มยกเลิกของ Material เป็น "$cancel"',
+        (tester) async {
+          Get.reset();
+          final storage = StorageService.memory();
+          await storage.saveLocale(locale.languageCode);
+          Get.put<StorageService>(storage, permanent: true);
+
+          await tester.pumpWidget(const PaynEatApp());
+          await tester.pump();
+
+          final context = tester.element(find.byType(Navigator).first);
+          expect(MaterialLocalizations.of(context).cancelButtonLabel, cancel);
+        },
+      );
     }
   });
 

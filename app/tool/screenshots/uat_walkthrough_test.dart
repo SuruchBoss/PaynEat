@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:payneat_pos/app/routes/app_routes.dart';
 import 'package:payneat_pos/core/localization/locale_service.dart';
 import 'package:payneat_pos/features/home/presentation/controllers/home_controller.dart';
+import 'package:payneat_pos/features/kitchen/presentation/controllers/kitchen_controller.dart';
 
 import 'screenshot_harness.dart';
 
@@ -119,6 +120,44 @@ void main() {
           });
         }
       }
+
+      // สิ่งที่เพิ่มตาม DECISIONS #64 — แถบเลิกทำในจอครัว, ปฏิทินตามภาษา, ชื่อพนักงานตามภาษา
+      testWidgets('$lang small ครัวเลิกทำ', (tester) async {
+        await launch(tester, _small);
+        await ScreenshotHarness.loginAs(tester, 'kitchen', 'kitchen123');
+        final kitchen = Get.find<KitchenController>();
+        await tester.runAsync(() => kitchen.advance(kitchen.pending.first));
+        await ScreenshotHarness.settle(tester);
+        await shot(tester, 'small', 'x63-01-kitchen-undo');
+        await tester.runAsync(kitchen.undoLast);
+        await ScreenshotHarness.settle(tester);
+      });
+
+      testWidgets('$lang small ปฏิทิน + พนักงาน', (tester) async {
+        await launch(tester, _small);
+        await ScreenshotHarness.loginAs(tester, 'admin', 'admin123');
+        await open(tester, AppRoutes.promotionForm);
+        final from = find.byIcon(Icons.calendar_today_rounded).first;
+        await tester.ensureVisible(from);
+        await ScreenshotHarness.settle(tester);
+        await tester.tap(from);
+        await ScreenshotHarness.settle(tester);
+        await shot(tester, 'small', 'x63-02-date-picker');
+        Get.back<void>();
+        await ScreenshotHarness.settle(tester);
+        Get.back<void>();
+        await ScreenshotHarness.settle(tester);
+
+        final home = Get.find<HomeController>();
+        home.changeTab(
+          home.destinations.indexWhere((d) => d.label == 'home_nav_staff'),
+        );
+        await ScreenshotHarness.settle(tester);
+        await shot(tester, 'small', 'x63-03-staff');
+        for (var i = 0; i < 10; i++) {
+          await tester.pump(const Duration(seconds: 1));
+        }
+      });
 
       for (final MapEntry(key: sizeName, value: size) in {
         'small': _small,

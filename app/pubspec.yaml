@@ -9,6 +9,10 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  # ข้อความมาตรฐานของ Material (ปฏิทิน, ปุ่มคัดลอก/วาง, tooltip ย้อนกลับ) ตามภาษาแอป
+  # ดึง intl เวอร์ชันที่ SDK ล็อกไว้ — ข้อจำกัด intl ด้านล่างต้องยอมรับเวอร์ชันนั้นเสมอ
+  flutter_localizations:
+    sdk: flutter
 
   # State management + DI + routing
   get: ^4.7.2

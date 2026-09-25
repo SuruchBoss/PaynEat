@@ -231,6 +231,11 @@ test('QR สั่งเอง: เมนูชั่งน้ำหนักไ
   assert.equal(menu.status, 200);
   assert.ok(menu.body.data.items.every((item) => item.soldByWeight !== true));
   assert.ok(menu.body.data.items.every((item) => item.barcode === undefined));
+  // แต่บอกจำนวนที่ซ่อนไว้ หน้า QR จะได้บอกลูกค้าให้สั่งกับพนักงาน (DECISIONS #64)
+  const all = await get('/api/v1/menu-items?availableOnly=true&limit=200', admin.token);
+  const weighed = all.body.data.filter((item) => item.soldByWeight).length;
+  assert.ok(weighed > 0);
+  assert.equal(menu.body.data.staffOnlyCount, weighed);
 
   const res = await api()
     .post(`/api/v1/public/tables/${table.qrToken}/items`)

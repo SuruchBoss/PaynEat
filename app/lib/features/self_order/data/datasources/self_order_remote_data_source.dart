@@ -14,9 +14,14 @@ abstract class SelfOrderRemoteDataSource {
     String qrToken,
   );
 
-  Future<({List<CategoryModel> categories, List<MenuItemModel> items})> getMenu(
-    String qrToken,
-  );
+  Future<
+    ({
+      List<CategoryModel> categories,
+      List<MenuItemModel> items,
+      int staffOnlyCount,
+    })
+  >
+  getMenu(String qrToken);
 
   Future<OrderModel> addItems(String qrToken, List<OrderItemPayload> items);
 }
@@ -44,9 +49,14 @@ class SelfOrderRemoteDataSourceImpl implements SelfOrderRemoteDataSource {
   }
 
   @override
-  Future<({List<CategoryModel> categories, List<MenuItemModel> items})> getMenu(
-    String qrToken,
-  ) async {
+  Future<
+    ({
+      List<CategoryModel> categories,
+      List<MenuItemModel> items,
+      int staffOnlyCount,
+    })
+  >
+  getMenu(String qrToken) async {
     final result = await _client.get(ApiEndpoints.publicTableMenu(qrToken));
     final data = result.asMap;
     final categories = (data['categories'] as List? ?? const [])
@@ -57,7 +67,12 @@ class SelfOrderRemoteDataSourceImpl implements SelfOrderRemoteDataSource {
         .whereType<Map<String, dynamic>>()
         .map(MenuItemModel.fromJson)
         .toList(growable: false);
-    return (categories: categories, items: items);
+    return (
+      categories: categories,
+      items: items,
+      // เมนูชั่งน้ำหนักที่ซ่อนจากลูกค้า — หน้า QR บอกให้สั่งกับพนักงาน (DECISIONS #64)
+      staffOnlyCount: (data['staffOnlyCount'] as num?)?.toInt() ?? 0,
+    );
   }
 
   @override

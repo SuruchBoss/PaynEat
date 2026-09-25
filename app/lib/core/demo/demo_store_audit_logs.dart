@@ -8,7 +8,7 @@ extension DemoStoreAuditLogs on DemoStore {
   String _auditActorName(int? actorId) {
     if (actorId == null) return 'ระบบ';
     try {
-      return _findUser(actorId)['name'] as String;
+      return DemoNames.of(_findUser(actorId));
     } on ApiException {
       return 'ระบบ';
     }

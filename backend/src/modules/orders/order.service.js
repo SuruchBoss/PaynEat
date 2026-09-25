@@ -20,10 +20,12 @@ import {
 } from './promotion.engine.js';
 import { toOrderDto, toOrderItemDto } from './order.mapper.js';
 
+// ย้อนกลับได้หนึ่งขั้นสำหรับ "กดผิด" ในจอครัว (cooking → pending, ready → cooking) — DECISIONS #64
+// ไม่กระทบสต๊อก (ตัดตอนส่งครัว) หรือเงิน ส่วน served ย้อนไม่ได้เพราะออเดอร์อาจปิดยอดเสิร์ฟครบไปแล้ว
 const ITEM_TRANSITIONS = {
   pending: ['cooking', 'ready', 'cancelled'],
-  cooking: ['ready', 'cancelled'],
-  ready: ['served', 'cancelled'],
+  cooking: ['pending', 'ready', 'cancelled'],
+  ready: ['cooking', 'served', 'cancelled'],
   served: [],
   cancelled: [],
 };

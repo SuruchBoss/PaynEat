@@ -28,7 +28,7 @@ extension DemoStoreShifts on DemoStore {
       'id': _nextId(),
       'status': ShiftStatus.open,
       'openedBy': openedById,
-      'openedByName': _findUser(openedById)['name'],
+      'openedByName': DemoNames.of(_findUser(openedById)),
       'openedAt': _now(),
       'openingCash': openingCash,
       'closedBy': null,
@@ -88,7 +88,7 @@ extension DemoStoreShifts on DemoStore {
         _cashRefundedDuring(id);
     shift['status'] = ShiftStatus.closed;
     shift['closedBy'] = closedById;
-    shift['closedByName'] = _findUser(closedById)['name'];
+    shift['closedByName'] = DemoNames.of(_findUser(closedById));
     shift['closedAt'] = _now();
     shift['expectedCash'] = expected;
     shift['countedCash'] = countedCash;
