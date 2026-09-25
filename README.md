@@ -1563,6 +1563,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
 [Apache License 2.0](LICENSE) — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย เงื่อนไขเดียวคือถ้า
 แจกจ่าย/ต่อยอดต่อ ให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ด้วยตามที่ Apache License กำหนด (Section 4(d))
 
+**POS ฟรีทั้งหมดและจะไม่มีรุ่นเสียเงิน** — ไม่มีฟีเจอร์ไหนถูกล็อก ไม่จำกัดเครื่อง สาขา หรือผู้ใช้ ถ้าต้องการคนช่วย มีบริการ
+ติดตั้ง ต่ออุปกรณ์ support และอบรมแบบเสียเงินให้เลือก (ไม่ซื้อก็ใช้ได้ครบ) ส่วนรุ่นเสียเงินของระบบนิเวศอยู่ที่
+[PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions) สำหรับเชนขนาดใหญ่ — ดู `docs/DECISIONS.md` #67
+
 ## 👤 ผู้สร้าง
 
 โปรเจกต์นี้สร้างและดูแลโดย **[SuruchBoss](https://github.com/SuruchBoss)**
