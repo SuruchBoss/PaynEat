@@ -2535,7 +2535,8 @@ load → up → รอจนพร้อม → สร้างไฟล์ .cmd
   ในมือพนักงานจริง ระบบต้องตามความจริง — ERP ADR-0003)
 - **รหัสสาขา = รหัสสถานที่กลางของระบบนิเวศ** (`^[A-Z0-9][A-Z0-9-]{1,31}$` ใช้ร่วมกับ ERP และ work location ของ Cwork)
   บังคับเฉพาะตอนเข้าโหมดเชื่อมต่อ สาขาเดิมที่ไม่มีรหัสหรือรหัสผิดรูปแบบยังใช้โหมดเดี่ยวต่อได้
-- **สัญญา telemetry v1 ใช้กับ POS ด้วย** (log JSON ที่มี `severity` แบบข้อความ, `x-request-id`, `/metrics`) ให้ SherWhyve
+- **สัญญา telemetry v1.1 ใช้กับ POS ด้วย** (log JSON ที่มี `severity` แบบข้อความ, `labels` ธรรมดาเป็นค่าเริ่มต้นและใช้ key ของ
+  Google Cloud เฉพาะเมื่อตั้ง `LOG_FORMAT=gcp`, `x-request-id`, `/metrics`) ให้ SherWhyve
   สืบสวน POS, ERP และ Cwork ด้วย query ชุดเดียวกัน — เริ่มได้ทันทีก่อนเชื่อม ERP เพราะเติม correlation id ทีหลังแพงกว่า
 - **ที่ติดตามงาน** — งานฝั่ง POS อยู่ใน `docs/tickets/` ของ repo นี้ตามธรรมเนียมเดิม (24–26) งานฝั่ง ERP อยู่ใน GitHub Issues
   ของ PaynEat-ERP — dev session เดียวทำทั้งสอง repo
