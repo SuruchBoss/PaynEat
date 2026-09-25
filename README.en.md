@@ -1700,6 +1700,13 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   staff, and screenshots draw real shadows instead of black outlines (see `docs/DECISIONS.md` #64). Kept on purpose:
   Thai branch name/address (tax-invoice rule), Thai audit-log summaries, and per-device data in demo mode
 
+- [ ] **Connect to [PaynEat ERP](https://github.com/SuruchBoss/PaynEat-ERP) (optional mode)** — the supply-side
+  ERP for a chain that runs its own plant. When connected, the ERP owns ingredients and branches (later menus,
+  prices and recipes) and the POS sends sales to it through an outbox, exactly once even across outages —
+  **without the ERP, everything works exactly as today** (see tickets 25–26 and `docs/DECISIONS.md` #66)
+- [ ] **Logs and metrics per the ecosystem telemetry contract** — JSON logs, `x-request-id` and `/metrics`, so
+  incidents can be followed across the POS and the ERP, with no customer data in logs (see ticket 24)
+
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 
