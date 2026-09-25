@@ -266,6 +266,13 @@ gap สามข้อนี้**ไม่เคยอยู่ในตาร�
 (compose ตั้ง production โดยไม่มีรหัสผ่าน seed) และ APK release ไม่มีสิทธิ์ INTERNET — แก้ครบพร้อมเทสต์ CORS
 แต่ยังไม่มีอะไรใน CI ที่ build Android หรือ image Docker จริง ถ้าจะปิดช่องนี้ถาวรต้องเพิ่ม job ทั้งสองอย่าง
 
+## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #63 (build image Docker ครบครั้งแรก)
+
+ไม่ได้ปิด/เปิด gap ข้อใหม่ แต่ช่องที่ #61 บอกไว้ ("ยังไม่มีอะไรใน CI ที่ build image Docker จริง") มีบั๊กซ่อนอยู่จริง:
+ทางเลือก B (`docker compose up --build`) build image เว็บไม่ผ่านตั้งแต่ `flutter pub get` เพราะ Dockerfile ไม่ได้ copy
+แพ็กเกจ lint ที่ pubspec อ้างแบบ path — แก้แล้ว พร้อมส่ง `SCALE_DRIVER`/`MAIL_TRANSPORT` ผ่าน compose ให้ทัวร์ข้อ
+27–28 ทำบน Docker ได้ ช่องที่ยังเปิดอยู่เหมือนเดิม: CI ยังไม่ build image Docker และ APK Android
+
 ## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #43 / #44 / #45 / #46 / #47 (ชุด E2E + บั๊กที่มันเจอ)
 
 **#47 ปิดข้อ "Flutter integration test กับ backend จริง" ใน 🟢 Nice-to-have** โดยตรง ส่วน #43–#46

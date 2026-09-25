@@ -2337,3 +2337,33 @@ Android มากับ plugin และ iOS มี `NSCameraUsageDescription` �
 
 ผลตรวจ: backend 354 (+2) · Flutter 459 · E2E 48 = **861** ผ่านทั้งหมด
 
+## 63. build image Docker ให้ครบจริงครั้งแรก — เว็บ build ไม่ผ่านตั้งแต่ `flutter pub get` (2026-09-25)
+
+**โจทย์** — ผู้ดูแลโปรเจกต์เปิด Docker Desktop จะลองทางเลือก B (`docker compose up --build`) ก่อนเดโมจริง ข้อจำกัดของ
+#61 คือยังไม่เคย build image ครบสักครั้ง (CI build แค่เว็บโหมดสาธิตบน runner ไม่ผ่าน Dockerfile) จึงไล่ build ทุก stage
+แล้วรัน `docker-compose.yml` ตัวจริง
+
+**เจอ (แก้แล้ว)**
+
+- **image เว็บ build ไม่ผ่านเลย** — `app/Dockerfile` copy แค่ `pubspec.*` แล้วรัน `flutter pub get` เพื่อใช้ cache ของ
+  layer แต่ pubspec อ้าง `payneat_lints` แบบ `path: tool/lints` (dev_dependency ของกฎ lint เฉพาะโปรเจกต์) pub get จึงล้ม
+  "payneat_lints from path which doesn't exist" ตั้งแต่ตอนเพิ่ม lint ชุดนั้นเข้ามา — ใครทำตามทางเลือก B จะเจอ error
+  นี้ทันที → copy `tool/lints` ก่อน pub get (ยังได้ cache ของ layer เหมือนเดิม เพราะโค้ดแอปยัง copy ทีหลัง) และ
+  `.dockerignore` กัน `.dart_tool`/`build` ของโฟลเดอร์ย่อยด้วย ไม่ใช่แค่ที่ราก
+- **ตาชั่งสด/ส่งอีเมลเปิดใน Docker ไม่ได้** — compose ไม่ส่ง `SCALE_DRIVER`/`MAIL_TRANSPORT` เข้า container เลย ทัวร์ข้อ
+  27–28 จึงทำบนทางเลือก B ไม่ได้ (แผงตาชั่งไม่ขึ้น, ปุ่มส่งอีเมลได้ 503) → ส่งผ่านจาก `.env` ข้าง `docker-compose.yml`
+  โดยค่าเริ่มต้นยังปิดทั้งคู่ (`off`/`smtp` เหมือน `backend/.env.example`) เพราะตาชั่งจำลองในร้านจริงคือน้ำหนักปลอม —
+  ไม่ได้ส่ง `SMTP_*` ผ่าน compose ด้วย เพราะค่าว่างจาก `${VAR:-}` ทำให้ `SMTP_SECURE`/`MAIL_FROM` ผิด (`??` ไม่ถือว่า
+  string ว่างคือไม่ได้ตั้ง) ส่งอีเมลจริงผ่าน Docker จึงยังต้องแก้ compose เอง
+
+**ตรวจแล้ว** — `docker compose` ตัวจริง (ชี้ image ที่ build แล้ว) + `.env` ตาชั่ง/อีเมล: API ขึ้นเป็น development ตาชั่ง
+`simulator` เชื่อมต่อ, flow ขายเชื่อ → ใบวางบิล → PDF (ฟอนต์ไทยใน container) → อีเมล → รับชำระ → แต้ม 0 → 27 ผ่าน API
+ครบ, เว็บ :8080 เปิดได้ทั้งหน้าแรกและ deep link (`/order/...` ตกมาที่ `index.html`) และล็อกอิน `admin` ใน Chromium จริง
+แล้วแดชบอร์ดขึ้นยอดที่เพิ่งขายพร้อม realtime เชื่อมต่อ
+
+**ข้อจำกัด** — เครื่องที่ใช้ตรวจโหลด image `ghcr.io/cirruslabs/flutter` และแพ็กเกจ Debian ไม่ได้ (network policy) จึงรันขั้น
+build ของเว็บด้วย Flutter 3.35.1 ตัวเดียวกันตามคำสั่งใน Dockerfile ทีละขั้นแทน (ยืนยันว่าก่อนแก้ล้มจริง หลังแก้ผ่าน)
+และ image API ใช้ `node_modules` จาก `npm ci --omit=dev` บนเครื่องสะอาด (better-sqlite3 มี prebuild ไม่ต้อง compile)
+ยังไม่มี job ใน CI ที่ build image Docker — ถ้าจะกันไม่ให้พังเงียบแบบนี้อีกต้องเพิ่ม (ดู FEATURE-GAP)
+
+ผลตรวจ: ไม่ได้แตะโค้ดแอป/backend — เทสต์ยังเป็น backend 354 · Flutter 459 · E2E 48 = **861**

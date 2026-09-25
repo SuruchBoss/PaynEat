@@ -274,6 +274,18 @@ Once you see `payneat-web` and `payneat-api` come up, open your browser:
 | http://localhost:3000/docs | Interactive API docs (Swagger UI) |
 | http://localhost:3000/health | Health check for the API |
 
+**Want the live scale and document email (tour steps 27–28) in Docker?** Both are off by default — create a
+`.env` file **next to `docker-compose.yml`** (not `backend/.env`) with these two lines, then run
+`docker compose up --build` again:
+
+```bash
+SCALE_DRIVER=simulator
+MAIL_TRANSPORT=json
+```
+
+You get a simulated scale that starts reporting right away, and emails are fully built but never actually sent
+(never use `simulator` in a real shop — the weights are made up).
+
 Stop the system with `Ctrl+C`, then `docker compose down`
 (want a clean slate? `docker compose down -v`)
 
@@ -440,7 +452,7 @@ The login page has one-tap buttons for each account — no need to type anything
     it settles it shows **"Stable = ฿582.00"** and one tap puts it in the cart with nothing typed — Demo
     Mode ships a **simulated scale** that cycles place → wobble → settle (0.485 / 1.250 / 0.730 kg) so you
     can try it right away; a real shop sets `SCALE_DRIVER=tcp` or `serial` in `backend/.env` (try it with
-    no scale using `SCALE_DRIVER=simulator`) and every tablet/phone sees the same weight in real time —
+    no scale using `SCALE_DRIVER=simulator` — for Option B, put it in a `.env` next to `docker-compose.yml`) and every tablet/phone sees the same weight in real time —
     then on a phone or the web with a camera, tap the **camera icon** at the end of the scan field next to
     the menu search → frame the sauce bottle's barcode or a scale label (there's a torch button) →
     it behaves exactly like a scanner (see `docs/tickets/22-live-scale-camera-scan.md`,
@@ -577,6 +589,7 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
 | `npm install` fails on `better-sqlite3` | Missing build tools to compile a native module | Windows: `npm install --global windows-build-tools` · macOS: `xcode-select --install` · Linux: `sudo apt install build-essential python3` |
 | `flutter run` complains about the Dart version | Flutter is older than 3.35 | `flutter upgrade` |
 | Docker build hangs on the Flutter step | It's downloading the ~2GB Flutter SDK for the first time | Wait for it to finish (5–10 min) — later builds use the cache |
+| Docker build fails at `flutter pub get` with `payneat_lints from path which doesn't exist` | Code from before #63 — the Dockerfile didn't copy the lint package yet | `git pull` the latest code, then `docker compose up --build` again |
 | The Docker web app loads but login doesn't work | The browser can't reach the API | Check that http://localhost:3000/health responds; if you changed the port, update `API_BASE_URL` in `docker-compose.yml` to match |
 | Want to wipe the data and start over | — | Local: `cd backend && npm run db:reset` · Docker: `docker compose down -v` |
 

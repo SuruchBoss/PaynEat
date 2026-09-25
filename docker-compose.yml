@@ -22,6 +22,11 @@ services:
       SEED_WAITER2_PASSWORD: ${SEED_WAITER2_PASSWORD:-}
       SEED_KITCHEN_PASSWORD: ${SEED_KITCHEN_PASSWORD:-}
       SEED_CASHIER_PASSWORD: ${SEED_CASHIER_PASSWORD:-}
+      # ตาชั่งสด/ส่งอีเมลปิดไว้เป็นค่าเริ่มต้น (เหมือน backend/.env.example) — เดโมโดยไม่มีตาชั่ง/SMTP จริง
+      # ให้สร้างไฟล์ .env ข้าง docker-compose.yml นี้ ใส่ SCALE_DRIVER=simulator กับ MAIL_TRANSPORT=json
+      # (compose อ่านไฟล์นั้นให้เอง) — ห้ามตั้ง simulator ในร้านจริง เพราะน้ำหนักเป็นตัวเลขจำลอง
+      SCALE_DRIVER: ${SCALE_DRIVER:-off}
+      MAIL_TRANSPORT: ${MAIL_TRANSPORT:-smtp}
     ports:
       - "3000:3000"
     volumes:
