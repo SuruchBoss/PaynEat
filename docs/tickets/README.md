@@ -108,7 +108,7 @@ POS กลายเป็นหนึ่งในสี่ระบบของ�
 ฝั่ง POS อยู่ที่นี่ตามธรรมเนียมเดิมของ repo นี้
 
 - `24-telemetry-contract.md` — ⏳ ยังไม่ได้ทำ — **เริ่มได้ทันที** log แบบ JSON + `x-request-id` + `/metrics`
-  ตาม[สัญญา telemetry v1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md) ให้ SherWhyve
+  ตาม[สัญญา telemetry v1.1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md) ให้ SherWhyve
   สืบสวนได้ และห้ามข้อมูลลูกค้าลง log
 - `25-erp-connected-mode.md` — ⏳ ยังไม่ได้ทำ — **รอ** PaynEat-ERP#9 และ 24 — ลงทะเบียนกับ ERP, ดึง master data
   ตามเวอร์ชัน, หน้าจัดการวัตถุดิบ/สาขาเป็นอ่านอย่างเดียว, ปิดการปิดขายอัตโนมัติจากสต๊อกในเครื่องในโหมดเชื่อมต่อ
