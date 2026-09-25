@@ -96,3 +96,21 @@ analysis ซ้ำ (แต่ลิงก์ไว้เผื่ออยาก
   `4e2684d`, ticket 11 ครบทั้ง backend และ UI) และตอนนี้ merge เข้า `main` แล้ว — "ยืนยันด้วยโค้ดจริง"
   ครอบคลุมแค่โค้ดที่ session นั้นมองเห็น ไม่รวม branch อื่นที่ทำขนานกันอยู่ ครั้งหน้าต้องเช็ค branch
   ที่ยัง active ก่อนสรุปว่างานยังไม่ได้ทำ
+
+## 🔗 ระบบนิเวศ PaynEat — เชื่อมกับ PaynEat ERP (2026-09-25)
+
+POS กลายเป็นหนึ่งในสี่ระบบของระบบนิเวศ PaynEat (POS · [PaynEat ERP](https://github.com/SuruchBoss/PaynEat-ERP)
+· [Cwork](https://github.com/SuruchBoss/Cwork) · SherWhyve ซึ่งเป็น private) ขอบเขตระหว่างกันอยู่ใน
+[ERP ADR-0011](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/adr/0011-ecosystem-and-sherwhyve.md)
+และ `docs/DECISIONS.md` #66 — **POS ยังใช้เดี่ยวได้เป็นค่าเริ่มต้นเสมอ** การเชื่อม ERP เป็นโหมดเลือกได้
+
+งานฝั่ง ERP ติดตามใน [GitHub Issues ของ PaynEat-ERP](https://github.com/SuruchBoss/PaynEat-ERP/issues) ส่วนงาน
+ฝั่ง POS อยู่ที่นี่ตามธรรมเนียมเดิมของ repo นี้
+
+- `24-telemetry-contract.md` — ⏳ ยังไม่ได้ทำ — **เริ่มได้ทันที** log แบบ JSON + `x-request-id` + `/metrics`
+  ตาม[สัญญา telemetry v1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md) ให้ SherWhyve
+  สืบสวนได้ และห้ามข้อมูลลูกค้าลง log
+- `25-erp-connected-mode.md` — ⏳ ยังไม่ได้ทำ — **รอ** PaynEat-ERP#9 และ 24 — ลงทะเบียนกับ ERP, ดึง master data
+  ตามเวอร์ชัน, หน้าจัดการวัตถุดิบ/สาขาเป็นอ่านอย่างเดียว, ปิดการปิดขายอัตโนมัติจากสต๊อกในเครื่องในโหมดเชื่อมต่อ
+- `26-erp-sales-outbox.md` — ⏳ ยังไม่ได้ทำ — **รอ** 25 และ PaynEat-ERP#9 — ส่งยอดขายเข้า ERP ผ่าน outbox ใน
+  transaction เดียวกับการชำระเงิน ครั้งเดียวแน่นอนด้วย idempotency key แม้เน็ตหลุด
