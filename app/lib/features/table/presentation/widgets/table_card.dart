@@ -72,6 +72,26 @@ class TableCard extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
+                  // เมนูสถานะโต๊ะ/QR เดิมเปิดได้ทางกดค้างอย่างเดียว คนไม่เคยใช้หาไม่เจอ
+                  // จึงมีปุ่ม ⋯ ให้เห็นด้วย (กดค้างยังใช้ได้เหมือนเดิม) — DECISIONS #62
+                  if (onLongPress != null) ...[
+                    const SizedBox(width: 2),
+                    SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: IconButton(
+                        key: ValueKey('table-actions-${table.id}'),
+                        tooltip: 'table_actions_tooltip'.tr,
+                        padding: EdgeInsets.zero,
+                        iconSize: 20,
+                        onPressed: onLongPress,
+                        icon: Icon(
+                          Icons.more_horiz_rounded,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
               const SizedBox(height: 2),

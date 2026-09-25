@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-861%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-876%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 861 automated tests.
+control and 876 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 861 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **861 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **876 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -311,7 +311,7 @@ The app uses local mock data instead — every feature works.
 
 ### 👤 Login accounts
 
-The login page has one-tap buttons for each account — no need to type anything.
+The login page (demo mode) has a demo-account chip for every role — **one tap signs you in**, no typing needed.
 
 | Role | username | password | What they see |
 |---|---|---|---|
@@ -325,6 +325,14 @@ The login page has one-tap buttons for each account — no need to type anything
 > ⚠️ **These accounts are for demo purposes only.** If you deploy this backend for real use (not just
 > running it locally), always change these passwords or disable `AUTO_SEED` first — see
 > [`SECURITY.md`](SECURITY.md) for the full pre-deployment checklist.
+
+
+> 🧑‍🍳 **Letting a customer or staff try it with no one guiding them (UAT)?** — the login page and the QR menu
+> have a **globe** button in the top corner that switches ไทย / English / 한국어 before anyone signs in (the first
+> launch follows the device language). In demo mode (Option C / the demo link) **data lives on each device
+> separately** — a waiter ordering on a phone won't show up on a kitchen tablet. To try several devices at once,
+> run Option A or B and open the same address everywhere (or try every role on one device by switching accounts)
+> — see what was adjusted for this UAT in `docs/DECISIONS.md` #62
 
 ---
 
@@ -407,7 +415,7 @@ The login page has one-tap buttons for each account — no need to type anything
     bar/rail) → see a **"Current branch"** card, tap **"Switch branch"** → pick **"All branches"** (only
     `admin` gets this option) → go back to **Dashboard/Reports** and you'll see sales totals combined
     across both branches immediately, without switching branch-by-branch to add them up yourself
-23. **Log in as `waiter1` (or `manager`)** → back on the table map, long-press table A1's card → pick
+23. **Log in as `waiter1` (or `manager`)** → back on the table map, tap the **⋯** button on table A1's card (or long-press the card) → pick
     **"View self-order QR"** → see a real, scannable QR code for that table, then tap **"Copy link"**
     and open it in a new tab/window (simulating a customer scanning it with their own phone) → you land
     straight on table A1's menu, **no login at all** — add an item to the cart and tap **"Send to
@@ -476,6 +484,15 @@ The login page has one-tap buttons for each account — no need to type anything
 
 **Want to try the hidden business rules?**
 
+- Log in as `admin` → **Staff** → your own row has no ⋮ menu, just a **"You"** badge (you can't demote,
+  deactivate or delete yourself — calling the API directly returns 400); other rows can change role or be
+  deactivated, but only after a confirmation dialog that says what will happen
+- Open an order → ⋮ → **Cancel order** → the confirm button stays disabled until you type a reason. Put items
+  in the cart and press back → you're asked before they're discarded. **Merge bills** → after picking the
+  other order you still confirm once more (a merge can't be undone)
+- On checkout, lower "Cash received" below the bill → the pay button greys out **and says how much is still
+  short** (it also explains when no shift is open). As `waiter1`, the order ⋮ menu has no "Discount" (cashier
+  and above only)
 - Try opening a second order at the same table → rejected, with a hint to add to the existing bill instead
 - Try changing an item's quantity after the kitchen taps "Start Cooking" → can't; only a manager can cancel
   the item instead
@@ -568,8 +585,8 @@ The login page has one-tap buttons for each account — no need to type anything
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 354 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 459 cases — domain / controller / widget
+cd backend && npm test      # 355 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 473 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -638,7 +655,7 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
   attached at all; takeaway orders automatically get a daily-resetting queue number (delivery orders skip
   it — a rider references the order by its bill number instead, since nobody's standing around waiting to
   be called), shown both in the send-to-kitchen confirmation and on the order detail page
-- **View self-order QR** — long-press a table's card to see a real, scannable QR code for that table
+- **View self-order QR** — tap the **⋯** button on a table's card (or long-press it) to see a real, scannable QR code for that table
   plus a copy-link button; `admin`/`manager` get an extra **"Regenerate QR"** button for when a printed
   QR gets lost or photographed by someone else (invalidates the old link immediately — see
   `docs/tickets/17-qr-self-order.md`)
@@ -756,7 +773,9 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
 - **Menu management** — add/edit/delete items, and build your own modifier groups — mark an item as
   **sold by weight** (price per kg) and give it a **barcode/scale PLU**; a code already used by another
   item in the same branch is rejected
-- **Staff management** — add accounts, change roles, deactivate accounts
+- **Staff management** — add accounts, change roles, deactivate accounts — role changes and deactivation ask
+  for confirmation first, and you can't demote or deactivate your own account (so one mis-tap can't lock you
+  out — see `docs/DECISIONS.md` #62)
 - **Store settings** — store name, VAT, Service Charge, VAT-inclusive pricing mode, tax ID/address/
   branch (for issuing tax invoices — optional if the store isn't VAT-registered), the loyalty
   points exchange rate (baht spent per point earned / point value when redeemed), and the **PromptPay
@@ -822,11 +841,12 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
   account, and a real deployment (`NODE_ENV=production`) refuses to seed accounts with the known
   demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
 - **Three languages throughout: ไทย / English / 한국어** — switch from the **Profile** or
-  **Settings** page; remembered per device. **The demo data is translated too** — menu items,
+  **Settings** page, or the globe button on the login page and the customer QR menu (the first launch follows
+  the device language); remembered per device. **The demo data is translated too** — menu items,
   categories, table zones and add-on options — so you never see one language's UI wrapped around
   another language's data. A real restaurant's own entries always display exactly as typed, and
   names already printed on kitchen tickets and past receipts do not move, since those were
-  captured when the order was placed. All 1,061 keys are translated for every language, and the
+  captured when the order was placed. All 1,094 keys are translated for every language, and the
   Korean font ships inside the app as a subset of only the characters actually used (4 weights,
   ~350 KB), so it never depends on the device's own fonts. A test parses the font file's cmap table
   to stop any translation from using a character outside that subset, and the AI assistant answers
@@ -1162,8 +1182,8 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 354 cases
-cd app && flutter test      # 459 cases
+cd backend && npm test      # 355 cases
+cd app && flutter test      # 473 cases
 cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
 ```
 
@@ -1212,7 +1232,7 @@ backend losing their BOM so Thai text garbled in Excel (#45), and a customer tap
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
 
-**Backend (354 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (355 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1260,7 +1280,7 @@ After a full OWASP Top 10 security review, added tests covering all 7 vulnerabil
 `users.test.js` gained 7 cases — a manager can't create/self-promote/edit/reset-password an admin account
 (privilege escalation), admin can still do all of that normally, and an old token stops carrying its
 previous privileges the moment an account is deactivated or its role changes (no waiting for the token to
-expire). `security-headers.test.js` (2 new cases) confirms the CSP header is present on every endpoint
+expire), and an admin can no longer demote or deactivate their own account (#62). `security-headers.test.js` (2 new cases) confirms the CSP header is present on every endpoint
 except `/docs` (Swagger UI needs inline script/style). `seed-production-safety.test.js` (2 new cases)
 confirms `NODE_ENV=production` refuses to seed accounts with the known demo passwords (`admin123` etc.) —
 each account's password must be set explicitly via `SEED_*_PASSWORD` first (see `docs/DECISIONS.md` #20).
@@ -1397,7 +1417,7 @@ and a split bill whose credit part was paid off first earns when the bill closes
 must answer `Access-Control-Allow-Origin: *` so a web app on a different port from the API can log in (it used
 to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
 
-**Flutter (459 cases)** — split into 3 levels:
+**Flutter (473 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1419,6 +1439,7 @@ to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
 | Controller | `menu_management_controller_test.dart` | Menu filtering on the management screen, counting sold-out items |
 | Controller | `kitchen_controller_test.dart` | Grouping the kitchen queue by status, counting late items, moving status forward |
 | Controller | `checkout_controller_test.dart` | Change/remaining-balance calculation, the `canPay` condition, rounding up to the nearest hundred, the "On credit" method appearing only for customers with a limit + non-waiter users, no paying over the limit, and choosing credit clearing any points (ticket 20) |
+| Controller | `checkout_controller_test.dart` | (added) a greyed-out pay button always explains why below it (no shift / invalid amount / cash short) and says nothing once payment is possible (#62) |
 | Controller | `receipt_controller_test.dart` | Loading a receipt by orderId, the `Payment.tendered` rule (a receipt shows the cash the customer handed over, not the amount applied to the bill: tendered − change = amount applied), silently loading the tax invoice when none has been issued yet (404 isn't an error), and tax-invoice void permission (manager role or above) |
 | Controller | `settings_controller_test.dart` | Loading store settings into the correct form fields |
 | Controller | `staff_controller_test.dart` | Filtering staff by role, counting by role |
@@ -1435,6 +1456,8 @@ to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
 | Widget | `hourly_chart_range_test.dart` | The chart's time range must come from real data, not a hardcoded value |
 | Widget | `weight_entry_dialog_test.dart` | Turning the typed weight (kg, a comma works as the decimal point) into whole grams, rounding, and rejecting anything outside 1–99,999 g (ticket 18) |
 | Core | `destructive_labels_test.dart` | The accounts-receivable "void document" button must never share a label with the ordinary Cancel/Close buttons, in every language — the Korean edition had "취소" for both, sitting next to "닫기" (see `docs/DECISIONS.md` #60) |
+| Widget | `uat_affordances_test.dart` | Found while preparing an unguided UAT: the globe button names the current language in that language and lists all 3, `StatGrid` with long captions doesn't overflow at 320/360/600 px and cards in a row share one height (was 36 overflows), table cards show a visible ⋯ button instead of relying on long-press (#62) |
+| Core | `locale_service_test.dart` | (added) the first launch uses the device language (Korean/English) and an unsupported one falls back to Thai (#62) |
 | Widget | `cart_panel_locale_test.dart` | The cart must show item names in the chosen language (English/Korean), matching the card just tapped — it had used the always-Thai `menuItem.name` since the first commit; also checks a weighed line doesn't overflow when glyphs are wide (see `docs/DECISIONS.md` #58) |
 | Core | `formatters_due_date_test.dart` | Due dates render in the current language ("11 Oct 2026" / "2026년 10월 11일") instead of a raw `2026-10-11`, without shifting a day with the device timezone |
 | Widget | `customer_picker_dialog_test.dart` | The customer picker used while taking an order — after one network blip, a successful re-search must bring the list back (it used to stay stuck on the error screen forever), the error state offers a retry button, and the debounce collapses 6 keystrokes into a single search request |
@@ -1498,7 +1521,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - [x] **High-contrast mode** — done: toggled from the **Profile** page (reachable by every role,
   not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
   and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
-- [x] **Korean language support** — done: 1,061 translation keys across every feature (verified to
+- [x] **Korean language support** — done: 1,094 translation keys across every feature (verified to
   match the Thai key set exactly), NotoSansKR embedded as a subset, a separately designed Korean
   landing page with 5 real Korean-locale app screenshots, a three-way language switcher on all
   three landing pages (now visible on mobile too, where the whole group used to be hidden), and
@@ -1614,6 +1637,14 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   earns on the net amount after credit notes (excluding interest); voiding the receipt that cleared it takes
   the points back as far as the customer still has them; cash bills still earn at checkout (see
   `docs/DECISIONS.md` #58, #59)
+
+- [x] **UX review before an unguided UAT (the customer taps around alone)** — done: every tab of every role plus
+  the screens you reach by tapping, × 3 languages × 4 screen sizes (666 screens,
+  `tool/screenshots/uat_walkthrough_test.dart`). Overflows went from 64 to 0; added a language switch before
+  login and on the QR menu, one-tap demo sign-in, confirmations before anything irreversible (merge bills,
+  role changes, discarding a cart), a reason whenever a button is disabled, and tooltips on every icon button
+  (see `docs/DECISIONS.md` #62). Still open: backend error messages are Thai-only, Material's built-in
+  strings/date pickers are English, and demo staff/branch names are Thai
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

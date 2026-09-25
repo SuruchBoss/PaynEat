@@ -292,11 +292,13 @@ class _CategorySheet extends GetView<MenuManagementController> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       IconButton(
+                        tooltip: 'common_edit'.tr,
                         onPressed: () =>
                             _showCategoryDialog(category: category),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                       ),
                       IconButton(
+                        tooltip: 'common_delete'.tr,
                         onPressed: () => controller.deleteCategory(category),
                         icon: const Icon(
                           Icons.delete_outline_rounded,
@@ -353,9 +355,15 @@ class _CategorySheet extends GetView<MenuManagementController> {
             onPressed: () => Get.back<void>(),
             child: Text('common_cancel'.tr),
           ),
-          FilledButton(
-            onPressed: () => Get.back(result: true),
-            child: Text('common_save'.tr),
+          // ชื่อหมวดว่าง → ปุ่มบันทึกกดไม่ได้ (เดิมกดได้แล้วปิดกล่องเงียบ ๆ โดยไม่บันทึกอะไร)
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: nameController,
+            builder: (context, value, _) => FilledButton(
+              onPressed: value.text.trim().isEmpty
+                  ? null
+                  : () => Get.back(result: true),
+              child: Text('common_save'.tr),
+            ),
           ),
         ],
       ),

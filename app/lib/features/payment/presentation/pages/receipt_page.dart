@@ -267,25 +267,36 @@ class ReceiptPage extends GetView<ReceiptController> {
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
-                            if (controller.canRefund &&
-                                controller.refundableAmount(payment) > 0) ...[
-                              const SizedBox(width: 8),
-                              InkWell(
-                                onTap: () => _showRefundDialog(
-                                  context,
-                                  controller,
-                                  payment,
-                                ),
-                                child: Icon(
-                                  Icons.assignment_return_outlined,
-                                  size: 16,
-                                  color: AppColors.dangerInk,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
                       ),
+                    // ปุ่มคืนเงินมีป้ายชัด ๆ ใต้แถวการชำระ — เดิมเป็นไอคอน 16px ไม่มีคำ คนไม่รู้ว่ากดได้
+                    for (final payment in receipt.payments)
+                      if (controller.canRefund &&
+                          controller.refundableAmount(payment) > 0)
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton.icon(
+                            key: ValueKey('refund-${payment.id}'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.dangerInk,
+                              visualDensity: VisualDensity.compact,
+                            ),
+                            onPressed: () =>
+                                _showRefundDialog(context, controller, payment),
+                            icon: const Icon(
+                              Icons.assignment_return_outlined,
+                              size: 18,
+                            ),
+                            label: Text(
+                              receipt.payments.length > 1
+                                  ? 'payment_refund_button_method'.trParams({
+                                      'method': payment.methodLabel,
+                                    })
+                                  : 'payment_refund_dialog_title'.tr,
+                            ),
+                          ),
+                        ),
                     if (receipt.changeTotal > 0)
                       _KeyValue(
                         label: 'payment_change_due_label'.tr,

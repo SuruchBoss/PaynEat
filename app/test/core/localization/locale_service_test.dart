@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
 import 'package:payneat_pos/app/app.dart';
@@ -75,6 +76,33 @@ void main() {
               'เซฟภาษา "${locale.languageCode}" ไว้แล้วแต่แอปเปิดมาเป็น '
               '${Get.locale} — ดู PaynEatApp._initialLocale',
         );
+      });
+    }
+  });
+
+  // UAT แบบไม่มีคนสอน: เปิดแอปครั้งแรก (ยังไม่เคยเลือกภาษา) ต้องได้ภาษาเครื่อง ถ้าแอปรองรับ
+  // เดิมเป็นไทยเสมอ พนักงานเกาหลีเปิดมาเจอหน้าไทยแล้วหาทางเปลี่ยนไม่เจอ (DECISIONS #62)
+  group('PaynEatApp ครั้งแรกใช้ภาษาเครื่อง', () {
+    tearDown(Get.reset);
+
+    for (final (device, expected) in [
+      (const Locale('ko', 'KR'), LocaleService.korean),
+      (const Locale('en', 'US'), LocaleService.english),
+      (const Locale('ja', 'JP'), LocaleService.thai),
+    ]) {
+      testWidgets('เครื่องเป็น $device → เปิดมาเป็น ${expected.languageCode}', (
+        tester,
+      ) async {
+        Get.reset();
+        tester.platformDispatcher.localesTestValue = [device];
+        tester.platformDispatcher.localeTestValue = device;
+        addTearDown(tester.platformDispatcher.clearAllTestValues);
+        Get.put<StorageService>(StorageService.memory(), permanent: true);
+
+        await tester.pumpWidget(const PaynEatApp());
+        await tester.pump();
+
+        expect(Get.locale, expected);
       });
     }
   });

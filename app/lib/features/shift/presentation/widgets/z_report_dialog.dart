@@ -45,6 +45,7 @@ class ZReportDialog extends StatelessWidget {
                     ),
                   ),
                   IconButton(
+                    tooltip: 'common_close'.tr,
                     icon: const Icon(Icons.close_rounded),
                     onPressed: () => Get.back(),
                   ),

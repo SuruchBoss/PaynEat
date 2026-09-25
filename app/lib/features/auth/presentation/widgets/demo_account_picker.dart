@@ -5,8 +5,8 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../controllers/auth_controller.dart';
 
-/// ตัวเลือกบัญชีเดโม — กดแล้วกรอกให้อัตโนมัติ
-/// (มีไว้เพื่อให้ผู้ที่มาดูผลงานลองใช้แต่ละบทบาทได้เร็ว)
+/// ตัวเลือกบัญชีเดโม — แตะครั้งเดียวเข้าสู่ระบบในบทบาทนั้นทันที
+/// (เดิมแค่กรอกช่องให้ คนลอง UAT แตะแล้วคิดว่าไม่มีอะไรเกิดขึ้น — ดู docs/DECISIONS.md #62)
 class DemoAccountPicker extends GetView<AuthController> {
   const DemoAccountPicker({super.key});
 
@@ -29,6 +29,12 @@ class DemoAccountPicker extends GetView<AuthController> {
       username: 'cashier',
       password: 'cashier123',
       icon: Icons.point_of_sale_rounded,
+    ),
+    (
+      label: 'role_manager'.tr,
+      username: 'manager',
+      password: 'manager123',
+      icon: Icons.insights_rounded,
     ),
     (
       label: 'role_admin'.tr,
@@ -80,10 +86,16 @@ class DemoAccountPicker extends GetView<AuthController> {
                     label: Text(account.label),
                     backgroundColor: AppColors.surface,
                     side: BorderSide(color: AppColors.border),
-                    onPressed: () => controller.fillDemoAccount(
-                      account.username,
-                      account.password,
-                    ),
+                    tooltip: 'auth_demo_account_tooltip'.trParams({
+                      'username': account.username,
+                    }),
+                    onPressed: () {
+                      controller.fillDemoAccount(
+                        account.username,
+                        account.password,
+                      );
+                      controller.submitLogin();
+                    },
                   ),
                 )
                 .toList(growable: false),

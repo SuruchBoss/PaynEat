@@ -1023,6 +1023,38 @@ void main() {
       },
     );
 
+    test(
+      'updateStaff ห้ามเปลี่ยนบทบาท/ปิดใช้งานบัญชีตัวเอง (mirror backend)',
+      () {
+        final created = store.createStaff(
+          name: 'แอดมินสำรอง',
+          username: 'self_guard_${DateTime.now().microsecondsSinceEpoch}',
+          password: 'test1234',
+          role: UserRole.admin,
+        );
+        final selfId = created['id'] as int;
+
+        expect(
+          () => store.updateStaff(selfId, {
+            'role': UserRole.waiter,
+          }, actorId: selfId),
+          throwsA(
+            isA<ApiException>().having((e) => e.statusCode, 'status', 400),
+          ),
+        );
+        expect(
+          () => store.updateStaff(selfId, {'isActive': false}, actorId: selfId),
+          throwsA(isA<ApiException>()),
+        );
+        // แก้ชื่อตัวเองได้ และคนอื่นเปลี่ยนบทบาทให้ได้ตามปกติ
+        store.updateStaff(selfId, {'name': 'ชื่อใหม่'}, actorId: selfId);
+        final changed = store.updateStaff(selfId, {
+          'role': UserRole.manager,
+        }, actorId: 1);
+        expect(changed['role'], UserRole.manager);
+      },
+    );
+
     test('deleteStaff log เป็น user.delete แม้บัญชีจะถูกลบไปแล้ว', () {
       final created = store.createStaff(
         name: 'จะถูกลบ',

@@ -128,6 +128,12 @@ const Map<String, String> paymentTranslationsTh = {
       'ขายเชื่อต้องผูกออเดอร์กับลูกค้าเครดิตก่อน',
   'payment_error_credit_role':
       'ขายเชื่อต้องให้แคชเชียร์หรือผู้จัดการเป็นคนทำรายการ',
+  'payment_refund_button_method': 'คืนเงิน (@method)',
+  'payment_blocked_no_shift': 'ยังไม่ได้เปิดกะ — เปิดกะก่อนจึงจะรับเงินได้',
+  'payment_blocked_amount':
+      'ยอดรับรอบนี้ต้องมากกว่า 0 และไม่เกินยอดค้าง @amount',
+  'payment_blocked_cash_short':
+      'รับเงินมายังไม่พอ ขาดอีก @amount — กดปุ่มจำนวนเงินด้านบนหรือพิมพ์ยอดที่รับ',
 };
 
 const Map<String, String> paymentTranslationsEn = {
@@ -265,6 +271,13 @@ const Map<String, String> paymentTranslationsEn = {
       'Link the order to a credit customer before selling on credit',
   'payment_error_credit_role':
       'Credit sales must be made by a cashier or manager',
+  'payment_refund_button_method': 'Refund (@method)',
+  'payment_blocked_no_shift':
+      'No shift is open — open a shift before taking payment',
+  'payment_blocked_amount':
+      'Amount must be more than 0 and no more than the @amount still due',
+  'payment_blocked_cash_short':
+      'Cash received is short by @amount — tap an amount above or type what you received',
 };
 
 const Map<String, String> paymentTranslationsKo = {
@@ -369,4 +382,9 @@ const Map<String, String> paymentTranslationsKo = {
       '이 외상 전표의 미수금은 @amount THB입니다 — 그 이상 감액할 수 없습니다',
   'payment_error_credit_requires_customer': '외상 판매 전에 주문을 신용 고객과 연결하세요',
   'payment_error_credit_role': '외상 판매는 캐셔 또는 매니저만 할 수 있습니다',
+  'payment_refund_button_method': '환불 (@method)',
+  'payment_blocked_no_shift': '근무가 시작되지 않았습니다 — 먼저 근무 시작을 눌러 주세요',
+  'payment_blocked_amount': '이번 결제 금액은 0보다 크고 남은 금액 @amount 이하여야 합니다',
+  'payment_blocked_cash_short':
+      '받은 현금이 @amount 부족합니다 — 위의 금액 버튼을 누르거나 받은 금액을 입력하세요',
 };

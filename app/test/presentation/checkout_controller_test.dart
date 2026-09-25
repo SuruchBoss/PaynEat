@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get/get.dart';
 import 'package:payneat_pos/core/constants/app_constants.dart';
 import 'package:payneat_pos/core/errors/failures.dart';
 import 'package:payneat_pos/core/network/socket_client.dart';
@@ -342,6 +343,37 @@ void main() {
 
         expect(controller.hasOpenShift.value, isFalse);
         expect(controller.canPay, isFalse);
+      },
+    );
+
+    // UAT แบบไม่มีคนสอน: ปุ่มรับเงินเทาอยู่ต้องบอกเหตุผลใต้ปุ่มเสมอ (DECISIONS #62)
+    test(
+      'payBlockedHint บอกเหตุผลทุกกรณีที่ canPay เป็นเท็จ และว่างเมื่อจ่ายได้',
+      () async {
+        orderRepository.nextOrderResult = Result.success(_order(total: 100));
+        paymentRepository.nextSummaryResult = Result.success(
+          _summary(total: 100, paid: 0),
+        );
+        controller.onInit();
+        await Future<void>.delayed(Duration.zero);
+
+        controller.selectMethod(PaymentMethod.cash);
+        controller.setAmount(100);
+        controller.setReceived(40);
+        expect(controller.canPay, isFalse);
+        expect(controller.payBlockedHint, isNotNull, reason: 'เงินสดไม่พอ');
+
+        controller.setAmount(0);
+        expect(controller.payBlockedHint, isNotNull, reason: 'ยอดเป็น 0');
+
+        controller.setAmount(100);
+        controller.setReceived(100);
+        expect(controller.canPay, isTrue);
+        expect(controller.payBlockedHint, isNull);
+
+        controller.hasOpenShift.value = false;
+        expect(controller.canPay, isFalse);
+        expect(controller.payBlockedHint, 'payment_blocked_no_shift'.tr);
       },
     );
 

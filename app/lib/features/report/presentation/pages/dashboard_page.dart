@@ -43,22 +43,8 @@ class DashboardPage extends GetView<DashboardController> {
           children: [
             _LiveBar(live: data.live),
             const SizedBox(height: 16),
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: columns,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              // มือถือต้องเตี้ยกว่า (อัตราส่วนน้อยกว่า = การ์ดสูงขึ้น) เพราะการ์ดกว้างแค่ ~171px
-              // แล้วเนื้อหาข้างในสูงคงที่ (ไอคอน 34 + ตัวเลข 23pt + คำอธิบายใต้ตัวเลข) — ใช้ 1.45
-              // เท่าแท็บเล็ตทำให้ล้น 12px ทุกใบ (เจอตอนถ่ายภาพหน้าภาพรวมที่ 390×844 ครั้งแรก
-              // เพราะเดิมถ่ายแต่ขนาดเว็บจึงไม่เคยเห็น)
-              childAspectRatio: Responsive.value(
-                context,
-                mobile: 1.2,
-                tablet: 1.45,
-                desktop: 1.55,
-              ),
+            StatGrid(
+              columns: columns,
               children: [
                 StatCard(
                   label: 'report_today_sales_label'.tr,

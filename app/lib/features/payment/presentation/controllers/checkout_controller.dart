@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../customer/domain/entities/customer.dart';
 import '../../../customer/domain/usecases/customer_usecases.dart';
@@ -140,6 +141,23 @@ class CheckoutController extends GetxController {
     if (!isCash) return 0;
     final value = received.value - chargedAmount;
     return value > 0 ? double.parse(value.toStringAsFixed(2)) : 0;
+  }
+
+  /// เหตุผลที่ปุ่มรับเงินยังกดไม่ได้ (แปลแล้ว) — โชว์ใต้ปุ่มให้คนไม่เคยใช้รู้ว่าต้องทำอะไรต่อ
+  /// กรณีขายเชื่อเกินวงเงินมีข้อความในกล่องวงเงินอยู่แล้ว จึงไม่ซ้ำตรงนี้ (คืน null)
+  String? get payBlockedHint {
+    if (!hasOpenShift.value) return 'payment_blocked_no_shift'.tr;
+    if (amount.value <= 0 || amount.value > remaining + 0.001) {
+      return 'payment_blocked_amount'.trParams({
+        'amount': Formatters.baht(remaining),
+      });
+    }
+    if (isCash && received.value + 0.001 < chargedAmount) {
+      return 'payment_blocked_cash_short'.trParams({
+        'amount': Formatters.baht(chargedAmount - received.value),
+      });
+    }
+    return null;
   }
 
   bool get canPay {

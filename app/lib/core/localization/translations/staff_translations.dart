@@ -22,6 +22,18 @@ const Map<String, String> staffTranslationsTh = {
   'staff_delete_title': 'ลบพนักงาน',
   'staff_delete_confirm': 'ต้องการลบบัญชีของ @name ใช่หรือไม่?',
   'staff_deleted_success': 'ลบบัญชีแล้ว',
+  'staff_cannot_change_own_role':
+      'เปลี่ยนบทบาทของบัญชีตัวเองไม่ได้ — ให้ผู้ดูแลอีกคนเปลี่ยนให้',
+  'staff_cannot_deactivate_self': 'ปิดการใช้งานบัญชีตัวเองไม่ได้',
+  'staff_you_badge': 'คุณ',
+  'staff_actions_tooltip': 'จัดการบัญชี',
+  'staff_change_role_title': 'เปลี่ยนบทบาท',
+  'staff_change_role_confirm':
+      'เปลี่ยน @name จาก @from เป็น @to ใช่หรือไม่? สิทธิ์ที่เห็นในแอปจะเปลี่ยนทันที',
+  'staff_change_role_button': 'เปลี่ยนบทบาท',
+  'staff_deactivate_title': 'ปิดการใช้งานบัญชี',
+  'staff_deactivate_confirm':
+      '@name จะล็อกอินไม่ได้จนกว่าจะเปิดการใช้งานอีกครั้ง ต้องการปิดใช่หรือไม่?',
 };
 
 const Map<String, String> staffTranslationsEn = {
@@ -47,6 +59,18 @@ const Map<String, String> staffTranslationsEn = {
   'staff_delete_title': 'Remove staff',
   'staff_delete_confirm': 'Remove @name\'s account?',
   'staff_deleted_success': 'Account deleted',
+  'staff_cannot_change_own_role':
+      "You can't change your own role — ask another admin",
+  'staff_cannot_deactivate_self': "You can't deactivate your own account",
+  'staff_you_badge': 'You',
+  'staff_actions_tooltip': 'Manage account',
+  'staff_change_role_title': 'Change role',
+  'staff_change_role_confirm':
+      'Change @name from @from to @to? What they can see in the app changes right away.',
+  'staff_change_role_button': 'Change role',
+  'staff_deactivate_title': 'Deactivate account',
+  'staff_deactivate_confirm':
+      "@name won't be able to sign in until the account is activated again. Deactivate?",
 };
 
 const Map<String, String> staffTranslationsKo = {
@@ -72,4 +96,14 @@ const Map<String, String> staffTranslationsKo = {
   'staff_delete_title': '직원 삭제',
   'staff_delete_confirm': '@name 님의 계정을 삭제할까요?',
   'staff_deleted_success': '계정을 삭제했습니다',
+  'staff_cannot_change_own_role': '본인 계정의 역할은 바꿀 수 없습니다 — 다른 관리자에게 요청하세요',
+  'staff_cannot_deactivate_self': '본인 계정은 사용 중지할 수 없습니다',
+  'staff_you_badge': '나',
+  'staff_actions_tooltip': '계정 관리',
+  'staff_change_role_title': '역할 변경',
+  'staff_change_role_confirm':
+      '@name 님의 역할을 @from에서 @to(으)로 바꿀까요? 앱에서 볼 수 있는 화면이 바로 바뀝니다.',
+  'staff_change_role_button': '역할 변경',
+  'staff_deactivate_title': '계정 사용 중지',
+  'staff_deactivate_confirm': '@name 님은 다시 사용 재개할 때까지 로그인할 수 없습니다. 사용 중지할까요?',
 };

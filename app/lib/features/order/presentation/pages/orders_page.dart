@@ -137,7 +137,12 @@ class _OrderTile extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    // Wrap: ชื่อโต๊ะ/"กลับบ้าน #12" + ป้ายสถานะยาวกว่าช่องบนมือถือ 360–390px (ล้นขวาถึง 43px
+                    // ในภาษาอังกฤษ) ให้ป้ายขึ้นบรรทัดใหม่แทน — docs/DECISIONS.md #62
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           order.displayTarget,
@@ -146,7 +151,6 @@ class _OrderTile extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(width: 8),
                         StatusChip(
                           label: order.statusLabel,
                           color: color,

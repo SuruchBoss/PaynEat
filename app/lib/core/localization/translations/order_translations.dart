@@ -159,6 +159,19 @@ const Map<String, String> orderTranslationsTh = {
   'order_weigh_kg_label': 'น้ำหนัก',
   'order_weigh_preview': '@weight = @price',
   'order_weigh_title': 'ชั่ง @name',
+  'order_menu_tooltip': 'ตัวเลือกเพิ่มเติม',
+  'order_merge_confirm_title': 'รวมบิล',
+  'order_merge_confirm_message':
+      'ย้ายรายการทั้งหมดของ @source (@code · @amount) มารวมในบิล @target แล้วปิดออเดอร์เดิม ย้อนกลับไม่ได้ ต้องการรวมใช่หรือไม่?',
+  'order_merge_confirm_button': 'รวมบิล',
+  'order_cancel_order_reason_required': 'ต้องระบุเหตุผลก่อนยกเลิก',
+  'order_discard_cart_title': 'ทิ้งรายการในตะกร้า?',
+  'order_clear_cart_title': 'ล้างตะกร้า?',
+  'order_discard_cart_message':
+      'ในตะกร้ามี @count รายการที่ยังไม่ได้ส่ง ถ้าออกตอนนี้รายการจะหายทั้งหมด',
+  'order_discard_cart_button': 'ทิ้งรายการ',
+  'order_keep_cart_button': 'อยู่ต่อ',
+  'order_open_cart_tooltip': 'ดูตะกร้า',
 };
 
 const Map<String, String> orderTranslationsEn = {
@@ -310,6 +323,19 @@ const Map<String, String> orderTranslationsEn = {
   'order_weigh_kg_label': 'Weight',
   'order_weigh_preview': '@weight = @price',
   'order_weigh_title': 'Weigh @name',
+  'order_menu_tooltip': 'More options',
+  'order_merge_confirm_title': 'Merge bills',
+  'order_merge_confirm_message':
+      "Move every item from @source (@code · @amount) into the @target bill and close the old order? This can't be undone.",
+  'order_merge_confirm_button': 'Merge bills',
+  'order_cancel_order_reason_required': 'A reason is required to cancel',
+  'order_discard_cart_title': 'Discard the cart?',
+  'order_clear_cart_title': 'Clear the cart?',
+  'order_discard_cart_message':
+      "The cart has @count item(s) that haven't been sent yet. They'll all be removed.",
+  'order_discard_cart_button': 'Discard',
+  'order_keep_cart_button': 'Keep ordering',
+  'order_open_cart_tooltip': 'View cart',
 };
 
 const Map<String, String> orderTranslationsKo = {
@@ -438,4 +464,16 @@ const Map<String, String> orderTranslationsKo = {
   'order_weigh_kg_label': '무게',
   'order_weigh_preview': '@weight = @price',
   'order_weigh_title': '@name 계량',
+  'order_menu_tooltip': '더보기',
+  'order_merge_confirm_title': '주문 합치기',
+  'order_merge_confirm_message':
+      '@source (@code · @amount)의 모든 항목을 @target 계산서로 옮기고 기존 주문을 닫을까요? 되돌릴 수 없습니다.',
+  'order_merge_confirm_button': '합치기',
+  'order_cancel_order_reason_required': '취소하려면 사유를 입력해야 합니다',
+  'order_discard_cart_title': '장바구니를 비울까요?',
+  'order_clear_cart_title': '장바구니를 비울까요?',
+  'order_discard_cart_message': '아직 보내지 않은 항목이 @count개 있습니다. 모두 삭제됩니다.',
+  'order_discard_cart_button': '버리기',
+  'order_keep_cart_button': '계속 주문',
+  'order_open_cart_tooltip': '장바구니 보기',
 };

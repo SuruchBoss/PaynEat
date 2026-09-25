@@ -70,22 +70,62 @@ class StatCard extends StatelessWidget {
           ),
           if (caption != null) ...[
             const SizedBox(height: 2),
-            // การ์ดนี้ถูกวางในกริดที่ล็อกความสูงไว้ (childAspectRatio) คำอธิบายจึงต้องตัดบรรทัด
-            // ไม่ได้ ไม่งั้นข้อความยาว/ผู้ใช้ขยายขนาดตัวอักษรจะดันจนการ์ดล้น
-            Flexible(
-              child: Text(
-                caption!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+            Text(
+              caption!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
             ),
           ],
         ],
       ),
     );
+  }
+}
+
+/// วางการ์ดสรุปเป็นแถว ๆ ละ [columns] ใบ สูงเท่าเนื้อหาของใบที่สูงสุดในแถว
+///
+/// เดิมใช้ GridView.count + childAspectRatio ความสูงการ์ดจึงผูกกับความกว้าง พอจอแคบลง
+/// (มือถือ 360px) หรือผู้ใช้ขยายตัวอักษรของระบบ การ์ดเตี้ยกว่าเนื้อหาแล้วล้น 4–6px ทุกใบ
+/// ในหน้าภาพรวมและรายงาน (เจอตอนไล่ถ่ายทุกหน้าก่อน UAT — docs/DECISIONS.md #62)
+class StatGrid extends StatelessWidget {
+  const StatGrid({
+    super.key,
+    required this.columns,
+    required this.children,
+    this.spacing = 12,
+  });
+
+  final int columns;
+  final List<Widget> children;
+  final double spacing;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var start = 0; start < children.length; start += columns) {
+      final cells = <Widget>[];
+      for (var i = 0; i < columns; i++) {
+        if (i > 0) cells.add(SizedBox(width: spacing));
+        final index = start + i;
+        cells.add(
+          Expanded(
+            child: index < children.length
+                ? children[index]
+                : const SizedBox.shrink(),
+          ),
+        );
+      }
+      if (rows.isNotEmpty) rows.add(SizedBox(height: spacing));
+      rows.add(
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: cells,
+          ),
+        ),
+      );
+    }
+    return Column(mainAxisSize: MainAxisSize.min, children: rows);
   }
 }

@@ -15,7 +15,10 @@ import 'theme/app_theme.dart';
 class PaynEatApp extends StatelessWidget {
   const PaynEatApp({super.key});
 
-  /// ภาษาที่ผู้ใช้เลือกไว้ล่าสุด (ถ้ามี) — ค่าเริ่มต้นคือไทย
+  /// ภาษาที่ผู้ใช้เลือกไว้ล่าสุด (ถ้ามี) — ยังไม่เคยเลือก ใช้ภาษาของเครื่องถ้ารองรับ ไม่งั้นไทย
+  ///
+  /// ลูกค้าเกาหลีสแกน QR ด้วยมือถือตัวเองครั้งแรกต้องเห็นเมนูภาษาเกาหลีเลย ไม่ใช่ไทย
+  /// (docs/DECISIONS.md #62)
   ///
   /// แปลงรหัสภาษาผ่าน [LocaleService.localeOf] จุดเดียว ไม่เทียบ `== 'en'` เอง
   /// ตรงนี้ — ตอนเพิ่มภาษาเกาหลีโค้ดเดิมยังคืนไทยให้ผู้ใช้ที่เลือก ko ไว้
@@ -24,7 +27,7 @@ class PaynEatApp extends StatelessWidget {
     final saved = Get.isRegistered<StorageService>()
         ? Get.find<StorageService>().locale
         : null;
-    return LocaleService.localeOf(saved ?? 'th');
+    return LocaleService.localeOf(saved ?? LocaleService.deviceLanguageCode);
   }
 
   @override

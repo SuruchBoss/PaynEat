@@ -123,17 +123,8 @@ class ReportsPage extends GetView<ReportController> {
             return ListView(
               padding: const EdgeInsets.all(16),
               children: [
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: columns,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: Responsive.value(
-                    context,
-                    mobile: 1.45,
-                    desktop: 1.55,
-                  ),
+                StatGrid(
+                  columns: columns,
                   children: [
                     StatCard(
                       label: 'report_net_sales_label'.tr,
