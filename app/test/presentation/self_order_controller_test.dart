@@ -16,8 +16,7 @@ import 'package:payneat_pos/features/self_order/presentation/controllers/self_or
 class _FakeSelfOrderRepository implements SelfOrderRepository {
   Result<({SelfOrderTable table, Order? order})> nextGetTableResult =
       Result.success((table: _table(), order: null));
-  Result<({List<Category> categories, List<MenuItem> items, int staffOnlyCount})>
-  nextGetMenuResult = Result.success((
+  Result<SelfOrderMenu> nextGetMenuResult = Result.success((
     categories: const [],
     items: const [],
     staffOnlyCount: 0,
@@ -30,9 +29,8 @@ class _FakeSelfOrderRepository implements SelfOrderRepository {
   ) async => nextGetTableResult;
 
   @override
-  Future<Result<({List<Category> categories, List<MenuItem> items, int staffOnlyCount})>> getMenu(
-    String qrToken,
-  ) async => nextGetMenuResult;
+  Future<Result<SelfOrderMenu>> getMenu(String qrToken) async =>
+      nextGetMenuResult;
 
   @override
   Future<Result<Order>> addItems(

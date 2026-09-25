@@ -25,12 +25,7 @@ class SelfOrderRepositoryImpl implements SelfOrderRepository {
   });
 
   @override
-  Future<
-    Result<
-      ({List<Category> categories, List<MenuItem> items, int staffOnlyCount})
-    >
-  >
-  getMenu(String qrToken) => guard(() async {
+  Future<Result<SelfOrderMenu>> getMenu(String qrToken) => guard(() async {
     final result = await _remote.getMenu(qrToken);
     return (
       categories: result.categories.cast<Category>(),

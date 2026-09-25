@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-876%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-891%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 876 automated tests.
+control and 891 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 876 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **876 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **891 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -585,9 +585,9 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 355 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 473 cases — domain / controller / widget
-cd app && flutter test test_e2e   # 48 cases — the real app talking to the real backend (run npm ci in backend first)
+cd backend && npm test      # 361 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 481 cases — domain / controller / widget
+cd app && flutter test test_e2e   # 49 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
 ---
@@ -670,7 +670,8 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
   Kitchen" — the item shows up on the table map/kitchen display in real time exactly as if a staff
   member had entered it, with the same automatic stock deduction and promotion calculation (no
   duplicated business logic — it's the same service/endpoints staff use)
-- **Sold-by-weight items are hidden** (fresh meat by the kg) since staff have to weigh them — a direct
+- **Sold-by-weight items are hidden, with a line saying so** — "Meat sold by weight — order it from staff", so
+  customers don't assume it's sold out (#64) — (fresh meat by the kg) since staff have to weigh them — a direct
   API call is rejected too
 - **Payment still goes through the cashier** — this feature is order-taking only, not self-checkout
   (see `docs/tickets/17-qr-self-order.md`, `docs/DECISIONS.md` #37)
@@ -683,6 +684,9 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
 - Tickets pop up automatically in real time — no refresh needed
 - Split into 3 status columns: pending → cooking → ready
 - **Flags tickets waiting over 15 minutes** with a red border and flame icon
+- **Mis-taps can be undone** — after a status change an **"Undo"** bar stays at the bottom for 8 seconds and steps
+  back one stage (cooking → pending, ready → cooking) without calling a manager; served items can't be undone
+  (see `docs/DECISIONS.md` #64)
 - One-tap status changes, designed to be easy to hit with messy hands in a kitchen
 - Toggle a menu item sold-out instantly, without waiting on a manager
 - **Distinct icon/label per order type** on every ticket — table 🍽️ / takeaway 🥡 / delivery 🛵 — obvious
@@ -842,11 +846,12 @@ cd app && flutter test test_e2e   # 48 cases — the real app talking to the rea
   demo passwords for you (see `docs/DECISIONS.md` #20 and `SECURITY.md`)
 - **Three languages throughout: ไทย / English / 한국어** — switch from the **Profile** or
   **Settings** page, or the globe button on the login page and the customer QR menu (the first launch follows
-  the device language); remembered per device. **The demo data is translated too** — menu items,
+  the device language). Date pickers, the standard system buttons and **error messages from the backend** follow
+  the chosen language too (the app sends `Accept-Language` on every request, #64); remembered per device. **The demo data is translated too** — menu items,
   categories, table zones and add-on options — so you never see one language's UI wrapped around
   another language's data. A real restaurant's own entries always display exactly as typed, and
   names already printed on kitchen tickets and past receipts do not move, since those were
-  captured when the order was placed. All 1,094 keys are translated for every language, and the
+  captured when the order was placed. All 1,097 keys are translated for every language, and the
   Korean font ships inside the app as a subset of only the characters actually used (4 weights,
   ~350 KB), so it never depends on the device's own fonts. A test parses the font file's cmap table
   to stop any translation from using a character outside that subset, and the AI assistant answers
@@ -1182,12 +1187,12 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 355 cases
-cd app && flutter test      # 473 cases
-cd app && flutter test test_e2e   # 48 cases (run npm ci in backend first)
+cd backend && npm test      # 361 cases
+cd app && flutter test      # 481 cases
+cd app && flutter test test_e2e   # 49 cases (run npm ci in backend first)
 ```
 
-**E2E — the real app talking to the real backend (48 cases)** — `app/test_e2e/` boots the real backend
+**E2E — the real app talking to the real backend (49 cases)** — `app/test_e2e/` boots the real backend
 (`node src/server.js`) on a random port with a brand-new temporary database per file, then drives the
 app's real data/domain code (`ApiClient` → data source → repository, the same stack the app assembles at
 startup) against it the way a restaurant would, with each role holding its own "device". It's the only
@@ -1202,7 +1207,7 @@ and the backend tests are pure JavaScript), and it has its own job in CI:
 > table freed → full tax invoice → refund (cashier can't, manager can) → shift closes with zero variance →
 > Z-report + CSV → reports count exactly one more bill → the audit log holds every money event
 >
-> `self_order_and_access_e2e_test.dart` (15 cases) — a customer scans the QR and orders all the way to the
+> `self_order_and_access_e2e_test.dart` (16 cases) — a customer scans the QR and orders all the way to the
 > kitchen screen, every kind of broken link, regenerating the QR kills the old link instantly, no personal
 > data leaks onto the public page, multi-branch staff/branch switching, a 403 at every money-related
 > permission, a bad token, and a deactivated staff member's still-logged-in device stops working
@@ -1232,7 +1237,7 @@ backend losing their BOM so Thai text garbled in Excel (#45), and a customer tap
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
 
-**Backend (355 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (361 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1415,9 +1420,12 @@ nothing, unpaid interest keeps a bill open while waiving it earns the points wit
 and a split bill whose credit part was paid off first earns when the bill closes (see
 `docs/DECISIONS.md` #59) — `cors.test.js` (2 cases) `CORS_ORIGIN=*`, as `.env.example`/docker-compose set it,
 must answer `Access-Control-Allow-Origin: *` so a web app on a different port from the API can log in (it used
-to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
+to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61) — `error-i18n.test.js` (5 cases) scans every source file and fails on a Thai error
+message with no English/Korean entry in the catalogue, checks placeholders match across languages, and that real HTTP
+responses follow `Accept-Language` (none or unsupported = Thai as before) — `kitchen-undo.test.js`: the kitchen can step a
+status back one stage but never out of served (see `docs/DECISIONS.md` #64)
 
-**Flutter (473 cases)** — split into 3 levels:
+**Flutter (481 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1457,6 +1465,9 @@ to become `['*']`, which matches nothing — see `docs/DECISIONS.md` #61)
 | Widget | `weight_entry_dialog_test.dart` | Turning the typed weight (kg, a comma works as the decimal point) into whole grams, rounding, and rejecting anything outside 1–99,999 g (ticket 18) |
 | Core | `destructive_labels_test.dart` | The accounts-receivable "void document" button must never share a label with the ordinary Cancel/Close buttons, in every language — the Korean edition had "취소" for both, sitting next to "닫기" (see `docs/DECISIONS.md` #60) |
 | Widget | `uat_affordances_test.dart` | Found while preparing an unguided UAT: the globe button names the current language in that language and lists all 3, `StatGrid` with long captions doesn't overflow at 320/360/600 px and cards in a row share one height (was 36 overflows), table cards show a visible ⋯ button instead of relying on long-press (#62) |
+| Controller | `kitchen_controller_test.dart` | (added) Undo after a status change sends the previous status back to the server, served items get no Undo bar, and the bar clears itself when time runs out (#64) |
+| Core | `api_client_test.dart` | (added) every request carries `Accept-Language` for the language shown at that moment — switching mid-shift changes the next request (#64) |
+| Core | `korean_font_coverage_test.dart` | (added) also counts Korean Material strings (date/time pickers, buttons) and the Korean backend error messages in `backend/src/i18n/errorMessages.js` — caught 18 missing glyphs before they could show up as boxes (#64) |
 | Core | `locale_service_test.dart` | (added) the first launch uses the device language (Korean/English) and an unsupported one falls back to Thai (#62) |
 | Widget | `cart_panel_locale_test.dart` | The cart must show item names in the chosen language (English/Korean), matching the card just tapped — it had used the always-Thai `menuItem.name` since the first commit; also checks a weighed line doesn't overflow when glyphs are wide (see `docs/DECISIONS.md` #58) |
 | Core | `formatters_due_date_test.dart` | Due dates render in the current language ("11 Oct 2026" / "2026년 10월 11일") instead of a raw `2026-10-11`, without shifting a day with the device timezone |
@@ -1521,7 +1532,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - [x] **High-contrast mode** — done: toggled from the **Profile** page (reachable by every role,
   not just admins) and remembered per device. Every text token moves from AA (4.5:1) to AAA (7:1)
   and card borders from 1.24:1 to 4.10:1 (see `docs/DECISIONS.md` #18)
-- [x] **Korean language support** — done: 1,094 translation keys across every feature (verified to
+- [x] **Korean language support** — done: 1,097 translation keys across every feature (verified to
   match the Thai key set exactly), NotoSansKR embedded as a subset, a separately designed Korean
   landing page with 5 real Korean-locale app screenshots, a three-way language switcher on all
   three landing pages (now visible on mobile too, where the whole group used to be hidden), and
@@ -1530,7 +1541,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   (see `docs/DECISIONS.md` #39) — **no Korean menu names in the database**, deliberately: those
   are each restaurant's own data, not system text
 - [x] **Flutter integration tests against a real backend** — done as the E2E suite `app/test_e2e/`
-  (48 cases): boots the real backend on a fresh temporary database per file and drives the app's real
+  (49 cases): boots the real backend on a fresh temporary database per file and drives the app's real
   data/domain code through a full restaurant business day + a customer scanning the QR + branches/
   permissions. It works at the data/domain layer rather than `integration_test`, which needs a real
   device, and runs as its own CI job — its first run found 5 real bugs that all 659 existing tests
@@ -1643,8 +1654,12 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   `tool/screenshots/uat_walkthrough_test.dart`). Overflows went from 64 to 0; added a language switch before
   login and on the QR menu, one-tap demo sign-in, confirmations before anything irreversible (merge bills,
   role changes, discarding a cart), a reason whenever a button is disabled, and tooltips on every icon button
-  (see `docs/DECISIONS.md` #62). Still open: backend error messages are Thai-only, Material's built-in
-  strings/date pickers are English, and demo staff/branch names are Thai
+  (see `docs/DECISIONS.md` #62)
+- [x] **Close the items left open by the UAT review** — done: backend error messages follow the app language (a
+  catalogue plus a test that scans the source so nothing slips through), Material strings/date pickers follow the
+  language, demo staff names are translated, the kitchen has Undo, the QR menu says weighed meat is ordered from
+  staff, and screenshots draw real shadows instead of black outlines (see `docs/DECISIONS.md` #64). Kept on purpose:
+  Thai branch name/address (tax-invoice rule), Thai audit-log summaries, and per-device data in demo mode
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

@@ -9,19 +9,19 @@ import '../models/self_order_table_model.dart';
 /// คุยกับ endpoint สาธารณะ `/public/tables/:qrToken/*` (ดู docs/tickets/17-qr-self-order.md) —
 /// ไม่แนบ Authorization header เลย เพราะไม่มี session ให้แนบ (ApiClient จะแนบให้อัตโนมัติถ้ามี
 /// token ค้างอยู่ในเครื่องจากการ login ก่อนหน้า แต่ backend ฝั่งนี้ไม่สนใจ header นี้อยู่แล้ว)
+/// เมนูฝั่งลูกค้าระดับ model — คู่กับ [SelfOrderMenu] ในชั้น domain
+typedef SelfOrderMenuModel = ({
+  List<CategoryModel> categories,
+  List<MenuItemModel> items,
+  int staffOnlyCount,
+});
+
 abstract class SelfOrderRemoteDataSource {
   Future<({SelfOrderTableModel table, OrderModel? order})> getTable(
     String qrToken,
   );
 
-  Future<
-    ({
-      List<CategoryModel> categories,
-      List<MenuItemModel> items,
-      int staffOnlyCount,
-    })
-  >
-  getMenu(String qrToken);
+  Future<SelfOrderMenuModel> getMenu(String qrToken);
 
   Future<OrderModel> addItems(String qrToken, List<OrderItemPayload> items);
 }
@@ -49,14 +49,7 @@ class SelfOrderRemoteDataSourceImpl implements SelfOrderRemoteDataSource {
   }
 
   @override
-  Future<
-    ({
-      List<CategoryModel> categories,
-      List<MenuItemModel> items,
-      int staffOnlyCount,
-    })
-  >
-  getMenu(String qrToken) async {
+  Future<SelfOrderMenuModel> getMenu(String qrToken) async {
     final result = await _client.get(ApiEndpoints.publicTableMenu(qrToken));
     final data = result.asMap;
     final categories = (data['categories'] as List? ?? const [])

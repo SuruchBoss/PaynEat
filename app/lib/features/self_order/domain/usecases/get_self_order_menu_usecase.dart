@@ -19,10 +19,6 @@ class GetSelfOrderMenuUseCase
   final SelfOrderRepository _repository;
 
   @override
-  Future<
-    Result<
-      ({List<Category> categories, List<MenuItem> items, int staffOnlyCount})
-    >
-  >
-  call(String qrToken) => _repository.getMenu(qrToken);
+  Future<Result<SelfOrderMenu>> call(String qrToken) =>
+      _repository.getMenu(qrToken);
 }

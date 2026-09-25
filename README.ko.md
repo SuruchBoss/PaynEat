@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-876%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-891%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -51,7 +51,8 @@
 그리고 리포트를 볼 수 있을 만큼의 매출까지.
 
 **로그인 화면과 QR 메뉴 오른쪽 위의 지구본 버튼, 또는 내 정보 화면에서 언어를 한국어로 바꾸실 수 있습니다.**
-처음 여실 때는 기기 언어를 따라갑니다.
+처음 여실 때는 기기 언어를 따라갑니다. 날짜 선택 달력, 기본 버튼, 그리고 **백엔드가 보내는 오류 메시지**도
+선택한 언어로 나옵니다.
 메뉴 이름, 카테고리, 구역 이름, 옵션까지 전부 한국어로 바뀝니다.
 
 ### 계정
@@ -133,12 +134,15 @@
 - 장바구니에 담아 직접 주방으로 전달
 - 직원이 넣은 주문과 완전히 같은 경로로 처리됩니다 (재고 차감, 프로모션 적용 포함)
 - 무게를 달아야 하는 정육 상품은 손님 메뉴에 나타나지 않습니다
+- 무게로 파는 정육은 QR 메뉴에 나오지 않는 대신, "무게로 파는 정육은 직원에게 주문해 주세요" 안내가 표시됩니다
 
 ### 주방
 - 대기 / 조리 중 / 조리 완료 세 개 열
 - 가장 오래 기다린 주문이 항상 맨 위
 - 15분을 넘기면 자동으로 경고 표시
 - 매장·포장·배달을 아이콘으로 첫눈에 구분
+- **잘못 누른 상태는 되돌리기** — 상태를 바꾸면 화면 아래에 8초 동안 **"되돌리기"** 막대가 떠서 한 단계 되돌릴 수
+  있습니다 (조리 중 → 대기, 조리 완료 → 조리 중). 서빙 완료는 되돌릴 수 없습니다
 
 ### 캐셔
 - 분할 결제, 테이블 이동, 합산 결제 — 음식값·할인·서비스 차지·부가가치세를 비율대로 자동 배분
@@ -240,15 +244,15 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **876건**의 자동화 테스트를 통과합니다.
+공개 전 **891건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 355건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 473건 — domain / controller / widget
-cd app && flutter test test_e2e   # 48건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+cd backend && npm test      # 361건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 481건 — domain / controller / widget
+cd app && flutter test test_e2e   # 49건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
 
-`app/test_e2e/`의 E2E 48건은 실제 백엔드(`node src/server.js`)를 매번 새 임시 DB로 띄우고, 앱의
+`app/test_e2e/`의 E2E 49건은 실제 백엔드(`node src/server.js`)를 매번 새 임시 DB로 띄우고, 앱의
 실제 data/domain 코드가 매장의 하루를 처음부터 끝까지 진행합니다 — 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 그리고 손님의 QR 주문과
 지점·권한까지. 다른 Flutter 테스트는 모두 데모 모드에서 돌기 때문에, 앱이 **백엔드가 실제로 보낸
@@ -273,6 +277,8 @@ PDF로 내려받아짐 → 청구서 이메일 발송 (`scale_documents_e2e_test
   (단, 세금계산서 주소와 지점명은 태국어로 남아야 하므로 반대로 검사합니다)
 - `locale_service_test.dart` — 저장된 언어가 다음 실행에서 그대로 복원되는지 확인합니다
   (처음 실행할 때는 기기 언어 — 한국어 기기면 한국어로 시작합니다)
+- `error-i18n.test.js` (백엔드) — 소스 전체를 훑어 영어/한국어 번역이 없는 태국어 오류 메시지가 있으면 실패합니다.
+  실제 HTTP 응답이 `Accept-Language`를 따르는지도 확인합니다
 - `uat_affordances_test.dart` — 설명 없이 처음 쓰는 사람을 위한 부분을 지킵니다: 지구본 버튼이 현재 언어를 그 언어로
   표시하고 세 언어를 모두 보여 주는지, 긴 한국어 설명이 들어간 통계 카드가 360px 화면에서도 넘치지 않는지, 테이블
   카드에 길게 누르지 않아도 보이는 ⋯ 버튼이 있는지
