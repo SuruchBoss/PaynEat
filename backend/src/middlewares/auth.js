@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { ApiError } from '../core/ApiError.js';
 import { userRepository } from '../modules/users/user.repository.js';
 import { branchRepository } from '../modules/branches/branch.repository.js';
+import { setLocationCode } from '../core/telemetry/requestContext.js';
 
 /**
  * token ปกติพก branchId เสมอ (สาขาที่กำลังทำงานอยู่ — null ได้เฉพาะ admin แปลว่า "ทุกสาขา" ดู
@@ -86,6 +87,8 @@ export const authenticate = (req, _res, next) => {
     name: user.name,
   };
   req.branchId = branchId;
+  // label location_code ของทุกบรรทัด log ของคำขอนี้ (สัญญา telemetry — ticket 24)
+  if (branchId !== null) setLocationCode(branchRepository.findById(branchId)?.code);
   return next();
 };
 

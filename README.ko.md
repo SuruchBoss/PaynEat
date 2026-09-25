@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-891%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-920%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -215,6 +215,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 - **코드에 예비 JWT 비밀키가 없습니다**
 - **지울 수 없는 변경 이력** — 주문 취소, 할인, 권한 변경, 환불, 메뉴 가격 수정
 - **데이터는 매장 안에 있습니다** — 매장의 서버나 PC에서 직접 돌아갑니다
+- **로그에 고객 정보가 남지 않습니다** — 이름·전화번호·이메일·사업자 번호·주소·비밀번호·토큰·테이블 QR 토큰, 요청
+  본문과 쿼리 문자열은 로그에 기록되지 않습니다 (테스트로 확인). 로그는 PaynEat 생태계 텔레메트리 규약에 따른 JSON이고
+  모든 요청에 `x-request-id`가 붙습니다 — 실제 백엔드에 연결하면 오류 메시지 끝에 **요청 ID**가 표시되어, 매장에서 그
+  ID로 문제를 알려 주시면 해당 요청의 로그를 바로 찾을 수 있습니다. `/metrics`(Prometheus)는 API와 다른 포트(9464)에
+  있고 docker compose가 외부로 열지 않습니다 (`docs/DECISIONS.md` #68)
 
 ### 운영 배포 전에 꼭 확인하세요
 
@@ -258,11 +263,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 
 ## 테스트
 
-공개 전 **891건**의 자동화 테스트를 통과합니다.
+공개 전 **920건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 361건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 481건 — domain / controller / widget
+cd backend && npm test      # 385건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 486건 — domain / controller / widget
 cd app && flutter test test_e2e   # 49건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
 ```
 
@@ -277,6 +282,11 @@ JSON을 읽는** 테스트는 이것뿐입니다. 첫 실행에서 기존 659건
 "저울"을 열고 실제 백엔드가 거기에 연결하는 시나리오도 있습니다 — 흔들리는 무게는 못 쓰고 안정된 무게만 사용 →
 그 무게로 외상 판매 → 20일 연체·유예 5일이면 정확히 15일치 이자 → 감액 전표로 부가가치세 분리 → 모든 문서가 실제
 PDF로 내려받아짐 → 청구서 이메일 발송 (`scale_documents_e2e_test.dart`).
+
+로그와 메트릭은 `telemetry-log-record.test.js`(13건 — 규약의 규칙)와 `telemetry.test.js`(11건)가 실제 앱이 쓴 로그 줄을
+직접 검사합니다 — 두 가지 형식, `x-request-id` 왕복, 상태 코드별 severity, route template별 `/metrics`, 그리고 로그인·고객
+등록·수정·전화번호 검색 후에도 이름·전화번호·이메일·비밀번호가 로그에 없는지. 앱 쪽 `request_id_error_test.dart`(5건)는
+오류 메시지 끝의 요청 ID가 실제로 보낸 ID와 같은지 확인합니다 (`docs/DECISIONS.md` #68).
 
 한국어 지원에도 전용 테스트가 있습니다:
 

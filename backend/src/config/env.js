@@ -2,6 +2,7 @@ import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseCorsOrigin } from './cors.js';
+import { SEVERITIES } from '../core/telemetry/logRecord.js';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -84,6 +85,23 @@ export const env = {
     pollCommand: process.env.SCALE_POLL_COMMAND,
     pollMs: toInt(process.env.SCALE_POLL_MS, 500),
   },
+  // log และ metric ตามสัญญา telemetry v1.1 ของระบบนิเวศ PaynEat (ดู docs/tickets/24-telemetry-contract.md)
+  //   LOG_FORMAT=gcp — เฉพาะ deployment บน Google Cloud: ย้าย labels/trace ไปที่ key ที่ Cloud Logging อ่าน
+  //   METRICS_PORT   — /metrics อยู่พอร์ตของตัวเอง ไม่ใช่พอร์ต API (DECISIONS #68) docker compose ไม่เปิดพอร์ตนี้
+  telemetry: {
+    logLevel: SEVERITIES.includes(process.env.LOG_LEVEL?.toUpperCase())
+      ? process.env.LOG_LEVEL.toUpperCase()
+      : 'INFO',
+    logFormat: process.env.LOG_FORMAT === 'gcp' ? 'gcp' : 'default',
+    gcpProject: process.env.GOOGLE_CLOUD_PROJECT || undefined,
+    metricsPort: toInt(process.env.METRICS_PORT, 9464),
+    metricsHost: process.env.METRICS_HOST ?? process.env.HOST ?? '0.0.0.0',
+  },
 };
+
+// /metrics บนพอร์ตเดียวกับ API = เปิดสาธารณะไปพร้อม API ทันทีที่ร้าน forward พอร์ต API ออกเน็ต ซึ่งสัญญาห้าม
+if (env.telemetry.metricsPort !== 0 && env.telemetry.metricsPort === env.port) {
+  throw new Error('METRICS_PORT ต้องไม่ใช่พอร์ตเดียวกับ PORT — /metrics ห้ามเปิดสาธารณะคู่กับ API');
+}
 
 export default env;

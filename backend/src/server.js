@@ -8,6 +8,8 @@ import { seed } from './db/seed.js';
 import { initSocket } from './realtime/socket.js';
 import { closeDb } from './db/index.js';
 import { scaleService } from './modules/scale/scale.service.js';
+import { logger } from './core/telemetry/logger.js';
+import { startMetricsServer } from './core/telemetry/metrics.js';
 
 migrate();
 if (process.env.AUTO_SEED !== 'false') seed();
@@ -18,21 +20,33 @@ initSocket(server);
 scaleService.start();
 
 server.listen(env.port, env.host, () => {
-  console.log(`
-🍽️  PaynEat POS API
-   ▸ REST      : http://localhost:${env.port}/api/v1
-   ▸ Docs      : http://localhost:${env.port}/docs
-   ▸ Health    : http://localhost:${env.port}/health
-   ▸ Realtime  : ws://localhost:${env.port} (socket.io)
-   ▸ Database  : ${env.databaseFile}
-   ▸ Scale     : ${env.scale.driver}
-   ▸ Env       : ${env.nodeEnv}
-`);
+  // log เป็น JSON บรรทัดละ object ตามสัญญา telemetry (ticket 24) — แทนป้ายต้อนรับแบบข้อความเดิม
+  logger.info(
+    `PaynEat POS API listening on http://localhost:${env.port} ` +
+      `(REST /api/v1, docs /docs, health /health, realtime socket.io)`,
+  );
+  logger.info(
+    `Database ${env.databaseFile}; scale driver ${env.scale.driver}; environment ${env.nodeEnv}`,
+  );
 });
 
+let metricsServer;
+startMetricsServer()
+  .then((started) => {
+    metricsServer = started;
+    logger.info(`Metrics served on :${started.address().port}/metrics (not the API port)`);
+  })
+  .catch((error) => {
+    // POS ขายต่อได้แม้ /metrics เปิดไม่ได้ (เช่นพอร์ตชน) — metric เป็นของเสริม ไม่ใช่เหตุให้ร้านขายไม่ได้
+    logger.error(`Metrics server could not start on :${env.telemetry.metricsPort}`, {
+      error: { type: error.code ?? error.name, message: error.message },
+    });
+  });
+
 const shutdown = (signal) => {
-  console.log(`\n${signal} received — กำลังปิดเซิร์ฟเวอร์...`);
+  logger.info(`${signal} received, shutting down`);
   scaleService.stop();
+  metricsServer?.close();
   server.close(() => {
     closeDb();
     process.exit(0);

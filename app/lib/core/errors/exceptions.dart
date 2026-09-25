@@ -7,6 +7,7 @@ class ApiException implements Exception {
     this.statusCode,
     this.code,
     this.details,
+    this.requestId,
   });
 
   final String message;
@@ -14,8 +15,11 @@ class ApiException implements Exception {
   final String? code;
   final List<Map<String, dynamic>>? details;
 
+  /// `x-request-id` ของคำขอนี้ — รหัสเดียวกับใน log ของ backend (สัญญา telemetry, ticket 24)
+  final String? requestId;
+
   @override
-  String toString() => 'ApiException($statusCode, $code): $message';
+  String toString() => 'ApiException($statusCode, $code, $requestId): $message';
 }
 
 class NetworkException implements Exception {

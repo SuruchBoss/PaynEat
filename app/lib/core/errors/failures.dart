@@ -26,10 +26,14 @@ class ServerFailure extends Failure {
     this.statusCode,
     super.details,
     this.code,
+    this.requestId,
   });
 
   final int? statusCode;
   final String? code;
+
+  /// `x-request-id` ของคำขอที่ล้มเหลว — [message] มีรหัสนี้ต่อท้ายอยู่แล้ว (ดู failure_mapper.dart)
+  final String? requestId;
 }
 
 /// ต่อเน็ตไม่ได้ / timeout

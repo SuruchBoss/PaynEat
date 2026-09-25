@@ -84,6 +84,9 @@ class BackendProcess {
       'DATABASE_FILE': '${tempDir.path}/e2e.sqlite',
       'PORT': '$port',
       'HOST': '127.0.0.1',
+      // /metrics อยู่พอร์ตของตัวเอง (ticket 24) — ไฟล์ E2E รันขนานกันหลาย backend จึงให้ระบบเลือกพอร์ตว่างเอง
+      // ไม่งั้นทุกตัวแย่ง 9464 (backend ยังทำงานต่อได้ แต่ log error ทุกครั้งโดยไม่จำเป็น)
+      'METRICS_PORT': '0',
       ...environment,
     }..remove('ANTHROPIC_API_KEY');
 

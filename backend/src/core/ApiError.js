@@ -18,6 +18,8 @@ export class ApiError extends Error {
       403: 'FORBIDDEN',
       404: 'NOT_FOUND',
       409: 'CONFLICT',
+      413: 'PAYLOAD_TOO_LARGE',
+      415: 'UNSUPPORTED_MEDIA_TYPE',
       422: 'UNPROCESSABLE_ENTITY',
       429: 'TOO_MANY_REQUESTS',
     };

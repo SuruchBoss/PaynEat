@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-891%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-920%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 891 automated tests.
+control and 920 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivatives are very
 > welcome, just keep the [`NOTICE`](NOTICE) file as required by the Apache License 2.0. Say hi on
@@ -54,7 +54,7 @@ control and 891 automated tests.
   customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
   credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
   the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **891 automated tests** run before every release, from bill-calculation rules to a full 17-step
+- **920 automated tests** run before every release, from bill-calculation rules to a full 17-step
   end-to-end restaurant walkthrough
 
 ---
@@ -223,14 +223,12 @@ npm run dev
 
 `.env` holds a `JWT_SECRET` for local runs — the backend deliberately has no built-in default and refuses to
 start without one (see `SECURITY.md`).
-Success looks like this (the database and sample data are created automatically — nothing else to configure):
+A line containing `PaynEat POS API listening on http://localhost:3000` means it worked (the database and sample
+data are created automatically — nothing else to configure). Logs are JSON, one object per line, per the PaynEat
+ecosystem telemetry contract (ticket 24); every request the app makes shows up as a line like this, with its request ID:
 
 ```
-🍽️  PaynEat POS API
-   ▸ REST      : http://localhost:3000/api/v1
-   ▸ Docs      : http://localhost:3000/docs
-   ▸ Health    : http://localhost:3000/health
-   ▸ Realtime  : ws://localhost:3000 (socket.io)
+{"severity":"INFO","time":"2026-09-25T10:15:30.123Z","message":"PaynEat POS API listening on http://localhost:3000 (REST /api/v1, docs /docs, health /health, realtime socket.io)","labels":{"app":"payneat-pos-api","event":"app.log","correlation_id":"process-…"}}
 ```
 
 **Terminal 2 — App** (open a new window, keep the first one running)
@@ -510,6 +508,15 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
     backend: set the interest rate in Settings first, and a bill has to be past its due date plus the
     grace days before there's any interest to charge) (see `docs/tickets/21-late-fees-credit-notes.md`,
     `23-document-pdf-email.md`, `docs/DECISIONS.md` #55–#57)
+29. **A request ID on the error message → found in the backend log** (against a real backend, Options A/B/D —
+    Demo Mode has no backend, so no ID) → log in as `admin` → **Staff** → add a new staff member with the
+    username `cashier` (already taken) → the rejection ends with a **"Request ID: pos-…"** line → search the
+    backend log for that ID (Option A: terminal 1 · Options B/D: `docker logs payneat-api`) and you land on
+    that request's JSON line — `severity` is `WARNING`, the path is there but not the name or password you
+    just typed. A shop that reports a problem with this ID lets whoever runs the system find that exact
+    request → open `http://localhost:3000/metrics` → 404, because the Prometheus metrics live on port 9464,
+    which docker compose never exposes outside the machine (see `docs/tickets/24-telemetry-contract.md`,
+    `docs/DECISIONS.md` #68)
 
 **Want to try the hidden business rules?**
 
@@ -608,14 +615,19 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
   the customer's e-mail under "Edit credit" → the recipient field starts empty and Send stays disabled
   until you type a valid address (a direct call with no recipient gets 400) (see `docs/DECISIONS.md`
   #56–#57)
+- Against a real backend, add a new customer (name, phone, e-mail), search by that phone, then add a tax ID
+  and address under "Edit credit" → search the backend log for the name, phone or e-mail → **nothing**, not
+  even on the search request's line (paths are logged with the query string cut off); and open any table's
+  self-order QR link → the log shows `/api/v1/public/tables/:qrToken/…`, never the table's real token
+  (anyone holding it can order to that table) (see `docs/DECISIONS.md` #68)
 
 ---
 
 ### 🧪 Want to run the tests?
 
 ```bash
-cd backend && npm test      # 361 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 481 cases — domain / controller / widget
+cd backend && npm test      # 385 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 486 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 49 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -902,6 +914,14 @@ cd app && flutter test test_e2e   # 49 cases — the real app talking to the rea
   in words and Buddhist-era dates in Bangkok time; e-mail goes through nodemailer (set
   `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`MAIL_FROM` — unset = e-mail off, the PDF button still works), and
   every send is recorded in the history + audit log (see `docs/DECISIONS.md` #57)
+- **Logs and metrics per the PaynEat ecosystem telemetry contract** — the backend writes JSON logs, one object
+  per line (`severity` as a string; `labels` with `app`/`event`/`correlation_id` and the branch's
+  `location_code`), no vendor names by default, `LOG_FORMAT=gcp` on Google Cloud · every request carries an
+  `x-request-id` there and back (the app creates one per request and shows the "Request ID" at the end of
+  error messages, so a shop can report it and it leads straight to the log) · Prometheus `/metrics` by route
+  template on port 9464, separate from the API and never exposed by docker compose · names, phone numbers,
+  e-mails, tax IDs, addresses, passwords, tokens, QR tokens, request bodies and query strings never reach the
+  log (tested) (see `docs/tickets/24-telemetry-contract.md`, `docs/DECISIONS.md` #68)
 
 ---
 
@@ -1210,7 +1230,8 @@ Every endpoint shares the same response shape:
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "The submitted data is invalid",
-    "details": [{ "field": "quantity", "message": "Quantity must be greater than 0" }]
+    "details": [{ "field": "quantity", "message": "Quantity must be greater than 0" }],
+    "requestId": "pos-3fa2c1d09b7e4a55"   // = the x-request-id header and correlation_id in the log (ticket 24)
   }
 }
 ```
@@ -1220,8 +1241,8 @@ Every endpoint shares the same response shape:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 361 cases
-cd app && flutter test      # 481 cases
+cd backend && npm test      # 385 cases
+cd app && flutter test      # 486 cases
 cd app && flutter test test_e2e   # 49 cases (run npm ci in backend first)
 ```
 
@@ -1276,7 +1297,7 @@ images from the real Dockerfiles every time `main` changes (and on every PR touc
 and the web app answers 200 — only then does it upload them as the `demo` release for Option D (no job built the images
 before, which is how the web Dockerfile stayed broken unnoticed — see `docs/DECISIONS.md` #63, #65)
 
-**Backend (361 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (385 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
 
 > Pick a table → open an order with modifiers → verify the total is correct → the table becomes occupied →
@@ -1464,7 +1485,18 @@ message with no English/Korean entry in the catalogue, checks placeholders match
 responses follow `Accept-Language` (none or unsupported = Thai as before) — `kitchen-undo.test.js`: the kitchen can step a
 status back one stage but never out of served (see `docs/DECISIONS.md` #64)
 
-**Flutter (481 cases)** — split into 3 levels:
+`telemetry-log-record.test.js` (13 cases) the telemetry contract's rules as pure functions, with the same
+examples as the PaynEat ERP tests (severity by status, latency as `"0.231s"`, query strings cut, QR tokens
+replaced by `:qrToken`, which `x-request-id` values are accepted, `traceparent`, labels/trace in both the
+default and `LOG_FORMAT=gcp` formats), and `telemetry.test.js` (11 cases) drives the real app and checks the
+log lines it actually writes: both formats, the `x-request-id` round trip (header/log/error body), severity
+401/404 = INFO · 422 = WARNING · 500 = one ERROR line with `error` (stack only at `LOG_LEVEL=DEBUG`), the
+branch's `location_code`, `/metrics` by route template on its own port and absent from the API port, login /
+creating and editing a customer / searching by phone leaving no name, phone, e-mail, tax ID, address, password
+or token in the log, broken JSON containing a password now 400 (was 500) without the body leaking, and no
+table QR token in the log (see `docs/DECISIONS.md` #68)
+
+**Flutter (486 cases)** — split into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1475,6 +1507,7 @@ status back one stage but never out of served (see `docs/DECISIONS.md` #64)
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions |
 | Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23), and credit-sale points earned on full payment / taken back on a void as far as possible / withheld while interest is owed / net of credit notes (#59) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10), weighed items sending `weightGrams` to the backend/no quantity edits but re-weighing allowed, scanning labels/barcodes into the cart, and a bad scan leaving the cart unchanged (tickets 18–19) |
+| Controller | `request_id_error_test.dart` | The request ID on error messages, through the real ApiClient → repository → controller chain: 500/409 give the backend's translated message + "Request ID: …" matching what was sent, 422 gets no ID, every request gets a fresh `x-request-id` in the format the backend accepts, `ServerFailure.requestId` (ticket 24) |
 | Controller | `receivable_controllers_test.dart` | Totals of what's owed/overdue, splitting open bills/unbilled bills/open billing notes, document voiding limited to managers and up, a successful payment sending the chosen billing note then reloading / a failed one not reloading (ticket 20), late interest/credit notes limited to managers and up and reloading on success, e-mail with no recipient using the customer's address (tickets 21, 23) |
 | Widget | `live_scale_test.dart` | The live scale panel: nothing shown with no scale / no DI binding, a weight usable only when stable (wobbling/overloaded/disconnected/0 g disabled), "Use this weight" filling the weight with nothing typed, the camera button sending codes down the scanner's path / closing the camera doing nothing / no camera = no button, and the simulated scale cycling empty → wobble → stable → lifted off (ticket 22) |
 | Controller | `auth_controller_test.dart` | Validators, fillDemoAccount, guard when the form is invalid, `loadMyBranches` success populates `myBranches`, guard clauses in `submitBranchSelection`/`switchBranch` when there's no pendingToken/session token yet (ticket 11) |
@@ -1704,8 +1737,11 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   ERP for a chain that runs its own plant. When connected, the ERP owns ingredients, branches, menus,
   prices and recipes and the POS sends sales to it through an outbox, exactly once even across outages —
   **without the ERP, everything works exactly as today** (see tickets 25–27 and `docs/DECISIONS.md` #66)
-- [ ] **Logs and metrics per the ecosystem telemetry contract** — JSON logs, `x-request-id` and `/metrics`, so
-  incidents can be followed across the POS and the ERP, with no customer data in logs (see ticket 24)
+- [x] **Logs and metrics per the ecosystem telemetry contract** — done: JSON logs per contract v1.1 (no vendor
+  names by default, `LOG_FORMAT=gcp` for Google Cloud), a full `x-request-id` round trip with the app showing
+  the request ID on errors, `/metrics` by route template on port 9464, never exposed outside the machine, and no
+  customer data, passwords or QR tokens in logs (see ticket 24 and `docs/DECISIONS.md` #68) — outbox metrics
+  come with ticket 26
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

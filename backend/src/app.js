@@ -4,16 +4,19 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
-import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 import { env } from './config/env.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
+import { requestContext } from './middlewares/requestContext.js';
 import apiRoutes from './routes.js';
 
 export const createApp = () => {
   const app = express();
 
+  // ตัวแรกสุด: ทุกคำขอ (รวมที่ถูก cors/helmet/body parser ปฏิเสธ) ได้ x-request-id และบรรทัด
+  // http.request.completed ตามสัญญา telemetry — แทน log แบบข้อความเดิม (ticket 24)
+  app.use(requestContext);
   // ปิด CSP เฉพาะ /docs (Swagger UI ต้องใช้ inline script/style) ที่อื่นทั้งหมดเป็น JSON
   // ล้วนแต่ยังเปิด CSP ไว้เป็น defense-in-depth (ดู security review #7)
   app.use((req, res, next) => {
@@ -23,12 +26,19 @@ export const createApp = () => {
   });
   // credentials ใช้คู่กับ origin แบบ wildcard ('*') ไม่ได้ตามสเปก CORS/Fetch (เบราว์เซอร์ปฏิเสธ
   // อยู่แล้ว) จึงเปิดเฉพาะตอนตั้ง CORS_ORIGIN เป็นรายชื่อ origin จริงเท่านั้น (ดู security review #6)
-  app.use(cors({ origin: env.corsOrigin, credentials: env.corsOrigin !== '*' }));
+  // exposedHeaders: แอปเว็บ (คนละ origin กับ API) อ่าน x-request-id จาก response ได้ — เบราว์เซอร์ซ่อน header
+  // ที่ไม่อยู่ในรายการมาตรฐานไว้ถ้าไม่ประกาศตรงนี้ (ticket 24)
+  app.use(
+    cors({
+      origin: env.corsOrigin,
+      credentials: env.corsOrigin !== '*',
+      exposedHeaders: ['x-request-id'],
+    }),
+  );
   app.use(compression());
   // 3mb เพื่อรองรับรูปเมนูที่ส่งมาเป็น base64 data URL (ดู menu.schema.js: imageUrl)
   app.use(express.json({ limit: '3mb' }));
   app.use(express.urlencoded({ extended: true }));
-  if (!env.isTest) app.use(morgan('dev'));
 
   app.get('/health', (_req, res) =>
     res.json({

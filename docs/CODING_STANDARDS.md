@@ -41,9 +41,10 @@ Flutter: 151 เทสต์ผ่าน · Backend: 94 เทสต์ผ่า
 
 ### 2.1 กฎที่บังคับใช้อยู่แล้ว (รักษาไว้)
 
-- ห้ามใช้ `print()` (Dart) หรือ `console.log()` (JS) ในโค้ด business logic — ใช้ได้เฉพาะใน
-  entry point (`server.js`, สคริปต์ CLI อย่าง `seed.js`/`migrate.js`) หรือ error handler ตัวเดียว
-  ที่กำหนดไว้ (`errorHandler.js`)
+- ห้ามใช้ `print()` (Dart) ในโค้ด และ backend ห้ามมี `console.*` ใน `backend/src` เลย (ESLint `no-console: error`)
+  — log ทุกบรรทัดเขียนผ่าน `core/telemetry/logger.js` เป็น JSON ตามสัญญา telemetry ของระบบนิเวศ รวม `server.js` และ
+  สคริปต์ CLI (`migrate.js`/`seed.js`/`reset.js`) ด้วย (ticket 24, `docs/DECISIONS.md` #68) ห้ามใส่ข้อมูลลูกค้า รหัสผ่าน
+  token body ของคำขอ หรือ query string ใน log หรือ label
 - ห้ามเหลือ `TODO` / `FIXME` / `HACK` ค้างใน `main` — ถ้ามีงานค้างจริง ให้บันทึกในหัวข้อ 6 ของเอกสารนี้แทน
 - ทุก PR ต้องผ่าน `flutter analyze` (0 issues) และ `dart format --set-exit-if-changed .`
   ก่อน merge เสมอ — ห้าม format เอง manual
@@ -114,7 +115,7 @@ npm run format         # prettier --write src tests (รันตอนแก้
 
 **กฎที่บังคับใช้**: `no-unused-vars` (ยกเว้นชื่อขึ้นต้นด้วย `_` เช่น พารามิเตอร์ `_next` ที่ Express
 error middleware ต้องมีแต่ไม่ได้ใช้), `no-var`, `prefer-const`, `eqeqeq` (สมาร์ต — ยกเว้น `== null`),
-`no-console` (warn เฉพาะ `console.log`/`console.error` เท่านั้น ตัวอื่นห้ามใช้)
+`no-console` (error — ใช้ logger ของ `core/telemetry/` แทนทุกกรณี)
 
 **Prettier**: `singleQuote: true`, `printWidth: 100`, `trailingComma: "all"` — ตรงกับสไตล์เดิมของ
 โค้ดเบสอยู่แล้ว (single quote + semicolon) จึงมีไฟล์ที่ format เปลี่ยนแค่การตัดบรรทัดยาวเกิน 100

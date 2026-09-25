@@ -51,6 +51,11 @@ export const ERROR_MESSAGES = [
     ko: '입력한 정보가 올바르지 않습니다',
   },
   {
+    th: 'ข้อมูลที่ส่งมาใหญ่เกินไป',
+    en: 'The information sent is too large',
+    ko: '전송한 정보가 너무 큽니다',
+  },
+  {
     th: 'ไม่พบเส้นทาง {method} {path}',
     en: 'Route not found: {method} {path}',
     ko: '경로를 찾을 수 없습니다: {method} {path}',
@@ -773,6 +778,16 @@ export const translateMessage = (message, lang) => {
   return message;
 };
 
+/**
+ * แม่แบบภาษาอังกฤษของข้อความ (ช่องแทรกค่ายังเป็น `{ชื่อ}` ไม่มีค่าจริง) หรือ undefined ถ้าไม่อยู่ในแคตตาล็อก —
+ * ใช้เขียนลง log แทนข้อความจริง ซึ่งอาจแทรกข้อมูลลูกค้า/ค่าจากภายนอกไว้ (สัญญา telemetry ห้าม, ticket 24)
+ */
+export const messageTemplate = (message) => {
+  if (typeof message !== 'string') return undefined;
+  const text = message.trim();
+  return compiled.find(({ regex }) => regex.test(text))?.entry.en;
+};
+
 /** เลือกภาษาจาก header `Accept-Language` ของ request — ไม่ส่งมา = ไทย (พฤติกรรมเดิม) */
 export const languageOf = (req) => {
   if (!req.headers?.['accept-language']) return 'th';
@@ -780,4 +795,4 @@ export const languageOf = (req) => {
   return lang || 'th';
 };
 
-export default { translateMessage, languageOf, ERROR_MESSAGES, TERMS };
+export default { translateMessage, messageTemplate, languageOf, ERROR_MESSAGES, TERMS };

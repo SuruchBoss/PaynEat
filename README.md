@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-891%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-920%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) talking to a
 Node.js REST + WebSocket backend. Covers the complete floor-to-cash workflow: table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 891 automated tests.
+control and 920 automated tests.
 
 > 👤 **สร้างและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — ถ้าคุณ fork หรือต่อยอดโปรเจกต์นี้
 > ยินดีมากๆ แค่ขอให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 ทักทาย/พูดคุยได้ที่
@@ -50,7 +50,7 @@ control and 891 automated tests.
   บาร์โค้ดด้วยเครื่องสแกนหรือกล้องมือถือ ขายเชื่อลูกค้าประจำตามวงเงิน ออกใบวางบิล รับชำระหนี้ คิดดอกเบี้ย
   ผิดนัด ออกใบลดหนี้ และส่งเอกสารเป็น PDF ภาษาไทยทางอีเมล — เงินสดที่รับชำระยังกระทบยอดลิ้นชักตอนปิดกะได้ตรง
   (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **ทดสอบอัตโนมัติ 891 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
+- **ทดสอบอัตโนมัติ 920 เคส** ก่อนปล่อยทุกครั้ง — ตั้งแต่กฎคิดเงินไปจนถึง flow เต็มร้าน 17 ขั้น
 
 ---
 
@@ -208,14 +208,12 @@ npm run dev
 ```
 
 `.env` มี `JWT_SECRET` สำหรับรันในเครื่อง — backend จงใจไม่มีค่าเริ่มต้นให้ ไม่ตั้งแล้วไม่ยอม start (ดู `SECURITY.md`)
-ถ้าขึ้นแบบนี้คือสำเร็จ (ฐานข้อมูลและข้อมูลตัวอย่างถูกสร้างให้อัตโนมัติ ไม่ต้องตั้งค่าอะไรเพิ่ม):
+ถ้าเห็นบรรทัดที่มี `PaynEat POS API listening on http://localhost:3000` คือสำเร็จ (ฐานข้อมูลและข้อมูลตัวอย่างถูก
+สร้างให้อัตโนมัติ ไม่ต้องตั้งค่าอะไรเพิ่ม) — log เป็น JSON บรรทัดละ object ตามสัญญา telemetry ของระบบนิเวศ PaynEat
+(ticket 24) ทุกคำขอที่แอปยิงเข้ามาขึ้นเป็นบรรทัดแบบเดียวกันนี้พร้อมรหัสคำขอ:
 
 ```
-🍽️  PaynEat POS API
-   ▸ REST      : http://localhost:3000/api/v1
-   ▸ Docs      : http://localhost:3000/docs
-   ▸ Health    : http://localhost:3000/health
-   ▸ Realtime  : ws://localhost:3000 (socket.io)
+{"severity":"INFO","time":"2026-09-25T10:15:30.123Z","message":"PaynEat POS API listening on http://localhost:3000 (REST /api/v1, docs /docs, health /health, realtime socket.io)","labels":{"app":"payneat-pos-api","event":"app.log","correlation_id":"process-…"}}
 ```
 
 **เทอร์มินัลที่ 2 — แอป** (เปิดหน้าต่างใหม่ อย่าปิดอันแรก)
@@ -465,6 +463,13 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     `backend/.env` (ต่อ backend จริง: ตั้งอัตราดอกเบี้ยที่หน้าตั้งค่าก่อน และบิลต้องเลยกำหนด + วันผ่อนผันแล้ว
     ถึงจะมีดอกเบี้ยให้คิด) (ดู `docs/tickets/21-late-fees-credit-notes.md`, `23-document-pdf-email.md`,
     `docs/DECISIONS.md` #55–#57)
+29. **รหัสคำขอบนข้อความ error → ค้นเจอใน log ของ backend** (ต่อ backend จริง ทางเลือก A/B/D — โหมดสาธิตไม่มี
+    backend จึงไม่มีรหัส) → เข้าเป็น `admin` → **จัดการพนักงาน** → เพิ่มพนักงานใหม่ด้วย username `cashier` (มีอยู่แล้ว)
+    → ข้อความปฏิเสธมีบรรทัด **"รหัสคำขอ: pos-…"** ต่อท้าย → ค้นรหัสนั้นใน log ของ backend (ทางเลือก A: เทอร์มินัลที่ 1 ·
+    ทางเลือก B/D: `docker logs payneat-api`) เจอบรรทัด JSON ของคำขอนั้นพอดี — `severity` เป็น `WARNING`, มี path แต่
+    ไม่มีชื่อพนักงานหรือรหัสผ่านที่เพิ่งพิมพ์ ร้านแจ้งปัญหาพร้อมรหัสนี้ คนดูแลระบบก็หา log ของครั้งนั้นเจอทันที → ลองเปิด
+    `http://localhost:3000/metrics` → ได้ 404 เพราะ metric แบบ Prometheus อยู่พอร์ต 9464 ที่ docker compose ไม่เปิดออก
+    นอกเครื่อง (ดู `docs/tickets/24-telemetry-contract.md`, `docs/DECISIONS.md` #68)
 
 **อยากลองกฎทางธุรกิจที่ซ่อนอยู่?**
 
@@ -540,14 +545,18 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
   **"ส่งอีเมล"** หายไป เพราะเอกสารที่ยกเลิกแล้วไม่ควรไปถึงลูกค้า (ยิง API ตรงได้ 409) และถ้าลบอีเมลลูกค้าออกที่
   "แก้วงเงิน" → ช่องผู้รับว่างและปุ่มส่งกดไม่ได้จนกว่าจะพิมพ์อีเมลถูกรูปแบบ (ยิง API ตรงโดยไม่ระบุผู้รับได้ 400)
   (ดู `docs/DECISIONS.md` #56–#57)
+- ต่อ backend จริงแล้วเพิ่มลูกค้าใหม่ (ชื่อ เบอร์ อีเมล) ค้นหาด้วยเบอร์ แล้วใส่เลขผู้เสียภาษี/ที่อยู่ที่ "แก้วงเงิน" → ค้นชื่อ
+  เบอร์ หรืออีเมลนั้นใน log ของ backend → **ไม่เจอเลย** แม้แต่ในบรรทัดของคำขอค้นหา (path ถูกเก็บโดยตัด query string ทิ้ง)
+  และเปิดลิงก์ QR สั่งเองของโต๊ะไหนก็ได้ → ใน log เห็นเป็น `/api/v1/public/tables/:qrToken/…` ไม่ใช่ token จริงของโต๊ะ
+  (ใครได้ token ไปก็สั่งเข้าโต๊ะนั้นได้) (ดู `docs/DECISIONS.md` #68)
 
 ---
 
 ### 🧪 อยากรันเทสต์ดู
 
 ```bash
-cd backend && npm test      # 361 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 481 เคส — domain / controller / widget
+cd backend && npm test      # 385 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 486 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 49 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -785,6 +794,12 @@ cd app && flutter test test_e2e   # 49 เคส — แอปจริงคุ
   backend ตัดบรรทัดภาษาไทยตามคำ ยอดเป็นตัวอักษรแบบ BAHTTEXT วันที่ พ.ศ. เขตเวลากรุงเทพ ส่งอีเมลผ่าน
   nodemailer (ตั้ง `SMTP_HOST`/`SMTP_USER`/`SMTP_PASS`/`MAIL_FROM` — ไม่ตั้ง = ปิดอีเมล ปุ่ม PDF ยังใช้ได้) ทุกครั้งที่ส่ง
   บันทึกประวัติ + audit log (ดู `docs/DECISIONS.md` #57)
+- **log และ metric ตามสัญญา telemetry ของระบบนิเวศ PaynEat** — backend เขียน log เป็น JSON บรรทัดละ object (`severity`
+  เป็นข้อความ, `labels` มี `app`/`event`/`correlation_id` และ `location_code` ของสาขา) ไม่มีชื่อ vendor ในค่าเริ่มต้น
+  ตั้ง `LOG_FORMAT=gcp` เมื่อรันบน Google Cloud · ทุกคำขอมี `x-request-id` ไปกลับ (แอปสร้างให้ทุกคำขอ และแสดง "รหัสคำขอ"
+  ท้ายข้อความ error ให้ร้านแจ้งแล้วโยงหา log ได้) · `/metrics` แบบ Prometheus นับตาม route template อยู่พอร์ต 9464
+  แยกจาก API ที่ docker compose ไม่เปิดออกนอกเครื่อง · ชื่อ เบอร์ อีเมล เลขผู้เสียภาษี ที่อยู่ รหัสผ่าน token QR token
+  body และ query string ไม่เคยถึง log (มีเทสต์ยืนยัน) (ดู `docs/tickets/24-telemetry-contract.md`, `docs/DECISIONS.md` #68)
 
 ---
 
@@ -1082,7 +1097,8 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "ข้อมูลที่ส่งมาไม่ถูกต้อง",
-    "details": [{ "field": "quantity", "message": "จำนวนต้องมากกว่า 0" }]
+    "details": [{ "field": "quantity", "message": "จำนวนต้องมากกว่า 0" }],
+    "requestId": "pos-3fa2c1d09b7e4a55"   // = header x-request-id และ correlation_id ใน log (ticket 24)
   }
 }
 ```
@@ -1092,8 +1108,8 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 361 เคส
-cd app && flutter test      # 481 เคส
+cd backend && npm test      # 385 เคส
+cd app && flutter test      # 486 เคส
 cd app && flutter test test_e2e   # 49 เคส (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -1137,7 +1153,7 @@ backend และโหมดสาธิต: ใบกำกับภาษี�
 ให้ API ตอบ `/health`, ล็อกอินได้, ตาชั่งจำลองเปิดอยู่ และเว็บตอบ 200 — ผ่านแล้วถึงอัปโหลดเป็น release `demo` ของทางเลือก D
 (ก่อนหน้านี้ไม่มี job ไหน build image จริง Dockerfile เว็บจึงพังเงียบอยู่นาน ดู `docs/DECISIONS.md` #63, #65)
 
-**Backend (361 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
+**Backend (385 เคส)** — `node:test` + `supertest` ยิงผ่าน HTTP จริงบนฐานข้อมูลแยกต่างหาก
 เทสต์เด่นคือ `tests/order-flow.test.js` ที่ไล่เส้นทางทั้งร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคิดถูก → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -1297,7 +1313,16 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 = ล้ม, ช่องแทรกค่าตรงกันทุกภาษา และ HTTP จริงตอบตาม `Accept-Language` (ไม่ส่ง/ภาษาไม่รองรับ = ไทยเหมือนเดิม) —
 `kitchen-undo.test.js` จอครัวย้อนสถานะได้ทีละขั้นแต่ served ย้อนไม่ได้ (ดู `docs/DECISIONS.md` #64)
 
-**Flutter (481 เคส)** — แบ่งเป็น 3 ระดับ:
+`telemetry-log-record.test.js` (13 เคส) กฎของสัญญา telemetry เป็น pure function ด้วยตัวอย่างชุดเดียวกับเทสต์ของ
+PaynEat ERP (severity ตาม status, latency `"0.231s"`, ตัด query string, แทน QR token ด้วย `:qrToken`, รับ `x-request-id`
+ตามรูปแบบ, `traceparent`, labels/trace ทั้งแบบค่าเริ่มต้นและ `LOG_FORMAT=gcp`) และ `telemetry.test.js` (11 เคส) ยิงแอปจริง
+แล้วตรวจบรรทัด log ที่แอปเขียนออกมาจริง: รูปแบบทั้งสองแบบ, `x-request-id` ไปกลับ (header/log/error body), severity
+401/404 = INFO · 422 = WARNING · 500 = ERROR บรรทัดเดียวพร้อม `error` (stack เฉพาะ `LOG_LEVEL=DEBUG`), `location_code`
+ของสาขา, `/metrics` ตาม route template บนพอร์ตแยกและไม่อยู่บนพอร์ต API, login/สร้าง-แก้ลูกค้า/ค้นด้วยเบอร์ไม่ทิ้งชื่อ
+เบอร์ อีเมล เลขผู้เสียภาษี ที่อยู่ รหัสผ่าน หรือ token ไว้ใน log, JSON พังที่มีรหัสผ่านได้ 400 (เดิม 500) โดยเนื้อ body ไม่หลุด
+และ QR token ของโต๊ะไม่อยู่ใน log (ดู `docs/DECISIONS.md` #68)
+
+**Flutter (486 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1308,6 +1333,7 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 | Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร |
 | Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 20 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน, flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08), flow ลูกค้า/แต้มสะสม: สร้าง/ค้นหาลูกค้า, ผูก customerId ตอนเปิดออเดอร์, สะสมแต้มครั้งเดียวตอนจ่ายครบ (รวมกรณีแยกจ่ายหลายรอบ), ใช้แต้มแลกส่วนลดโดยยอด amount ไม่เปลี่ยน และปฏิเสธการใช้แต้มที่ไม่ถูกต้องทุกกรณี (ticket 09) และเลขคิวรับอาหารมีเฉพาะ `type=takeaway`, รันต่อวันเรียงถูกต้องแม้มีออเดอร์ dine-in/delivery แทรกกลาง (ticket 10), flow audit ระดับบัญชี/การเงิน: แก้ราคาเมนู log เฉพาะตอนราคาเปลี่ยนจริง, สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบมือ, และ `auditLogExportCsv` คืน CSV ที่กรองตาม action ถูกต้อง (ticket 14), และทุกโต๊ะมี `qrToken` ไม่ซ้ำกัน, `resolveTableByQrToken` หาโต๊ะถูกตัว/ปฏิเสธ token ผิดหรือโต๊ะปิดใช้งาน, `regenerateQrToken` ปิด token เก่าทันที (ticket 17), ขายตามน้ำหนัก/รหัสซ้ำ/ตัดสต๊อกเป็นกก.ตอนจ่าย/QR สั่งเองไม่เห็นของชั่งน้ำหนัก (ticket 18–19), ขายเชื่อ/รับชำระตัดบิลเก่าก่อน/เงินสดเข้ากะ/ยกเลิกใบเสร็จหลังปิดกะไม่ได้/ใบวางบิล/ลดหนี้/อายุหนี้ (ticket 20) และดอกเบี้ยผิดนัดของบิลที่ seed ไว้ (คิด 8 วันที่ 12% กดซ้ำไม่ซ้ำ)/ยกเลิกใบแจ้งที่จ่ายแล้วไม่ได้/เพดาน 15%/ใบลดหนี้ + VAT ของผลต่าง/ส่งอีเมลจำลองใช้อีเมลลูกค้าเป็นค่าเริ่มต้นและเอกสารยกเลิกส่งไม่ได้ (ticket 21, 23) และแต้มของบิลขายเชื่อได้ตอนชำระครบ/ยกเลิกใบเสร็จดึงคืนเท่าที่มี/ดอกเบี้ยค้างยังไม่ครบ/ลดหนี้คิดจากยอดสุทธิ (#59) |
 | Controller | `cart_controller_test.dart` | ตรรกะตะกร้า โดยใช้ repository ปลอม รวมกรณีไม่มี `Get.arguments` เลย (มาจากปุ่ม "สั่งกลับบ้าน/เดลิเวอรี่" ตรงๆ) ต้องตกเป็นกลับบ้านเหมือนกัน ไม่ใช่ทานที่ร้าน (ticket 10), สินค้าชั่งน้ำหนักส่ง `weightGrams` ไป backend/แก้จำนวนไม่ได้แต่ชั่งใหม่ได้, สแกนฉลาก/บาร์โค้ดลงตะกร้า และสแกนผิดตะกร้าไม่เปลี่ยน (ticket 18–19) |
+| Controller | `request_id_error_test.dart` | รหัสคำขอบนข้อความ error ผ่านของจริงทั้งสาย ApiClient → repository → controller: 500/409 ได้ข้อความที่ backend แปลแล้ว + "รหัสคำขอ: …" ตรงกับที่ส่งไป, 422 ไม่ต่อรหัส, ทุก request ได้ `x-request-id` ใหม่ตามรูปแบบที่ backend รับ, `ServerFailure.requestId` (ticket 24) |
 | Controller | `receivable_controllers_test.dart` | รวมยอดค้าง/เกินกำหนด, แยกบิลค้าง/บิลที่ยังไม่วางบิล/ใบวางบิลที่เปิดอยู่, สิทธิ์ยกเลิกเอกสาร (ผู้จัดการขึ้นไป), รับชำระสำเร็จส่งใบวางบิลที่เลือกแล้วโหลดยอดใหม่ / ไม่สำเร็จไม่โหลดซ้ำ (ticket 20), คิดดอกเบี้ย/ออกใบลดหนี้เฉพาะผู้จัดการขึ้นไปและสำเร็จแล้วโหลดยอดใหม่, ส่งอีเมลไม่ระบุผู้รับใช้อีเมลลูกค้า (ticket 21, 23) |
 | Widget | `live_scale_test.dart` | แผงตาชั่งสด: ไม่ได้ต่อตาชั่ง/ไม่ได้ผูก DI ไม่แสดงอะไร, ใช้น้ำหนักได้เฉพาะตอนนิ่ง (แกว่ง/เกินพิกัด/หลุด/0 กรัมกดไม่ได้), กด "ใช้น้ำหนักนี้" ได้น้ำหนักโดยไม่ต้องพิมพ์, ปุ่มกล้องส่งรหัสเข้าเส้นทางเดียวกับเครื่องสแกน/ปิดกล้องเฉยๆ ไม่ทำอะไร/เครื่องไม่มีกล้องไม่เห็นปุ่ม, ตาชั่งจำลองวนรอบ ว่าง → แกว่ง → นิ่ง → ยกออก (ticket 22) |
 | Controller | `auth_controller_test.dart` | validator, fillDemoAccount, guard ตอนฟอร์มไม่ผ่าน, `loadMyBranches` สำเร็จเติม `myBranches`, guard clause ของ `submitBranchSelection`/`switchBranch` เมื่อยังไม่มี pendingToken/session token (ticket 11) |
@@ -1511,8 +1537,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   ของเชนร้านที่มีโรงงานของตัวเอง เมื่อเชื่อมต่อ ERP เป็นเจ้าของวัตถุดิบ/สาขา เมนู ราคา และสูตร และ POS ส่งยอดขาย
   เข้า ERP ผ่าน outbox ครั้งเดียวแน่นอนแม้เน็ตหลุด — **ไม่เชื่อมต่อก็ใช้ได้เหมือนเดิมทุกอย่าง** (ดู tickets 25–27 และ
   `docs/DECISIONS.md` #66)
-- [ ] **log/metric ตามสัญญา telemetry ของระบบนิเวศ** — log แบบ JSON + `x-request-id` + `/metrics` ให้เครื่องมือ
-  สืบสวนเหตุขัดข้องตามปัญหาข้าม POS/ERP ได้ และห้ามข้อมูลลูกค้าลง log (ดู ticket 24)
+- [x] **log/metric ตามสัญญา telemetry ของระบบนิเวศ** — ทำแล้ว: log แบบ JSON ตามสัญญา v1.1 (ค่าเริ่มต้นไม่มีชื่อ vendor,
+  `LOG_FORMAT=gcp` สำหรับ Google Cloud), `x-request-id` ไปกลับครบและแอปแสดงรหัสคำขอตอน error, `/metrics` ตาม route
+  template บนพอร์ต 9464 ที่ไม่เปิดออกนอกเครื่อง, ไม่มีข้อมูลลูกค้า/รหัสผ่าน/QR token ใน log (ดู ticket 24 และ
+  `docs/DECISIONS.md` #68) — metric ของ outbox ตามมากับ ticket 26
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 

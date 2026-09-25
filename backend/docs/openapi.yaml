@@ -56,6 +56,13 @@ components:
           properties:
             code: { type: string, example: NOT_FOUND }
             message: { type: string, example: ไม่พบข้อมูลที่ต้องการ }
+            requestId:
+              type: string
+              example: pos-3fa2c1d09b7e4a55
+              description: >-
+                รหัสเดียวกับ response header `x-request-id` และ `labels.correlation_id` ในทุกบรรทัด log
+                ของคำขอนี้ (สัญญา telemetry, ticket 24) — ส่ง `x-request-id` ที่ตรง `^[\w-]{8,64}$` มาเองได้
+                ไม่ส่ง/ไม่ตรงรูปแบบ เซิร์ฟเวอร์สร้างให้
             details:
               type: array
               items:

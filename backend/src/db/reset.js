@@ -3,6 +3,7 @@ import { env } from '../config/env.js';
 import { closeDb } from './index.js';
 import { migrate } from './migrate.js';
 import { seed } from './seed.js';
+import { logger } from '../core/telemetry/logger.js';
 
 closeDb();
 for (const suffix of ['', '-wal', '-shm']) {
@@ -11,4 +12,4 @@ for (const suffix of ['', '-wal', '-shm']) {
 }
 migrate();
 seed();
-console.log('♻️  reset ฐานข้อมูลและใส่ข้อมูลตัวอย่างเรียบร้อย');
+logger.info('Database reset and sample data seeded');

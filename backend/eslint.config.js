@@ -20,7 +20,7 @@ export default [
       'no-var': 'error',
       'prefer-const': 'error',
       eqeqeq: ['error', 'smart'],
-      'no-console': ['warn', { allow: ['error', 'log'] }],
+      'no-console': 'error',
     },
   },
   {

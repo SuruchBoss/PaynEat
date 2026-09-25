@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 import '../usecases/result.dart';
 import 'exceptions.dart';
 import 'failures.dart';
@@ -24,10 +26,11 @@ Failure mapExceptionToFailure(Object error) {
       403 => ForbiddenFailure(error.message),
       422 => ValidationFailure(error.message, details: details),
       _ => ServerFailure(
-        error.message,
+        withRequestId(error.message, error.requestId),
         statusCode: error.statusCode,
         code: error.code,
         details: details,
+        requestId: error.requestId,
       ),
     };
   }
@@ -38,6 +41,13 @@ Failure mapExceptionToFailure(Object error) {
 
   return UnexpectedFailure();
 }
+
+/// ต่อรหัสคำขอท้ายข้อความ error ที่เซิร์ฟเวอร์ปฏิเสธหรือทำไม่สำเร็จ — ร้านแจ้งรหัสนี้แล้วค้น log ของ backend
+/// ได้ตรงตัว (สัญญา telemetry, ticket 24) ไม่ต่อกับ 401/403/422 ซึ่งแอปมีทางจัดการเฉพาะอยู่แล้ว (เด้งไปหน้า
+/// login, ข้อความสิทธิ์ไม่พอ, error ใต้ช่องกรอก) และไม่ใช่ปัญหาที่ต้องแจ้งใคร
+String withRequestId(String message, String? requestId) => requestId == null
+    ? message
+    : '$message\n${'error_request_id'.trParams({'id': requestId})}';
 
 /// helper ลดโค้ด try/catch ซ้ำ ๆ ในทุก repository
 Future<Result<T>> guard<T>(Future<T> Function() action) async {

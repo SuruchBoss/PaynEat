@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
@@ -10,6 +11,8 @@ import '../errors/exceptions.dart';
 ///
 /// หน้าที่:
 /// - แนบ JWT ให้ทุก request อัตโนมัติ
+/// - แนบ `x-request-id` ใหม่ทุก request — backend ใส่รหัสเดียวกันในทุกบรรทัด log ของคำขอนั้น
+///   (สัญญา telemetry, ticket 24) error ที่แสดงให้ร้านเห็นมีรหัสนี้ติดไปด้วย แจ้งแล้วค้น log ได้ตรงตัว
 /// - แกะ envelope `{ success, data, meta }` ของ backend ให้เหลือเฉพาะที่ใช้จริง
 /// - แปลง error ทุกแบบให้เป็น [ApiException] / [NetworkException] รูปแบบเดียว
 class ApiClient {
@@ -39,6 +42,7 @@ class ApiClient {
               options.headers['Authorization'] = 'Bearer $token';
             }
           }
+          options.headers.putIfAbsent(requestIdHeader, newRequestId);
           // backend แปลข้อความ error ตามภาษานี้ (ไม่ส่ง = ไทย) — อ่านทุก request
           // เพราะผู้ใช้สลับภาษาได้กลางกะโดยไม่ต้องล็อกอินใหม่ (DECISIONS #64)
           final language = this.languageProvider();
@@ -69,6 +73,22 @@ class ApiClient {
   final String? Function() languageProvider;
 
   static String? _currentLanguage() => Get.locale?.languageCode;
+
+  static const requestIdHeader = 'x-request-id';
+  static final _random = Random.secure();
+
+  /// `pos-` + 16 hex — ตรงรูปแบบ `^[\w-]{8,64}$` ที่ backend รับ (ไม่ตรง backend จะสร้างรหัสใหม่แทน)
+  /// และสั้นพอให้ร้านอ่านบอกทางโทรศัพท์ได้
+  static String newRequestId() =>
+      'pos-${List.generate(8, (_) => _random.nextInt(256).toRadixString(16).padLeft(2, '0')).join()}';
+
+  /// รหัสคำขอที่ backend ยืนยันกลับมา (header) — ถ้าไม่มี (proxy ตัดทิ้ง, ต่อไม่ถึง backend) ใช้รหัสที่แอปส่งไป
+  static String? _requestIdOf(
+    RequestOptions request,
+    Response<dynamic>? response,
+  ) =>
+      response?.headers.value(requestIdHeader) ??
+      request.headers[requestIdHeader] as String?;
 
   Future<ApiResult> get(String path, {Map<String, dynamic>? query}) =>
       _request(() => _dio.get(path, queryParameters: _clean(query)));
@@ -119,6 +139,7 @@ class ApiClient {
       throw ApiException(
         message: error.message ?? 'error_api_call_failed'.tr,
         statusCode: error.response?.statusCode,
+        requestId: _requestIdOf(error.requestOptions, error.response),
       );
     }
 
@@ -130,6 +151,7 @@ class ApiClient {
           'status': statusCode.toString(),
         }),
         statusCode: statusCode,
+        requestId: _requestIdOf(response.requestOptions, response),
       );
     }
     return response.data ?? const [];
@@ -157,12 +179,19 @@ class ApiClient {
           error.type == DioExceptionType.connectionError) {
         throw const NetworkException();
       }
+      // 5xx (validateStatus ไม่รับ) ยังมี error body ของ backend อยู่ — อ่านข้อความที่แปลแล้ว, code และ
+      // รหัสคำขอจาก body นั้นเหมือน 4xx แทนข้อความภาษาอังกฤษยาว ๆ ของ Dio
+      final errorResponse = error.response;
+      if (errorResponse != null) return _resultOf(errorResponse);
       throw ApiException(
         message: error.message ?? 'error_api_call_failed'.tr,
-        statusCode: error.response?.statusCode,
+        requestId: _requestIdOf(error.requestOptions, null),
       );
     }
+    return _resultOf(response);
+  }
 
+  ApiResult _resultOf(Response<dynamic> response) {
     final statusCode = response.statusCode ?? 500;
     final body = response.data;
 
@@ -192,6 +221,7 @@ class ApiClient {
               growable: false,
             )
           : null,
+      requestId: _requestIdOf(response.requestOptions, response),
     );
   }
 

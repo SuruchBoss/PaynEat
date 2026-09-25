@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { getDb } from './index.js';
 import { env } from '../config/env.js';
+import { logger } from '../core/telemetry/logger.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 
@@ -246,7 +247,7 @@ export const migrate = () => {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrate();
-  console.log(`✅ migrate เสร็จแล้ว → ${env.databaseFile}`);
+  logger.info(`Migration finished: ${env.databaseFile}`);
 }
 
 export default migrate;

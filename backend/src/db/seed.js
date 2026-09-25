@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { getDb } from './index.js';
 import { migrate } from './migrate.js';
 import { toSatang } from '../core/money.js';
+import { logger } from '../core/telemetry/logger.js';
 
 /**
  * ข้อมูลตัวอย่างสำหรับเดโม — รันซ้ำได้ (idempotent) เพราะเช็คก่อนว่ามีข้อมูลแล้วหรือยัง
@@ -517,11 +518,8 @@ export const seed = () => {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   seed();
-  console.log(
-    process.env.NODE_ENV === 'production'
-      ? '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีผู้ใช้ตั้งรหัสผ่านจาก SEED_*_PASSWORD ตามที่ตั้งค่าไว้)'
-      : '🌱 seed ข้อมูลตัวอย่างเรียบร้อย (บัญชีเดโม: admin/admin123, waiter1/waiter123, kitchen/kitchen123, cashier/cashier123)',
-  );
+  // ไม่พิมพ์รหัสผ่านบัญชีเดโมลง log (สัญญา telemetry ห้ามรหัสผ่านใน log ทุกกรณี) — ดูบัญชีเดโมได้ใน README
+  logger.info('Sample data seeded; demo accounts are listed in README');
 }
 
 export default seed;

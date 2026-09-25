@@ -27,6 +27,11 @@ services:
       # (compose อ่านไฟล์นั้นให้เอง) — ห้ามตั้ง simulator ในร้านจริง เพราะน้ำหนักเป็นตัวเลขจำลอง
       SCALE_DRIVER: ${SCALE_DRIVER:-off}
       MAIL_TRANSPORT: ${MAIL_TRANSPORT:-smtp}
+      # log JSON ตามสัญญา telemetry (ticket 24) — ดูด้วย `docker compose logs api`
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      LOG_FORMAT: ${LOG_FORMAT:-default}
+    # /metrics อยู่พอร์ต 9464 ในคอนเทนเนอร์ และตั้งใจไม่เปิดออกนอกเครื่อง (ห้ามเปิดสาธารณะ — DECISIONS #68)
+    # ตัวเก็บ metric ที่อยู่ใน compose network เดียวกันเรียก http://api:9464/metrics ได้เลย
     ports:
       - "3000:3000"
     volumes:
