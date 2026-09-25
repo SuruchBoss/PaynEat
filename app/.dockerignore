@@ -1,5 +1,7 @@
 build
 .dart_tool
+**/.dart_tool
+**/build
 android
 ios
 linux

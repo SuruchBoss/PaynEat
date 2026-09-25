@@ -257,6 +257,16 @@ docker compose up --build
 | http://localhost:3000/docs | เอกสาร API แบบกดลองยิงได้ (Swagger UI) |
 | http://localhost:3000/health | ตรวจว่า API ทำงานอยู่ |
 
+**อยากลองตาชั่งอ่านสด/ส่งอีเมล (ทัวร์ข้อ 27–28) ใน Docker?** ค่าเริ่มต้นปิดทั้งคู่ — สร้างไฟล์ `.env` ไว้**ข้าง
+`docker-compose.yml`** (ไม่ใช่ `backend/.env`) ใส่ 2 บรรทัดนี้ แล้วรัน `docker compose up --build` ใหม่:
+
+```bash
+SCALE_DRIVER=simulator
+MAIL_TRANSPORT=json
+```
+
+ได้ตาชั่งจำลองวิ่งทันที และอีเมลถูกสร้างครบทุกส่วนแต่ไม่ส่งออกไปจริง (อย่าตั้ง `simulator` ในร้านจริง น้ำหนักเป็นเลขจำลอง)
+
 ปิดระบบด้วย `Ctrl+C` แล้ว `docker compose down`
 (อยากล้างข้อมูลให้เริ่มใหม่หมด: `docker compose down -v`)
 
@@ -410,7 +420,7 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
     ตัวเลขนิ่งก่อน"** ปุ่ม **"ใช้น้ำหนักนี้"** กดไม่ได้ พอนิ่งจะขึ้น **"นิ่งแล้ว = ฿582.00"** กดปุ่มเดียวลงตะกร้า
     ไม่ต้องพิมพ์ตัวเลขเอง — โหมดสาธิตมี **ตาชั่งจำลอง** วนวางของ → แกว่ง → นิ่ง (0.485 / 1.250 / 0.730 กก.)
     ให้ลองได้ทันที ส่วนร้านจริงตั้ง `SCALE_DRIVER=tcp` หรือ `serial` ใน `backend/.env` (ลองโดยไม่มีตาชั่งด้วย
-    `SCALE_DRIVER=simulator`) แท็บเล็ต/มือถือทุกเครื่องเห็นน้ำหนักเดียวกันผ่าน realtime — แล้วบนมือถือ/เว็บ
+    `SCALE_DRIVER=simulator` — ทางเลือก B ใส่ใน `.env` ข้าง `docker-compose.yml` แทน) แท็บเล็ต/มือถือทุกเครื่องเห็นน้ำหนักเดียวกันผ่าน realtime — แล้วบนมือถือ/เว็บ
     ที่มีกล้อง กด **ไอคอนกล้อง** ท้ายช่องสแกนข้างช่องค้นหาเมนู → เล็งบาร์โค้ดขวดซอสหรือฉลาก
     ตาชั่งให้อยู่ในกรอบ (มีปุ่มไฟฉาย) → ได้ผลเหมือนยิงเครื่องสแกนทุกอย่าง (ดู
     `docs/tickets/22-live-scale-camera-scan.md`, `docs/DECISIONS.md` #54)
@@ -529,6 +539,7 @@ cd app && flutter test test_e2e   # 48 เคส — แอปจริงคุ
 | `npm install` ล้มเหลวที่ `better-sqlite3` | ไม่มี build tool สำหรับ compile native module | Windows: `npm install --global windows-build-tools` · macOS: `xcode-select --install` · Linux: `sudo apt install build-essential python3` |
 | `flutter run` ฟ้องเวอร์ชัน Dart ไม่พอ | Flutter เก่ากว่า 3.35 | `flutter upgrade` |
 | Docker build ค้างนานที่ขั้น Flutter | กำลังดาวน์โหลด Flutter SDK ~2GB ครั้งแรก | รอให้จบ (5–10 นาที) ครั้งต่อไปจะใช้ cache |
+| Docker build ล้มที่ `flutter pub get` ว่า `payneat_lints from path which doesn't exist` | โค้ดเก่าก่อน #63 — Dockerfile ยังไม่ copy แพ็กเกจ lint | `git pull` เอาโค้ดล่าสุดแล้ว `docker compose up --build` ใหม่ |
 | เว็บใน Docker เปิดได้แต่ล็อกอินไม่ได้ | เบราว์เซอร์เรียก API ไม่เจอ | ตรวจว่า http://localhost:3000/health ขึ้น ถ้าเปลี่ยนพอร์ต ให้ตั้ง `API_BASE_URL` ใน `docker-compose.yml` ให้ตรงกัน |
 | อยากล้างข้อมูลเริ่มใหม่ | — | ตรงในเครื่อง: `cd backend && npm run db:reset` · Docker: `docker compose down -v` |
 

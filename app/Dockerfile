@@ -6,6 +6,9 @@ ARG API_BASE_URL=http://localhost:3000
 ARG DEMO_MODE=false
 
 COPY pubspec.* ./
+# pubspec อ้าง payneat_lints แบบ path (dev_dependency) — pub get ต้องเห็นแพ็กเกจนี้ก่อน ไม่งั้น
+# resolve ไม่ผ่านตั้งแต่ขั้นนี้ ("payneat_lints from path which doesn't exist")
+COPY tool/lints ./tool/lints
 RUN flutter pub get
 
 COPY . .
