@@ -3,7 +3,7 @@
 **Priority:** 🟠 High — สัปดาห์ที่ 4 ของแผน PaynEat ERP v1
 **Ref:** [ERP ADR-0002](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/adr/0002-system-boundaries-and-pos-integration.md),
 [สัญญา telemetry v1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md), `docs/DECISIONS.md` #66
-**Blocked by:** `25-erp-connected-mode.md`, [PaynEat-ERP#9](https://github.com/SuruchBoss/PaynEat-ERP/issues/9)
+**Blocked by:** `25-erp-connected-mode.md`, `27-erp-menu-pull.md`, [PaynEat-ERP#9](https://github.com/SuruchBoss/PaynEat-ERP/issues/9)
 
 ## ปัญหา
 ERP ต้องรู้ว่าแต่ละสาขาขายอะไรไป เพื่อคำนวณการใช้วัตถุดิบตามสูตร ต้นทุน และการย้อนรอย lot แต่เน็ตหน้าร้านหลุดได้เป็นชั่วโมง
@@ -18,6 +18,7 @@ ERP ต้องรู้ว่าแต่ละสาขาขายอะไ�
   - เวลาขาย = เวลาที่ชำระครบ
   - บรรทัดชั่งน้ำหนักส่งน้ำหนักจริง (kg)
   - ส่ง modifier ไปด้วย
+  - เมนูและตัวเลือกระบุด้วย**รหัสของ ERP** ที่ได้จาก ticket 27 (เมนูที่ยังไม่ผูกขายไม่ได้ในโหมดเชื่อมต่อ จึงไม่มีบรรทัดที่ไม่มีรหัส)
   - ให้บันทึกความหมายนี้ในสัญญาฝั่ง ERP ด้วย ดูคอมเมนต์ใน PaynEat-ERP#9
 - **outbox**: เขียนแถว event ลงตาราง outbox **ใน transaction เดียวกับการชำระเงิน** ถ้าการชำระเงินล้ม ต้องไม่มีแถว outbox
   - idempotency key คงที่ต่อบรรทัดขาย (เช่น `<pos-instance>:<order-item-id>`) และไม่เปลี่ยนเมื่อ retry
