@@ -2476,3 +2476,38 @@ error เดิมไม่เปลี่ยน (แอปที่ตัดส
 backend จริง (README บอกไว้เหนือทัวร์)
 
 ผลตรวจ: backend 361 (+6) · Flutter 481 (+8) · E2E 49 (+1) = **891** ผ่านทั้งหมด
+
+## 65. ติดตั้งเดโมบน Docker Desktop บรรทัดเดียว — image สำเร็จรูปจาก CI แทนการ build ในเครื่อง (2026-09-25)
+
+**โจทย์** — ผู้ดูแลโปรเจกต์จะเปิดระบบตัวจริง (มีเซิร์ฟเวอร์) ให้บริษัทที่สนใจดูพรุ่งนี้ แต่ไม่ใช่สาย IT: เปิด Docker Desktop
+ไว้แล้วแต่ไม่มีอะไรรัน เพราะทางเลือก B ต้อง clone โค้ด, ตั้งไฟล์ `.env` และ build image เว็บเองที่ต้องโหลด Flutter SDK
+~2GB แล้ว compile ในเครื่อง 5–10 นาที (กินแรมเยอะ และ #63 เพิ่งเจอว่า Dockerfile เว็บพังมาตลอดโดยไม่มีใครรู้)
+
+**ตัดสินใจ** — ให้ CI build image แทน แล้วแจกเป็นไฟล์ ผู้ใช้วางบรรทัดเดียวใน PowerShell:
+
+- `.github/workflows/demo-images.yml` — build image API + เว็บจาก Dockerfile จริง แล้ว smoke test ด้วย
+  `deploy/demo/docker-compose.demo.yml` (`/health`, ล็อกอินแคชเชียร์, `GET /scale` ต้องเป็น `simulator`, เว็บตอบ 200)
+  บน `main` ผ่านแล้ว `docker save | gzip` อัปโหลดเป็น asset ของ release `demo` (prerelease, ย้าย tag ตาม commit ล่าสุด)
+  PR ที่แตะ Dockerfile/compose ก็รัน build + smoke test (ไม่อัปโหลด) — **ปิดช่อง "CI ไม่เคย build image Docker" ที่ #61/#63
+  บันทึกไว้**
+- `deploy/demo/install-demo.ps1` — ตรวจว่ามี Docker และ engine เปิดอยู่ → โหลด compose + image (~200 MB) → `docker load`
+  → ลบ container ชื่อเดิมที่อาจค้างจากทางเลือก B → `docker compose up -d` → รอ API/เว็บตอบ → เปิดเบราว์เซอร์ และเขียนไฟล์
+  ดับเบิลคลิก Start / Stop / Reset ไว้ในโฟลเดอร์ `PaynEat-Demo` (ไฟล์ที่สร้างในเครื่องไม่ติด Mark-of-the-Web จึงไม่โดน
+  SmartScreen) — วางซ้ำ = อัปเดต ข้อมูลใน volume ยังอยู่ · `restart: unless-stopped` เปิดเครื่องใหม่ระบบขึ้นเอง
+- **ใช้ `WebClient.DownloadString` + `iex` ไม่ใช่ `irm | iex`** — asset ของ release เสิร์ฟเป็น `application/octet-stream`
+  ซึ่ง `Invoke-RestMethod` ของ Windows PowerShell 5.1 ไม่รับประกันว่าคืนเป็นสตริง และตั้ง TLS 1.2 ในบรรทัดเดียวกันเผื่อ
+  .NET เก่า — สคริปต์เป็น **ASCII ล้วน** เพราะ 5.1 ถอดรหัสไฟล์ที่โหลดมาด้วย code page ของเครื่อง ภาษาไทยจะเพี้ยน
+- **release สาธารณะ** — repo เปิดสาธารณะอยู่แล้ว ในไฟล์มีแค่โค้ดเดียวกับใน repo และค่าเดโมที่เผยแพร่อยู่ (ถามผู้ดูแลก่อน
+  เปิดแล้ว เลือกแบบนี้แทนการให้ล็อกอิน GitHub ไปโหลด artifact เอง) compose เดโมตั้ง development + ตาชั่งจำลอง + อีเมล
+  ไม่ส่งจริง พร้อมคำเตือนในไฟล์ว่าห้ามใช้กับร้านจริง
+
+**ทางเลือกที่ไม่เอา** — ghcr.io: package ใหม่เป็น private เป็นค่าเริ่มต้น ต้องให้ผู้ดูแลไปกดเปิดเองหรือ `docker login` ในเครื่อง
+ปลายทาง · .bat ให้ดาวน์โหลด: เบราว์เซอร์เตือนไฟล์ .bat และ SmartScreen เตือนซ้ำอีกชั้น · build ในเครื่องจาก ZIP: ยังช้าและ
+เสี่ยงแรมไม่พอเหมือนเดิม
+
+**ตรวจแล้ว** — รันบรรทัดเดียวนั้นจริงใน PowerShell 7 (Linux) กับ Docker จริง โดยชี้ release ไปที่เซิร์ฟเวอร์จำลองในเครื่อง: โหลด →
+load → up → รอจนพร้อม → สร้างไฟล์ .cmd (CRLF ถูกต้อง), รันซ้ำ (เส้นทางอัปเดต) ผ่าน และ API ตอบตาชั่ง `simulator`
+เชื่อมต่อแล้ว · **ข้อจำกัด**: ไม่ได้รันบน Windows PowerShell 5.1 จริง (เขียนให้เข้ากันได้: ไม่ใช้ `??`/`&&`/ternary,
+`-UseBasicParsing`) และ image เป็น x86-64 เท่านั้น
+
+ผลตรวจ: ไม่ได้แตะโค้ดแอป/backend — เทสต์ยังเป็น backend 361 · Flutter 481 · E2E 49 = **891**

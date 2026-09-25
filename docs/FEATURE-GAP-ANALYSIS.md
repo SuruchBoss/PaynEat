@@ -281,6 +281,12 @@ gap สองข้อที่ #62 บันทึกไว้ว่ายั�
 (compose ตั้ง production โดยไม่มีรหัสผ่าน seed) และ APK release ไม่มีสิทธิ์ INTERNET — แก้ครบพร้อมเทสต์ CORS
 แต่ยังไม่มีอะไรใน CI ที่ build Android หรือ image Docker จริง ถ้าจะปิดช่องนี้ถาวรต้องเพิ่ม job ทั้งสองอย่าง
 
+## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #65 (ติดตั้งเดโมบน Docker Desktop บรรทัดเดียว)
+
+**ปิดช่องที่ #61/#63 เปิดค้างไว้ครึ่งหนึ่ง: CI build image Docker จริงแล้ว** (`demo-images.yml` build + smoke test ทุกครั้งที่
+`main` เปลี่ยน และทุก PR ที่แตะ Dockerfile/compose) พร้อมทางเลือก D ให้คนที่ไม่ใช่สาย IT เปิดระบบตัวจริงบน Windows +
+Docker Desktop ด้วยบรรทัดเดียวจาก release `demo` ช่องที่ยังเปิดอยู่: CI ยังไม่ build APK Android และ image เป็น x86-64 เท่านั้น
+
 ## หมายเหตุการอัปเดต — `docs/DECISIONS.md` #63 (build image Docker ครบครั้งแรก)
 
 ไม่ได้ปิด/เปิด gap ข้อใหม่ แต่ช่องที่ #61 บอกไว้ ("ยังไม่มีอะไรใน CI ที่ build image Docker จริง") มีบั๊กซ่อนอยู่จริง:

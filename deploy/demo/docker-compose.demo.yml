@@ -1,0 +1,40 @@
+# PaynEat สำหรับเดโมบน Docker Desktop — ใช้ image ที่ build เสร็จแล้ว ไม่ต้องมีซอร์สโค้ด/git/Flutter ในเครื่อง
+#   ติดตั้งบน Windows ด้วยบรรทัดเดียว: ดู deploy/demo/install-demo.ps1 (หรือ README หัวข้อทางเลือก D)
+#   image มาจาก .github/workflows/demo-images.yml ซึ่ง build จาก Dockerfile จริงทุกครั้งที่ main เปลี่ยน
+#   แล้วอัปโหลดไว้ที่ release "demo" — ต่างจาก docker-compose.yml ที่รากซึ่ง build จากซอร์สในเครื่อง
+#
+# ตั้งค่าเป็นเดโมทั้งหมด: บัญชีเดโม (admin/admin123 ฯลฯ), ตาชั่งจำลอง, อีเมลสร้างครบแต่ไม่ส่งออกจริง
+# ห้ามใช้ไฟล์นี้กับร้านจริง — ตาชั่งจำลองคือน้ำหนักปลอม และ JWT_SECRET เป็นค่าที่เผยแพร่อยู่
+name: payneat
+
+services:
+  api:
+    image: payneat-api:demo
+    container_name: payneat-api
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      JWT_SECRET: payneat-local-demo-secret
+      CORS_ORIGIN: '*'
+      AUTO_SEED: 'true'
+      DATABASE_FILE: data/payneat.sqlite
+      SCALE_DRIVER: simulator
+      MAIL_TRANSPORT: json
+    ports:
+      - '3000:3000'
+    volumes:
+      - payneat-data:/app/data
+    # เปิด Docker Desktop ใหม่หลังรีสตาร์ตเครื่อง ระบบขึ้นเองโดยไม่ต้องสั่งซ้ำ
+    restart: unless-stopped
+
+  web:
+    image: payneat-web:demo
+    container_name: payneat-web
+    ports:
+      - '8080:80'
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  payneat-data:

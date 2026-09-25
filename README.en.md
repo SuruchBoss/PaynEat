@@ -190,6 +190,9 @@ So this project prioritizes **correct business logic and a maintainable structur
 ## 🚀 How to run it
 
 > Takes about 5 minutes · if you get stuck, see [Troubleshooting](#-troubleshooting) at the end of this section
+>
+> **Not an IT person?** On Windows with Docker Desktop, skip to **Option D** below (paste one line — no code download, no build),
+> or just open the [live demo](https://suruchboss.github.io/PaynEat/app/).
 
 ### Step 0 — Get the code
 
@@ -309,6 +312,32 @@ The app uses local mock data instead — every feature works.
 
 ---
 
+### 🅳 Option D — Windows + Docker Desktop in one line (no code on your machine)
+
+For people who aren't in IT but want the real system (a server, realtime across windows, the simulated scale, PDFs) on
+their own computer — no git, Node or Flutter, and nothing to build: GitHub Actions builds the images every time `main`
+changes ([`demo-images.yml`](.github/workflows/demo-images.yml)) and puts them on the [`demo` release](https://github.com/SuruchBoss/PaynEat/releases/tag/demo).
+
+1. Open **Docker Desktop** and wait until the bottom-left says **Engine running**
+2. Open **PowerShell** (press the Windows key, type `PowerShell`, Enter), paste this line and press Enter:
+
+   ```powershell
+   [Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object Net.WebClient).DownloadString('https://github.com/SuruchBoss/PaynEat/releases/download/demo/install-demo.ps1'))
+   ```
+
+3. Wait about 3–5 minutes (the first download is about 200 MB). Your browser opens **http://localhost:8080** → log in with `admin` / `admin123`
+
+It is set up for demos: the simulated scale runs right away, emails are fully built but never sent, and after a reboot
+PaynEat comes back up on its own when Docker Desktop starts. The `PaynEat-Demo` folder in your user folder has
+double-click **Start / Stop / Reset PaynEat data** files (Reset = wipe every bill you tried and restore the sample data) —
+paste the same line again to update to the latest version (your data stays). The script it runs is
+[`deploy/demo/install-demo.ps1`](deploy/demo/install-demo.ps1) if you want to read it first.
+
+> ⚠️ Demo settings only (demo accounts, simulated scale, a published `JWT_SECRET`) — a real shop uses Option A/B with
+> [SECURITY.md](SECURITY.md) · the images are x86-64 (a typical Windows PC)
+
+---
+
 ### 👤 Login accounts
 
 The login page (demo mode) has a demo-account chip for every role — **one tap signs you in**, no typing needed.
@@ -331,7 +360,7 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
 > have a **globe** button in the top corner that switches ไทย / English / 한국어 before anyone signs in (the first
 > launch follows the device language). In demo mode (Option C / the demo link) **data lives on each device
 > separately** — a waiter ordering on a phone won't show up on a kitchen tablet. To try several devices at once,
-> run Option A or B and open the same address everywhere (or try every role on one device by switching accounts)
+> run Option A, B or D and open the same address everywhere (or try every role on one device by switching accounts)
 > — see what was adjusted for this UAT in `docs/DECISIONS.md` #62
 
 ---
@@ -340,7 +369,7 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
 
 > **Tip:** open **two browser windows side by side** (one as the waiter, one as the kitchen — use an
 > incognito window for the second one) to see orders bounce between screens in real time.
-> *(Works with Option A and B — Option C has no server, so no realtime.)*
+> *(Works with Option A, B and D — Option C has no server, so no realtime.)*
 
 1. **Log in as a waiter** (`waiter1`) → see the table map split by zone; green means available
 2. **Tap table A1** → opens the order-taking screen
@@ -406,7 +435,7 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
     top-right of the bar after picking a date range → export **"Sales summary"**, **"Top items"**, or
     **"Sales by day"** → get a CSV file for the currently selected date range right away (browser only,
     same as exporting the audit log in step 17)
-21. **(Option A/B with a real backend only — Demo Mode has a single branch, so skip this step there)**
+21. **(Option A/B/D with a real backend only — Demo Mode has a single branch, so skip this step there)**
     Log out and log back in as `waiter2`/`waiter123` (type it manually, no quick-tap button) → you land
     straight on the **"Select branch"** page because this account has access to 2 branches → pick
     **"Thonglor branch"** → the table map now shows a completely different set of table names/menu items
@@ -860,7 +889,7 @@ cd app && flutter test test_e2e   # 49 cases — the real app talking to the rea
   scoped per branch. An account with access to more than one branch lands on a **branch picker**
   right after login, then can switch branch anytime from the **Profile** page — `admin` can switch
   to an **"all branches"** mode to see combined reports across every branch. Promotions, customers/
-  loyalty, store settings, and shifts remain chain-wide by design (real backend only, option A/B —
+  loyalty, store settings, and shifts remain chain-wide by design (real backend only, option A/B/D —
   Demo Mode has a single branch; see `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
 - **A scale bridge on the store server** — set `SCALE_DRIVER=tcp|serial|simulator` in `backend/.env`; it
   reads A&D/CAS, Mettler Toledo MT-SICS and plain number+unit (kg/g/lb/oz) formats, reconnects on its
@@ -1037,8 +1066,12 @@ PaynEat/
 │   ├── docs/openapi.yaml
 │   └── tests/
 │
-├── docker-compose.yml                # Run the whole system with one command
-└── .github/workflows/ci.yml          # Runs format/analyze/test checks on every push
+├── docker-compose.yml                # Run the whole system with one command (builds from source)
+├── deploy/demo/                      # Option D: compose + one-line installer for Docker Desktop
+└── .github/workflows/
+    ├── ci.yml                        # Runs format/analyze/test checks on every push
+    ├── deploy-pages.yml              # Landing page + live demo (Demo Mode) on GitHub Pages
+    └── demo-images.yml               # Builds the real Docker images + smoke test → "demo" release
 ```
 
 ---
@@ -1236,6 +1269,12 @@ cash refund making the cashier look short at shift close (#44), CSV files downlo
 backend losing their BOM so Thai text garbled in Excel (#45), and a customer tapping "Send to Kitchen"
 without the kitchen ever seeing it, plus a truncated QR link showing "no internet" (#46) — the suite's
 design is in `docs/DECISIONS.md` #47
+
+**Docker images — real build + smoke test** — [`demo-images.yml`](.github/workflows/demo-images.yml) builds the API and web
+images from the real Dockerfiles every time `main` changes (and on every PR touching a Dockerfile/compose), then runs
+`deploy/demo/docker-compose.demo.yml` and checks that the API answers `/health`, a login works, the simulated scale is on
+and the web app answers 200 — only then does it upload them as the `demo` release for Option D (no job built the images
+before, which is how the web Dockerfile stayed broken unnoticed — see `docs/DECISIONS.md` #63, #65)
 
 **Backend (361 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The centerpiece is `tests/order-flow.test.js`, which walks the entire floor-to-cash path in 17 steps:
