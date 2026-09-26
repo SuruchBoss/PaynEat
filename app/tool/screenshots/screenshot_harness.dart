@@ -322,7 +322,7 @@ class ScreenshotHarness {
           'menuItemId': 2,
           'quantity': 2,
           'optionIds': [1023, 1031],
-          'note': 'ไม่ใส่ผัก',
+          'note': _note('ไม่ใส่ผัก', '야채 빼주세요', 'No vegetables'),
         },
         {
           'menuItemId': 17,
