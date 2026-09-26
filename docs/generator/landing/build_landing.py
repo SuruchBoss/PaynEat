@@ -388,7 +388,7 @@ def header(c):
         current = ' aria-current="page"' if code == c['code'] else ''
         cls = ' class="ko"' if code == 'ko' else ''
         langs.append(f'<a href="{href}" hreflang="{code}" lang="{code}"{cls}{current}>{label}</a>')
-    # ลิงก์ "วิธีติดตั้ง" ไปอีกหน้า — เป็นลิงก์เดียวที่ยังเห็นบนแท็บเล็ต/มือถือ (ลิงก์ในหน้าเดียวกันซ่อนไป, DECISIONS #71)
+    # ลิงก์ "วิธีติดตั้ง" ไปอีกหน้า — เป็นลิงก์เดียวที่ยังเห็นบนแท็บเล็ต/มือถือ (ลิงก์ในหน้าเดียวกันซ่อนไป, DECISIONS #72)
     links = ''.join(
         f'<a class="inst" href="{href}"><span class="full">{e(label)}</span><span class="short">{e(c["nav_install_short"])}</span></a>'
         if href.startswith('install') else f'<a href="{href}">{e(label)}</a>'
@@ -670,7 +670,7 @@ def page(c):
 
 
 # ---------------------------------------------------------------------------------------------
-# หน้า "คู่มือติดตั้ง" (docs/landing/install*.html) — คนไม่ใช่สาย IT ทำตามได้โดยไม่ต้องเปิด GitHub (DECISIONS #71)
+# หน้า "คู่มือติดตั้ง" (docs/landing/install*.html) — คนไม่ใช่สาย IT ทำตามได้โดยไม่ต้องเปิด GitHub (DECISIONS #72)
 # ใช้ token/header/footer ชุดเดียวกับหน้า Landing แล้วเพิ่ม CSS เฉพาะหน้านี้ต่อท้าย
 
 INSTALL_CSS = r"""
