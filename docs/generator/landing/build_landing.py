@@ -297,11 +297,21 @@ html[lang="en"] .hero h1{font-size:clamp(38px,5vw,62px)}
 
 /* ---- footer ---- */
 footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);color:#D9C4B4;padding:44px 0 110px;font-size:14px}
-.foot{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}
+.foot{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr) minmax(0,1fr);gap:32px 48px}
 .foot .brand{color:#fff;margin-bottom:12px}
 .foot p+p{margin-top:8px}
 .foot a{color:#FFE2C8}
-.foot ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+.foot h2{font:600 13px/1.3 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:#B89C88;margin:6px 0 14px}
+.foot-links ul,.foot-contact ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.foot-links a{text-decoration:none}
+.foot-links a:hover{text-decoration:underline}
+.foot-contact>p{margin:0 0 14px;color:#D9C4B4}
+.contact{display:grid;grid-template-columns:40px minmax(0,1fr);gap:12px;align-items:center;padding:10px 12px;border-radius:14px;
+  background:#2C1B12;border:1px solid #3A2418;text-decoration:none;color:#FFF3E8;transition:border-color .15s}
+.contact:hover{border-color:var(--mustard)}
+.contact .ci{width:40px;height:40px;border-radius:12px;background:#3A2418;color:var(--mustard);display:grid;place-items:center}
+.contact b{display:block;font-weight:600;font-size:14.5px;line-height:1.35}
+.contact small{display:block;color:#D9C4B4;font-size:13.5px;line-height:1.4;overflow-wrap:anywhere}
 
 /* ---- แถบตะกร้าล่างจอ (มือถือ) ---- */
 .mcart{display:none}
@@ -319,6 +329,8 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 @media (max-width:1500px){.cart b{display:none}}
 @media (max-width:1180px){.links a:not(.inst){display:none}}
 @media (max-width:1080px){
+  .foot{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .foot-about{grid-column:1/-1}
   .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
   .cats li{scroll-snap-align:start}
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -348,7 +360,6 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
   .hero-art .dev.phone{width:36%;bottom:-8%}
   .media.combo figure.p{width:36%}
   .banner{border-radius:24px}
-  .foot ul{grid-template-columns:1fr}
 }
 @media (max-width:420px){
   .nav{gap:6px}
@@ -580,13 +591,34 @@ def checkout(c):
 </div></section>"""
 
 
+# ไอคอนช่องทางติดต่อท้ายหน้า — วาด inline ไม่โหลดจากที่อื่น (เส้นใช้ currentColor)
+CONTACT_ICONS = {
+    'mail': '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" '
+    'stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>',
+    'linkedin': '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" '
+    'stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M8 10.5V17M8 7.2v.1'
+    'M12 17v-6.5M12 13.5a2.8 2.8 0 0 1 5 0V17"/></svg>',
+    'issues': '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" '
+    'stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 0 1-11.6 7.1L4 20l1-4.1A8 8 0 1 1 20 12Z"/>'
+    '<path d="M9 10.5h6M9 13.5h4"/></svg>',
+}
+
+
 def footer(c, home='#top'):
     f = c['footer']
+    ct = f['contact']
     links = ''.join(f'<li><a href="{href}">{e(label)}</a></li>' for label, href in f['links'])
     paras = ''.join(f'<p>{p}</p>' for p in f['paras_html'])
+    contacts = ''.join(
+        f'<li><a class="contact" href="{href}"><span class="ci" aria-hidden="true">{CONTACT_ICONS[icon]}</span>'
+        f'<span><b>{e(label)}</b><small>{e(value)}</small></span></a></li>'
+        for icon, label, value, href in ct['items']
+    )
     return f"""<footer class="site-foot"><div class="wrap foot">
-  <div><a class="brand" href="{home}">{LOGO}<span>PaynEat</span><small>POS</small></a>{paras}</div>
-  <ul>{links}</ul>
+  <div class="foot-about"><a class="brand" href="{home}">{LOGO}<span>PaynEat</span><small>POS</small></a>{paras}</div>
+  <nav class="foot-links" aria-labelledby="foot-links-h"><h2 id="foot-links-h">{e(f['links_title'])}</h2><ul>{links}</ul></nav>
+  <section class="foot-contact" aria-labelledby="foot-contact-h"><h2 id="foot-contact-h">{e(ct['title'])}</h2>
+    <p>{e(ct['lead'])}</p><ul>{contacts}</ul></section>
 </div></footer>
 <div class="mcart" role="complementary" aria-label="{e(c['mcart']['label'])}"><div><b>🛒 PaynEat POS</b><small>{e(c['mcart']['sub'])}</small></div><a href="{DEMO}">{e(c['mcart']['cta'])}</a></div>"""
 
