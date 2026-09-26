@@ -1736,7 +1736,10 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 - [ ] **Connect to [PaynEat ERP](https://github.com/SuruchBoss/PaynEat-ERP) (optional mode)** — the supply-side
   ERP for a chain that runs its own plant. When connected, the ERP owns ingredients, branches, menus,
   prices and recipes and the POS sends sales to it through an outbox, exactly once even across outages —
-  **without the ERP, everything works exactly as today** (see tickets 25–27 and `docs/DECISIONS.md` #66)
+  **without the ERP, everything works exactly as today** (see tickets 25–28 and `docs/DECISIONS.md` #66)
+- [ ] **The app on Google Play** — one app for every restaurant: enter the shop server's address or scan a QR code on
+  first start, or try demo mode with no server at all. Free, like everything else. The App Store follows when a
+  restaurant asks for it; the server itself still installs in the shop (see ticket 29 and `docs/DECISIONS.md` #69)
 - [x] **Logs and metrics per the ecosystem telemetry contract** — done: JSON logs per contract v1.1 (no vendor
   names by default, `LOG_FORMAT=gcp` for Google Cloud), a full `x-request-id` round trip with the app showing
   the request ID on errors, `/metrics` by route template on port 9464, never exposed outside the machine, and no
