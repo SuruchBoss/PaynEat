@@ -1,0 +1,45 @@
+# Ticket: เชื่อมต่อ PaynEat ERP จากค่าตั้งค่าตอนเปิดเครื่อง และปักเวอร์ชันที่ ERP ใช้ทำเดโมได้
+
+**Priority:** 🟡 Medium — สัปดาห์ที่ 6 ของแผน PaynEat ERP v1
+**Ref:** [PaynEat-ERP#27 — คำสั่งเดียวรัน ERP + POS + PostgreSQL พร้อมเดโมครบเส้นทาง](https://github.com/SuruchBoss/PaynEat-ERP/issues/27),
+[ERP ADR-0002](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/adr/0002-system-boundaries-and-pos-integration.md), `docs/DECISIONS.md` #66
+**Blocked by:** `25-erp-connected-mode.md`, `26-erp-sales-outbox.md`, `27-erp-menu-pull.md`
+
+## ปัญหา
+ticket 25 ให้ admin เข้าโหมดเชื่อมต่อผ่านหน้าจอ ด้วยการกรอก URL ของ ERP และ machine credential ซึ่งเหมาะกับร้านจริง
+แต่ PaynEat-ERP#27 ต้องการให้คนที่มาประเมินโปรเจกต์รันคำสั่งเดียวแล้วได้ POS ที่เชื่อมต่อ ERP อยู่แล้ว โดยไม่ต้องคัดลอก
+credential ไปวางในหน้าจอ และ ERP ต้องสร้าง POS จาก**เวอร์ชันที่ปักไว้** ของ repo นี้ ไม่ใช่จาก `main` ที่ขยับตลอด
+
+## ทำไมสำคัญ
+เดโมคำสั่งเดียวคือหน้าร้านของทั้งระบบนิเวศ: ขายจานหนึ่งบน POS แล้วเห็นมันไปโผล่ในรายงานย้อนรอยของ ERP การติดตั้งจริงที่ใช้
+Docker ก็ได้ประโยชน์เดียวกัน คือตั้งค่าการเชื่อมต่อจากไฟล์ได้โดยไม่ต้องกดหน้าจอ
+
+## ขอบเขตงาน
+- **เข้าโหมดเชื่อมต่อจากค่าตั้งค่าตอนเปิดเครื่อง**: ถ้ามี `ERP_URL` และ `ERP_CREDENTIAL_FILE` (path ของไฟล์ที่มี machine
+  credential) ตอน API เริ่มทำงาน ให้เข้าโหมดเชื่อมต่อด้วยค่านั้น ใช้ขั้นตอนและการตรวจเดียวกับหน้าจอของ ticket 25 ทุกอย่าง
+  - อ่าน credential จาก**ไฟล์เท่านั้น** ไม่รับจาก environment variable โดยตรง เพราะ env โผล่ใน `docker inspect`
+  - credential ไม่อยู่ใน log, response หรือไฟล์ export (กติกาเดิมของ ticket 25)
+  - ถ้าตั้งค่าไว้แต่เชื่อมต่อไม่ได้ (ไฟล์ไม่มี, credential ถูกปฏิเสธ, รหัสสาขาไม่ตรงรูปแบบ) POS **ยังเปิดใช้งานได้ในโหมด
+    เดี่ยว** และบอกเหตุผลชัดเจนทั้งใน log (ตามสัญญา telemetry v1.2) และบนหน้าตั้งค่า ห้ามทำให้ POS เปิดไม่ขึ้น
+  - ถ้าไม่ตั้งค่าเหล่านี้ ทุกอย่างเหมือนเดิมทุกประการ
+- **ปักเวอร์ชัน**: เมื่อ 25–28 เสร็จ ให้ติด tag ที่ ERP ใช้อ้างอิงได้ (ชื่อ tag ให้ POS PO เป็นคนเลือก) และเขียนไว้ใน
+  README ว่าเป็นเวอร์ชันที่เข้ากับสัญญา ERP v1.1
+- **build จาก git ได้**: `docker compose` ภายนอก build API และเว็บของ POS จาก URL ของ repo ที่ tag นั้นได้โดยไม่ต้อง
+  clone เอง (ตรวจว่า Dockerfile ไม่อ้างไฟล์นอก build context)
+
+## ขอบเขตที่ตั้งใจไม่ทำ
+- ไฟล์ compose ของเดโมรวม ERP + POS อยู่ใน repo ERP (PaynEat-ERP#27) ไม่ได้อยู่ที่นี่
+- ย้าย POS ไปใช้ PostgreSQL (อยู่นอกขอบเขตของสเปก ERP #1) POS ยังใช้ SQLite
+- การลงทะเบียน POS instance ฝั่ง ERP ทำโดย seed ของ ERP
+
+## Acceptance Criteria
+- [ ] ตั้ง `ERP_URL` + `ERP_CREDENTIAL_FILE` แล้ว POS เปิดขึ้นมาในโหมดเชื่อมต่อ และดึง master data ครั้งแรกได้
+- [ ] ตั้งค่าผิดแต่ละแบบ POS ยังเปิดในโหมดเดี่ยวได้ และบอกเหตุผลใน log กับหน้าตั้งค่า
+- [ ] credential ไม่โผล่ใน log, response, ไฟล์ export หรือ `docker inspect`
+- [ ] ไม่ตั้งค่า = พฤติกรรมเดิมทุกประการ (เทสต์เดิมผ่านโดยไม่ต้องแก้)
+- [ ] มี tag ที่ปักไว้ และ build API กับเว็บจาก git URL ของ tag นั้นได้
+- [ ] README (ไทย/อังกฤษ), `docs/DECISIONS.md`, `docs/FEATURE-GAP-ANALYSIS.md` อัปเดตตาม `CLAUDE.md`
+
+## เทสต์
+backend: เปิด API พร้อมค่าตั้งค่าที่ชี้ไป stub server ของ ERP (แบบเดียวกับเทสต์ของ ticket 25) ครอบคลุมกรณีสำเร็จและ
+กรณีตั้งค่าผิดแต่ละแบบ และเทสต์ว่า credential ไม่อยู่ใน log
