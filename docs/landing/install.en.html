@@ -1,0 +1,519 @@
+<!doctype html>
+<!-- สร้างจาก docs/generator/landing/build_landing.py — แก้เนื้อหาที่ content.py / install_content.py แล้วรันใหม่ อย่าแก้ไฟล์นี้ตรง ๆ -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Install PaynEat POS</title>
+<meta name="description" content="Set up PaynEat POS step by step: try it in the browser, install on Windows with one line, run it with Docker so every device in the restaurant shares it, or run it from source.">
+<meta name="theme-color" content="#D9480F">
+<meta property="og:title" content="Install PaynEat POS">
+<meta property="og:description" content="Set up PaynEat POS step by step: try it in the browser, install on Windows with one line, run it with Docker so every device in the restaurant shares it, or run it from source.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://suruchboss.github.io/PaynEat/install.en.html">
+<meta property="og:image" content="https://suruchboss.github.io/PaynEat/og-image-en.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://suruchboss.github.io/PaynEat/og-image-en.png">
+<link rel="canonical" href="https://suruchboss.github.io/PaynEat/install.en.html">
+<link rel="alternate" hreflang="th" href="https://suruchboss.github.io/PaynEat/install.html"><link rel="alternate" hreflang="en" href="https://suruchboss.github.io/PaynEat/install.en.html"><link rel="alternate" hreflang="ko" href="https://suruchboss.github.io/PaynEat/install.ko.html">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5.3' fill='%23FF6B2C'/%3E%3Crect x='5.6' y='3.6' width='3.8' height='16.8' rx='1.9' fill='white'/%3E%3Cpath d='M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Anuphan:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@600&text=%ED%95%9C%EA%B5%AD%EC%96%B4&display=swap">
+<style>:root{--font-display:'Kanit',system-ui,sans-serif;--font-body:'Anuphan',system-ui,sans-serif}
+:root{
+  --bg:#FFF8F0;--paper:#fff;--cream:#FFEEDD;--ink:#2A1A10;--ink-2:#54392A;--muted:#6F5445;
+  --line:#F0DFCE;--brand:#FF6B2C;--brand-ink:#B8400B;--cta:#D9480F;--cta-hover:#B93A0A;
+  --chili:#B42318;--mustard:#FFC53D;--basil:#1F7A45;--basil-bg:#E6F4EA;--espresso:#1F130C;
+  --radius:22px;--shadow:0 18px 40px -22px rgba(74,33,10,.45);--shadow-sm:0 6px 18px -10px rgba(74,33,10,.35);
+  --wrap:1180px;--gutter:clamp(16px,4vw,32px);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.65 var(--font-body);overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+h1,h2,h3,h4{font-family:var(--font-display);line-height:1.2;margin:0}
+p{margin:0}
+:focus-visible{outline:3px solid var(--mustard);outline-offset:3px;border-radius:8px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:8px 14px;border-radius:10px;z-index:99}
+.skip:focus{left:12px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 var(--gutter)}
+[id]{scroll-margin-top:84px}
+
+/* ---- แถบโปรบนสุด + header ---- */
+.promo{background:var(--espresso);color:#FFE7D1;font-size:14px;text-align:center;padding:8px var(--gutter)}
+.promo a{color:var(--mustard);font-weight:600;text-decoration:none;white-space:nowrap}
+.promo a:hover{text-decoration:underline}
+header.site{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);backdrop-filter:saturate(1.4) blur(10px);
+  -webkit-backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;gap:18px;height:68px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 22px/1 var(--font-display);letter-spacing:-.01em}
+.brand small{font:600 11px/1 var(--font-body);background:var(--cream);color:var(--brand-ink);padding:4px 7px;border-radius:99px;letter-spacing:.06em}
+.links{display:flex;gap:4px;margin-left:12px}
+.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 12px;border-radius:99px}
+.links a:hover{background:var(--cream);color:var(--ink)}
+.lang{display:flex;gap:2px;margin-left:auto;background:var(--cream);border-radius:99px;padding:3px}
+.lang a{text-decoration:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--ink-2)}
+.lang a[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
+.lang .ko{font-family:'Noto Sans KR',var(--font-body)}
+.cart{display:flex;align-items:center;gap:10px;text-decoration:none;background:var(--cta);color:#fff;font-weight:600;
+  padding:9px 10px 9px 16px;border-radius:99px;box-shadow:var(--shadow-sm);white-space:nowrap}
+.cart:hover{background:var(--cta-hover)}
+.cart b{background:#fff;color:var(--cta);font-size:12px;padding:3px 8px;border-radius:99px}
+
+/* ---- hero ---- */
+.hero{padding:28px 0 0}
+.banner{position:relative;overflow:hidden;border-radius:32px;color:#fff;
+  background:radial-gradient(900px 420px at 85% -10%,rgba(255,197,61,.45),transparent 60%),
+  radial-gradient(600px 400px at -10% 110%,rgba(255,107,44,.55),transparent 60%),
+  linear-gradient(135deg,#D9480F 0%,#B42318 58%,#86170F 100%);box-shadow:var(--shadow)}
+.banner::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;
+  background-image:radial-gradient(#fff 1.2px,transparent 1.3px);background-size:22px 22px}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.02fr 1fr;gap:28px;align-items:center;padding:clamp(28px,5vw,64px)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+  padding:6px 14px;border-radius:99px;font-size:14px;font-weight:500}
+.hero h1{font-size:clamp(40px,6.2vw,74px);font-weight:800;letter-spacing:-.02em;margin:18px 0 16px}
+.hero h1 em{font-style:normal;color:var(--mustard)}
+html[lang="en"] .hero h1{font-size:clamp(38px,5vw,62px)}
+.hero .lead{font-size:clamp(16px,1.6vw,19px);color:#FFE9DA;max-width:34em}
+.ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:600;border-radius:99px;padding:14px 22px;font-size:16px}
+.btn-light{background:#fff;color:var(--chili);box-shadow:0 10px 24px -12px rgba(0,0,0,.5)}
+.btn-light:hover{background:#FFF3E8}
+.btn-ghost{color:#fff;border:1.5px solid rgba(255,255,255,.6)}
+.btn-ghost:hover{background:rgba(255,255,255,.12)}
+.hero-art{position:relative;min-height:420px}
+.hero-art .dev.tablet{position:absolute;right:0;top:6%;width:92%;transform:rotate(1.5deg)}
+.hero-art .dev.phone{position:absolute;left:0;bottom:-6%;width:34%;transform:rotate(-4deg)}
+.float{position:absolute;display:flex;gap:10px;align-items:center;background:#fff;color:var(--ink);border-radius:16px;
+  padding:10px 14px;box-shadow:var(--shadow);font-size:14px;line-height:1.3;z-index:3}
+.float i{font-style:normal;font-size:22px}
+.float small{display:block;color:var(--muted);font-size:12px}
+.float.f1{right:4%;top:-2%}
+.float.f2{right:10%;bottom:-2%}
+.emoji{position:absolute;font-size:44px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25));z-index:2;user-select:none}
+.emoji.e1{left:38%;top:-4%;transform:rotate(-12deg)}
+.emoji.e2{left:30%;bottom:6%;transform:rotate(10deg);font-size:38px}
+.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:0;background:#fff;border-radius:20px;margin:-34px auto 0;
+  position:relative;z-index:2;box-shadow:var(--shadow);max-width:calc(var(--wrap) - 2*var(--gutter) - 64px)}
+.fact{display:flex;gap:12px;align-items:center;padding:18px 20px}
+.fact+.fact{border-left:1px dashed var(--line)}
+.fact i{font-style:normal;font-size:26px;width:46px;height:46px;display:grid;place-items:center;background:var(--cream);border-radius:14px;flex:none}
+.fact b{display:block;font-family:var(--font-display);font-size:18px;line-height:1.2}
+.fact small{color:var(--muted);font-size:13px;line-height:1.35;display:block}
+
+/* ---- ตัวเลือกปัญหา (หมวดแบบแอปสั่งอาหาร) ---- */
+.section{padding:clamp(56px,8vw,96px) 0 0}
+.head{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:12px 24px;margin-bottom:26px}
+.head h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-.01em}
+.head p{color:var(--muted);max-width:40em}
+.kick{display:inline-block;font-weight:600;color:var(--brand-ink);font-size:14px;letter-spacing:.04em;margin-bottom:6px}
+.cats{list-style:none;margin:0;padding:4px 2px 12px;display:grid;grid-template-columns:repeat(9,1fr);gap:12px}
+.cats a{display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;text-align:center;font-weight:500;font-size:14px;line-height:1.3;color:var(--ink-2)}
+.cats span.ico{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;font-size:34px;background:#fff;
+  box-shadow:var(--shadow-sm);border:2px solid transparent;transition:transform .15s,border-color .15s}
+.cats a:hover span.ico{transform:translateY(-3px);border-color:var(--brand)}
+
+/* ---- การ์ดเมนู ---- */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:var(--paper);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;
+  border:1px solid var(--line);transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-4px);box-shadow:var(--shadow)}
+.card-img{position:relative;display:block;aspect-ratio:16/10;overflow:hidden;background:var(--cream)}
+.card-img img{width:100%;height:100%;object-fit:cover;object-position:top center}
+.card-img.phone img{object-position:center 12%}
+.badge{position:absolute;left:12px;top:12px;background:#fff;color:var(--ink);font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px;box-shadow:var(--shadow-sm)}
+.card-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card h3{font-size:21px;font-weight:700}
+.pain{color:var(--ink-2);font-size:15px;line-height:1.55}
+.tags{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:6px}
+.tags li{font-size:12.5px;font-weight:500;background:var(--cream);color:var(--ink-2);padding:4px 10px;border-radius:99px}
+.card-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.price{font-family:var(--font-display);font-weight:700;color:var(--brand-ink);font-size:16px;line-height:1.3}
+.price small{display:block;font:500 11.5px/1.2 var(--font-body);color:var(--muted);letter-spacing:.04em;margin-bottom:2px}
+.add{flex:none;width:44px;height:44px;border-radius:50%;background:var(--cta);color:#fff;display:grid;place-items:center;text-decoration:none;
+  font-size:26px;font-weight:600;line-height:1;box-shadow:var(--shadow-sm)}
+.add:hover{background:var(--cta-hover)}
+
+/* ---- เรื่องเล่าทีละจาน ---- */
+.stories-band{background:linear-gradient(180deg,var(--bg),#FFF1E3 30%,#FFF1E3 70%,var(--bg))}
+.story{background:var(--paper);border-radius:28px;border:1px solid var(--line);box-shadow:var(--shadow-sm);padding:clamp(22px,4vw,48px);margin-bottom:28px}
+.story-grid{display:grid;grid-template-columns:1fr 1.22fr;gap:clamp(24px,4vw,56px);align-items:start}
+.story.flip .story-grid{grid-template-columns:1.22fr 1fr}
+.story.flip .story-copy{order:2}
+.story-kicker{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--brand-ink);font-size:15px}
+.story-kicker .num{font-family:var(--font-display);background:var(--cta);color:#fff;border-radius:10px;padding:2px 9px;font-size:14px}
+.story h3{font-size:clamp(24px,2.6vw,32px);font-weight:800;margin:10px 0 16px;letter-spacing:-.01em}
+.problem{background:#FFF4EA;border-left:4px solid var(--brand);border-radius:0 14px 14px 0;padding:12px 16px;color:var(--ink-2)}
+.problem b{display:block;font-size:13px;letter-spacing:.04em;color:var(--brand-ink);margin-bottom:2px}
+.story h4{font-size:15px;letter-spacing:.04em;color:var(--muted);font-weight:600;margin:22px 0 8px}
+.features{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.features li{display:grid;grid-template-columns:26px 1fr;gap:10px;align-items:start}
+.features li::before{content:"✓";width:24px;height:24px;border-radius:50%;background:var(--basil-bg);color:var(--basil);display:grid;place-items:center;font-weight:700;font-size:13px;margin-top:2px}
+.features b{display:block;font-weight:600}
+.features span{color:var(--ink-2);font-size:15px}
+.result{margin-top:18px;display:inline-flex;gap:8px;align-items:center;background:var(--basil-bg);color:var(--basil);font-weight:600;padding:8px 14px;border-radius:12px}
+.recipe{margin-top:20px;border:2px dashed #E9CDB3;border-radius:16px;padding:14px 18px;background:#FFFCF8}
+.recipe b{font-family:var(--font-display);font-size:16px}
+.recipe ol{margin:8px 0 10px;padding-left:22px;color:var(--ink-2);font-size:15px}
+.recipe a{font-weight:600;color:var(--brand-ink);text-decoration:none}
+.recipe a:hover{text-decoration:underline}
+.media{display:grid;gap:18px;justify-items:center}
+.media figure{margin:0;width:100%}
+.media figcaption{font-size:13px;color:var(--muted);text-align:center;margin-top:10px}
+.media.stack figure:nth-child(2){width:88%;justify-self:end;margin-top:-14%;position:relative}
+.media.combo{position:relative;padding-bottom:10%}
+.media.combo figure.p{position:absolute;left:-2%;bottom:0;width:32%}
+.media.combo figure.p figcaption{display:none}
+.dev{background:#141414;box-shadow:var(--shadow);overflow:hidden}
+.dev img{width:100%}
+.dev.phone{border-radius:34px;padding:9px;max-width:300px;margin:0 auto}
+.dev.phone img{border-radius:26px}
+.dev.tablet{border-radius:24px;padding:12px}
+.dev.tablet img{border-radius:12px}
+.dev.desktop{border-radius:14px;padding:0;background:#fff;border:1px solid #E7D7C7}
+.dev.desktop::before{content:"";display:block;height:26px;border-bottom:1px solid #E7D7C7;
+  background:radial-gradient(circle at 14px 50%,#FF5F57 4px,transparent 4.5px),radial-gradient(circle at 28px 50%,#FEBC2E 4px,transparent 4.5px),
+  radial-gradient(circle at 42px 50%,#28C840 4px,transparent 4.5px),#F4ECE4}
+.media.stack .dev.desktop{box-shadow:0 22px 50px -24px rgba(74,33,10,.55)}
+
+/* ---- ฉลากตาชั่ง (สแกนได้จริง) ---- */
+.scale{margin:18px 0 0;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.lb{width:260px;max-width:100%;background:#fff;color:#111;border-radius:10px;padding:14px 16px 10px;border:1px solid #E3DDD3;box-shadow:var(--shadow-sm)}
+.lb-store{font-size:11.5px;color:#4A4A4A;text-align:center;padding-bottom:5px;border-bottom:1.5px solid #111}
+.lb-item{font-family:var(--font-display);font-weight:800;font-size:19px;line-height:1.2;margin:8px 0}
+.lb-grid{display:grid;grid-template-columns:1fr 1fr 1.15fr;margin:0;border:1.5px solid #111}
+.lb-grid>div{padding:5px 7px;border-left:1.5px solid #111;min-width:0}
+.lb-grid>div:first-child{border-left:0}
+.lb-grid dt{font-size:10.5px;line-height:1.3;color:#3A3A3A}
+.lb-grid dd{margin:2px 0 0;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:15px;font-weight:500}
+.lb-grid .lb-total{background:#111;color:#fff}
+.lb-grid .lb-total dt{color:#E4E4E4}
+.lb-bars{width:190px;height:52px;margin:12px auto 0}
+.lb-code{text-align:center;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12.5px;letter-spacing:.16em;margin-top:3px}
+.scale figcaption{flex:1;min-width:180px;font-size:14px;color:var(--ink-2)}
+.scale code{font-family:'IBM Plex Mono',ui-monospace,monospace;background:var(--cream);padding:1px 6px;border-radius:6px}
+
+/* ---- AI ---- */
+.ai{background:var(--espresso);color:#F6E9DE;margin-top:clamp(56px,8vw,96px);padding:clamp(56px,8vw,96px) 0}
+.ai .head p,.ai .muted{color:#D9C4B4}
+.ai .kick{color:var(--mustard)}
+.ai-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:clamp(24px,4vw,56px);align-items:center}
+.ai ul{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:12px}
+.ai li{display:grid;grid-template-columns:28px 1fr;gap:10px}
+.ai li i{font-style:normal}
+.ai li b{color:#fff}
+.ai figure{margin:0}
+.ai figure img{border-radius:16px;border:1px solid #3A2A20;box-shadow:0 30px 60px -30px #000}
+.ai figcaption{font-size:13px;color:#BFA999;margin-top:10px}
+
+/* ---- มาตรฐานครัวหลังบ้าน ---- */
+.std{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.std div{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px 22px;display:grid;grid-template-columns:48px 1fr;gap:14px;align-items:start}
+.std i{font-style:normal;font-size:24px;width:48px;height:48px;border-radius:14px;background:var(--cream);display:grid;place-items:center}
+.std b{display:block;font-family:var(--font-display);font-size:20px;line-height:1.25}
+.std span{color:var(--ink-2);font-size:14.5px;line-height:1.5}
+
+/* ---- ตะกร้า / ราคา ---- */
+.checkout-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+.receipt{background:#fff;border-radius:18px;padding:26px 26px 30px;box-shadow:var(--shadow);position:relative;
+  -webkit-mask:radial-gradient(10px at 50% 100%,#0000 98%,#000) 50% 100%/20px 100% repeat-x;
+  mask:radial-gradient(10px at 50% 100%,#0000 98%,#000) 50% 100%/20px 100% repeat-x;padding-bottom:40px}
+.receipt h3{font-size:22px;display:flex;align-items:center;gap:10px}
+.receipt .shop{color:var(--muted);font-size:14px;margin:4px 0 16px}
+.line{display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:15px}
+.line small{display:block;color:var(--muted);font-size:12.5px}
+.line .amt{font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:500;white-space:nowrap}
+.line.total{border-bottom:0;font-family:var(--font-display);font-weight:800;font-size:22px;padding-top:14px}
+.line.total .amt{color:var(--brand-ink);font-family:'IBM Plex Mono',ui-monospace,monospace;font-weight:600}
+.receipt .btn{width:100%;justify-content:center;margin-top:16px;background:var(--cta);color:#fff}
+.receipt .btn:hover{background:var(--cta-hover)}
+.receipt .thanks{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+.options{display:grid;gap:14px}
+.opt{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:18px;
+  padding:16px 18px;text-decoration:none}
+.opt:hover{border-color:var(--brand)}
+.opt i{font-style:normal;font-size:26px;width:52px;height:52px;border-radius:16px;background:var(--cream);display:grid;place-items:center}
+.opt b{display:block;font-weight:600}
+.opt span{color:var(--ink-2);font-size:14px;line-height:1.45;display:block}
+.opt .go{color:var(--brand-ink);font-weight:700;font-size:20px}
+.opt.erp{background:linear-gradient(135deg,#1F130C,#3A2418);border-color:#3A2418;color:#F6E9DE}
+.opt.erp span{color:#D9C4B4}
+.opt.erp i{background:#3A2418}
+.opt.erp .go{color:var(--mustard)}
+.note{font-size:13.5px;color:var(--muted);margin-top:4px}
+.note a{color:var(--brand-ink)}
+
+/* ---- footer ---- */
+footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);color:#D9C4B4;padding:44px 0 110px;font-size:14px}
+.foot{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}
+.foot .brand{color:#fff;margin-bottom:12px}
+.foot p+p{margin-top:8px}
+.foot a{color:#FFE2C8}
+.foot ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+
+/* ---- แถบตะกร้าล่างจอ (มือถือ) ---- */
+.mcart{display:none}
+@media (max-width:760px){
+  .mcart{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:50;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--espresso);color:#fff;border-radius:18px;padding:10px 10px 10px 16px;box-shadow:0 16px 30px -12px rgba(0,0,0,.55)}
+  .mcart b{display:block;font-family:var(--font-display);font-size:15px}
+  .mcart small{display:block;color:#D9C4B4;font-size:12px}
+  .mcart a{background:var(--cta);color:#fff;text-decoration:none;font-weight:600;padding:11px 16px;border-radius:12px;white-space:nowrap}
+}
+
+/* ---- responsive ---- */
+@media (max-width:1080px){
+  .links{display:none}
+  .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
+  .cats li{scroll-snap-align:start}
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .std{grid-template-columns:repeat(2,1fr)}
+  .facts{grid-template-columns:repeat(2,1fr)}
+  .fact:nth-child(3){border-left:0}
+  .fact:nth-child(n+3){border-top:1px dashed var(--line)}
+}
+@media (max-width:900px){
+  .hero-grid,.story-grid,.ai-grid,.checkout-grid,.foot{grid-template-columns:1fr}
+  .story.flip .story-copy{order:0}
+  .story.flip .story-grid{grid-template-columns:1fr}
+  .hero-art{min-height:0;aspect-ratio:1.25/1;margin-top:8px}
+  .facts{margin:18px 0 0;max-width:none}
+}
+@media (max-width:760px){
+  .nav{height:60px;gap:10px}
+  .cart{display:none}
+  .lang a{padding:5px 8px}
+  .cards{grid-template-columns:1fr}
+  .std{grid-template-columns:1fr}
+  .emoji,.float.f1{display:none}
+  .float.f2{right:0;bottom:-4%;font-size:13px}
+  .hero-art .dev.phone{width:36%;bottom:-8%}
+  .media.combo figure.p{width:36%}
+  .banner{border-radius:24px}
+  .foot ul{grid-template-columns:1fr}
+}
+@media (max-width:420px){
+  .facts{grid-template-columns:1fr}
+  .fact+.fact{border-left:0;border-top:1px dashed var(--line)}
+  .brand small{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* ---- คู่มือติดตั้ง ---- */
+.links a.home{color:var(--brand-ink)}
+.ghero{padding:28px 0 0}
+.ghero .panel{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:28px;
+  padding:clamp(24px,4.5vw,52px);box-shadow:var(--shadow-sm)}
+.ghero .panel::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,197,61,.35),transparent 70%);pointer-events:none}
+.crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--muted);margin-bottom:14px}
+.crumb a{color:var(--brand-ink);text-decoration:none;font-weight:500}
+.crumb a:hover{text-decoration:underline}
+.ghero h1{font-size:clamp(32px,4.8vw,54px);font-weight:800;letter-spacing:-.015em;max-width:18em;text-wrap:balance}
+.ghero .lead{margin-top:14px;font-size:clamp(16px,1.5vw,18.5px);color:var(--ink-2);max-width:38em}
+.chips{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.chips li{background:var(--cream);color:var(--ink-2);font-size:14px;font-weight:500;padding:6px 12px;border-radius:99px}
+
+.paths{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.path{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--paper);border:1.5px solid var(--line);
+  border-radius:var(--radius);padding:22px 20px 20px;box-shadow:var(--shadow-sm)}
+.path.rec{border-color:var(--brand);box-shadow:var(--shadow)}
+.path .ico{width:54px;height:54px;border-radius:16px;background:var(--cream);display:grid;place-items:center;font-size:28px}
+.path h3{font-size:20px;font-weight:700;text-wrap:balance}
+.flag{position:absolute;right:16px;top:18px;background:var(--mustard);color:var(--ink);font-size:12.5px;font-weight:600;
+  padding:4px 10px;border-radius:99px}
+.meta{margin:0;display:grid;gap:10px}
+.meta div{display:grid;gap:1px}
+.meta dt{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.meta dd{margin:0;font-size:15px;line-height:1.45;color:var(--ink)}
+.go-btn{margin-top:auto;display:flex;justify-content:center;align-items:center;gap:8px;text-decoration:none;font-weight:600;
+  border-radius:99px;padding:12px 16px;border:1.5px solid var(--cta);color:var(--cta)}
+.go-btn:hover{background:var(--cream)}
+.path.rec .go-btn{background:var(--cta);color:#fff}
+.path.rec .go-btn:hover{background:var(--cta-hover)}
+
+.guide{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:clamp(24px,4vw,48px);background:var(--paper);
+  border:1px solid var(--line);border-radius:28px;padding:clamp(20px,3.5vw,40px);box-shadow:var(--shadow-sm)}
+.guide-side{align-self:start;position:sticky;top:92px;display:flex;flex-direction:column;gap:14px}
+.guide-side .ico{width:60px;height:60px;border-radius:18px;background:var(--cream);display:grid;place-items:center;font-size:32px}
+.guide-side h2{font-size:clamp(26px,3vw,34px);font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+.guide-side p{color:var(--ink-2)}
+.facts2{margin:4px 0 0;display:grid;gap:0;border-top:1px dashed var(--line)}
+.facts2 div{display:grid;gap:2px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.facts2 dt{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.facts2 dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.steps{list-style:none;margin:0;padding:0;counter-reset:step;display:grid;gap:22px}
+.steps>li{counter-increment:step;display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px}
+.steps>li::before{content:counter(step);width:40px;height:40px;border-radius:50%;background:var(--cta);color:#fff;display:grid;
+  place-items:center;font:700 18px/1 var(--font-display)}
+.steps h3{font-size:19px;font-weight:700;margin-top:6px}
+.steps p{margin-top:6px;color:var(--ink-2)}
+.steps a,.note a,.devices a,.live a,.faq a,.stuck a{color:var(--brand-ink)}
+code,kbd{font:500 .92em/1.4 'IBM Plex Mono',ui-monospace,monospace;background:var(--cream);border-radius:6px;padding:1px 6px;
+  overflow-wrap:anywhere}
+kbd{border:1px solid var(--line);border-bottom-width:2px;background:#fff}
+.cmd{position:relative;margin-top:12px;background:var(--espresso);border-radius:14px;box-shadow:var(--shadow-sm)}
+.cmd-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 0 16px}
+.cmd-lang{font:600 12px/1 'IBM Plex Mono',ui-monospace,monospace;color:#D9C4B4;letter-spacing:.06em;text-transform:uppercase}
+.copy{font:600 13px/1 var(--font-body);color:var(--espresso);background:var(--mustard);border:0;border-radius:99px;padding:8px 14px;cursor:pointer}
+.copy:hover{background:#FFD56E}
+.cmd pre{margin:0;padding:10px 16px 16px;overflow-x:auto}
+.cmd pre code{background:none;padding:0;color:#FFE7D1;font-size:14px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.ok{display:flex;gap:12px;align-items:flex-start;margin-top:26px;background:var(--basil-bg);color:#14532D;border-radius:16px;padding:14px 16px}
+.ok i{font-style:normal;font-size:20px;line-height:1.3}
+.ok b{color:#0F3D22}
+.after{margin-top:26px}
+.after h3{font-size:18px;font-weight:700;margin-bottom:10px}
+.after dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.after dl.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.after dl div{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.after dt{font-weight:600}
+.after dd{margin:4px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.5;overflow-wrap:anywhere}
+.note{margin-top:18px;font-size:14.5px;color:var(--muted)}
+
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;
+  overflow:hidden;box-shadow:var(--shadow-sm)}
+.tbl th,.tbl td{text-align:left;padding:13px 16px;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th{background:var(--cream);font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.tbl td:first-child{font-weight:600}
+.tbl td:last-child{color:var(--ink-2)}
+.devices{margin-top:18px;display:flex;gap:14px;align-items:flex-start;background:var(--cream);border-radius:18px;padding:16px 18px}
+.devices i{font-style:normal;font-size:24px}
+.devices b{display:block;font-family:var(--font-display);font-size:17px;margin-bottom:2px}
+.devices p{color:var(--ink-2);font-size:15px}
+
+.live{background:var(--espresso);color:#F6E9DE;border-radius:28px;padding:clamp(22px,4vw,44px);display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:clamp(20px,4vw,48px)}
+.live .kick{color:var(--mustard)}
+.live h2{font-size:clamp(26px,3.2vw,36px);font-weight:800;text-wrap:balance}
+.live .sub{margin-top:12px;color:#D9C4B4}
+.live ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.live li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start;background:#2C1B12;border:1px solid #3A2418;
+  border-radius:14px;padding:13px 14px;line-height:1.55}
+.live li::before{content:"";width:20px;height:20px;margin-top:3px;border:2px solid var(--mustard);border-radius:6px}
+.live code{background:#3A2418;color:#FFE7D1}
+.live a{color:var(--mustard)}
+.live .more{margin-top:14px;font-size:14.5px;color:#D9C4B4}
+
+.faq{display:grid;gap:10px}
+.faq details{background:var(--paper);border:1px solid var(--line);border-radius:16px}
+.faq details[open]{border-color:var(--brand);box-shadow:var(--shadow-sm)}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:15px 18px;font-weight:600}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;width:28px;height:28px;border-radius:50%;background:var(--cream);color:var(--brand-ink);
+  display:grid;place-items:center;font-size:20px;line-height:1}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 18px 16px;color:var(--ink-2)}
+.stuck{margin-top:22px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;background:var(--cream);border-radius:18px;padding:16px 18px}
+.stuck b{font-family:var(--font-display);font-size:18px}
+
+@media (max-width:1080px){
+  .paths{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .guide,.live{grid-template-columns:minmax(0,1fr)}
+  .guide-side{position:static}
+  .after dl.n3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .paths{grid-template-columns:1fr}
+  .after dl,.after dl.n3{grid-template-columns:1fr}
+  .tbl thead{display:none}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl tr{border-bottom:1px solid var(--line);padding:6px 0}
+  .tbl tr:last-child{border-bottom:0}
+  .tbl td{border:0;padding:6px 16px;display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:10px}
+  .tbl td::before{content:attr(data-label);font-size:12.5px;font-weight:600;color:var(--muted)}
+  .steps>li{grid-template-columns:34px minmax(0,1fr);gap:12px}
+  .steps>li::before{width:34px;height:34px;font-size:16px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#choose">Skip to choosing how to install</a>
+<header class="site"><div class="wrap nav">
+  <a class="brand" href="index.en.html" aria-label="PaynEat POS"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF6B2C"/><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="#fff"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="#fff"/></svg><span>PaynEat</span><small>POS</small></a>
+  <nav class="links" aria-label="Main menu"><a class="home" href="index.en.html">← Home</a><a href="#choose">Choose</a><a href="#accounts">Demo accounts</a><a href="#live">Before going live</a><a href="#help">Troubleshooting</a></nav>
+  <div class="lang" role="navigation" aria-label="Choose language"><a href="install.html" hreflang="th" lang="th">ไทย</a><a href="install.en.html" hreflang="en" lang="en" aria-current="page">EN</a><a href="install.ko.html" hreflang="ko" lang="ko" class="ko">한국어</a></div>
+  <a class="cart" href="app/">🖥 Open demo</a>
+</div></header><main><section class="ghero" id="top"><div class="wrap"><div class="panel">
+  <p class="crumb"><a href="index.en.html">PaynEat POS</a><span aria-hidden="true">/</span><span>Install guide</span></p>
+  <h1>Four ways to run your restaurant on PaynEat POS</h1>
+  <p class="lead">Pick the one that fits and follow it step by step. No sign-up, no fees, and your restaurant’s data stays on your own machine.</p>
+  <ul class="chips"><li>Free · Apache 2.0</li><li>No sign-up</li><li>Runs on the devices you already have</li></ul>
+</div></div></section><section class="section" id="choose" aria-labelledby="choose-h"><div class="wrap">
+  <div class="head"><div><span class="kick">First</span><h2 id="choose-h">What do you want to do?</h2></div><p>Not sure yet? Start with the first one — tap around until you’re happy, then install it for real.</p></div>
+  <ul class="paths"><li class="path"><span class="ico" aria-hidden="true">🖥</span><h3>Try it in the browser</h3><dl class="meta"><div><dt>Time</dt><dd>Right now</dd></div><div><dt>You need</dt><dd>Any browser</dd></div><div><dt>Best for</dt><dd>Seeing it and tapping around before you decide</dd></div></dl><a class="go-btn" href="app/">Open the demo <span aria-hidden="true">→</span></a></li><li class="path rec"><span class="flag">Recommended</span><span class="ico" aria-hidden="true">🪟</span><h3>Windows, one line</h3><dl class="meta"><div><dt>Time</dt><dd>3–5 minutes</dd></div><div><dt>You need</dt><dd>Windows + Docker Desktop</dd></div><div><dt>Best for</dt><dd>Owners who want the real system on their own PC</dd></div></dl><a class="go-btn" href="#windows">How to install <span aria-hidden="true">→</span></a></li><li class="path"><span class="ico" aria-hidden="true">🐳</span><h3>Docker for every device</h3><dl class="meta"><div><dt>Time</dt><dd>10–15 minutes the first time</dd></div><div><dt>You need</dt><dd>Docker Desktop (Windows / Mac / Linux)</dd></div><div><dt>Best for</dt><dd>Restaurants where phones, tablets and the kitchen screen share one server</dd></div></dl><a class="go-btn" href="#docker">How to install <span aria-hidden="true">→</span></a></li><li class="path"><span class="ico" aria-hidden="true">🧑‍💻</span><h3>Run from source</h3><dl class="meta"><div><dt>Time</dt><dd>About 5 minutes</dd></div><div><dt>You need</dt><dd>Node.js 22 + Flutter 3.35</dd></div><div><dt>Best for</dt><dd>Developers who want to change or extend it</dd></div></dl><a class="go-btn" href="#dev">How to run <span aria-hidden="true">→</span></a></li></ul>
+</div></section><section class="section" id="windows" aria-labelledby="windows-h"><div class="wrap"><div class="guide">
+  <div class="guide-side">
+    <span class="ico" aria-hidden="true">🪟</span>
+    <div><span class="kick">Way 2 · Recommended for owners</span><h2 id="windows-h">Install on Windows with one line</h2></div>
+    <p>The real system — server, live updates across windows, a simulated scale and PDF receipts — without downloading code or building anything: the installer fetches ready-built images.</p>
+    <dl class="facts2"><div><dt>Time</dt><dd>3–5 minutes (about 200 MB the first time)</dd></div><div><dt>You need</dt><dd>64-bit Windows + Docker Desktop</dd></div><div><dt>You get</dt><dd>PaynEat at http://localhost:8080 on this PC</dd></div></dl>
+  </div>
+  <div>
+    <ol class="steps"><li><div><h3>Install and open Docker Desktop</h3><p>Don’t have it? Download it from <a href="https://www.docker.com/products/docker-desktop/">docker.com</a>, install it and open it. Wait until the bottom-left corner says <b>Engine running</b>.</p></div></li><li><div><h3>Open PowerShell</h3><p>Press the <kbd>Windows</kbd> key, type <b>PowerShell</b> and press <kbd>Enter</kbd>.</p></div></li><li><div><h3>Paste this line and press Enter</h3><p>Press <b>Copy</b> in the corner of the box, then right-click inside PowerShell to paste.</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">PowerShell</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>[Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object Net.WebClient).DownloadString(&#x27;https://github.com/SuruchBoss/PaynEat/releases/download/demo/install-demo.ps1&#x27;))</code></pre></div></div></li><li><div><h3>Wait, then sign in</h3><p>Your browser opens <b>http://localhost:8080</b> by itself. Sign in with <code>admin</code> / <code>admin123</code>, or tap a demo account button on the sign-in screen.</p></div></li></ol>
+    <p class="ok"><i aria-hidden="true">✅</i><span>PowerShell prints <b>PaynEat is ready: http://localhost:8080</b> in green and the browser shows the sign-in screen.</span></p>
+    <div class="after"><h3>Day to day</h3><dl class="n3"><div><dt>Start / stop / reset</dt><dd>The PaynEat-Demo folder in your user folder has double-click files: Start, Stop and Reset PaynEat data (Reset erases every bill you tried and restores the sample data).</dd></div><div><dt>After a restart</dt><dd>Open Docker Desktop and PaynEat comes back by itself.</dd></div><div><dt>Update to the latest version</dt><dd>Paste the same line again. Your data stays.</dd></div></dl></div>
+    <p class="note">⚠️ Set up for trying it out only (demo accounts, simulated scale, emails never really sent), and it opens on this PC only — to let the restaurant’s phones and tablets connect, use <a href="#docker">way 3</a>. Want to read what the script does first? <a href="https://github.com/SuruchBoss/PaynEat/blob/main/deploy/demo/install-demo.ps1">install-demo.ps1</a></p>
+  </div>
+</div></div></section><section class="section" id="docker" aria-labelledby="docker-h"><div class="wrap"><div class="guide">
+  <div class="guide-side">
+    <span class="ico" aria-hidden="true">🐳</span>
+    <div><span class="kick">Way 3 · Every device in the restaurant</span><h2 id="docker-h">Run it with Docker so every device connects</h2></div>
+    <p>The server lives on one computer in the restaurant; staff phones, the cashier’s tablet and the kitchen screen open it in a browser. An order placed on one device shows up on the kitchen screen at once.</p>
+    <dl class="facts2"><div><dt>Time</dt><dd>10–15 minutes the first time (under a minute after that)</dd></div><div><dt>You need</dt><dd>Docker Desktop on Windows, Mac or Linux</dd></div><div><dt>You get</dt><dd>PaynEat at http://&lt;this computer’s IP&gt;:8080 from every device on the same Wi-Fi</dd></div></dl>
+  </div>
+  <div>
+    <ol class="steps"><li><div><h3>Download the code</h3><p>Easiest: <a href="https://github.com/SuruchBoss/PaynEat/archive/refs/heads/main.zip">download the ZIP</a> and extract it — you get a folder called <code>PaynEat-main</code>. If you have git, this works too:</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">Terminal</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>git clone https://github.com/SuruchBoss/PaynEat.git</code></pre></div></div></li><li><div><h3>Find this computer’s IP address</h3><p>Windows: open PowerShell, type <code>ipconfig</code> and look for <b>IPv4 Address</b>. Mac/Linux: <code>ifconfig | grep inet</code>. It looks like <code>192.168.1.15</code>.</p></div></li><li><div><h3>Tell the app where the server is</h3><p>Create a file named <code>.env</code> in the code folder (next to <code>docker-compose.yml</code>) with this line, using your own IP. Skip this step if only this computer will use it.</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">.env</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>API_BASE_URL=http://192.168.1.15:3000</code></pre></div></div></li><li><div><h3>Start it</h3><p>Open a terminal (Windows: PowerShell) in the code folder and run this. The first time takes 5–10 minutes while the app is built.</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">Terminal</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>docker compose up --build</code></pre></div></div></li><li><div><h3>Open it on every device</h3><p>On the same Wi-Fi, open <b>http://192.168.1.15:8080</b> (your IP) on phones, tablets or the kitchen screen. On the server itself, <b>http://localhost:8080</b> works.</p></div></li></ol>
+    <p class="ok"><i aria-hidden="true">✅</i><span>The terminal shows <b>payneat-api</b> and <b>payneat-web</b>, and <b>http://localhost:3000/health</b> answers.</span></p>
+    <div class="after"><h3>Day to day</h3><dl class="n3"><div><dt>Stop it</dt><dd>Press <kbd>Ctrl</kbd>+<kbd>C</kbd> in the terminal, then run <code>docker compose down</code>.</dd></div><div><dt>Start over with fresh data</dt><dd><code>docker compose down -v</code> (erases every bill and all data).</dd></div><div><dt>Turn on the simulated scale and test emails</dt><dd>Add <code>SCALE_DRIVER=simulator</code> and <code>MAIL_TRANSPORT=json</code> to the same <code>.env</code> file, then run <code>docker compose up --build</code> again. Never use the simulator in a real shop.</dd></div></dl></div>
+    <p class="note">💡 Another device can’t open it? Check it’s on the same Wi-Fi and that the server’s firewall allows ports 8080 and 3000. Before staff use it for real, go through the <a href="#live">go-live checklist</a>.</p>
+  </div>
+</div></div></section><section class="section" id="dev" aria-labelledby="dev-h"><div class="wrap"><div class="guide">
+  <div class="guide-side">
+    <span class="ico" aria-hidden="true">🧑‍💻</span>
+    <div><span class="kick">Way 4 · For developers</span><h2 id="dev-h">Run it from source</h2></div>
+    <p>For changing the code, reading the log request by request, or running on a real phone through Flutter.</p>
+    <dl class="facts2"><div><dt>Time</dt><dd>About 5 minutes</dd></div><div><dt>You need</dt><dd>Node.js 20 or later (22 recommended) + Flutter 3.35 or later</dd></div><div><dt>You get</dt><dd>The API at http://localhost:3000 and the app in Chrome</dd></div></dl>
+  </div>
+  <div>
+    <ol class="steps"><li><div><h3>Get the code</h3><div class="cmd"><div class="cmd-head"><span class="cmd-lang">Terminal</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>git clone https://github.com/SuruchBoss/PaynEat.git
+cd PaynEat</code></pre></div></div></li><li><div><h3>Window 1 — the server</h3><p><code>.env</code> holds a <code>JWT_SECRET</code> for local use; without it the server refuses to start (on Windows use <code>copy</code> instead of <code>cp</code>). The database and sample data are created for you.</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">Terminal 1</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>cd backend
+npm install
+cp .env.example .env
+npm run dev</code></pre></div></div></li><li><div><h3>Window 2 — the app</h3><p>Open a new window and keep the first one running.</p><div class="cmd"><div class="cmd-head"><span class="cmd-lang">Terminal 2</span><button class="copy" type="button" hidden aria-live="polite" data-label="Copy" data-done="Copied">Copy</button></div><pre><code>cd app
+flutter pub get
+flutter run -d chrome</code></pre></div></div></li></ol>
+    <p class="ok"><i aria-hidden="true">✅</i><span>Window 1 prints a line with <b>PaynEat POS API listening on http://localhost:3000</b> and Chrome opens the sign-in screen.</span></p>
+    <div class="after"><h3>Handy shortcuts</h3><dl><div><dt>Just the app, no server</dt><dd><code>flutter run -d chrome --dart-define=DEMO_MODE=true</code> (sample data in the browser, reset on refresh)</dd></div><div><dt>A real phone on the same Wi-Fi</dt><dd><code>flutter run --dart-define=API_BASE_URL=http://&lt;your computer’s IP&gt;:3000</code></dd></div><div><dt>Android emulator</dt><dd>Points at <code>10.0.2.2:3000</code> by itself, nothing to set.</dd></div><div><dt>Run the tests</dt><dd><code>cd backend &amp;&amp; npm test</code> · <code>cd app &amp;&amp; flutter test</code></dd></div></dl></div>
+    <p class="note">Architecture, the API and every test are described in the <a href="https://github.com/SuruchBoss/PaynEat/blob/main/README.en.md">README</a>.</p>
+  </div>
+</div></div></section><section class="section" id="accounts" aria-labelledby="acc-h"><div class="wrap">
+  <div class="head"><div><span class="kick">Demo accounts</span><h2 id="acc-h">Sign in as any role</h2></div><p>The sign-in screen has a button for every demo account — one tap and you’re in, nothing to type.</p></div>
+  <table class="tbl"><thead><tr><th scope="col">Role</th><th scope="col">Username</th><th scope="col">Password</th><th scope="col">What it sees</th></tr></thead><tbody><tr><td data-label="Role">Administrator</td><td data-label="Username"><code>admin</code></td><td data-label="Password"><code>admin123</code></td><td data-label="What it sees">Everything — dashboard, menu, staff, reports, settings</td></tr><tr><td data-label="Role">Manager</td><td data-label="Username"><code>manager</code></td><td data-label="Password"><code>manager123</code></td><td data-label="What it sees">Same as the administrator, but can’t delete user accounts</td></tr><tr><td data-label="Role">Waiter</td><td data-label="Username"><code>waiter1</code></td><td data-label="Password"><code>waiter123</code></td><td data-label="What it sees">Floor plan, orders, kitchen screen</td></tr><tr><td data-label="Role">Kitchen</td><td data-label="Username"><code>kitchen</code></td><td data-label="Password"><code>kitchen123</code></td><td data-label="What it sees">The kitchen screen only</td></tr><tr><td data-label="Role">Cashier</td><td data-label="Username"><code>cashier</code></td><td data-label="Password"><code>cashier123</code></td><td data-label="What it sees">Floor plan, orders, reports</td></tr><tr><td data-label="Role">Waiter, two branches</td><td data-label="Username"><code>waiter2</code></td><td data-label="Password"><code>waiter123</code></td><td data-label="What it sees">Like waiter1 but can pick a branch — typed by hand, and only with a real server (ways 2–4)</td></tr></tbody></table>
+  <div class="devices"><i aria-hidden="true">📱</i><div><b>Trying several devices at once</b><p>The browser demo keeps its data on each device separately — an order from a phone won’t reach a kitchen screen on another tablet. To watch orders move between devices, use <a href="#docker">way 3</a>, or open several windows on the one PC of <a href="#windows">way 2</a>. The globe button top right switches ไทย / English / 한국어 even before you sign in.</p></div></div>
+</div></section><section class="section" id="live" aria-labelledby="live-h"><div class="wrap"><div class="live">
+  <div><span class="kick">Before going live</span><h2 id="live-h">Checklist before staff use it for real</h2><p class="sub">The demo accounts and passwords above are published on the internet, so the system guards against them: in production mode it refuses to start while they’re still in place.</p>
+    <p class="more">Every item in detail, and how to report a vulnerability: <a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md">SECURITY.md</a></p></div>
+  <ul><li><span>Set <code>JWT_SECRET</code> to your own random value, for example from <code>openssl rand -hex 32</code> — never the sample one.</span></li><li><span>Set your own passwords for all six starting accounts (<code>SEED_ADMIN_PASSWORD</code> … <code>SEED_CASHIER_PASSWORD</code>), or turn off <code>AUTO_SEED</code> and create real staff accounts yourself.</span></li><li><span>Set <code>CORS_ORIGIN</code> to the restaurant’s real address instead of <code>*</code>.</span></li><li><span>Keep the database file and <code>.env</code> on the restaurant’s machine — never upload or share them — and back up regularly.</span></li><li><span>Don’t use the one-line Windows installer for a real shop: it is set up for trying things out.</span></li></ul>
+</div></div></section><section class="section" id="help" aria-labelledby="help-h"><div class="wrap">
+  <div class="head"><div><span class="kick">Troubleshooting</span><h2 id="help-h">Stuck? Tap the problem</h2></div></div>
+  <div class="faq"><details><summary><span>It says "port is already allocated"</span></summary><p>Something else is using port 3000 or 8080. Close it (or a PaynEat you left running) and try again.</p></details><details><summary><span>It says "Docker Desktop is not running" or "is not installed"</span></summary><p>Install Docker Desktop from docker.com if needed, open it, wait for <b>Engine running</b> in the bottom-left corner, then paste the line again.</p></details><details><summary><span>It says "PaynEat started but is not answering yet"</span></summary><p>It is up but slow to answer. Wait a moment and open http://localhost:8080; if it still doesn’t open, check Docker Desktop → Containers → payneat.</p></details><details><summary><span>Docker sits on the Flutter step for ages</span></summary><p>The first time downloads the Flutter SDK, about 2 GB. Let it finish (5–10 minutes); next time it’s cached.</p></details><details><summary><span>The page opens but sign-in fails</span></summary><p>Open <b>http://localhost:3000/health</b>; if nothing answers, the server isn’t running. If you set <code>API_BASE_URL</code>, check the IP and run <code>docker compose up --build</code> again after changing it.</p></details><details><summary><span>A phone or tablet can’t connect</span></summary><p>It has to be on the server’s Wi-Fi, use the IP rather than <code>localhost</code>, and the firewall must allow ports 8080 and 3000.</p></details><details><summary><span>It says JWT_SECRET must be set</span></summary><p>There is no <code>.env</code> yet: run <code>cp .env.example .env</code> in <code>backend</code> (Windows: <code>copy</code>), then <code>npm run dev</code> again.</p></details><details><summary><span><code>npm install</code> fails on better-sqlite3</span></summary><p>Build tools are missing. macOS: <code>xcode-select --install</code> · Linux: <code>sudo apt install build-essential python3</code> · Windows: install Visual Studio Build Tools.</p></details><details><summary><span>I want to start over with fresh data</span></summary><p>Way 2: double-click Reset PaynEat data · way 3: <code>docker compose down -v</code> · way 4: <code>cd backend &amp;&amp; npm run db:reset</code></p></details></div>
+  <p class="stuck"><b>Still stuck?</b><span>Ask on <a href="https://github.com/SuruchBoss/PaynEat/issues">GitHub Issues</a> or <a href="https://www.linkedin.com/in/suruchboss">LinkedIn</a> — say which way you used, your operating system and the message on screen.</span></p>
+</div></section></main><footer class="site-foot"><div class="wrap foot">
+  <div><a class="brand" href="index.en.html"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF6B2C"/><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="#fff"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="#fff"/></svg><span>PaynEat</span><small>POS</small></a><p>PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · released under the <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE">Apache License 2.0</a></p><p>Every screenshot is captured from the real app by golden tests, except the AI assistant animation, recorded from real Claude API calls (<a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md">docs/DECISIONS.md</a> #33, #70).</p><p>The restaurant, customers and menu in the demo are fictional.</p></div>
+  <ul><li><a href="https://github.com/SuruchBoss/PaynEat">Code on GitHub</a></li><li><a href="install.en.html">Install guide</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md">Security (SECURITY.md)</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md">Design decisions</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/issues">Report an issue / ask</a></li><li><a href="https://suruchboss.github.io/PaynEat-ERP/">PaynEat ERP</a></li></ul>
+</div></footer>
+<div class="mcart" role="complementary" aria-label="Basket"><div><b>🛒 PaynEat POS</b><small>฿0.00 · every feature free</small></div><a href="app/">Open demo</a></div>
+<script>document.querySelectorAll('.copy').forEach(function(b){if(!navigator.clipboard)return;b.hidden=false;b.addEventListener('click',function(){navigator.clipboard.writeText(b.closest('.cmd').querySelector('code').textContent).then(function(){b.textContent=b.dataset.done;setTimeout(function(){b.textContent=b.dataset.label},1800)})})})</script>
+</body>
+</html>
