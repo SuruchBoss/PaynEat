@@ -31,62 +31,204 @@ control and 920 automated tests.
 
 ---
 
-## 🌟 Highlights
+<!-- stories:start -->
+<!-- สร้างจาก docs/generator/landing/content.py (ชุดเดียวกับหน้า Landing) — แก้ที่นั่นแล้วรัน python3 docs/generator/landing/build_landing.py อย่าแก้ส่วนนี้ตรง ๆ -->
 
-- **Multi-branch, one system** — tables/menu/orders/reports are scoped per branch and never mix; switch
-  branches or view combined totals across every branch from the same account (`docs/DECISIONS.md` #36)
-- **Real PromptPay QR codes** — generates a standards-compliant EMV QR customers can scan and pay
-  instantly, matched to the bill automatically, not just a button for staff to click "confirmed"
-- **QR self-order** — customers scan the QR code at their table and order straight from their own
-  phone, no login required; orders reach the kitchen and deduct stock automatically, exactly as if
-  staff had placed them (`docs/tickets/17-qr-self-order.md`)
-- **AI assistant you can ask about sales in plain language** — powered by Claude via tool-calling
-  against the real restaurant data, never guessing or inventing numbers, every answer cites its source
-- **Keeps selling when the Wi-Fi drops** — orders keep going mid-service; once the connection is back,
-  everything syncs automatically with nothing lost
-- **Report export + Z-report (shift/day close)** — hand the accountant a CSV instantly, with cash
-  reconciliation and manual discounts split out from promotions
-- **High-contrast mode** — stays legible in direct sunlight or a steamy kitchen; text meets WCAG AAA
-- **Audit log covering every fraud-risk action** — cancelling orders, discounts, VAT changes, refunds —
-  always with who/when/why, and nothing an admin can edit or delete from any UI
-- **Works for a butcher counter and wholesale too** — sell by weight (price per kg), read a cabled scale
-  live, scan scale labels/barcodes with a scanner or the phone camera, sell on credit to regular trade
-  customers within a limit, issue billing notes, collect payments, charge late-payment interest, issue
-  credit notes, and e-mail documents as Thai PDFs — and cash collected against debt still reconciles with
-  the drawer at shift close (`docs/tickets/18-sell-by-weight.md`–`23-document-pdf-email.md`)
-- **920 automated tests** run before every release, from bill-calculation rules to a full 17-step
-  end-to-end restaurant walkthrough
+## 🍽 The problem menu
+
+Each item is a problem big restaurants really face every day, and each is fixed by **several features working together**, not a single button — all behind 920 automated tests. Every picture is captured from the real app by golden tests ([`story_test.dart`](app/tool/screenshots/story_test.dart)). Try it yourself in the **[web demo](https://suruchboss.github.io/PaynEat/app/)** or read it as a web page on the **[landing page](https://suruchboss.github.io/PaynEat/index.en.html)**.
+
+| # | The restaurant's problem | The set that fixes it | What you get |
+|---|---|---|---|
+| 1 | 🔥 Order overload | Table map · Live kitchen screen · 15-minute alert · Takeaway queue numbers | The longest wait is always on top |
+| 2 | 🙋 Short-staffed | QR on every table · No login · Straight to the kitchen · Same stock deduction | Guests order the moment they sit down |
+| 3 | 💸 Slow payment | PromptPay QR · Split/merge bills · Thai receipts · Tax invoices | The QR matches the bill to the satang |
+| 4 | 🔒 Cash leakage | Open and close shifts · Z-report · Tamper-proof history · Five roles | Even 40 baht short shows at shift close |
+| 5 | 📦 Stock-outs | Automatic deduction · Auto sold-out · Low-stock alert | Nobody has to switch dishes off by hand |
+| 6 | 🥩 Butcher & wholesale | Sell by weight · Connected scale · EAN-13 labels · Credit sales/billing | 0.485 kg × ฿1,200 = ฿582, no calculator |
+| 7 | 📊 No overview | Live dashboard · CSV reports · Multi-branch · Ask the AI | Know the day while it is happening |
+| 8 | 🎁 Guests not returning | Conditional promotions · Discount codes · Buy 1 get 1 · Loyalty points | Staff never memorise a promotion |
+| 9 | 🌧 Tough floor | High contrast · Works offline · 3 languages · Any device | Status labels at 8.77:1, readable in sunlight |
+
+### 1. 🔥 The rush-hour set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-rush-kitchen.webp" width="560" alt="Kitchen screen on a tablet: the table A1 ticket has waited 18 minutes and is flagged red">
+  <img src="docs/landing/img/story/en-rush-tables.webp" width="220" alt="Table map on a waiter&#x27;s phone, free tables separate from seated ones">
+</p>
+
+**The problem** — At peak, staff run paper tickets to the kitchen. Tickets get lost, handwriting is unreadable, and cooks work in the order they pick tickets up, not the order guests have waited — so the longest-waiting table is forgotten.
+
+**In this set**
+
+- **A colour-coded table map** — Free, seated, the running bill on each table, grouped by indoor and window zones.
+- **Orders with options and notes** — Medium spicy, fried egg, no vegetables — it reaches the kitchen complete, no shouting.
+- **A live three-column kitchen screen** — To cook → cooking → ready. The oldest ticket is on top, and anything past 15 minutes turns red by itself.
+- **Dine-in, takeaway and delivery icons** — Takeaway orders get a daily queue number automatically.
+- **Undo a wrong tap** — An "Undo" bar for 8 seconds after each status change, no manager needed.
+
+✅ **The longest wait is always on top**  
+🧪 **Taste it in the demo:** Open the demo and choose "Waiter" → Tap a free table, pick dishes and send them to the kitchen → Sign out and choose "Kitchen" — the new ticket is in the "to cook" column
+
+### 2. 🙋 The self-order set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-staff-self-order.webp" width="260" alt="The menu a guest sees on their phone after scanning table A1&#x27;s QR">
+</p>
+
+**The problem** — Big restaurants are short of waiters almost every shift. Guests wait for a menu, for someone to take the order, for someone to add more — and every minute of waiting is a table turning slower.
+
+**In this set**
+
+- **Scan the table QR and order** — Opens in the phone browser. No app to install, no sign-up or login.
+- **The same path as a staff order** — Reaches the kitchen screen and deducts ingredient stock exactly the same way. No second system to reconcile.
+- **Guests see their table's order** — Add more at any time and see what has been ordered so far.
+- **Broken links say so** — A wrong QR or a deactivated table tells the guest it cannot be used. No stray orders reach the kitchen.
+- **Managers can replace a QR** — Long-press a table on the map to show its QR, copy the link, or issue a new QR in place of the old one.
+
+✅ **Guests order the moment they sit down**  
+🧪 **Taste it in the demo:** Open the demo, choose "Manager" and go to Tables → Long-press any table → "View self-order QR" → "Copy link" → Open the link in a new tab and order as a guest
+
+### 3. 💸 The fast-bill set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-pay-promptpay.webp" width="260" alt="Checkout on a phone with PromptPay selected, showing a QR for table C1&#x27;s total">
+</p>
+
+**The problem** — The cashier types the transfer amount by hand — one wrong digit and someone chases a refund. Friends want to pay their own share, and discounts and service charge get divided at the counter.
+
+**In this set**
+
+- **PromptPay QR to the EMV standard** — The bill total is inside the QR. Guests scan with any banking app, nobody types an amount.
+- **Split by payment method or by item** — Cash, QR and card on one bill, with discount, service charge and VAT shared out proportionally.
+- **Move and merge tables** — When guests change seats or join tables, their orders follow.
+- **Thai receipts on thermal printers** — ESC/POS on 58 mm and 80 mm paper, over the same LAN or Wi-Fi.
+- **Abbreviated tax invoices** — Numbered by the Thai Buddhist-era year, voidable while keeping the history.
+
+✅ **The QR matches the bill to the satang**  
+🧪 **Taste it in the demo:** Open the demo and choose "Cashier" → Tap a seated table and take payment → Choose "PromptPay / QR" — the QR is built from that bill at once
+
+### 4. 🔒 The honest-drawer set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-cash-zreport.webp" width="420" alt="The shift Z-report with sales, discounts, payment methods and the cash difference">
+  <img src="docs/landing/img/story/en-cash-audit.webp" width="420" alt="The audit log showing who did what and when, with type filters">
+</p>
+
+**The problem** — Bills voided after payment, discounts beyond someone's authority, refunds with no reason. In a big restaurant many hands touch the cash, and when the total is off there is no evidence of what happened.
+
+**In this set**
+
+- **No payment without an open shift** — Starting float on opening; every payment is tied to the open shift.
+- **Instant reconciliation at close** — Count the cash; the system works out what should be there and the difference.
+- **Z-report per shift and per day** — Sales, tax, manual discounts apart from promotions, payment methods, debt collected. Export CSV for accounting.
+- **A history nobody can edit** — Voids, discounts, refunds, price edits and permission changes, with who, when and why — every time.
+- **Five roles, enforced on the server** — Not just hidden buttons: a direct request is refused too.
+
+✅ **Even 40 baht short shows at shift close**  
+🧪 **Taste it in the demo:** Open the demo, choose "Manager" and open "Shift" → Press "Close shift" and enter a count a little short, then tap that shift in the history to see its Z-report → Sign in again as "Admin" → "Audit Log"
+
+### 5. 📦 The never-run-out set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-stock-ingredients.webp" width="720" alt="Ingredients/Stock with red tilapia highlighted as low stock">
+</p>
+
+**The problem** — The fish ran out at 8 pm but the dish is still on sale. Staff take three orders before the kitchen says so — wasted time and disappointed guests.
+
+**In this set**
+
+- **Dishes linked to ingredients** — Stock is deducted when a dish goes to the kitchen and returned on a void or removal, in the units the kitchen counts in.
+- **Sold out means off sale** — When an ingredient is short, its dishes stop selling at once and come back after a restock.
+- **Low-stock alerts** — A threshold per ingredient, and a filter for only what is running low before you open.
+- **Works with QR self-order too** — Guest orders deduct stock along the same path.
+
+✅ **Nobody has to switch dishes off by hand**  
+🧪 **Taste it in the demo:** Open the demo, choose "Admin" → "Ingredients/Stock" → Press "Low stock only" — red tilapia is already set below its threshold → Set the tilapia stock to zero and watch the dish that uses it go off sale
+
+### 6. 🥩 The butcher-counter + wholesale set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-b2b-scale.webp" width="560" alt="Weighing beef ribeye: 0.485 kg read from the scale, priced at 582 baht">
+  <img src="docs/landing/img/story/en-b2b-statement.webp" width="420" alt="A wholesale customer statement with balances aged by due date and overdue bills">
+</p>
+
+**The problem** — Weights are written by hand and priced on a calculator. Wholesale debts live in a notebook, and when it is time to chase them nobody knows which bill is how many days overdue.
+
+**In this set**
+
+- **Sell by weight, read live from the scale** — Price per kilo. A scale connected to the shop server sends the weight to the screen, or type it; see the price before it goes in the cart.
+- **Scan scale labels and barcodes** — USB or Bluetooth scanners, or the phone camera. EAN-13 labels carry item and weight together; a misread is flagged, never guessed.
+- **Credit within a limit and a term** — Over the limit cannot be charged. Aged balances, billing notes, and payments that settle the oldest bill first.
+- **Late fees and credit notes as Thai PDFs** — Amounts in words, Buddhist-era dates, and email to the customer directly.
+- **Debt collected reconciles with the drawer** — The Z-report shows debt collected apart from the day's sales.
+
+✅ **0.485 kg × ฿1,200 = ฿582, no calculator**  
+🧪 **Taste it in the demo:** Open the demo, choose "Cashier" → "New takeaway/delivery" → Fresh Meat & Take-home → Tap Beef Ribeye — the simulated scale sends a weight to the screen → Sign in as "Manager" → "Receivables" → the wholesale customer Soul BBQ (บริษัท โซลบาร์บีคิว จำกัด)
+
+> 🏷 The demo's scale label `2000101012504` (sliced pork belly, 1.250 kg × 280 = 350 baht) — type or scan it into the demo's scan box. The landing page draws it as a genuine EAN-13 barcode that scans off the screen.
+
+### 7. 📊 The live-numbers set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-owner-dashboard.webp" width="720" alt="Overview dashboard with today&#x27;s sales, an hourly chart and the payment-method split">
+</p>
+
+**The problem** — Owners of big restaurants decide about people and stock every day, but the numbers arrive after closing, or wait on a summary from each branch.
+
+**In this set**
+
+- **A live dashboard** — Sales, bill count, average bill, discounts, an hourly chart and the payment-method split.
+- **History reports + CSV** — Best sellers, daily and per-category sales. CSV exports open in Excel with Thai intact.
+- **Many branches in one system** — Tables, menus, orders, stock and reports per branch; admins can see all branches together (the web demo has one branch).
+- **Ask in a sentence** — The AI assistant answers from the shop's real data — see the next section.
+
+✅ **Know the day while it is happening**  
+🧪 **Taste it in the demo:** Open the demo and choose "Admin" — the first screen is the Overview → Go to "Reports", pick a date range and export a CSV
+
+### 8. 🎁 The promotions + loyalty set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-loyal-promotions.webp" width="420" alt="Three promotions: an afternoon happy hour, a welcome code and a weekend code">
+  <img src="docs/landing/img/story/en-loyal-customers.webp" width="420" alt="Customer list with each guest&#x27;s loyalty points">
+</p>
+
+**The problem** — An afternoon happy hour, a welcome code, buy-one-get-one on some dishes — and when the floor is busy staff forget a discount or apply the wrong one.
+
+**In this set**
+
+- **Conditional promotions** — Days and hours, categories or dishes, a minimum spend, discount codes, buy one get one — matched to qualifying bills automatically.
+- **Automatic loyalty points** — Find the guest by name or phone when taking the order; points by spend, redeemed as a discount at payment.
+- **Purchase history per guest** — What your regulars order and how often they come.
+- **Every promotion change is traced** — Creating, editing and switching off promotions is recorded in the audit log.
+
+✅ **Staff never memorise a promotion**  
+🧪 **Taste it in the demo:** Open the demo, choose "Admin" → "Promotions" → add a promotion → Cover the current time, then open a new bill — the discount appears by itself → See each guest's points under "Customers/Loyalty"
+
+### 9. 🌧 The real-floor set
+
+<p align="center">
+  <img src="docs/landing/img/story/en-floor-contrast.webp" width="720" alt="The kitchen screen in high-contrast mode, with darker buttons and labels">
+</p>
+
+**The problem** — Screens look good in an air-conditioned office. The real floor has sun on the glass, steam, a hand holding a wok, Wi-Fi dropping mid-service and staff who do not read Thai fluently.
+
+**In this set**
+
+- **High-contrast mode** — Kitchen status labels at 8.77:1 (WCAG AA asks for 4.5:1). Set it on the Profile screen; each device remembers it.
+- **Big buttons for busy hands** — Kitchen status buttons are almost twice the size of the phone ones.
+- **Keeps taking orders offline** — Held on the device and synced when the network returns; the kitchen screen shows a full-width warning and polls for tickets every 30 seconds.
+- **ไทย · English · 한국어** — Each device picks its language, and dish names follow it.
+- **Phone, tablet and computer, one system** — Use the devices you already own — no brand-specific hardware.
+
+✅ **Status labels at 8.77:1, readable in sunlight**  
+🧪 **Taste it in the demo:** Open the demo with any role and go to "Profile" → Set "Screen contrast" to "High" and try switching language
+
+<!-- stories:end -->
 
 ---
 
-## 📸 Screenshots
-
-<table>
-<tr>
-<td width="50%" align="center"><b>Table map — waiter view</b><br><sub>See every table's status and running total in one screen</sub><br><br>
-<img src="docs/screenshots/en-50-phone-tables.png" width="230"></td>
-<td width="50%" align="center"><b>Order taking with modifiers</b><br><sub>Spice level, extras, and a note to the kitchen</sub><br><br>
-<img src="docs/screenshots/en-51-phone-option-sheet.png" width="230"></td>
-</tr>
-</table>
-
-<p align="center"><b>Kitchen display (KDS)</b> — tickets pop up in real time, split into 3 status columns, with a red border and flame icon for tickets waiting over 15 minutes, and a distinct icon for table/takeaway/delivery on every ticket</p>
-<p align="center"><img src="docs/screenshots/en-55-tablet-kitchen.png" width="780"></p>
-
-<p align="center"><b>Admin web dashboard</b> — today's sales, an hourly chart, best sellers, and a live store status counter</p>
-<p align="center"><img src="docs/screenshots/en-58-web-dashboard.png" width="780"></p>
-
-<p align="center"><b>Split payment checkout</b> — pay part by QR, the rest in cash; the system tracks the remaining balance and calculates change</p>
-<p align="center"><img src="docs/screenshots/en-57-tablet-checkout.png" width="780"></p>
-
-<table>
-<tr>
-<td width="50%" align="center"><b>Takeaway/delivery — no table needed</b><br><sub>Tap the floating button on the table map to open an order without touching any table at all</sub><br><br>
-<img src="docs/screenshots/en-52-phone-takeaway-order.png" width="230"></td>
-<td width="50%" align="center"><b>Automatic queue number</b><br><sub>Runs on its own daily counter for takeaway only — delivery riders reference the order by its bill number instead</sub><br><br>
-<img src="docs/screenshots/en-53-phone-takeaway-detail.png" width="230"></td>
-</tr>
-</table>
+## 🎬 Video, documents and landing page
 
 > 🎬 **Demo presentation video (1:55 · 1080p)**
 > · [Thai edition](docs/video/PaynEat-POS-Demo-TH.mp4)
@@ -103,37 +245,24 @@ control and 920 automated tests.
 > [`app/tool/screenshots`](app/tool/screenshots), so they can be regenerated any time the code changes
 > ([how to regenerate](docs/generator/README.md))
 
-> 🌐 **Landing page — static HTML, not a single line of JavaScript**
+> 🌐 **Landing page — a big restaurant's food-ordering site, not a single line of JavaScript**
 > · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
 > · [Thai version](https://suruchboss.github.io/PaynEat/)
 > · [Korean version](https://suruchboss.github.io/PaynEat/index.ko.html)
 > · [Korean README](README.ko.md)
 >
-> The Korean edition deliberately uses a different visual world from the other two (light grounds,
-> cool blue-grey, soft-shadowed rounded cards, in the idiom of modern Korean service sites). Its
-> screenshots are of the app running in Korean, and the Thailand-specific features (PromptPay,
-> Buddhist-era years on tax invoices, 7% VAT) are described as they actually are, each with a short
-> note explaining what it is — the reader is a Korean speaker running a restaurant in Thailand,
-> so they need the real thing, not a localised substitute. See `docs/DECISIONS.md` #39
+> The system is told as a **problem menu of nine sets**, the way a food-ordering site works: pick your restaurant's
+> symptom from round category icons → a menu card for each set (ingredients = features, "what you get" = the outcome)
+> → a detail section with real screens and a "taste it in the demo" recipe → pricing as a basket where every line is
+> ฿0.00. On phones a floating basket bar leads to the demo. All three languages share one design, each with screenshots
+> genuinely in that language, and the butcher-counter set still carries the demo's scale label `2000101012504` drawn as a
+> genuine EAN-13 that scans off the screen — see `docs/DECISIONS.md` #70 (replacing the designs of #39/#53)
 >
-> Tells the story of the system through the conditions it was built for — glare, steam, greasy hands,
-> a Wi-Fi drop mid-service — with real screenshots embedded in the file. The animation is pure CSS.
-> A demo button sits on the very first screen, and every language edition has **Security** and
-> **Pricing · Contact** sections. Each edition's screenshots are genuinely in that language — not Thai
-> screenshots with translated alt text.
-> All three editions tell it with objects only a restaurant has: the shift conditions are kitchen tickets on a
-> steel rail, timestamped across one shift; pricing is a thermal receipt (every line ฿0.00); and security is a checklist
-> kept apart from a "what to do before going live" warning box — see `docs/DECISIONS.md` #53
-> The **Meat counter · Wholesale** section (tickets 18–20) shows the demo's real scale label `2000101012504` — the
-> barcode is drawn as a genuine EAN-13, module by module, so a scanner can read it straight off the screen into the
-> demo's scan box (checked with the zxing decoder in all three languages — see #58)
-> The language and figure review lives in [`docs/LANDING-PAGE-REVIEW.md`](docs/LANDING-PAGE-REVIEW.md)
->
-> The sources are [`docs/landing/index.en.html`](docs/landing/index.en.html) /
-> [`index.html`](docs/landing/index.html) / [`index.ko.html`](docs/landing/index.ko.html) — every screenshot is embedded **except** the AI assistant
-> demo GIF, which lives in `docs/ai-demo/` (924 KB, too large to inline). `deploy-pages.yml` copies
-> that folder into the site at deploy time, so the live page is complete; opening the file straight
-> from the repo shows a broken image in the "AI assistant" section.
+> The HTML is **generated** from [`docs/generator/landing/`](docs/generator/landing/) — `content.py` holds the copy in three
+> languages and `build_landing.py` the template. Running `python3 docs/generator/landing/build_landing.py` writes
+> `docs/landing/index*.html` and the [problem menu](#-the-problem-menu) section of all three READMEs together. Images live in
+> `docs/landing/img/story/` (39 WebP files, about 1.5 MB; recapture with `app/tool/screenshots/story_test.dart`, then shrink with
+> `publish_story.py`). The AI assistant GIF lives in `docs/ai-demo/`, which `deploy-pages.yml` copies into the site.
 
 > 🤖 **Live demo of the AI ask-your-data assistant (real Claude API call, not a mock)**
 >
@@ -153,8 +282,8 @@ control and 920 automated tests.
 
 ## 📋 Table of contents
 
-- [Highlights](#-highlights)
-- [Screenshots](#-screenshots)
+- [The problem menu](#-the-problem-menu)
+- [Video, documents and landing page](#-video-documents-and-landing-page)
 - [Why this project](#-why-this-project)
 - [How to run it](#-how-to-run-it)
 - [Features](#-features)
@@ -1745,6 +1874,12 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   the request ID on errors, `/metrics` by route template on port 9464, never exposed outside the machine, and no
   customer data, passwords or QR tokens in logs (see ticket 24 and `docs/DECISIONS.md` #68) — outbox metrics
   come with ticket 26
+- [x] **Tell the system as a "problem menu" in the README and landing page** — done: nine problems of big restaurants
+  (order overload, short staff, slow payment, cash leakage, stock-outs, butcher counter/wholesale, no overview, guests not
+  returning, a tough floor), each told with several features, real screens and demo steps; a new landing page themed as a
+  big restaurant's food-ordering site in all three languages; 39 new screenshots from `app/tool/screenshots/story_test.dart`
+  (WebP files, no base64); and all three READMEs build this section from the same source as the landing page
+  (`docs/generator/landing/`, `docs/DECISIONS.md` #70)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
@@ -1783,7 +1918,7 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   job application (headline numbers and highlights, much shorter than this README)
 - [`docs/PaynEat-POS-Features-TH.pdf`](docs/PaynEat-POS-Features-TH.pdf) — a 30-page document covering every screen with explanations (Thai)
 - [`docs/PaynEat-POS-Features-EN.pdf`](docs/PaynEat-POS-Features-EN.pdf) — English edition, rewritten for business audiences (30 pages)
-- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 37 design decisions with their accepted trade-offs (e.g. why
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — 70 design decisions with their accepted trade-offs (e.g. why
   amounts are stored in satang, why the billing logic is deliberately written twice, why SQLite)
 - [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) — coding standards from a code-quality audit
   covering Clean Code / State Management / Clean Architecture / Technical Debt / folder structure — use
