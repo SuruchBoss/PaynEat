@@ -15,6 +15,9 @@ TESTS = 385 + 486 + 49
 
 REPO = 'https://github.com/SuruchBoss/PaynEat'
 ERP = 'https://suruchboss.github.io/PaynEat-ERP/'
+# ช่องทางติดต่อเจ้าของโปรเจกต์ในส่วนท้ายเว็บ — เจ้าของขอให้ใส่อีเมลเอง (docs/DECISIONS.md #73 แทนข้อเดิมใน #41)
+EMAIL = 'mailto:bossxiii@gmail.com'
+LINKEDIN = 'https://www.linkedin.com/in/suruchboss'
 
 TH = {
     'code': 'th',
@@ -403,6 +406,8 @@ TH = {
             ('บันทึกการตัดสินใจ', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('แจ้งปัญหา / ถามคำถาม', f'{REPO}/issues'),
             ('PaynEat ERP', ERP),
+            ('อีเมล: bossxiii@gmail.com', EMAIL),
+            ('LinkedIn', LINKEDIN),
         ],
     },
     'readme': {
@@ -807,6 +812,8 @@ EN = {
             ('Design decisions', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('Report an issue / ask', f'{REPO}/issues'),
             ('PaynEat ERP', ERP),
+            ('Email: bossxiii@gmail.com', EMAIL),
+            ('LinkedIn', LINKEDIN),
         ],
     },
     'readme': {
@@ -1208,6 +1215,8 @@ KO = {
             ('설계 결정 기록', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('문제 신고 / 질문', f'{REPO}/issues'),
             ('PaynEat ERP', ERP),
+            ('이메일: bossxiii@gmail.com', EMAIL),
+            ('LinkedIn', LINKEDIN),
         ],
     },
     'readme': {
