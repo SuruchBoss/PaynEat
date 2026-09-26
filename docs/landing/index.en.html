@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- สร้างจาก docs/generator/landing/build_landing.py — แก้เนื้อหาที่ content.py แล้วรันใหม่ อย่าแก้ไฟล์นี้ตรง ๆ -->
+<!-- สร้างจาก docs/generator/landing/build_landing.py — แก้เนื้อหาที่ content.py / install_content.py แล้วรันใหม่ อย่าแก้ไฟล์นี้ตรง ๆ -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -54,9 +54,12 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);ba
 .nav{display:flex;align-items:center;gap:18px;height:68px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 22px/1 var(--font-display);letter-spacing:-.01em}
 .brand small{font:600 11px/1 var(--font-body);background:var(--cream);color:var(--brand-ink);padding:4px 7px;border-radius:99px;letter-spacing:.06em}
-.links{display:flex;gap:4px;margin-left:12px}
-.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 12px;border-radius:99px}
+.links{display:flex;gap:2px;margin-left:4px}
+.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 8px;border-radius:99px;white-space:nowrap}
 .links a:hover{background:var(--cream);color:var(--ink)}
+.links a.inst{color:var(--brand-ink);border:1.5px solid var(--line);font-weight:600}
+.links a.inst:hover{border-color:var(--brand)}
+.links a.inst .short{display:none}
 .lang{display:flex;gap:2px;margin-left:auto;background:var(--cream);border-radius:99px;padding:3px}
 .lang a{text-decoration:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--ink-2)}
 .lang a[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -268,8 +271,11 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 
 /* ---- responsive ---- */
+.brand,.lang,.cart,.links a.inst{flex:none}
+.lang a{white-space:nowrap}
+@media (max-width:1500px){.cart b{display:none}}
+@media (max-width:1180px){.links a:not(.inst){display:none}}
 @media (max-width:1080px){
-  .links{display:none}
   .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
   .cats li{scroll-snap-align:start}
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -287,6 +293,9 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 @media (max-width:760px){
   .nav{height:60px;gap:10px}
+  .links a.inst{padding:6px 10px;font-size:14px}
+  .links a.inst .full{display:none}
+  .links a.inst .short{display:inline}
   .cart{display:none}
   .lang a{padding:5px 8px}
   .cards{grid-template-columns:1fr}
@@ -299,6 +308,10 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
   .foot ul{grid-template-columns:1fr}
 }
 @media (max-width:420px){
+  .nav{gap:6px}
+  .lang a{padding:5px 6px}
+  .links a.inst{padding:6px 8px;font-size:13px}
+  .nav .brand span{display:none}
   .facts{grid-template-columns:1fr}
   .fact+.fact{border-left:0;border-top:1px dashed var(--line)}
   .brand small{display:none}
@@ -311,7 +324,7 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 <div class="promo">🎉 The full demo runs in your browser · no sign-up · a fictional restaurant ready to tap <a href="app/">Try it →</a></div>
 <header class="site"><div class="wrap nav">
   <a class="brand" href="#top" aria-label="PaynEat POS"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF6B2C"/><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="#fff"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="#fff"/></svg><span>PaynEat</span><small>POS</small></a>
-  <nav class="links" aria-label="Main menu"><a href="#menu">Problem menu</a><a href="#stories">Real screens</a><a href="#ai">AI assistant</a><a href="#checkout">Pricing</a></nav>
+  <nav class="links" aria-label="Main menu"><a href="#menu">Problem menu</a><a href="#stories">Real screens</a><a href="#ai">AI assistant</a><a href="#checkout">Pricing</a><a class="inst" href="install.en.html"><span class="full">Install</span><span class="short">Install</span></a></nav>
   <div class="lang" role="navigation" aria-label="Choose language"><a href="index.html" hreflang="th" lang="th">ไทย</a><a href="index.en.html" hreflang="en" lang="en" aria-current="page">EN</a><a href="index.ko.html" hreflang="ko" lang="ko" class="ko">한국어</a></div>
   <a class="cart" href="app/">🛒 Open demo <b>฿0</b></a>
 </div></header><main><section class="hero" id="top"><div class="wrap">
@@ -581,13 +594,13 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
     </div>
     <div class="options">
       <h3 style="font-size:20px">Choose how to get it</h3>
-      <a class="opt" href="app/"><i aria-hidden="true">🖥</i><div><b>Try it in the browser</b><span>The full demo with a fictional restaurant — pick a role and go.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt" href="https://github.com/SuruchBoss/PaynEat#readme"><i aria-hidden="true">🐳</i><div><b>Install the demo on Docker Desktop</b><span>One command on Windows gives you the server and the web app.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt" href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md"><i aria-hidden="true">🏪</i><div><b>Run it in your restaurant</b><span>The server lives in your shop. See what to configure before going live.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt erp" href="https://suruchboss.github.io/PaynEat-ERP/"><i aria-hidden="true">🏭</i><div><b>A central kitchen or multi-branch stock?</b><span>PaynEat ERP (in development) connects to the POS if you choose.</span></div><span class="go" aria-hidden="true">→</span></a>
+      <a class="opt" href="app/"><i aria-hidden="true">🖥</i><div><b>Try it in the browser</b><span>The full demo with a fictional restaurant — pick a role and go.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt" href="install.en.html"><i aria-hidden="true">🐳</i><div><b>Install it on your own machine</b><span>One line on Windows, or Docker so every device in the restaurant shares it — step by step.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt" href="install.en.html#live"><i aria-hidden="true">🏪</i><div><b>Run it in your restaurant</b><span>The server lives in your shop. See what to configure before going live.</span></div><span class="go" aria-hidden="true">→</span></a><a class="opt erp" href="https://suruchboss.github.io/PaynEat-ERP/"><i aria-hidden="true">🏭</i><div><b>A central kitchen or multi-branch stock?</b><span>PaynEat ERP (in development) connects to the POS if you choose.</span></div><span class="go" aria-hidden="true">→</span></a>
       <p class="note">Want to use it or have a question? <a href="https://github.com/SuruchBoss/PaynEat/issues">Ask on GitHub Issues</a> or <a href="https://www.linkedin.com/in/suruchboss">LinkedIn</a>.</p>
     </div>
   </div>
 </div></section></main><footer class="site-foot"><div class="wrap foot">
   <div><a class="brand" href="#top"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF6B2C"/><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="#fff"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="#fff"/></svg><span>PaynEat</span><small>POS</small></a><p>PaynEat POS — Flutter (GetX) + Node.js/Express + SQLite · released under the <a href="https://github.com/SuruchBoss/PaynEat/blob/main/LICENSE">Apache License 2.0</a></p><p>Every screenshot is captured from the real app by golden tests, except the AI assistant animation, recorded from real Claude API calls (<a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md">docs/DECISIONS.md</a> #33, #70).</p><p>The restaurant, customers and menu in the demo are fictional.</p></div>
-  <ul><li><a href="https://github.com/SuruchBoss/PaynEat">Code on GitHub</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/README.en.md">Install guide (README)</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md">Security (SECURITY.md)</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md">Design decisions</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/issues">Report an issue / ask</a></li><li><a href="https://suruchboss.github.io/PaynEat-ERP/">PaynEat ERP</a></li></ul>
+  <ul><li><a href="https://github.com/SuruchBoss/PaynEat">Code on GitHub</a></li><li><a href="install.en.html">Install guide</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/SECURITY.md">Security (SECURITY.md)</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/blob/main/docs/DECISIONS.md">Design decisions</a></li><li><a href="https://github.com/SuruchBoss/PaynEat/issues">Report an issue / ask</a></li><li><a href="https://suruchboss.github.io/PaynEat-ERP/">PaynEat ERP</a></li></ul>
 </div></footer>
 <div class="mcart" role="complementary" aria-label="Basket"><div><b>🛒 PaynEat POS</b><small>฿0.00 · every feature free</small></div><a href="app/">Open demo</a></div>
 </body>

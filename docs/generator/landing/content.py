@@ -29,8 +29,9 @@ TH = {
     'promo_link': 'ลองเลย →',
     'nav_label': 'เมนูหลัก',
     'lang_label': 'เลือกภาษา',
-    'nav': [('#menu', 'เมนูแก้ปัญหา'), ('#stories', 'หน้าจอจริง'), ('#ai', 'ผู้ช่วย AI'), ('#checkout', 'ราคา')],
+    'nav': [('#menu', 'เมนูแก้ปัญหา'), ('#stories', 'หน้าจอจริง'), ('#ai', 'ผู้ช่วย AI'), ('#checkout', 'ราคา'), ('install.html', 'วิธีติดตั้ง')],
     'cart': 'เปิดเดโม',
+    'nav_install_short': 'ติดตั้ง',
     'hero': {
         'eyebrow': '🍽 POS สำหรับร้านอาหารขนาดใหญ่ · โอเพนซอร์ส',
         'title_html': 'ร้านแน่นแค่ไหน<br>ก็<em>เสิร์ฟทัน</em><br>เงินไม่รั่ว',
@@ -380,8 +381,8 @@ TH = {
         'options_title': 'เลือกวิธีรับ',
         'options': [
             ('demo', '🖥', 'ลองในเบราว์เซอร์', 'เดโมเต็มระบบ ข้อมูลร้านสมมติ เลือกบทบาทแล้วเข้าได้เลย', 'app/'),
-            ('docker', '🐳', 'ติดตั้งเดโมบน Docker Desktop', 'คำสั่งเดียวบน Windows ได้ทั้งเซิร์ฟเวอร์และเว็บแอป', f'{REPO}#readme'),
-            ('src', '🏪', 'ใช้จริงในร้าน', 'เซิร์ฟเวอร์อยู่ในร้าน ดูสิ่งที่ต้องตั้งค่าก่อนใช้งานจริง', f'{REPO}/blob/main/SECURITY.md'),
+            ('docker', '🐳', 'ติดตั้งบนเครื่องของคุณ', 'Windows บรรทัดเดียว หรือ Docker ให้ทุกเครื่องในร้านใช้ร่วมกัน — ทำตามทีละขั้น', 'install.html'),
+            ('src', '🏪', 'ใช้จริงในร้าน', 'เซิร์ฟเวอร์อยู่ในร้าน ดูสิ่งที่ต้องตั้งค่าก่อนใช้งานจริง', 'install.html#live'),
             ('erp', '🏭', 'มีครัวกลางหรือคลังหลายสาขา?', 'PaynEat ERP (อยู่ระหว่างพัฒนา) เชื่อมกับ POS แบบเลือกได้', ERP),
         ],
         'note_html': 'สนใจนำไปใช้หรืออยากถามอะไร <a href="https://github.com/SuruchBoss/PaynEat/issues">ถามผ่าน GitHub Issues</a> '
@@ -397,7 +398,7 @@ TH = {
         ],
         'links': [
             ('ดูโค้ดบน GitHub', REPO),
-            ('คู่มือติดตั้ง (README)', f'{REPO}#readme'),
+            ('คู่มือติดตั้ง', 'install.html'),
             ('ความปลอดภัย (SECURITY.md)', f'{REPO}/blob/main/SECURITY.md'),
             ('บันทึกการตัดสินใจ', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('แจ้งปัญหา / ถามคำถาม', f'{REPO}/issues'),
@@ -431,8 +432,9 @@ EN = {
     'promo_link': 'Try it →',
     'nav_label': 'Main menu',
     'lang_label': 'Choose language',
-    'nav': [('#menu', 'Problem menu'), ('#stories', 'Real screens'), ('#ai', 'AI assistant'), ('#checkout', 'Pricing')],
+    'nav': [('#menu', 'Problem menu'), ('#stories', 'Real screens'), ('#ai', 'AI assistant'), ('#checkout', 'Pricing'), ('install.en.html', 'Install')],
     'cart': 'Open demo',
+    'nav_install_short': 'Install',
     'hero': {
         'eyebrow': '🍽 POS for big restaurants · open source',
         'title_html': 'Full house?<br><em>Served on time.</em><br>Every baht counted.',
@@ -783,8 +785,8 @@ EN = {
         'options_title': 'Choose how to get it',
         'options': [
             ('demo', '🖥', 'Try it in the browser', 'The full demo with a fictional restaurant — pick a role and go.', 'app/'),
-            ('docker', '🐳', 'Install the demo on Docker Desktop', 'One command on Windows gives you the server and the web app.', f'{REPO}#readme'),
-            ('src', '🏪', 'Run it in your restaurant', 'The server lives in your shop. See what to configure before going live.', f'{REPO}/blob/main/SECURITY.md'),
+            ('docker', '🐳', 'Install it on your own machine', 'One line on Windows, or Docker so every device in the restaurant shares it — step by step.', 'install.en.html'),
+            ('src', '🏪', 'Run it in your restaurant', 'The server lives in your shop. See what to configure before going live.', 'install.en.html#live'),
             ('erp', '🏭', 'A central kitchen or multi-branch stock?', 'PaynEat ERP (in development) connects to the POS if you choose.', ERP),
         ],
         'note_html': 'Want to use it or have a question? <a href="https://github.com/SuruchBoss/PaynEat/issues">Ask on GitHub Issues</a> '
@@ -800,7 +802,7 @@ EN = {
         ],
         'links': [
             ('Code on GitHub', REPO),
-            ('Install guide (README)', f'{REPO}/blob/main/README.en.md'),
+            ('Install guide', 'install.en.html'),
             ('Security (SECURITY.md)', f'{REPO}/blob/main/SECURITY.md'),
             ('Design decisions', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('Report an issue / ask', f'{REPO}/issues'),
@@ -834,8 +836,9 @@ KO = {
     'promo_link': '열어 보기 →',
     'nav_label': '주 메뉴',
     'lang_label': '언어 선택',
-    'nav': [('#menu', '문제 해결 메뉴'), ('#stories', '실제 화면'), ('#ai', 'AI 어시스턴트'), ('#checkout', '가격')],
+    'nav': [('#menu', '문제 해결 메뉴'), ('#stories', '실제 화면'), ('#ai', 'AI 어시스턴트'), ('#checkout', '가격'), ('install.ko.html', '설치 방법')],
     'cart': '데모 열기',
+    'nav_install_short': '설치',
     'hero': {
         'eyebrow': '🍽 대형 식당을 위한 POS · 오픈소스',
         'title_html': '만석이어도<br><em>제때 서빙</em>,<br>현금은 한 푼도 새지 않게',
@@ -1183,8 +1186,8 @@ KO = {
         'options_title': '받는 방법 선택',
         'options': [
             ('demo', '🖥', '브라우저에서 체험', '가상의 식당으로 전체 데모 — 역할을 고르고 바로 시작.', 'app/'),
-            ('docker', '🐳', 'Docker Desktop에 데모 설치', 'Windows에서 명령 한 줄로 서버와 웹 앱을 함께.', f'{REPO}#readme'),
-            ('src', '🏪', '우리 가게에서 실제로 사용', '서버는 매장 안에. 실사용 전에 설정할 것을 확인하세요.', f'{REPO}/blob/main/SECURITY.md'),
+            ('docker', '🐳', '내 컴퓨터에 설치', 'Windows 한 줄 설치, 또는 Docker로 매장의 모든 기기가 함께 — 단계별 안내.', 'install.ko.html'),
+            ('src', '🏪', '우리 가게에서 실제로 사용', '서버는 매장 안에. 실사용 전에 설정할 것을 확인하세요.', 'install.ko.html#live'),
             ('erp', '🏭', '센트럴 키친이나 다지점 재고가 있나요?', 'PaynEat ERP (개발 중)를 원하면 POS와 연결할 수 있어요.', ERP),
         ],
         'note_html': '도입하고 싶거나 궁금한 점이 있다면 <a href="https://github.com/SuruchBoss/PaynEat/issues">GitHub Issues</a> '
@@ -1200,7 +1203,7 @@ KO = {
         ],
         'links': [
             ('GitHub에서 코드 보기', REPO),
-            ('설치 안내 (README)', f'{REPO}/blob/main/README.ko.md'),
+            ('설치 안내', 'install.ko.html'),
             ('보안 (SECURITY.md)', f'{REPO}/blob/main/SECURITY.md'),
             ('설계 결정 기록', f'{REPO}/blob/main/docs/DECISIONS.md'),
             ('문제 신고 / 질문', f'{REPO}/issues'),

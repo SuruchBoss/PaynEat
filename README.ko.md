@@ -69,20 +69,26 @@
 
 > 🧑‍🍳 **아무 설명 없이 직접 눌러 보시게 할 때(UAT)** — 데모 모드는 **데이터가 기기마다 따로 저장됩니다.** 홀 직원이
 > 휴대폰에서 주문해도 다른 태블릿의 주방 화면에는 나타나지 않습니다. 여러 기기로 함께 써 보시려면 백엔드를 실행하고
-> (README 영문/태국어판 "옵션 A·B", 또는 아래 Windows 한 줄 설치) 모든 기기에서 같은 주소를 여시거나, 한 기기에서 계정을 바꿔 가며 역할을 체험해
+> [설치 안내의 방법 3](https://suruchboss.github.io/PaynEat/install.ko.html#docker)처럼 Docker에 `API_BASE_URL`을 컴퓨터 IP로 설정해 모든 기기에서 같은 주소를 여시거나
+> (아래 Windows 한 줄 설치는 그 PC에서만 열립니다), 한 기기에서 계정을 바꿔 가며 역할을 체험해
 > 주세요. 되돌릴 수 없는 작업(주문 합치기, 역할 변경, 장바구니 비우기)은 한 번 더 확인하고, 누를 수 없는 버튼은 그
 > 이유를 버튼 아래에 알려 드립니다 (`docs/DECISIONS.md` #62)
 
 ### Windows PC에 서버까지 설치해 보기 (Docker Desktop, 한 줄)
 
-여러 기기로 함께 써 보시려면 서버가 필요합니다. 코드를 받거나 빌드하실 필요 없이, **Docker Desktop**을 켜 두고
+> 📘 **단계별 설치 안내를 웹 페이지로 보시려면** → [설치 안내](https://suruchboss.github.io/PaynEat/install.ko.html) — 네 가지 방법(브라우저 체험 / Windows 한 줄 /
+> Docker로 매장의 모든 기기 연결 / 소스 실행), 명령어 복사 버튼, 데모 계정, 운영 전 체크리스트, 문제 해결까지 한 페이지에
+> 있습니다. GitHub에 들어가실 필요가 없습니다.
+
+실제 서버를 내 PC에서 돌려 보시려면, 코드를 받거나 빌드하실 필요 없이, **Docker Desktop**을 켜 두고
 (왼쪽 아래 **Engine running**) **PowerShell**에 아래 한 줄을 붙여 넣고 Enter를 누르세요.
 
 ```powershell
 [Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object Net.WebClient).DownloadString('https://github.com/SuruchBoss/PaynEat/releases/download/demo/install-demo.ps1'))
 ```
 
-3~5분 뒤 브라우저가 **http://localhost:8080** 을 열어 드립니다 (`admin` / `admin123`). 사용자 폴더의 `PaynEat-Demo`에
+3~5분 뒤 브라우저가 **http://localhost:8080** 을 열어 드립니다 (`admin` / `admin123`). 이 방법은 설치한 PC에서만 열립니다 —
+매장의 휴대폰과 태블릿까지 연결하시려면 [설치 안내의 방법 3](https://suruchboss.github.io/PaynEat/install.ko.html#docker)을 따라 주세요. 사용자 폴더의 `PaynEat-Demo`에
 시작 / 중지 / 데이터 초기화 파일이 있습니다. 데모 전용 설정입니다 (README 영문/태국어판 "Option D").
 
 > ⚠️ **이 계정들은 둘러보기 전용입니다.** 실제 운영에 배포하실 때는 반드시 비밀번호를

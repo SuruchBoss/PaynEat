@@ -249,6 +249,7 @@ Each item is a problem big restaurants really face every day, and each is fixed 
 > · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
 > · [Thai version](https://suruchboss.github.io/PaynEat/)
 > · [Korean version](https://suruchboss.github.io/PaynEat/index.ko.html)
+> · [Install guide as a web page](https://suruchboss.github.io/PaynEat/install.en.html) — the "Install" item in the top menu (visible on phones too) and every "Install guide" link on the landing page lead here instead of the README on GitHub
 > · [Korean README](README.ko.md)
 >
 > The system is told as a **problem menu of nine sets**, the way a food-ordering site works: pick your restaurant's
@@ -259,8 +260,8 @@ Each item is a problem big restaurants really face every day, and each is fixed 
 > genuine EAN-13 that scans off the screen — see `docs/DECISIONS.md` #70 (replacing the designs of #39/#53)
 >
 > The HTML is **generated** from [`docs/generator/landing/`](docs/generator/landing/) — `content.py` holds the copy in three
-> languages and `build_landing.py` the template. Running `python3 docs/generator/landing/build_landing.py` writes
-> `docs/landing/index*.html` and the [problem menu](#-the-problem-menu) section of all three READMEs together. Images live in
+> languages, `install_content.py` the install guide and `build_landing.py` the template. Running
+> `python3 docs/generator/landing/build_landing.py` writes `docs/landing/index*.html`, `docs/landing/install*.html` and the [problem menu](#-the-problem-menu) section of all three READMEs together. Images live in
 > `docs/landing/img/story/` (39 WebP files, about 1.5 MB; recapture with `app/tool/screenshots/story_test.dart`, then shrink with
 > `publish_story.py`). The AI assistant GIF lives in `docs/ai-demo/`, which `deploy-pages.yml` copies into the site.
 
@@ -322,6 +323,10 @@ So this project prioritizes **correct business logic and a maintainable structur
 >
 > **Not an IT person?** On Windows with Docker Desktop, skip to **Option D** below (paste one line — no code download, no build),
 > or just open the [live demo](https://suruchboss.github.io/PaynEat/app/).
+>
+> 📘 **Prefer an easy-to-read web page?** The [install guide](https://suruchboss.github.io/PaynEat/install.en.html) walks through all four ways step by step, with
+> copy buttons for every command, the demo accounts, a go-live checklist and troubleshooting — readable on a phone, no GitHub
+> needed (also in [Thai](https://suruchboss.github.io/PaynEat/install.html) and [Korean](https://suruchboss.github.io/PaynEat/install.ko.html)).
 
 ### Step 0 — Get the code
 
@@ -487,7 +492,10 @@ The login page (demo mode) has a demo-account chip for every role — **one tap 
 > have a **globe** button in the top corner that switches ไทย / English / 한국어 before anyone signs in (the first
 > launch follows the device language). In demo mode (Option C / the demo link) **data lives on each device
 > separately** — a waiter ordering on a phone won't show up on a kitchen tablet. To try several devices at once,
-> run Option A, B or D and open the same address everywhere (or try every role on one device by switching accounts)
+> run Option B with `API_BASE_URL=http://<your computer's IP>:3000` in a `.env` next to `docker-compose.yml` and open
+> `http://<your computer's IP>:8080` everywhere (step by step in [the install guide, way 3](https://suruchboss.github.io/PaynEat/install.en.html#docker)) —
+> Option D and Option B's default point the app at `localhost:3000`, so they only open on that computer (or try every role
+> on one device by switching accounts)
 > — see what was adjusted for this UAT in `docs/DECISIONS.md` #62
 
 ---
@@ -1880,6 +1888,11 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
   big restaurant's food-ordering site in all three languages; 39 new screenshots from `app/tool/screenshots/story_test.dart`
   (WebP files, no base64); and all three READMEs build this section from the same source as the landing page
   (`docs/generator/landing/`, `docs/DECISIONS.md` #70)
+- [x] **An install guide as a web page, no GitHub needed** — done: `docs/landing/install*.html` in three languages offers four
+  ways by who is installing (try in the browser / Windows in one line / Docker so every device in the restaurant connects /
+  run from source); each gives the time, what you need, steps with copy buttons and what success looks like, followed by the
+  demo accounts, a go-live checklist and troubleshooting keyed to the installer's real messages. Every "Install guide" link on
+  the landing page points here (`docs/DECISIONS.md` #72)
 
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):

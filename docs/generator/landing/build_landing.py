@@ -14,6 +14,7 @@ from html import escape
 from pathlib import Path
 
 from content import LANGS, TESTS
+from install_content import ACCOUNTS, INSTALL_LANGS
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = ROOT / 'docs' / 'landing'
@@ -96,9 +97,12 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);ba
 .nav{display:flex;align-items:center;gap:18px;height:68px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 22px/1 var(--font-display);letter-spacing:-.01em}
 .brand small{font:600 11px/1 var(--font-body);background:var(--cream);color:var(--brand-ink);padding:4px 7px;border-radius:99px;letter-spacing:.06em}
-.links{display:flex;gap:4px;margin-left:12px}
-.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 12px;border-radius:99px}
+.links{display:flex;gap:2px;margin-left:4px}
+.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 8px;border-radius:99px;white-space:nowrap}
 .links a:hover{background:var(--cream);color:var(--ink)}
+.links a.inst{color:var(--brand-ink);border:1.5px solid var(--line);font-weight:600}
+.links a.inst:hover{border-color:var(--brand)}
+.links a.inst .short{display:none}
 .lang{display:flex;gap:2px;margin-left:auto;background:var(--cream);border-radius:99px;padding:3px}
 .lang a{text-decoration:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--ink-2)}
 .lang a[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -310,8 +314,11 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 
 /* ---- responsive ---- */
+.brand,.lang,.cart,.links a.inst{flex:none}
+.lang a{white-space:nowrap}
+@media (max-width:1500px){.cart b{display:none}}
+@media (max-width:1180px){.links a:not(.inst){display:none}}
 @media (max-width:1080px){
-  .links{display:none}
   .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
   .cats li{scroll-snap-align:start}
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -329,6 +336,9 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 @media (max-width:760px){
   .nav{height:60px;gap:10px}
+  .links a.inst{padding:6px 10px;font-size:14px}
+  .links a.inst .full{display:none}
+  .links a.inst .short{display:inline}
   .cart{display:none}
   .lang a{padding:5px 8px}
   .cards{grid-template-columns:1fr}
@@ -341,6 +351,10 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
   .foot ul{grid-template-columns:1fr}
 }
 @media (max-width:420px){
+  .nav{gap:6px}
+  .lang a{padding:5px 6px}
+  .links a.inst{padding:6px 8px;font-size:13px}
+  .nav .brand span{display:none}
   .facts{grid-template-columns:1fr}
   .fact+.fact{border-left:0;border-top:1px dashed var(--line)}
   .brand small{display:none}
@@ -374,7 +388,12 @@ def header(c):
         current = ' aria-current="page"' if code == c['code'] else ''
         cls = ' class="ko"' if code == 'ko' else ''
         langs.append(f'<a href="{href}" hreflang="{code}" lang="{code}"{cls}{current}>{label}</a>')
-    links = ''.join(f'<a href="{href}">{e(label)}</a>' for href, label in c['nav'])
+    # ลิงก์ "วิธีติดตั้ง" ไปอีกหน้า — เป็นลิงก์เดียวที่ยังเห็นบนแท็บเล็ต/มือถือ (ลิงก์ในหน้าเดียวกันซ่อนไป, DECISIONS #72)
+    links = ''.join(
+        f'<a class="inst" href="{href}"><span class="full">{e(label)}</span><span class="short">{e(c["nav_install_short"])}</span></a>'
+        if href.startswith('install') else f'<a href="{href}">{e(label)}</a>'
+        for href, label in c['nav']
+    )
     return f"""<a class="skip" href="#menu">{e(c['skip'])}</a>
 <div class="promo">🎉 {e(c['promo'])} <a href="{DEMO}">{e(c['promo_link'])}</a></div>
 <header class="site"><div class="wrap nav">
@@ -561,62 +580,55 @@ def checkout(c):
 </div></section>"""
 
 
-def footer(c):
+def footer(c, home='#top'):
     f = c['footer']
     links = ''.join(f'<li><a href="{href}">{e(label)}</a></li>' for label, href in f['links'])
     paras = ''.join(f'<p>{p}</p>' for p in f['paras_html'])
     return f"""<footer class="site-foot"><div class="wrap foot">
-  <div><a class="brand" href="#top">{LOGO}<span>PaynEat</span><small>POS</small></a>{paras}</div>
+  <div><a class="brand" href="{home}">{LOGO}<span>PaynEat</span><small>POS</small></a>{paras}</div>
   <ul>{links}</ul>
 </div></footer>
 <div class="mcart" role="complementary" aria-label="{e(c['mcart']['label'])}"><div><b>🛒 PaynEat POS</b><small>{e(c['mcart']['sub'])}</small></div><a href="{DEMO}">{e(c['mcart']['cta'])}</a></div>"""
 
 
-def page(c):
+PAGES = ('index.html', 'index.en.html', 'index.ko.html')
+INSTALL_PAGES = ('install.html', 'install.en.html', 'install.ko.html')
+
+
+def document(code, file, pages, title, description, og_image, body, css=CSS, script=''):
+    """<head> ร่วมของทุกหน้าใน docs/landing — ฟอนต์, og, hreflang ไปหน้าเดียวกันของภาษาอื่น"""
     fonts = (
         'https://fonts.googleapis.com/css2?family=Kanit:wght@500;600;700;800&family=Anuphan:wght@400;500;600'
         '&family=IBM+Plex+Mono:wght@500;600&display=swap'
     )
     ko_font = (
         'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap'
-        if c['code'] == 'ko'
+        if code == 'ko'
         # ป้ายสลับภาษา "한국어" ใช้ฮันกึลที่ Kanit/Anuphan ไม่มี — text= ตัด subset ให้เหลือ 3 ตัวอักษร (~2KB)
         else 'https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@600&text=%ED%95%9C%EA%B5%AD%EC%96%B4&display=swap'
     )
-    if c['code'] == 'ko':
+    if code == 'ko':
         font_vars = "--font-display:'Noto Sans KR','Kanit',system-ui,sans-serif;--font-body:'Noto Sans KR','Anuphan',system-ui,sans-serif"
     else:
         font_vars = "--font-display:'Kanit',system-ui,sans-serif;--font-body:'Anuphan',system-ui,sans-serif"
     alternates = ''.join(
-        f'<link rel="alternate" hreflang="{code}" href="{SITE}{"" if file == "index.html" else file}">'
-        for code, file in (('th', 'index.html'), ('en', 'index.en.html'), ('ko', 'index.ko.html'))
+        f'<link rel="alternate" hreflang="{lang}" href="{SITE}{"" if other == "index.html" else other}">'
+        for lang, other in zip(('th', 'en', 'ko'), pages)
     )
-    url = SITE + ('' if c['file'] == 'index.html' else c['file'])
-    og = SITE + c['og_image']
-    body = ''.join([
-        header(c),
-        '<main>',
-        hero(c),
-        picker(c),
-        menu(c),
-        stories(c),
-        ai(c),
-        standards(c),
-        checkout(c),
-        '</main>',
-        footer(c),
-    ])
+    url = SITE + ('' if file == 'index.html' else file)
+    og = SITE + og_image
+    js = f'\n<script>{script}</script>' if script else ''
     return f"""<!doctype html>
-<!-- สร้างจาก docs/generator/landing/build_landing.py — แก้เนื้อหาที่ content.py แล้วรันใหม่ อย่าแก้ไฟล์นี้ตรง ๆ -->
-<html lang="{c['code']}">
+<!-- สร้างจาก docs/generator/landing/build_landing.py — แก้เนื้อหาที่ content.py / install_content.py แล้วรันใหม่ อย่าแก้ไฟล์นี้ตรง ๆ -->
+<html lang="{code}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>{e(c['title'])}</title>
-<meta name="description" content="{e(c['description'])}">
+<title>{e(title)}</title>
+<meta name="description" content="{e(description)}">
 <meta name="theme-color" content="#D9480F">
-<meta property="og:title" content="{e(c['title'])}">
-<meta property="og:description" content="{e(c['description'])}">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(description)}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="{url}">
 <meta property="og:image" content="{og}">
@@ -631,13 +643,311 @@ def page(c):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="{fonts}">
 <link rel="stylesheet" href="{ko_font}">
-<style>:root{{{font_vars}}}{CSS}</style>
+<style>:root{{{font_vars}}}{css}</style>
 </head>
 <body>
-{body}
+{body}{js}
 </body>
 </html>
 """
+
+
+def page(c):
+    body = ''.join([
+        header(c),
+        '<main>',
+        hero(c),
+        picker(c),
+        menu(c),
+        stories(c),
+        ai(c),
+        standards(c),
+        checkout(c),
+        '</main>',
+        footer(c),
+    ])
+    return document(c['code'], c['file'], PAGES, c['title'], c['description'], c['og_image'], body)
+
+
+# ---------------------------------------------------------------------------------------------
+# หน้า "คู่มือติดตั้ง" (docs/landing/install*.html) — คนไม่ใช่สาย IT ทำตามได้โดยไม่ต้องเปิด GitHub (DECISIONS #72)
+# ใช้ token/header/footer ชุดเดียวกับหน้า Landing แล้วเพิ่ม CSS เฉพาะหน้านี้ต่อท้าย
+
+INSTALL_CSS = r"""
+/* ---- คู่มือติดตั้ง ---- */
+.links a.home{color:var(--brand-ink)}
+.ghero{padding:28px 0 0}
+.ghero .panel{position:relative;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:28px;
+  padding:clamp(24px,4.5vw,52px);box-shadow:var(--shadow-sm)}
+.ghero .panel::after{content:"";position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,197,61,.35),transparent 70%);pointer-events:none}
+.crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:14px;color:var(--muted);margin-bottom:14px}
+.crumb a{color:var(--brand-ink);text-decoration:none;font-weight:500}
+.crumb a:hover{text-decoration:underline}
+.ghero h1{font-size:clamp(32px,4.8vw,54px);font-weight:800;letter-spacing:-.015em;max-width:18em;text-wrap:balance}
+.ghero .lead{margin-top:14px;font-size:clamp(16px,1.5vw,18.5px);color:var(--ink-2);max-width:38em}
+.chips{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.chips li{background:var(--cream);color:var(--ink-2);font-size:14px;font-weight:500;padding:6px 12px;border-radius:99px}
+
+.paths{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.path{position:relative;display:flex;flex-direction:column;gap:14px;background:var(--paper);border:1.5px solid var(--line);
+  border-radius:var(--radius);padding:22px 20px 20px;box-shadow:var(--shadow-sm)}
+.path.rec{border-color:var(--brand);box-shadow:var(--shadow)}
+.path .ico{width:54px;height:54px;border-radius:16px;background:var(--cream);display:grid;place-items:center;font-size:28px}
+.path h3{font-size:20px;font-weight:700;text-wrap:balance}
+.flag{position:absolute;right:16px;top:18px;background:var(--mustard);color:var(--ink);font-size:12.5px;font-weight:600;
+  padding:4px 10px;border-radius:99px}
+.meta{margin:0;display:grid;gap:10px}
+.meta div{display:grid;gap:1px}
+.meta dt{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.meta dd{margin:0;font-size:15px;line-height:1.45;color:var(--ink)}
+.go-btn{margin-top:auto;display:flex;justify-content:center;align-items:center;gap:8px;text-decoration:none;font-weight:600;
+  border-radius:99px;padding:12px 16px;border:1.5px solid var(--cta);color:var(--cta)}
+.go-btn:hover{background:var(--cream)}
+.path.rec .go-btn{background:var(--cta);color:#fff}
+.path.rec .go-btn:hover{background:var(--cta-hover)}
+
+.guide{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:clamp(24px,4vw,48px);background:var(--paper);
+  border:1px solid var(--line);border-radius:28px;padding:clamp(20px,3.5vw,40px);box-shadow:var(--shadow-sm)}
+.guide-side{align-self:start;position:sticky;top:92px;display:flex;flex-direction:column;gap:14px}
+.guide-side .ico{width:60px;height:60px;border-radius:18px;background:var(--cream);display:grid;place-items:center;font-size:32px}
+.guide-side h2{font-size:clamp(26px,3vw,34px);font-weight:800;letter-spacing:-.01em;text-wrap:balance}
+.guide-side p{color:var(--ink-2)}
+.facts2{margin:4px 0 0;display:grid;gap:0;border-top:1px dashed var(--line)}
+.facts2 div{display:grid;gap:2px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.facts2 dt{font-size:12.5px;font-weight:600;color:var(--muted);letter-spacing:.03em}
+.facts2 dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.steps{list-style:none;margin:0;padding:0;counter-reset:step;display:grid;gap:22px}
+.steps>li{counter-increment:step;display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px}
+.steps>li::before{content:counter(step);width:40px;height:40px;border-radius:50%;background:var(--cta);color:#fff;display:grid;
+  place-items:center;font:700 18px/1 var(--font-display)}
+.steps h3{font-size:19px;font-weight:700;margin-top:6px}
+.steps p{margin-top:6px;color:var(--ink-2)}
+.steps a,.note a,.devices a,.live a,.faq a,.stuck a{color:var(--brand-ink)}
+code,kbd{font:500 .92em/1.4 'IBM Plex Mono',ui-monospace,monospace;background:var(--cream);border-radius:6px;padding:1px 6px;
+  overflow-wrap:anywhere}
+kbd{border:1px solid var(--line);border-bottom-width:2px;background:#fff}
+.cmd{position:relative;margin-top:12px;background:var(--espresso);border-radius:14px;box-shadow:var(--shadow-sm)}
+.cmd-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 8px 0 16px}
+.cmd-lang{font:600 12px/1 'IBM Plex Mono',ui-monospace,monospace;color:#D9C4B4;letter-spacing:.06em;text-transform:uppercase}
+.copy{font:600 13px/1 var(--font-body);color:var(--espresso);background:var(--mustard);border:0;border-radius:99px;padding:8px 14px;cursor:pointer}
+.copy:hover{background:#FFD56E}
+.cmd pre{margin:0;padding:10px 16px 16px;overflow-x:auto}
+.cmd pre code{background:none;padding:0;color:#FFE7D1;font-size:14px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+.ok{display:flex;gap:12px;align-items:flex-start;margin-top:26px;background:var(--basil-bg);color:#14532D;border-radius:16px;padding:14px 16px}
+.ok i{font-style:normal;font-size:20px;line-height:1.3}
+.ok b{color:#0F3D22}
+.after{margin-top:26px}
+.after h3{font-size:18px;font-weight:700;margin-bottom:10px}
+.after dl{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.after dl.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.after dl div{background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.after dt{font-weight:600}
+.after dd{margin:4px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.5;overflow-wrap:anywhere}
+.note{margin-top:18px;font-size:14.5px;color:var(--muted)}
+
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--paper);border:1px solid var(--line);border-radius:18px;
+  overflow:hidden;box-shadow:var(--shadow-sm)}
+.tbl th,.tbl td{text-align:left;padding:13px 16px;vertical-align:top;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl th{background:var(--cream);font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.tbl td:first-child{font-weight:600}
+.tbl td:last-child{color:var(--ink-2)}
+.devices{margin-top:18px;display:flex;gap:14px;align-items:flex-start;background:var(--cream);border-radius:18px;padding:16px 18px}
+.devices i{font-style:normal;font-size:24px}
+.devices b{display:block;font-family:var(--font-display);font-size:17px;margin-bottom:2px}
+.devices p{color:var(--ink-2);font-size:15px}
+
+.live{background:var(--espresso);color:#F6E9DE;border-radius:28px;padding:clamp(22px,4vw,44px);display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:clamp(20px,4vw,48px)}
+.live .kick{color:var(--mustard)}
+.live h2{font-size:clamp(26px,3.2vw,36px);font-weight:800;text-wrap:balance}
+.live .sub{margin-top:12px;color:#D9C4B4}
+.live ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.live li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:12px;align-items:start;background:#2C1B12;border:1px solid #3A2418;
+  border-radius:14px;padding:13px 14px;line-height:1.55}
+.live li::before{content:"";width:20px;height:20px;margin-top:3px;border:2px solid var(--mustard);border-radius:6px}
+.live code{background:#3A2418;color:#FFE7D1}
+.live a{color:var(--mustard)}
+.live .more{margin-top:14px;font-size:14.5px;color:#D9C4B4}
+
+.faq{display:grid;gap:10px}
+.faq details{background:var(--paper);border:1px solid var(--line);border-radius:16px}
+.faq details[open]{border-color:var(--brand);box-shadow:var(--shadow-sm)}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:14px;
+  padding:15px 18px;font-weight:600}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";flex:none;width:28px;height:28px;border-radius:50%;background:var(--cream);color:var(--brand-ink);
+  display:grid;place-items:center;font-size:20px;line-height:1}
+.faq details[open] summary::after{content:"–"}
+.faq details p{padding:0 18px 16px;color:var(--ink-2)}
+.stuck{margin-top:22px;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;background:var(--cream);border-radius:18px;padding:16px 18px}
+.stuck b{font-family:var(--font-display);font-size:18px}
+
+@media (max-width:1080px){
+  .paths{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:900px){
+  .guide,.live{grid-template-columns:minmax(0,1fr)}
+  .guide-side{position:static}
+  .after dl.n3{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:620px){
+  .paths{grid-template-columns:1fr}
+  .after dl,.after dl.n3{grid-template-columns:1fr}
+  .tbl thead{display:none}
+  .tbl,.tbl tbody,.tbl tr,.tbl td{display:block;width:100%}
+  .tbl tr{border-bottom:1px solid var(--line);padding:6px 0}
+  .tbl tr:last-child{border-bottom:0}
+  .tbl td{border:0;padding:6px 16px;display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:10px}
+  .tbl td::before{content:attr(data-label);font-size:12.5px;font-weight:600;color:var(--muted)}
+  .steps>li{grid-template-columns:34px minmax(0,1fr);gap:12px}
+  .steps>li::before{width:34px;height:34px;font-size:16px}
+}
+"""
+
+# ปุ่มคัดลอกคำสั่ง — ซ่อนไว้ก่อน เปิดเฉพาะเบราว์เซอร์ที่คัดลอกได้จริง (ไม่มี JS ก็ยังเลือกข้อความเองได้)
+INSTALL_JS = (
+    "document.querySelectorAll('.copy').forEach(function(b){if(!navigator.clipboard)return;b.hidden=false;"
+    "b.addEventListener('click',function(){navigator.clipboard.writeText(b.closest('.cmd').querySelector('code').textContent)"
+    ".then(function(){b.textContent=b.dataset.done;setTimeout(function(){b.textContent=b.dataset.label},1800)})})})"
+)
+
+
+def install_header(c, ic):
+    langs = []
+    for code, label, href in (('th', 'ไทย', INSTALL_PAGES[0]), ('en', 'EN', INSTALL_PAGES[1]), ('ko', '한국어', INSTALL_PAGES[2])):
+        current = ' aria-current="page"' if code == ic['code'] else ''
+        cls = ' class="ko"' if code == 'ko' else ''
+        langs.append(f'<a href="{href}" hreflang="{code}" lang="{code}"{cls}{current}>{label}</a>')
+    links = f'<a class="home" href="{ic["home"]}">← {e(ic["home_label"])}</a>' + ''.join(
+        f'<a href="{href}">{e(label)}</a>' for href, label in ic['nav']
+    )
+    return f"""<a class="skip" href="#choose">{e(ic['skip'])}</a>
+<header class="site"><div class="wrap nav">
+  <a class="brand" href="{ic['home']}" aria-label="PaynEat POS">{LOGO}<span>PaynEat</span><small>POS</small></a>
+  <nav class="links" aria-label="{e(c['nav_label'])}">{links}</nav>
+  <div class="lang" role="navigation" aria-label="{e(c['lang_label'])}">{''.join(langs)}</div>
+  <a class="cart" href="{DEMO}">🖥 {e(c['cart'])}</a>
+</div></header>"""
+
+
+def cmd_block(ic, code, lang):
+    return (
+        f'<div class="cmd"><div class="cmd-head"><span class="cmd-lang">{e(lang)}</span>'
+        f'<button class="copy" type="button" hidden aria-live="polite" data-label="{e(ic["copy"])}" data-done="{e(ic["copied"])}">'
+        f'{e(ic["copy"])}</button></div><pre><code>{e(code)}</code></pre></div>'
+    )
+
+
+def install_hero(ic):
+    h = ic['hero']
+    chips = ''.join(f'<li>{e(chip)}</li>' for chip in h['chips'])
+    return f"""<section class="ghero" id="top"><div class="wrap"><div class="panel">
+  <p class="crumb"><a href="{ic['home']}">PaynEat POS</a><span aria-hidden="true">/</span><span>{e(h['kick'])}</span></p>
+  <h1>{e(h['title'])}</h1>
+  <p class="lead">{e(h['lead'])}</p>
+  <ul class="chips">{chips}</ul>
+</div></div></section>"""
+
+
+def install_choose(ic):
+    ch = ic['choose']
+    t_label, n_label, w_label = ch['labels']
+    cards = []
+    for p in ic['paths']:
+        rec = p.get('recommended')
+        flag = f'<span class="flag">{e(ch["recommended"])}</span>' if rec else ''
+        cards.append(
+            f'<li class="path{" rec" if rec else ""}">{flag}<span class="ico" aria-hidden="true">{p["icon"]}</span>'
+            f'<h3>{e(p["name"])}</h3><dl class="meta">'
+            f'<div><dt>{e(t_label)}</dt><dd>{e(p["time"])}</dd></div>'
+            f'<div><dt>{e(n_label)}</dt><dd>{e(p["need"])}</dd></div>'
+            f'<div><dt>{e(w_label)}</dt><dd>{e(p["who"])}</dd></div></dl>'
+            f'<a class="go-btn" href="{p["href"]}">{e(p["cta"])} <span aria-hidden="true">→</span></a></li>'
+        )
+    return f"""<section class="section" id="choose" aria-labelledby="choose-h"><div class="wrap">
+  <div class="head"><div><span class="kick">{e(ch['kick'])}</span><h2 id="choose-h">{e(ch['title'])}</h2></div><p>{e(ch['sub'])}</p></div>
+  <ul class="paths">{''.join(cards)}</ul>
+</div></section>"""
+
+
+def install_section(ic, sec):
+    facts = ''.join(f'<div><dt>{e(k)}</dt><dd>{e(v)}</dd></div>' for k, v in sec['facts'])
+    steps = []
+    for st in sec['steps']:
+        body = f'<p>{st["html"]}</p>' if st.get('html') else ''
+        block = cmd_block(ic, st['code'], st['lang']) if st.get('code') else ''
+        steps.append(f'<li><div><h3>{e(st["title"])}</h3>{body}{block}</div></li>')
+    after = ''.join(f'<div><dt>{e(k)}</dt><dd>{v}</dd></div>' for k, v in sec['after'])
+    hid = f'{sec["id"]}-h'
+    return f"""<section class="section" id="{sec['id']}" aria-labelledby="{hid}"><div class="wrap"><div class="guide">
+  <div class="guide-side">
+    <span class="ico" aria-hidden="true">{sec['icon']}</span>
+    <div><span class="kick">{e(sec['kick'])}</span><h2 id="{hid}">{e(sec['title'])}</h2></div>
+    <p>{e(sec['intro'])}</p>
+    <dl class="facts2">{facts}</dl>
+  </div>
+  <div>
+    <ol class="steps">{''.join(steps)}</ol>
+    <p class="ok"><i aria-hidden="true">✅</i><span>{sec['ok_html']}</span></p>
+    <div class="after"><h3>{e(sec['after_title'])}</h3><dl{' class="n3"' if len(sec['after']) == 3 else ''}>{after}</dl></div>
+    <p class="note">{sec['note_html']}</p>
+  </div>
+</div></div></section>"""
+
+
+def install_accounts(ic):
+    a = ic['accounts']
+    cols = a['cols']
+    rows = ''.join(
+        f'<tr><td data-label="{e(cols[0])}">{e(role)}</td><td data-label="{e(cols[1])}"><code>{user}</code></td>'
+        f'<td data-label="{e(cols[2])}"><code>{pw}</code></td><td data-label="{e(cols[3])}">{e(sees)}</td></tr>'
+        for (role, sees), (user, pw) in zip(a['rows'], ACCOUNTS)
+    )
+    head = ''.join(f'<th scope="col">{e(col)}</th>' for col in cols)
+    return f"""<section class="section" id="accounts" aria-labelledby="acc-h"><div class="wrap">
+  <div class="head"><div><span class="kick">{e(a['kick'])}</span><h2 id="acc-h">{e(a['title'])}</h2></div><p>{e(a['sub'])}</p></div>
+  <table class="tbl"><thead><tr>{head}</tr></thead><tbody>{rows}</tbody></table>
+  <div class="devices"><i aria-hidden="true">📱</i><div><b>{e(a['devices_title'])}</b><p>{a['devices_html']}</p></div></div>
+</div></section>"""
+
+
+def install_live(ic):
+    lv = ic['live']
+    items = ''.join(f'<li><span>{item}</span></li>' for item in lv['items_html'])
+    return f"""<section class="section" id="live" aria-labelledby="live-h"><div class="wrap"><div class="live">
+  <div><span class="kick">{e(lv['kick'])}</span><h2 id="live-h">{e(lv['title'])}</h2><p class="sub">{e(lv['sub'])}</p>
+    <p class="more">{lv['more_html']}</p></div>
+  <ul>{items}</ul>
+</div></div></section>"""
+
+
+def install_help(ic):
+    h = ic['help']
+    rows = ''.join(f'<details><summary><span>{q}</span></summary><p>{a}</p></details>' for q, a in h['rows'])
+    return f"""<section class="section" id="help" aria-labelledby="help-h"><div class="wrap">
+  <div class="head"><div><span class="kick">{e(h['kick'])}</span><h2 id="help-h">{e(h['title'])}</h2></div></div>
+  <div class="faq">{rows}</div>
+  <p class="stuck"><b>{e(h['stuck_title'])}</b><span>{h['stuck_html']}</span></p>
+</div></section>"""
+
+
+def install_page(c, ic):
+    body = ''.join([
+        install_header(c, ic),
+        '<main>',
+        install_hero(ic),
+        install_choose(ic),
+        ''.join(install_section(ic, sec) for sec in ic['sections']),
+        install_accounts(ic),
+        install_live(ic),
+        install_help(ic),
+        '</main>',
+        footer(c, home=ic['home']),
+    ])
+    return document(ic['code'], ic['file'], INSTALL_PAGES, ic['title'], ic['description'], c['og_image'], body,
+                    css=CSS + INSTALL_CSS, script=INSTALL_JS)
 
 
 README_START = '<!-- stories:start -->'
@@ -705,6 +1015,10 @@ def main():
         (OUT / c['file']).write_text(html, encoding='utf-8')
         print(f"docs/landing/{c['file']}  {len(html.encode('utf-8')) // 1024} KB")
         update_readme(c)
+    for c, ic in zip(LANGS, INSTALL_LANGS):
+        html = install_page(c, ic)
+        (OUT / ic['file']).write_text(html, encoding='utf-8')
+        print(f"docs/landing/{ic['file']}  {len(html.encode('utf-8')) // 1024} KB")
 
 
 if __name__ == '__main__':

@@ -247,6 +247,7 @@ control and 920 automated tests.
 > · [English version](https://suruchboss.github.io/PaynEat/index.en.html)
 > · [한국어 버전](https://suruchboss.github.io/PaynEat/index.ko.html)
 > · [README ภาษาเกาหลี](README.ko.md)
+> · [คู่มือติดตั้งแบบหน้าเว็บ](https://suruchboss.github.io/PaynEat/install.html) — เมนู "วิธีติดตั้ง" บนสุด (เห็นบนมือถือด้วย) และปุ่ม "คู่มือติดตั้ง" ทุกจุดในหน้า Landing พามาที่นี่แทน README บน GitHub
 >
 > เล่าระบบเป็น **เมนูแก้ปัญหา 9 ชุด** เหมือนเข้าเว็บสั่งอาหาร: เลือกอาการของร้านจากหมวดวงกลม → การ์ดเมนูแต่ละชุด
 > (ส่วนประกอบ = ฟีเจอร์, "ได้อะไร" = ผลลัพธ์) → หน้ารายละเอียดพร้อมหน้าจอจริงและขั้น "ลองชิมในเดโม" → ราคาเป็นตะกร้าที่ทุกบรรทัด
@@ -254,7 +255,8 @@ control and 920 automated tests.
 > ฉลากตาชั่ง `2000101012504` ที่บาร์โค้ดวาดเป็น EAN-13 จริง สแกนจากจอเข้าเดโมได้ — ดู `docs/DECISIONS.md` #70 (แทนดีไซน์ #39/#53)
 >
 > ไฟล์ HTML **สร้างจาก** [`docs/generator/landing/`](docs/generator/landing/) — `content.py` คือเนื้อหาสามภาษา `build_landing.py`
-> คือเทมเพลต รัน `python3 docs/generator/landing/build_landing.py` แล้วได้ทั้ง `docs/landing/index*.html` และหัวข้อ
+> คือเทมเพลต (`install_content.py` คือเนื้อหาคู่มือติดตั้ง) รัน `python3 docs/generator/landing/build_landing.py` แล้วได้ทั้ง
+> `docs/landing/index*.html`, `docs/landing/install*.html` และหัวข้อ
 > [เมนูแก้ปัญหาร้านอาหาร](#-เมนูแก้ปัญหาร้านอาหาร) ใน README ทั้งสามภาษาพร้อมกัน ภาพอยู่ที่ `docs/landing/img/story/` (WebP
 > 39 ไฟล์ รวมราว 1.5 MB ถ่ายใหม่ด้วย `app/tool/screenshots/story_test.dart` แล้วย่อด้วย `publish_story.py`) GIF ผู้ช่วย AI
 > อยู่ที่ `docs/ai-demo/` ซึ่ง `deploy-pages.yml` ก๊อปเข้า site ตอน deploy
@@ -315,6 +317,10 @@ control and 920 automated tests.
 >
 > **ไม่ใช่สาย IT?** มี Windows + Docker Desktop ข้ามไป **ทางเลือก D** ด้านล่าง (วางบรรทัดเดียว ไม่ต้องโหลดโค้ด/build เอง)
 > หรือแค่อยากกดดูเปิด [ลิงก์เดโม](https://suruchboss.github.io/PaynEat/app/) ได้ทันที
+>
+> 📘 **อยากได้แบบหน้าเว็บอ่านง่าย?** [คู่มือติดตั้ง](https://suruchboss.github.io/PaynEat/install.html) เล่าทั้ง 4 ทางทีละขั้น มีปุ่มคัดลอกคำสั่ง บัญชีทดลอง
+> เช็คลิสต์ก่อนใช้จริง และวิธีแก้ปัญหา — เปิดบนมือถือได้ ไม่ต้องเข้า GitHub (มี [English](https://suruchboss.github.io/PaynEat/install.en.html) และ
+> [한국어](https://suruchboss.github.io/PaynEat/install.ko.html) ด้วย)
 
 ### ขั้นที่ 0 — ดาวน์โหลดโค้ด
 
@@ -473,7 +479,9 @@ flutter run -d chrome --dart-define=DEMO_MODE=true
 > 🧑‍🍳 **จะให้ลูกค้า/พนักงานลองกดเองโดยไม่มีคนสอน (UAT)?** — มุมขวาบนของหน้าเข้าสู่ระบบและหน้าเมนู QR มีปุ่ม
 > **ลูกโลก** สลับ ไทย / English / 한국어 ได้ตั้งแต่ก่อนล็อกอิน (เปิดครั้งแรกใช้ภาษาของเครื่องให้เอง) ส่วนโหมดสาธิต
 > (ทางเลือก C / ลิงก์เดโม) **ข้อมูลอยู่ในเครื่องใครเครื่องมัน** — พนักงานเสิร์ฟกดสั่งบนมือถือ ครัวบนแท็บเล็ตอีกเครื่องจะ
-> ไม่เห็น ถ้าจะลองหลายเครื่องพร้อมกันให้รันทางเลือก A, B หรือ D แล้วทุกเครื่องเปิดที่อยู่เดียวกัน (หรือลองทุกบทบาทบน
+> ไม่เห็น ถ้าจะลองหลายเครื่องพร้อมกันให้รันทางเลือก B โดยตั้ง `API_BASE_URL=http://<IP ของคอม>:3000` ในไฟล์ `.env` ข้าง
+> `docker-compose.yml` แล้วทุกเครื่องเปิด `http://<IP ของคอม>:8080` (ทำตามทีละขั้นได้ที่ [คู่มือติดตั้ง ทางที่ 3](https://suruchboss.github.io/PaynEat/install.html#docker))
+> — ทางเลือก D และค่าเริ่มต้นของ B ชี้แอปไปที่ `localhost:3000` จึงเปิดได้แค่บนคอมเครื่องนั้น (หรือลองทุกบทบาทบน
 > เครื่องเดียวสลับบัญชีเอา) — ดูจุดที่ปรับเพื่อ UAT ครั้งนี้ใน `docs/DECISIONS.md` #62
 
 ---
@@ -1685,6 +1693,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
   หลายฟีเจอร์พร้อมหน้าจอจริงและขั้นลองในเดโม, หน้า Landing ใหม่ธีมเว็บสั่งอาหารของร้านใหญ่ทั้งสามภาษา, ภาพชุดใหม่
   39 ภาพจาก `app/tool/screenshots/story_test.dart` (WebP ไม่ฝัง base64) และ README ทั้งสามภาษาสร้างส่วนนี้จากแหล่งเดียวกับ
   Landing (`docs/generator/landing/`, `docs/DECISIONS.md` #70)
+- [x] **คู่มือติดตั้งเป็นหน้าเว็บ ไม่ต้องเข้า GitHub** — ทำแล้ว: `docs/landing/install*.html` สามภาษา ให้เลือก 4 ทางตามคนใช้
+  (ลองในเบราว์เซอร์ / Windows บรรทัดเดียว / Docker ให้ทุกเครื่องในร้านต่อเข้ามา / รันจากโค้ด) แต่ละทางบอกเวลา สิ่งที่ต้องมี
+  ขั้นตอนพร้อมปุ่มคัดลอกคำสั่ง และหน้าตาของ "สำเร็จแล้ว" ตามด้วยบัญชีทดลอง เช็คลิสต์ก่อนใช้จริง และวิธีแก้ปัญหาตามข้อความจริง
+  ของตัวติดตั้ง ลิงก์ "คู่มือติดตั้ง" ในหน้า Landing ทุกจุดชี้มาที่นี่ (`docs/DECISIONS.md` #72)
 
 **ตั้งใจไม่ทำ** (ไม่ใช่ของค้าง — ดูเหตุผลเต็มใน [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 
