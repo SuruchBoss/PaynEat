@@ -2,7 +2,7 @@
 
 **Priority:** 🟠 High — สัปดาห์ที่ 4 ของแผน PaynEat ERP v1
 **Ref:** [ERP ADR-0002](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/adr/0002-system-boundaries-and-pos-integration.md),
-[สัญญา telemetry v1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md), `docs/DECISIONS.md` #66
+[สัญญา telemetry v1.2](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md), `docs/DECISIONS.md` #66
 **Blocked by:** `25-erp-connected-mode.md`, `27-erp-menu-pull.md`, [PaynEat-ERP#9](https://github.com/SuruchBoss/PaynEat-ERP/issues/9)
 
 ## ปัญหา
@@ -30,9 +30,11 @@ ERP ต้องรู้ว่าแต่ละสาขาขายอะไ�
   - พยายามครบ N ครั้งแล้วยังไม่ผ่าน = dead-letter
 - **หน้าจอสถานะ outbox** (admin/manager): จำนวนที่รอส่ง, อายุของรายการที่เก่าที่สุด, รายการ dead-letter พร้อมเหตุผล
   และปุ่มส่งใหม่
-- **telemetry v1**:
+- **telemetry v1.2** (หัวข้อ "POS↔ERP integration lines"):
   - metric `outbox_pending_events{app,destination}` และ `outbox_oldest_pending_age_seconds{app,destination}`
   - log `outbox.delivery.failed` (`WARNING`, และ `ERROR` เมื่อ dead-letter) โดยมี idempotency key เป็น `correlation_id`
+  - **ทุกบรรทัดเรื่องการส่ง รวมบรรทัดที่ล้มเหลว** มี `pos_instance` และ `location_code` ของสาขาใน event นั้น ห้ามเดาค่า
+    ถ้าไม่รู้ให้เว้นไว้
 - **contract test**: event ที่ POS สร้างต้องผ่าน JSON Schema ของ sales event v1 จาก ERP ใน CI
 
 ## ขอบเขตที่ตั้งใจไม่ทำ (ช่องว่างที่รู้ตัว บันทึกใน DECISIONS #66)
@@ -46,7 +48,7 @@ ERP ต้องรู้ว่าแต่ละสาขาขายอะไ�
 - [ ] ERP ตอบซ้ำ = สำเร็จ, 422 = dead-letter พร้อมเหตุผล, 401 = หยุดคิวและแจ้งเตือน
 - [ ] บรรทัดชั่งน้ำหนักส่งน้ำหนัก และส่ง modifier ครบ
 - [ ] โหมดเดี่ยวไม่มีแถว outbox เลย
-- [ ] metric และ log ตามสัญญา telemetry v1, contract test ผ่าน
+- [ ] metric และ log ตามสัญญา telemetry v1.2 (บรรทัดที่ล้มเหลวมี `pos_instance` และ `location_code`), contract test ผ่าน
 - [ ] README (ไทย/อังกฤษ), `docs/DECISIONS.md`, `docs/FEATURE-GAP-ANALYSIS.md` อัปเดตตาม `CLAUDE.md`
 
 ## เทสต์
