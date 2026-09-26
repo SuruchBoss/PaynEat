@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Suruch Chakrapeesirisuk
+# SPDX-License-Identifier: Apache-2.0
+
 # ตรวจว่าทิศทาง dependency ยังเป็นไปตาม docs/CODING_STANDARDS.md §4.1 และ §4.2
 #
 # กฎพวกนี้เขียนไว้ใน CODING_STANDARDS.md ตั้งแต่แรกในรูปคำสั่ง grep ที่ "ต้องรันก่อน commit"

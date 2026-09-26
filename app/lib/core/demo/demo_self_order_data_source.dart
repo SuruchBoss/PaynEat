@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 part of 'demo_data_sources.dart';
 
 /// mirror ของ public-order.service.js ฝั่ง backend (ดู docs/tickets/17-qr-self-order.md) — ไม่มี

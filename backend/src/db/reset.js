@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'node:fs';
 import { env } from '../config/env.js';
 import { closeDb } from './index.js';

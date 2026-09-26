@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { z } from 'zod';
 
 // ช่องทางรับชำระหนี้ — ไม่มี 'credit' (จ่ายหนี้ด้วยการเชื่อเพิ่มไม่ได้)

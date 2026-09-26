@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { env } from '../../config/env.js';
 import { isEnabled, toLogRecord } from './logRecord.js';
 import { currentRequestContext, PROCESS_CORRELATION_ID } from './requestContext.js';

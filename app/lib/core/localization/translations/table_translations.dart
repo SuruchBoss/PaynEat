@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ table
 const Map<String, String> tableTranslationsTh = {
   'table_error_not_found': 'ไม่พบโต๊ะนี้',

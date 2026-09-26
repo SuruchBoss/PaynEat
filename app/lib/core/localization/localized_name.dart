@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'locale_service.dart';
 
 /// เลือกชื่อที่จะแสดงจากชุดชื่อหลายภาษาของข้อมูลชิ้นเดียวกัน

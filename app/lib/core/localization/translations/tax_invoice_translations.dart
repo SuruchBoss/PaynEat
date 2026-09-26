@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ tax_invoice (ใบกำกับภาษี — ดู docs/tickets/07-tax-invoice.md)
 const Map<String, String> taxInvoiceTranslationsTh = {
   // Receipt page section

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// รายการ audit log — บันทึกการกระทำที่เสี่ยงต่อการทุจริตหน้าร้าน (ดู
 /// docs/tickets/08-audit-log.md) append-only เสมอ ไม่มีทางแก้ไข/ลบจากแอปนี้
 class AuditLog {

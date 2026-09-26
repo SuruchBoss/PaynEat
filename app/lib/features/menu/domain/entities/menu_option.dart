@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// ตัวเลือกย่อยของเมนู เช่น "ไข่ดาว (+15)" หรือ "เผ็ดมาก"
 class MenuOption {
   const MenuOption({

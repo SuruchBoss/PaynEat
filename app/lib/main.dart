@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 // PaynEat POS — original project by SuruchBoss (https://github.com/SuruchBoss/PaynEat)
 // Licensed under Apache License 2.0 — see LICENSE and NOTICE at repo root
 import 'package:flutter/material.dart';

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/localization/localized_name.dart';
 
 /// หมวดหมู่อาหาร เช่น อาหารจานเดียว / เครื่องดื่ม

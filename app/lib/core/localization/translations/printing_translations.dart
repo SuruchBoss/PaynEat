@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของใบเสร็จที่พิมพ์จริงผ่านเครื่องพิมพ์ความร้อน (ESC/POS)
 ///
 /// ป้ายที่ตรงกับใบเสร็จบนจอ (subtotal, discount, grand total ฯลฯ) ใช้คีย์ร่วมกับ

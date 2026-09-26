@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * รูปแบบตัวเลข/วันที่แบบเอกสารธุรกิจไทย — ใช้กับ PDF และอีเมลที่ส่งให้ลูกค้า (ดู docs/DECISIONS.md #57)
  * วันที่เป็น พ.ศ. เขตเวลากรุงเทพฯ เสมอ ไม่ขึ้นกับ timezone ของเครื่องเซิร์ฟเวอร์ (container มักเป็น UTC)

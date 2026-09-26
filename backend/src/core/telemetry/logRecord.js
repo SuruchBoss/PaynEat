@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * รูปร่างของ log หนึ่งบรรทัดตามสัญญา telemetry v1.1 ของระบบนิเวศ PaynEat
  * (https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md, ticket 24)

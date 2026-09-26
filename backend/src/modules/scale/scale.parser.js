@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * แปลงข้อความหนึ่งบรรทัดจากตาชั่งเป็นน้ำหนัก (ดู docs/tickets/22-live-scale-camera-scan.md,
  * docs/DECISIONS.md #54) — ตาชั่งดิจิทัลแทบทุกยี่ห้อส่งน้ำหนักออกพอร์ตเป็นข้อความ ASCII บรรทัดละค่า

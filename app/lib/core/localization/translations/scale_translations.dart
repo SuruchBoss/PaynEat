@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของตาชั่งต่อสาย + สแกนด้วยกล้อง (ดู docs/tickets/22-live-scale-camera-scan.md)
 const Map<String, String> scaleTranslationsTh = {
   'scale_live_title': 'ตาชั่ง (อ่านสด)',

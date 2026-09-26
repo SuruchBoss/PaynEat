@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// เงื่อนไขของโปรโมชัน — ไม่ระบุอะไรเลย = ใช้ได้ทุกช่วงเวลา/ทุกเมนู/ไม่มีขั้นต่ำ

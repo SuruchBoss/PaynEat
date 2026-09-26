@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 part of 'demo_data_sources.dart';
 
 /// โหมดเดโม (static hosting ไม่มี backend/ANTHROPIC_API_KEY จริง) — ตั้งใจไม่ปลอมคำตอบ AI ขึ้นมาเอง

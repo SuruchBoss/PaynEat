@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:get/get.dart';
 
 /// เว็บไม่มี `dart:io` ให้เปิด TCP socket ตรง ๆ จาก browser — ไฟล์นี้ถูกเลือกใช้แทน

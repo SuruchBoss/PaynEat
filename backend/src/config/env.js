@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

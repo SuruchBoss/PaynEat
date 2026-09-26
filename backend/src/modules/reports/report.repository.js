@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { getDb } from '../../db/index.js';
 
 const dateRange = (from, to) => [from ?? '1970-01-01', to ?? '2999-12-31'];

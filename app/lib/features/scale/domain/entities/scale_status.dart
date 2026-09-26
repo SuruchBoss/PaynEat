@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// น้ำหนักหนึ่งค่าจากตาชั่งต่อสาย (ดู docs/tickets/22-live-scale-camera-scan.md)
 class ScaleReading {
   const ScaleReading({

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์สั่งอาหารเองผ่าน QR (ดู docs/tickets/17-qr-self-order.md)
 const Map<String, String> selfOrderTranslationsTh = {
   'self_order_title': 'สั่งอาหาร',

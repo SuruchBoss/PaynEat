@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// การชำระเงิน 1 ครั้ง (1 ออเดอร์อาจมีหลายครั้งได้ กรณีแยกจ่าย)

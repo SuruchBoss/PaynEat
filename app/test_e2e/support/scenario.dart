@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:flutter_test/flutter_test.dart';
 
 /// ลำดับขั้นของสถานการณ์เดียวที่ต่อกันเป็นเรื่องเดียว (เช่น หนึ่งวันทำงานของร้าน)

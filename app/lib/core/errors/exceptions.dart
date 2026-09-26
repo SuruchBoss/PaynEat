@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:get/get.dart';
 
 /// Exception ระดับ data layer — ถูกแปลงเป็น [Failure] ที่ชั้น repository

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { env } from '../../config/env.js';
 import { ApiError } from '../../core/ApiError.js';
 import { mailer } from '../../core/mailer.js';

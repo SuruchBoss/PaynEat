@@ -247,6 +247,11 @@ POS는 매출과 고객 정보를 동시에 들고 있습니다. 보안은 나�
 포크하거나 고쳐 쓰셔도 좋습니다. Apache License 2.0 조건에 따라
 [`NOTICE`](NOTICE) 파일만 남겨주시면 됩니다.
 
+저작권 © 2026 Suruch Chakrapeesirisuk. 모든 소스 파일 첫머리에 저작권 표시와 SPDX 식별자
+(`SPDX-License-Identifier: Apache-2.0`)가 있으며, CI가 푸시할 때마다 확인합니다. 외부 기여는 커밋마다
+Developer Certificate of Origin(DCO)에 따라 서명(sign-off)해야 합니다 — 방법은
+[`CONTRIBUTING.md`](CONTRIBUTING.md#developer-certificate-of-origin-dco)를 참고하세요.
+
 설치·기기 연결·기술 지원·교육이 필요하시면 유료 서비스를 선택하실 수 있습니다. 이용하지 않으셔도 모든 기능을 그대로 쓰실 수 있습니다.
 
 ---

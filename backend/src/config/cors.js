@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * แปลง CORS_ORIGIN (คั่นหลายค่าด้วย ,) เป็นค่า `origin` ของแพ็กเกจ cors และ socket.io
  *

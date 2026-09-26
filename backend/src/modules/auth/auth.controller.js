@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { asyncHandler } from '../../core/asyncHandler.js';
 import { ok } from '../../core/response.js';
 import { authService } from './auth.service.js';

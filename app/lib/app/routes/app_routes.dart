@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// ชื่อ route ทั้งหมดของแอป
 abstract class AppRoutes {
   static const String splash = '/';

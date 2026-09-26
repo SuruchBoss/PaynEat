@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// แปลง list ของ object เป็น CSV string (RFC 4180 พื้นฐาน) — mirror ของ
 /// `backend/src/core/csv.js` ตัวต่อตัว (ต้องแก้คู่กันเสมอ ดู docs/DECISIONS.md #2) เพราะ
 /// Demo Mode ไม่มี backend จริงให้เรียกตอน export audit log (ดู

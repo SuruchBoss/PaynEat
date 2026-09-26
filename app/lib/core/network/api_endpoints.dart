@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// รวมทุก path ของ API ไว้ที่เดียว — แก้ครั้งเดียวมีผลทั้งแอป
 class ApiEndpoints {
   const ApiEndpoints._();

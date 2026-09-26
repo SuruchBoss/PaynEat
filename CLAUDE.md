@@ -26,4 +26,11 @@
 
 ทำคู่กับ checklist ที่มีอยู่แล้วใน `CONTRIBUTING.md` และ `docs/CODING_STANDARDS.md` ข้อ 7
 (`flutter analyze` / `dart format` / `flutter test` / `npm run format:check` / `npm run lint` /
-`npm test` ต้องผ่านครบก่อน commit อยู่แล้ว) — README เป็นเช็คลิสต์ **เพิ่ม** ไม่ใช่แทนที่
+`npm test` / `node scripts/license-headers.mjs` ต้องผ่านครบก่อน commit อยู่แล้ว) — README เป็นเช็คลิสต์ **เพิ่ม** ไม่ใช่แทนที่
+
+## ไฟล์ซอร์สใหม่ทุกไฟล์ต้องมี header ลิขสิทธิ์ + SPDX
+
+ทุกไฟล์ซอร์ส (`.dart`, `.js`, `.mjs`, `.sql`, `.sh`, Dockerfile ฯลฯ) ขึ้นต้นด้วย
+`Copyright 2026 Suruch Chakrapeesirisuk` และ `SPDX-License-Identifier: Apache-2.0` — รัน
+`node scripts/license-headers.mjs --fix` ที่ root แล้วสคริปต์จะใส่ให้ ถ้าลืม job "License headers" ใน CI
+(`.github/workflows/license-check.yml`) จะแดง

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { env } from '../../config/env.js';
 import { emit, EVENTS, ROOMS } from '../../realtime/socket.js';
 import { createDriver } from './scale.drivers.js';

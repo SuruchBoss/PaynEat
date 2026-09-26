@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../domain/entities/scale_status.dart';
 
 /// แปลง JSON จาก GET /scale และ socket event `scale:reading` (รูปเดียวกัน)

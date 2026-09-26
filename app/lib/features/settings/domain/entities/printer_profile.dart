@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// การตั้งค่าเครื่องพิมพ์ใบเสร็จของ "เครื่องนี้"
 ///
 /// ผูกกับอุปกรณ์ที่แคชเชียร์ใช้งาน ไม่ใช่ของร้านโดยรวมแบบ [StoreSettings] เพราะแต่ละ

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:flutter/foundation.dart';
 
 /// ค่าคอนฟิกระดับแอป — เปลี่ยนได้ตอน build ด้วย

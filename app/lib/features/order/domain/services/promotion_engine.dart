@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/utils/app_clock.dart';
 
 /// ตรรกะจับคู่โปรโมชันกับออเดอร์ — พอร์ตจาก backend/src/modules/orders/promotion.engine.js

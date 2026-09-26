@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { toBaht } from '../../core/money.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Suruch Chakrapeesirisuk
+# SPDX-License-Identifier: Apache-2.0
+
 # สร้างวิดีโอ demo presentation จากภาพหน้าจอจริงของแอป
 #
 #   ./docs/video/build.sh          # สร้างทั้ง TH และ EN

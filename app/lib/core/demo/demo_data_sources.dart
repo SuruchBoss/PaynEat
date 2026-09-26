@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:get/get.dart';
 
 import '../../features/ai_assistant/data/datasources/ai_assistant_remote_data_source.dart';

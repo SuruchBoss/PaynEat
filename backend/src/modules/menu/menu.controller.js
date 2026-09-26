@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { asyncHandler } from '../../core/asyncHandler.js';
 import { ok, created, noContent, paginated } from '../../core/response.js';
 import { menuService } from './menu.service.js';

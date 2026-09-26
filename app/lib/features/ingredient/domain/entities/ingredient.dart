@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// วัตถุดิบ/สต๊อก (ดู docs/tickets/06-inventory-stock.md) — หน่วยนับ (unit) เป็น string
 /// อิสระที่ร้านตั้งเอง เช่น "กก.", "ลิตร", "ชิ้น" ไม่มี unit conversion ข้ามหน่วย
 class Ingredient {

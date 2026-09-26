@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/errors/failure_mapper.dart';
 import '../../../../core/usecases/result.dart';
 import '../../../auth/domain/entities/user.dart';

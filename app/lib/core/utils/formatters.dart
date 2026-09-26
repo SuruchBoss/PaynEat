@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import '../localization/locale_service.dart';
