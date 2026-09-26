@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * ตัวช่วยสินค้าขายตามน้ำหนัก (ดู docs/tickets/18-sell-by-weight.md) — น้ำหนักเก็บเป็น "กรัม" (integer)
  * เสมอเหมือนเงินที่เก็บเป็นสตางค์ ไม่เก็บกิโลกรัมเป็นทศนิยมในฐานข้อมูล

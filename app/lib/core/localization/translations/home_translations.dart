@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ home
 const Map<String, String> homeTranslationsTh = {
   // Navigation destinations

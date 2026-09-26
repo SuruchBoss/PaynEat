@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// จุดข้อมูลหนึ่งจุดในกราฟที่ผู้ช่วย AI แนบมาประกอบคำตอบ (ดู
 /// docs/tickets/15-ai-ask-your-data.md — "ตอบได้ทั้งแบบข้อความล้วนและแบบมีกราฟประกอบ")
 class AiAssistantChartPoint {

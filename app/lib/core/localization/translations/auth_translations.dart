@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ auth
 const Map<String, String> authTranslationsTh = {
   'auth_login_brand_headline': 'ระบบขายหน้าร้าน\nสำหรับร้านอาหาร',

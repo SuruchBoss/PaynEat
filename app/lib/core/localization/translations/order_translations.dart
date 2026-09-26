@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ order
 const Map<String, String> orderTranslationsTh = {
   // ป้ายเรียกใช้ร่วมกันหลายจุด

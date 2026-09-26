@@ -1802,6 +1802,10 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 [Apache License 2.0](LICENSE) — use it, modify it, or build on top of it freely. The only condition is that if
 you redistribute or build on it, you keep the [`NOTICE`](NOTICE) file, as required by the License (Section 4(d)).
 
+Copyright © 2026 Suruch Chakrapeesirisuk. Every source file starts with its copyright line and an SPDX identifier
+(`SPDX-License-Identifier: Apache-2.0`), which CI checks on every push. Outside contributions are signed off,
+commit by commit, under the Developer Certificate of Origin (DCO) — see [`CONTRIBUTING.md`](CONTRIBUTING.md#developer-certificate-of-origin-dco).
+
 **The POS is entirely free and will have no paid edition** — no locked features, no limits on devices, branches or
 users. If you want help, paid installation, hardware setup, support and training are available as options (you get
 everything without them). The ecosystem's paid edition is [PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions),

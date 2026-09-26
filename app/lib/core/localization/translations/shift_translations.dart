@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ shift — เปิด/ปิดกะแคชเชียร์ และกระทบยอดเงินสด
 const Map<String, String> shiftTranslationsTh = {
   'shift_page_title': 'เปิด / ปิดกะ',

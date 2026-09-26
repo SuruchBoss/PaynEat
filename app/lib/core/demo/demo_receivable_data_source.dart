@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 part of 'demo_data_sources.dart';
 
 /// ลูกหนี้/ขายเชื่อ/ใบวางบิล ในโหมดสาธิต (ดู docs/tickets/20-b2b-credit.md) — แปลงผลลัพธ์ด้วย

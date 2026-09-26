@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../domain/entities/ai_assistant_answer.dart';
 
 class AiAssistantAnswerModel extends AiAssistantAnswer {

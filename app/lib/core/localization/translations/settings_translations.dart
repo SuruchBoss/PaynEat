@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// ข้อความในหน้าตั้งค่าร้าน (SettingsPage) และตัวสลับภาษา
 const Map<String, String> settingsTranslationsTh = {
   'settings_store_info_title': 'ข้อมูลร้าน',

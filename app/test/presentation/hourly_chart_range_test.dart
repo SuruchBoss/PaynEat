@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/features/report/domain/entities/report.dart';
 import 'package:payneat_pos/features/report/presentation/widgets/hourly_bar_chart.dart';

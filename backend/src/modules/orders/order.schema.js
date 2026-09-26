@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { z } from 'zod';
 
 export const ORDER_STATUSES = ['open', 'in_kitchen', 'served', 'paid', 'cancelled'];

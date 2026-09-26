@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 part of 'demo_data_sources.dart';
 
 /// ดู docs/DECISIONS.md #36 — โหมดสาธิตมีสาขาเดียว (ไม่มี branch_id ใน demo store เลย) จึงไม่มี

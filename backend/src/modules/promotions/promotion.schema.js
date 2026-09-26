@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { z } from 'zod';
 
 const timePattern = /^([01]\d|2[0-3]):[0-5]\d$/;

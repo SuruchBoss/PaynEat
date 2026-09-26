@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// ตัวเลือกที่ลูกค้าเลือกไว้ ณ ตอนสั่ง (snapshot — ราคาไม่เปลี่ยนตามเมนูภายหลัง)

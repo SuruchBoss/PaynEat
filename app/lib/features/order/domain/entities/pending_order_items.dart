@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'order_item_payload.dart';
 import '../../../../core/utils/app_clock.dart';
 

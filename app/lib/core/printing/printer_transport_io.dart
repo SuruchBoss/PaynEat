@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'dart:io';
 
 /// เปิด TCP socket ไปยังเครื่องพิมพ์ความร้อนบนวง LAN/WiFi แล้วส่งคำสั่ง ESC/POS ดิบ

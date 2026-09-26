@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../domain/entities/report.dart';
 
 /// ตัวแปลง JSON ของรายงาน — ใช้ static method เพราะ entity เป็น immutable ล้วน

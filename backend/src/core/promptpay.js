@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * สร้าง payload สำหรับ QR พร้อมเพย์ (PromptPay) ตามมาตรฐาน EMV QRCPS Merchant Presented Mode
  * ที่ธนาคารแห่งประเทศไทยประกาศใช้ — เขียนเป็น pure function ล้วน (เหมือน money.js) แทนที่จะ

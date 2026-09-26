@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../menu/domain/entities/menu_item.dart';
 import '../../../menu/domain/entities/menu_option.dart';
 

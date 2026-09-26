@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * แปลง array ของ object เป็น CSV string (RFC 4180 พื้นฐาน) — pure function เก็บไว้ที่ core
  * เพราะเป็นตัวช่วยทั่วไป ไม่ผูกกับ module ไหนโดยเฉพาะ (ดู docs/tickets/14-financial-audit-trail.md)

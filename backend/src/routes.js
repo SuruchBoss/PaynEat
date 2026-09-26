@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { Router } from 'express';
 import authRoutes from './modules/auth/auth.routes.js';
 import branchRoutes from './modules/branches/branch.routes.js';

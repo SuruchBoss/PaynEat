@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { getDb } from '../../db/index.js';
 
 const BASE_COLUMNS = 'id, name, username, role, is_active, created_at, updated_at';

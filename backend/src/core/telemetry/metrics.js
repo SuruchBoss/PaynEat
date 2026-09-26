@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import http from 'node:http';
 import { collectDefaultMetrics, Counter, Histogram, Registry } from 'prom-client';
 import { env } from '../../config/env.js';

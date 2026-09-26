@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../errors/failures.dart';
 
 /// ผลลัพธ์ที่ "สำเร็จหรือล้มเหลว" อย่างชัดเจน แทนการโยน exception ข้ามชั้น

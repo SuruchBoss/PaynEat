@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// ป้ายชื่อสถานะ/enum ต่างๆ ที่มาจาก [AppConstants] — โต๊ะ, ออเดอร์, การชำระเงิน ฯลฯ
 const Map<String, String> statusTranslationsTh = {
   'role_admin': 'ผู้ดูแลระบบ',

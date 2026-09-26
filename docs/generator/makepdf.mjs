@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { chromium } from 'playwright';
 
 const [,, htmlPath, pdfPath, footerText] = process.argv;

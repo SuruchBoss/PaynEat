@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { ApiError } from '../../core/ApiError.js';
 import { categoryRepository } from './category.repository.js';
 import { toCategoryDto } from './category.mapper.js';

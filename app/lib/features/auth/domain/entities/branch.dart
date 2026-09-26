@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// สาขา (ดู docs/tickets/11-multi-branch.md) — ผู้ใช้ที่มีสิทธิ์มากกว่า 1 สาขาเลือกได้ตอน login
 /// หรือสลับได้ทีหลังที่หน้าบัญชี
 class Branch {

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของดอกเบี้ยผิดนัด ใบลดหนี้ และ PDF/อีเมลเอกสารลูกหนี้
 /// (ดู docs/tickets/21-late-fees-credit-notes.md, docs/tickets/23-document-pdf-email.md)
 const Map<String, String> receivableDocumentTranslationsTh = {

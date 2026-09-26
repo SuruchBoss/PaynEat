@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของลูกหนี้/ขายเชื่อ/ใบวางบิล (ticket 20 — docs/tickets/20-b2b-credit.md)
 const Map<String, String> receivableTranslationsTh = {
   'receivable_list_empty':

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../customer/data/models/customer_model.dart';
 import '../../../customer/domain/entities/customer.dart';
 import '../../domain/entities/receivable.dart';

@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/localization/localized_name.dart';
 
 /// โต๊ะที่ลูกค้าสแกน QR เข้ามา (ดู docs/tickets/17-qr-self-order.md) — มุมมองแบบตัดฟิลด์ของ

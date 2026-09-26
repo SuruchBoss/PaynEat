@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { ApiError } from '../../core/ApiError.js';
 import { toSatang, toBaht } from '../../core/money.js';
 import { buildPromptPayPayload } from '../../core/promptpay.js';

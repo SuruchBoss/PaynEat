@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// สร้าง payload สำหรับ QR พร้อมเพย์ (PromptPay) ตามมาตรฐาน EMV QRCPS Merchant Presented
 /// Mode — mirror ของ `backend/src/core/promptpay.js` ตัวต่อตัว (ต้องแก้คู่กันเสมอถ้าจะแก้
 /// อัลกอริทึม ดู docs/DECISIONS.md #2 เรื่องโค้ดคำนวณที่ซ้ำกัน Dart/JS)

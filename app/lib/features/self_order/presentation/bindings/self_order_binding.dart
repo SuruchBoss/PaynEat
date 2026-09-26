@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import 'package:get/get.dart';
 
 import '../../domain/usecases/add_self_order_items_usecase.dart';

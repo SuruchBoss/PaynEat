@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// ใบกำกับภาษี — snapshot ข้อมูลร้าน+ยอดเงิน ณ เวลาที่ออก แยกจากใบเสร็จปกติ

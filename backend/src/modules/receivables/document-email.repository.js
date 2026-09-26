@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { getDb } from '../../db/index.js';
 
 /** ประวัติการส่งเอกสารลูกหนี้ทางอีเมล (ดู docs/DECISIONS.md #57) — ใครส่ง ส่งถึงใคร เมื่อไร */

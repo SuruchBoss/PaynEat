@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { Server } from 'socket.io';
 import { env } from '../config/env.js';
 import { verifyToken } from '../middlewares/auth.js';

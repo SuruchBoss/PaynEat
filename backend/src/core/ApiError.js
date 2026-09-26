@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /**
  * ข้อผิดพลาดระดับ application ที่แปลงเป็น HTTP response ได้ตรง ๆ
  */

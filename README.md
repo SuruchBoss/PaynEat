@@ -1591,6 +1591,10 @@ CI บน GitHub Actions รัน `dart format` → `flutter analyze` → `dart
 [Apache License 2.0](LICENSE) — นำไปใช้ ดัดแปลง หรือต่อยอดได้ตามสบาย เงื่อนไขเดียวคือถ้า
 แจกจ่าย/ต่อยอดต่อ ให้คงไฟล์ [`NOTICE`](NOTICE) ไว้ด้วยตามที่ Apache License กำหนด (Section 4(d))
 
+ลิขสิทธิ์ © 2026 Suruch Chakrapeesirisuk ไฟล์ซอร์สทุกไฟล์ขึ้นต้นด้วยบรรทัดลิขสิทธิ์และตัวระบุ SPDX
+(`SPDX-License-Identifier: Apache-2.0`) ซึ่ง CI ตรวจทุก push ส่วนโค้ดที่คนนอกส่งเข้ามาต้อง sign-off ทุก commit
+ตาม Developer Certificate of Origin (DCO) — ดูวิธีใน [`CONTRIBUTING.md`](CONTRIBUTING.md#developer-certificate-of-origin-dco)
+
 **POS ฟรีทั้งหมดและจะไม่มีรุ่นเสียเงิน** — ไม่มีฟีเจอร์ไหนถูกล็อก ไม่จำกัดเครื่อง สาขา หรือผู้ใช้ ถ้าต้องการคนช่วย มีบริการ
 ติดตั้ง ต่ออุปกรณ์ support และอบรมแบบเสียเงินให้เลือก (ไม่ซื้อก็ใช้ได้ครบ) ส่วนรุ่นเสียเงินของระบบนิเวศอยู่ที่
 [PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions) สำหรับเชนขนาดใหญ่ — ดู `docs/DECISIONS.md` #67

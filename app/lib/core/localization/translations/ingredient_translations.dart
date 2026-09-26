@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ ingredient (วัตถุดิบ/สต๊อก — ดู docs/tickets/06-inventory-stock.md)
 const Map<String, String> ingredientTranslationsTh = {
   // List page

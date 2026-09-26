@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../customer/domain/entities/customer.dart';
 
 /// ลูกหนี้การค้า / ขายเชื่อ (ดู docs/tickets/20-b2b-credit.md, docs/DECISIONS.md #50)

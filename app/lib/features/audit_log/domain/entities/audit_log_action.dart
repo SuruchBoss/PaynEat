@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// รายการ action type ที่ระบบบันทึกลง audit log (mirror ของ backend
 /// audit-log module — ดู docs/tickets/08-audit-log.md) ใช้ทำตัวกรอง/ป้ายชื่อ
 /// บนหน้าจอ admin

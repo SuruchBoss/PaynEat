@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// ผู้ใช้งานระบบ — entity บริสุทธิ์ ไม่ผูกกับ JSON หรือ framework ใด ๆ

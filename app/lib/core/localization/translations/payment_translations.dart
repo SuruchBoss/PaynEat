@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ payment (เก็บเงิน / ใบเสร็จ / แยกบิล / คืนเงิน)
 const Map<String, String> paymentTranslationsTh = {
   // checkout_page

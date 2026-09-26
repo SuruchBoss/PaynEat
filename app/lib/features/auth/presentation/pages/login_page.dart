@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/widgets/language_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

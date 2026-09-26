@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 // branch: สาขาที่ "กำลังทำงานอยู่" ของ session/token นี้ (ดู docs/DECISIONS.md #36) — เป็น context
 // ของ token ไม่ใช่ property ถาวรของ user (user คนเดียวมีได้หลายสาขา) จึงต้องส่งเข้ามาจาก caller เอง
 // เสมอ ไม่ query จาก row ตรงๆ — null ได้ทั้งตอนที่ยังไม่รู้ (เช่น GET /users list ทั้งบริษัท) และ

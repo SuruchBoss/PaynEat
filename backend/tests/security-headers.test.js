@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { api, cleanup } from './helpers/testApp.js';

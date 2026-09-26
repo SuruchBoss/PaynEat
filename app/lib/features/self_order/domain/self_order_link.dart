@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../core/errors/failures.dart';
 
 /// ลิงก์ QR นี้ใช้ไม่ได้แล้ว (ลองใหม่ก็ไม่มีวันสำเร็จ) หรือแค่เน็ตสะดุด (ลองใหม่ได้)

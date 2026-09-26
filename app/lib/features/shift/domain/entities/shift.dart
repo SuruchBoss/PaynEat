@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/constants/app_constants.dart';
 
 /// กะทำงานของแคชเชียร์ — เปิดกะพร้อมเงินตั้งต้น แล้วปิดกะเทียบยอดเงินสดจริงกับที่ระบบคาดไว้

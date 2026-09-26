@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import '../../../../core/usecases/result.dart';
 import '../../../promotion/domain/entities/promotion.dart';
 import '../entities/order_item_payload.dart';

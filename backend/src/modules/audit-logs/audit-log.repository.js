@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 import { getDb } from '../../db/index.js';
 
 /** สร้างเงื่อนไข WHERE ร่วมกันระหว่าง list (มี pagination) กับ export (ไม่มี pagination) */

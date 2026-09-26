@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 part of 'demo_data_sources.dart';
 
 /// ตาชั่งจำลองในโหมดสาธิต (ดู docs/tickets/22-live-scale-camera-scan.md) — ลำดับเดียวกับ

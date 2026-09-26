@@ -1,3 +1,6 @@
+# Copyright 2026 Suruch Chakrapeesirisuk
+# SPDX-License-Identifier: Apache-2.0
+
 # ---------- build Flutter Web ----------
 FROM ghcr.io/cirruslabs/flutter:3.35.1 AS build
 WORKDIR /app

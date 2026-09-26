@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ audit log (ดู docs/tickets/08-audit-log.md)
 const Map<String, String> auditLogTranslationsTh = {
   'audit_log_empty_state': 'ยังไม่มีประวัติการทำรายการ',

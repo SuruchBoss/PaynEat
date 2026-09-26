@@ -1,3 +1,6 @@
+// Copyright 2026 Suruch Chakrapeesirisuk
+// SPDX-License-Identifier: Apache-2.0
+
 /// คำแปลของฟีเจอร์ผู้ช่วย AI ถามตอบข้อมูลร้าน (ดู docs/tickets/15-ai-ask-your-data.md)
 const Map<String, String> aiAssistantTranslationsTh = {
   'ai_assistant_empty_title': 'ถามอะไรเกี่ยวกับร้านก็ได้',
