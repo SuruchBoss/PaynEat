@@ -97,9 +97,12 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);ba
 .nav{display:flex;align-items:center;gap:18px;height:68px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 22px/1 var(--font-display);letter-spacing:-.01em}
 .brand small{font:600 11px/1 var(--font-body);background:var(--cream);color:var(--brand-ink);padding:4px 7px;border-radius:99px;letter-spacing:.06em}
-.links{display:flex;gap:4px;margin-left:12px}
-.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 12px;border-radius:99px}
+.links{display:flex;gap:2px;margin-left:4px}
+.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 8px;border-radius:99px;white-space:nowrap}
 .links a:hover{background:var(--cream);color:var(--ink)}
+.links a.inst{color:var(--brand-ink);border:1.5px solid var(--line);font-weight:600}
+.links a.inst:hover{border-color:var(--brand)}
+.links a.inst .short{display:none}
 .lang{display:flex;gap:2px;margin-left:auto;background:var(--cream);border-radius:99px;padding:3px}
 .lang a{text-decoration:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--ink-2)}
 .lang a[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -311,8 +314,11 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 
 /* ---- responsive ---- */
+.brand,.lang,.cart,.links a.inst{flex:none}
+.lang a{white-space:nowrap}
+@media (max-width:1500px){.cart b{display:none}}
+@media (max-width:1180px){.links a:not(.inst){display:none}}
 @media (max-width:1080px){
-  .links{display:none}
   .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
   .cats li{scroll-snap-align:start}
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -330,6 +336,9 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 @media (max-width:760px){
   .nav{height:60px;gap:10px}
+  .links a.inst{padding:6px 10px;font-size:14px}
+  .links a.inst .full{display:none}
+  .links a.inst .short{display:inline}
   .cart{display:none}
   .lang a{padding:5px 8px}
   .cards{grid-template-columns:1fr}
@@ -342,6 +351,10 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
   .foot ul{grid-template-columns:1fr}
 }
 @media (max-width:420px){
+  .nav{gap:6px}
+  .lang a{padding:5px 6px}
+  .links a.inst{padding:6px 8px;font-size:13px}
+  .nav .brand span{display:none}
   .facts{grid-template-columns:1fr}
   .fact+.fact{border-left:0;border-top:1px dashed var(--line)}
   .brand small{display:none}
@@ -375,7 +388,12 @@ def header(c):
         current = ' aria-current="page"' if code == c['code'] else ''
         cls = ' class="ko"' if code == 'ko' else ''
         langs.append(f'<a href="{href}" hreflang="{code}" lang="{code}"{cls}{current}>{label}</a>')
-    links = ''.join(f'<a href="{href}">{e(label)}</a>' for href, label in c['nav'])
+    # ลิงก์ "วิธีติดตั้ง" ไปอีกหน้า — เป็นลิงก์เดียวที่ยังเห็นบนแท็บเล็ต/มือถือ (ลิงก์ในหน้าเดียวกันซ่อนไป, DECISIONS #71)
+    links = ''.join(
+        f'<a class="inst" href="{href}"><span class="full">{e(label)}</span><span class="short">{e(c["nav_install_short"])}</span></a>'
+        if href.startswith('install') else f'<a href="{href}">{e(label)}</a>'
+        for href, label in c['nav']
+    )
     return f"""<a class="skip" href="#menu">{e(c['skip'])}</a>
 <div class="promo">🎉 {e(c['promo'])} <a href="{DEMO}">{e(c['promo_link'])}</a></div>
 <header class="site"><div class="wrap nav">

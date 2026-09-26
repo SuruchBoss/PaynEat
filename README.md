@@ -247,7 +247,7 @@ control and 920 automated tests.
 > · [English version](https://suruchboss.github.io/PaynEat/index.en.html)
 > · [한국어 버전](https://suruchboss.github.io/PaynEat/index.ko.html)
 > · [README ภาษาเกาหลี](README.ko.md)
-> · [คู่มือติดตั้งแบบหน้าเว็บ](https://suruchboss.github.io/PaynEat/install.html) — ปุ่ม "คู่มือติดตั้ง" ทุกจุดในหน้า Landing พามาที่นี่แทน README บน GitHub
+> · [คู่มือติดตั้งแบบหน้าเว็บ](https://suruchboss.github.io/PaynEat/install.html) — เมนู "วิธีติดตั้ง" บนสุด (เห็นบนมือถือด้วย) และปุ่ม "คู่มือติดตั้ง" ทุกจุดในหน้า Landing พามาที่นี่แทน README บน GitHub
 >
 > เล่าระบบเป็น **เมนูแก้ปัญหา 9 ชุด** เหมือนเข้าเว็บสั่งอาหาร: เลือกอาการของร้านจากหมวดวงกลม → การ์ดเมนูแต่ละชุด
 > (ส่วนประกอบ = ฟีเจอร์, "ได้อะไร" = ผลลัพธ์) → หน้ารายละเอียดพร้อมหน้าจอจริงและขั้น "ลองชิมในเดโม" → ราคาเป็นตะกร้าที่ทุกบรรทัด

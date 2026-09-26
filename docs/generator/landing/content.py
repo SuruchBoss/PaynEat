@@ -29,8 +29,9 @@ TH = {
     'promo_link': 'ลองเลย →',
     'nav_label': 'เมนูหลัก',
     'lang_label': 'เลือกภาษา',
-    'nav': [('#menu', 'เมนูแก้ปัญหา'), ('#stories', 'หน้าจอจริง'), ('#ai', 'ผู้ช่วย AI'), ('#checkout', 'ราคา')],
+    'nav': [('#menu', 'เมนูแก้ปัญหา'), ('#stories', 'หน้าจอจริง'), ('#ai', 'ผู้ช่วย AI'), ('#checkout', 'ราคา'), ('install.html', 'วิธีติดตั้ง')],
     'cart': 'เปิดเดโม',
+    'nav_install_short': 'ติดตั้ง',
     'hero': {
         'eyebrow': '🍽 POS สำหรับร้านอาหารขนาดใหญ่ · โอเพนซอร์ส',
         'title_html': 'ร้านแน่นแค่ไหน<br>ก็<em>เสิร์ฟทัน</em><br>เงินไม่รั่ว',
@@ -431,8 +432,9 @@ EN = {
     'promo_link': 'Try it →',
     'nav_label': 'Main menu',
     'lang_label': 'Choose language',
-    'nav': [('#menu', 'Problem menu'), ('#stories', 'Real screens'), ('#ai', 'AI assistant'), ('#checkout', 'Pricing')],
+    'nav': [('#menu', 'Problem menu'), ('#stories', 'Real screens'), ('#ai', 'AI assistant'), ('#checkout', 'Pricing'), ('install.en.html', 'Install')],
     'cart': 'Open demo',
+    'nav_install_short': 'Install',
     'hero': {
         'eyebrow': '🍽 POS for big restaurants · open source',
         'title_html': 'Full house?<br><em>Served on time.</em><br>Every baht counted.',
@@ -834,8 +836,9 @@ KO = {
     'promo_link': '열어 보기 →',
     'nav_label': '주 메뉴',
     'lang_label': '언어 선택',
-    'nav': [('#menu', '문제 해결 메뉴'), ('#stories', '실제 화면'), ('#ai', 'AI 어시스턴트'), ('#checkout', '가격')],
+    'nav': [('#menu', '문제 해결 메뉴'), ('#stories', '실제 화면'), ('#ai', 'AI 어시스턴트'), ('#checkout', '가격'), ('install.ko.html', '설치 방법')],
     'cart': '데모 열기',
+    'nav_install_short': '설치',
     'hero': {
         'eyebrow': '🍽 대형 식당을 위한 POS · 오픈소스',
         'title_html': '만석이어도<br><em>제때 서빙</em>,<br>현금은 한 푼도 새지 않게',

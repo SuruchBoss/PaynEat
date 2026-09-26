@@ -54,9 +54,12 @@ header.site{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.94);ba
 .nav{display:flex;align-items:center;gap:18px;height:68px}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;font:800 22px/1 var(--font-display);letter-spacing:-.01em}
 .brand small{font:600 11px/1 var(--font-body);background:var(--cream);color:var(--brand-ink);padding:4px 7px;border-radius:99px;letter-spacing:.06em}
-.links{display:flex;gap:4px;margin-left:12px}
-.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 12px;border-radius:99px}
+.links{display:flex;gap:2px;margin-left:4px}
+.links a{text-decoration:none;font-weight:500;color:var(--ink-2);padding:8px 8px;border-radius:99px;white-space:nowrap}
 .links a:hover{background:var(--cream);color:var(--ink)}
+.links a.inst{color:var(--brand-ink);border:1.5px solid var(--line);font-weight:600}
+.links a.inst:hover{border-color:var(--brand)}
+.links a.inst .short{display:none}
 .lang{display:flex;gap:2px;margin-left:auto;background:var(--cream);border-radius:99px;padding:3px}
 .lang a{text-decoration:none;font-size:13px;font-weight:600;padding:5px 10px;border-radius:99px;color:var(--ink-2)}
 .lang a[aria-current="page"]{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm)}
@@ -268,8 +271,11 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 
 /* ---- responsive ---- */
+.brand,.lang,.cart,.links a.inst{flex:none}
+.lang a{white-space:nowrap}
+@media (max-width:1500px){.cart b{display:none}}
+@media (max-width:1180px){.links a:not(.inst){display:none}}
 @media (max-width:1080px){
-  .links{display:none}
   .cats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:92px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:16px}
   .cats li{scroll-snap-align:start}
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -287,6 +293,9 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 }
 @media (max-width:760px){
   .nav{height:60px;gap:10px}
+  .links a.inst{padding:6px 10px;font-size:14px}
+  .links a.inst .full{display:none}
+  .links a.inst .short{display:inline}
   .cart{display:none}
   .lang a{padding:5px 8px}
   .cards{grid-template-columns:1fr}
@@ -299,6 +308,10 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
   .foot ul{grid-template-columns:1fr}
 }
 @media (max-width:420px){
+  .nav{gap:6px}
+  .lang a{padding:5px 6px}
+  .links a.inst{padding:6px 8px;font-size:13px}
+  .nav .brand span{display:none}
   .facts{grid-template-columns:1fr}
   .fact+.fact{border-left:0;border-top:1px dashed var(--line)}
   .brand small{display:none}
@@ -311,7 +324,7 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 <div class="promo">🎉 브라우저에서 바로 여는 전체 데모 · 가입 불필요 · 가상의 식당 데이터가 준비되어 있어요 <a href="app/">열어 보기 →</a></div>
 <header class="site"><div class="wrap nav">
   <a class="brand" href="#top" aria-label="PaynEat POS"><svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true"><rect width="24" height="24" rx="6" fill="#FF6B2C"/><rect x="5.6" y="3.6" width="3.8" height="16.8" rx="1.9" fill="#fff"/><path d="M7.8 3.6h4.6a5.6 5.6 0 0 1 0 11.2H7.8V3.6Z" fill="#fff"/></svg><span>PaynEat</span><small>POS</small></a>
-  <nav class="links" aria-label="주 메뉴"><a href="#menu">문제 해결 메뉴</a><a href="#stories">실제 화면</a><a href="#ai">AI 어시스턴트</a><a href="#checkout">가격</a></nav>
+  <nav class="links" aria-label="주 메뉴"><a href="#menu">문제 해결 메뉴</a><a href="#stories">실제 화면</a><a href="#ai">AI 어시스턴트</a><a href="#checkout">가격</a><a class="inst" href="install.ko.html"><span class="full">설치 방법</span><span class="short">설치</span></a></nav>
   <div class="lang" role="navigation" aria-label="언어 선택"><a href="index.html" hreflang="th" lang="th">ไทย</a><a href="index.en.html" hreflang="en" lang="en">EN</a><a href="index.ko.html" hreflang="ko" lang="ko" class="ko" aria-current="page">한국어</a></div>
   <a class="cart" href="app/">🛒 데모 열기 <b>฿0</b></a>
 </div></header><main><section class="hero" id="top"><div class="wrap">

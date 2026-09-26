@@ -249,7 +249,7 @@ Each item is a problem big restaurants really face every day, and each is fixed 
 > · [Live on GitHub Pages](https://suruchboss.github.io/PaynEat/index.en.html) (English)
 > · [Thai version](https://suruchboss.github.io/PaynEat/)
 > · [Korean version](https://suruchboss.github.io/PaynEat/index.ko.html)
-> · [Install guide as a web page](https://suruchboss.github.io/PaynEat/install.en.html) — every "Install guide" link on the landing page now leads here instead of the README on GitHub
+> · [Install guide as a web page](https://suruchboss.github.io/PaynEat/install.en.html) — the "Install" item in the top menu (visible on phones too) and every "Install guide" link on the landing page lead here instead of the README on GitHub
 > · [Korean README](README.ko.md)
 >
 > The system is told as a **problem menu of nine sets**, the way a food-ordering site works: pick your restaurant's
