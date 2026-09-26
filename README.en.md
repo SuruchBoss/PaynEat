@@ -1884,6 +1884,9 @@ What's not done yet, and why — so it's clear these are known gaps, not oversig
 **Deliberately not doing** (not a backlog item — full reasoning in
 [`docs/DECISIONS.md`](docs/DECISIONS.md)):
 
+- **Retail (bookshops, supermarkets)** — not until a restaurant uses the POS for real. If it comes, it will be a
+  "shop type" in this repository sharing the core for money, tax and shifts, not a separate project
+  (`docs/DECISIONS.md` #71)
 - **Printing over Bluetooth/USB** — needs real hardware to test against, which this development
   environment doesn't have (LAN/Wi-Fi is done, as noted above)
 - **Offline mode for opening new orders/taking payment** — higher conflict risk (order numbers and money
