@@ -301,7 +301,9 @@ footer.site-foot{margin-top:clamp(56px,8vw,96px);background:var(--espresso);colo
 .foot .brand{color:#fff;margin-bottom:12px}
 .foot p+p{margin-top:8px}
 .foot a{color:#FFE2C8}
-.foot h2{font:600 13px/1.3 var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:#B89C88;margin:6px 0 14px}
+.foot h2{font:600 14.5px/1.3 var(--font-body);color:#C9AE99;margin:6px 0 14px}
+/* ตัวพิมพ์ใหญ่ + ระยะห่างตัวอักษรใช้กับภาษาอังกฤษเท่านั้น — อักษรไทยและฮันกึลถูกถ่างจนอ่านเป็นตัว ๆ */
+html[lang="en"] .foot h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase}
 .foot-links ul,.foot-contact ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}
 .foot-links a{text-decoration:none}
 .foot-links a:hover{text-decoration:underline}
