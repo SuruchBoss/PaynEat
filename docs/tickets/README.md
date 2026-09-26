@@ -110,6 +110,7 @@ POS กลายเป็นหนึ่งในสี่ระบบของ�
 - `24-telemetry-contract.md` — ✅ เสร็จแล้ว — log แบบ JSON + `x-request-id` + `/metrics` (พอร์ตแยก 9464 ไม่เปิดออก
   นอกเครื่อง) ตาม[สัญญา telemetry v1.1](https://github.com/SuruchBoss/PaynEat-ERP/blob/main/docs/TELEMETRY.md)
   ไม่มีข้อมูลลูกค้า รหัสผ่าน หรือ QR token ใน log และแอปแสดงรหัสคำขอท้ายข้อความ error (`docs/DECISIONS.md` #68)
+  — สัญญา v1.2 เพิ่มเฉพาะกฎของบรรทัดเชื่อมต่อ POS↔ERP ซึ่งอยู่ใน 25–26 ส่วนงานของ 24 ไม่ต้องแก้
 - `25-erp-connected-mode.md` — ⏳ ยังไม่ได้ทำ — **รอ** PaynEat-ERP#9 และ 24 — ลงทะเบียนกับ ERP, ดึง master data
   ตามเวอร์ชัน, หน้าจัดการวัตถุดิบ/สาขาเป็นอ่านอย่างเดียว, ปิดการปิดขายอัตโนมัติจากสต๊อกในเครื่องในโหมดเชื่อมต่อ
 - `26-erp-sales-outbox.md` — ⏳ ยังไม่ได้ทำ — **รอ** 25, 27 และ PaynEat-ERP#9 — ส่งยอดขายเข้า ERP ผ่าน outbox ใน
