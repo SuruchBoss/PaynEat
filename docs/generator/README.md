@@ -92,3 +92,30 @@ rm -f audit-report.html audit-report.pages.json audit-report-visual.pdf  # ไ�
   ไม่ใช่แค่นาฬิกาเดิน — โค้ดที่ผลลัพธ์ขึ้นกับเวลาปัจจุบันต้องเรียกผ่าน `AppClock.now()`
   ไม่ใช่ `DateTime.now()` ตรง ๆ ไม่งั้นจะหลุดการตรึงนี้
 - ฉบับภาษาอังกฤษใช้ฟอนต์ Noto Sans ส่วนฉบับภาษาไทยใช้ Noto Sans Thai (ตั้งค่าที่ `LABELS['font']`)
+
+## หน้า Landing + หัวข้อ "เมนูแก้ปัญหา" ใน README (`landing/`)
+
+หน้า `docs/landing/index*.html` ทั้งสามภาษาและหัวข้อ **เมนูแก้ปัญหา** ใน `README.md` / `README.en.md` / `README.ko.md`
+สร้างจากแหล่งเดียว (`docs/DECISIONS.md` #70) — แก้เนื้อหาที่ `landing/content.py` อย่าแก้ HTML หรือส่วนระหว่าง
+`<!-- stories:start -->` … `<!-- stories:end -->` ใน README ตรง ๆ เพราะจะถูกเขียนทับ
+
+```bash
+# 1) ถ่ายภาพ 13 ฉาก × 3 ภาษา (ผลลัพธ์ลง app/tool/screenshots/images/story/)
+cd app
+flutter test --update-goldens --dart-define=DEMO_MODE=true tool/screenshots/story_test.dart
+
+# 2) ย่อเป็น WebP ลง docs/landing/img/story/ (ต้องมี Pillow)
+python3 tool/screenshots/publish_story.py
+
+# 3) สร้างหน้า Landing + หัวข้อในสาม README
+cd ..
+python3 docs/generator/landing/build_landing.py
+```
+
+| ไฟล์ | หน้าที่ |
+|---|---|
+| `landing/content.py` | เนื้อหาสามภาษา: 9 ปัญหา ฟีเจอร์ในแต่ละชุด ขั้นลองในเดโม และ `TESTS` (จำนวนเทสต์ที่นับจริง) |
+| `landing/build_landing.py` | เทมเพลต HTML/CSS ธีมเว็บสั่งอาหาร, บาร์โค้ด EAN-13 ของฉลากตาชั่ง และตัวเขียนหัวข้อลง README |
+
+ขั้น "ลองในเดโม" ต้องทำตามได้จริงบนเดโมบนเว็บ และใช้ชื่อปุ่ม/เมนูตามคำแปลในแอปของภาษานั้น
+(`app/lib/core/localization/translations/`) — เปลี่ยนชื่อเมนูในแอปเมื่อไรต้องแก้ `content.py` ด้วย
