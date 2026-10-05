@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1209%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -365,6 +365,8 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
   순액보다 작아지면 먼저 환불할 금액을 알려 주며 거부되고 계산서는 그대로입니다. 새 금액이 받은 돈과 정확히 같아지면 계산서가 바로
   마감되고 테이블이 비워집니다. 이미 총액보다 많이 받은 예전 계산서는 결제 화면에 "남은 금액 0" 대신 **"고객에게 환불할 금액"**을
   보여 주고 환불 전까지 추가 결제를 받지 않습니다 (`docs/DECISIONS.md` #95)
+- **받은 돈이 남아 있는 주문은 전액 환불 전까지 취소할 수 없음** — 현금·QR·카드·이체·외상 모두 같습니다. 앱이 환불할 금액을 알려 주고
+  결제 화면으로 안내하며, 외상 판매는 감액 전표로 줄입니다. 취소된 주문에 돈이 남거나 취소된 계산서에 외상이 남지 않습니다 (`docs/DECISIONS.md` #96)
 - **마감된 계산서의 항목 잠금** — 결제가 끝났거나 취소된 계산서의 항목은 관리자도 취소할 수 없고, 나눠서 결제된 항목은 환불한 뒤에만
   취소할 수 있습니다. 주방은 먼저 결제한 포장 주문도 평소처럼 조리 상태를 진행합니다 (`docs/DECISIONS.md` #85)
 
@@ -506,13 +508,13 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1201건**의 자동화 테스트를 통과합니다.
+공개 전 **1209건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 546건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 602건 — domain / controller / widget
+cd backend && npm test      # 549건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 607건 — domain / controller / widget
 cd app && flutter test test_e2e   # 53건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1201건에 미포함)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1209건에 미포함)
 ```
 
 `app/test_e2e/`의 E2E 테스트 53건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의

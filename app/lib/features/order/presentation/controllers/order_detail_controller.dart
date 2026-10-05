@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/errors/failures.dart';
 import '../../../../core/network/socket_client.dart';
 import '../../../../core/services/session_service.dart';
 import '../../../../core/usecases/result.dart';
@@ -190,10 +191,33 @@ class OrderDetailController extends GetxController {
     );
   }
 
+  /// ยกเลิกทั้งบิล — ถ้าร้านยังถือเงินลูกค้าไว้ เซิร์ฟเวอร์ตอบ `REFUND_REQUIRED` (T08 #100, DECISIONS #77 D2)
+  /// จึงบอกเหตุผลและพาไปหน้าชำระเงินที่คืนเงินได้ แทนที่จะแสดงแค่ข้อความ error
   Future<void> cancelOrder(String reason) async {
-    await _run(
-      () => _cancelOrder(CancelOrderParams(orderId: orderId, reason: reason)),
-      successMessage: 'order_cancel_order_success'.tr,
+    isBusy.value = true;
+    final result = await _cancelOrder(
+      CancelOrderParams(orderId: orderId, reason: reason),
+    );
+    isBusy.value = false;
+
+    final failure = result.failureOrNull;
+    if (failure is ServerFailure && failure.code == 'REFUND_REQUIRED') {
+      final goRefund = await AppDialogs.confirm(
+        title: 'order_cancel_refund_required_title'.tr,
+        message:
+            '${failure.message}\n\n${'order_cancel_refund_required_hint'.tr}',
+        confirmLabel: 'order_cancel_go_refund'.tr,
+      );
+      if (goRefund) await goToCheckout();
+      return;
+    }
+    result.fold(
+      onSuccess: (data) {
+        order.value = null;
+        order.value = data;
+        AppDialogs.success('order_cancel_order_success'.tr);
+      },
+      onFailure: (failure) => AppDialogs.error(failure.message),
     );
   }
 

@@ -801,6 +801,11 @@ export const ERROR_MESSAGES = [
     ko: '계산서 금액이 {total} THB로 줄어 이미 받은 {paid} THB보다 적어집니다 — 먼저 {refund} THB를 환불하세요',
   },
   {
+    th: 'ออเดอร์นี้รับเงินไว้แล้ว {paid} บาท ต้องคืนเงินให้ครบก่อนจึงจะยกเลิกได้',
+    en: 'This order holds {paid} THB already received — refund all of it before cancelling',
+    ko: '이 주문은 이미 {paid} THB를 받았습니다 — 취소하려면 먼저 전액 환불하세요',
+  },
+  {
     th: 'บิลนี้รับเงินไว้เกินยอดบิล {amount} บาท ต้องคืนเงินส่วนเกินก่อน',
     en: 'This bill holds {amount} THB more than its total — refund the excess first',
     ko: '이 계산서는 총액보다 {amount} THB를 더 받았습니다 — 먼저 초과분을 환불하세요',

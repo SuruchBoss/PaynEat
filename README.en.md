@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1209%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1201 automated tests.
+control and 1209 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivative works are
 > welcome, provided that the [`NOTICE`](NOTICE) file is retained as required by the Apache License 2.0. Contact:
@@ -725,6 +725,10 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
   works the same way — an open bill can never drop below the money already received. Have a manager refund the difference at
   checkout, then apply the discount again → the new total equals what was received, so **the bill closes and the table is free at
   once** instead of staying open at "0 due" (see `docs/DECISIONS.md` #95)
+- Log in as `manager` → open an unpaid bill and take **100 THB** cash → ⋮ → **Cancel order**, give a reason and confirm → the order is
+  **not** cancelled: a **"Refund before cancelling"** window says 100.00 THB has been received → **Go to refunds** → refund the 100 THB
+  with the refund button (↶) → cancel again → it cancels, and the drawer holds no cash without a sale behind it. A credit sale works the
+  same way: refunding a credit bill issues a credit note, so the customer owes nothing on a cancelled bill (see `docs/DECISIONS.md` #96)
 - Log in as `admin` → **Promotions**, create a 50% off code → open a bill with **green curry chicken (160)** + **steamed tilapia
   with lime (320)** and apply the code (282.48) → **Split per person**, pick the green curry → the split screen shows the
   **discount shared out −80.00**, SC 8.00, VAT 6.16, **94.16** due, and the second person pays exactly **188.32**. A store set to
@@ -846,8 +850,8 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
 ### 🧪 Running the tests
 
 ```bash
-cd backend && npm test      # 546 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 602 cases — domain / controller / widget
+cd backend && npm test      # 549 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 607 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 53 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -1016,6 +1020,9 @@ cd app && flutter test test_e2e   # 53 cases — the real app talking to the rea
   on the bill changes. A new total that equals the money received closes the bill at once. An older bill that already holds more than
   its total shows **"Refund owed to the customer"** at checkout instead of "0 due" and takes no more money until the refund is made
   (see `docs/DECISIONS.md` #95)
+- **An order holding money cannot be cancelled until all of it is refunded** — cash, QR, card, transfer and credit alike. The app
+  shows the amount to refund and takes you to checkout to refund it; a credit sale is reduced by a credit note. No money stays on a
+  cancelled order and no debt stays on a cancelled bill (see `docs/DECISIONS.md` #96)
 - Change calculation with shortcut buttons (exact / round up to the nearest hundred / 100 / 500 / 1000)
 - **Receipts reconcile as a Thai receipt requires** — each payment line shows the cash tendered by the
   customer, not the amount applied to the bill, so tendered − change equals the bill total exactly, both on
@@ -1538,13 +1545,13 @@ All endpoints share the same response format:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 546 cases
-cd app && flutter test      # 602 cases
+cd backend && npm test      # 549 cases
+cd app && flutter test      # 607 cases
 cd app && flutter test test_e2e   # 53 cases (run npm ci in backend first)
 node --test scripts/android-version.test.mjs   # 3 cases — the Google Play build's versionCode (not in the badge)
 ```
 
-The badge counts the backend and app tests (546 + 602 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
+The badge counts the backend and app tests (549 + 607 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
 produces a higher `versionCode` and that a malformed or out-of-range tag fails with a reason; the `android-release.yml` workflow runs them
 before every build (see `docs/DECISIONS.md` #75)
 
@@ -1604,7 +1611,7 @@ images from the production Dockerfiles whenever `main` changes (and on every PR 
 and the web app returns 200. Only then are the images uploaded as the `demo` release for Option D. The job ensures that a broken
 Dockerfile cannot go unnoticed (see `docs/DECISIONS.md` #63, #65)
 
-**Backend (546 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (549 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The central test is `tests/order-flow.test.js`, which covers the entire floor-to-cash path in 17 steps:
 
 > Select a table → open an order with modifiers → verify the total → the table becomes occupied →
@@ -1658,6 +1665,12 @@ refund) and cancelling the other item closes the bill; a bill already holding mo
 last split, a fixed amount and split-preview with 409, never 500, and the summary carries `refundDue`; and a property test with a fixed
 seed edits, pays and refunds 25 bills × 14 random steps, checking there is never a 500, an open bill's total is always ≥ the net paid,
 and an open bill holding money always still has something to collect (see `docs/DECISIONS.md` #95)
+
+`cancel-money-held.test.js` (3 cases) covers cancelling an order that still holds money (T08): 100 THB cash then cancel is a 409
+`REFUND_REQUIRED` with the amount to refund and the payments still refundable, leaving the order, its items and its table unchanged; after
+refunding 60 it is still refused (40 to go); once all is refunded it cancels and the drawer's expected cash is unchanged; the message follows
+`Accept-Language`; and a 50 THB credit sale cannot be cancelled, its debt is not reduced silently, refunding it issues a credit note and brings
+the debt to 0, and then it cancels (see `docs/DECISIONS.md` #96)
 
 `split-share.test.js` (6 cases) covers split by item (T10): a 160 + 320 bill with 50% off pays 94.16 and 188.32 whoever pays
 first; "prices include VAT" 160 + 80 pays 176.00 and 88.00; a **property test** over 2,000 random bills (every mix of discount,
@@ -1925,7 +1938,7 @@ creating and editing a customer / searching by phone leaving no name, phone, e-m
 or token in the log, malformed JSON containing a password returning 400 (previously 500) without exposing the body, and no
 table QR token in the log (see `docs/DECISIONS.md` #68)
 
-**Flutter (602 cases)** — organized into 3 levels:
+**Flutter (607 cases)** — organized into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1957,6 +1970,7 @@ table QR token in the log (see `docs/DECISIONS.md` #68)
 | Controller | `erp_connection_controller_test.dart` | The PaynEat ERP connection section (ticket 25): address/credential/branch codes checked before calling the backend, a successful connect clears the credential field at once, a branch-code refusal from the backend reloads the list, 422 field messages, pull now reports the count and version / a failure reloads the status, leaving connected mode, branch codes sent in capitals, the last pull's problem in the app's language, saying when scheduled pulls have stopped, the create-branch button (success names the branch actually created / a 409 shows the reason and reloads / not in demo mode), demo mode always standalone, parsing the backend's status (including how the credential travels — an older backend that doesn't send it counts as https), and ERP unit names (unknown codes shown as they are) |
 | Controller | `backup_controllers_test.dart` | The Backups section and warning (ticket 33): parsing the backend's answers (two locations with separate status, a Back up now result whose second copy failed, the `backup` field of a shift close), loading the status, a successful backup clearing the warning at once, a failed backup keeping its reason in the card, a timed-out request reloading the real status, which roles see the warning (admin/manager only) and reloading every 15 minutes |
 | Widget | `backup_widgets_test.dart` | The Backups card: time, size, file count, the advice to set a second location, a failing second location shown apart from the first, the warning with its reason and low disk space, no download button; the warning bar: roles without it see nothing, the admin gets a button to Settings, a manager is told to inform the owner |
+| Widget | `cancel_refund_required_test.dart` | Cancelling an order that still holds money (T08): a `REFUND_REQUIRED` answer opens "Refund before cancelling" with the amount and what to do, "Go to refunds" opens checkout and reloads the order on return, closing it goes nowhere, and an order holding nothing cancels as before |
 | Controller | `ingredients_controller_test.dart` | The ingredients page is read-only when connected to the ERP, an unreadable mode keeps the last value, the "low stock" filter is cleared in connected mode, item codes are sent in capitals and an edit sends null to clear one (ticket 25) |
 | Controller | `staff_controller_test.dart` | Filtering staff by role, counting by role; a manager can assign only waiter/cashier/kitchen, has no menu on manager/admin accounts and cannot delete, while admin manages every role (T22) |
 | Widget | `staff_page_permissions_test.dart` | The staff page for a manager: the ⋮ menu only on staff rows, no delete, no promote to manager/admin, and no admin filter chip; admin sees the menu on every row but their own, with delete (T22) |
@@ -2206,7 +2220,8 @@ Completed work, planned work, and known limitations, with the reasoning for each
   (`docs/DECISIONS.md` #87), T10 split by item sharing promotions and included VAT correctly (`docs/DECISIONS.md` #88), T15 a 0.01-baht
   minimum points rate and repairing broken balances (`docs/DECISIONS.md` #89), T19 production defaults (`docs/DECISIONS.md` #83)
   and T22 managers manage only lower-role staff in their own branches (`docs/DECISIONS.md` #92) — **round 1 is complete**.
-  Ticket 33 is done. Round 2: T07 a bill never dropping below what was paid (`docs/DECISIONS.md` #95) is done. Next: the rest of
+  Ticket 33 is done. Round 2: T07 a bill never dropping below what was paid (`docs/DECISIONS.md` #95) and T08 an order holding money
+  cannot be cancelled until it is refunded (`docs/DECISIONS.md` #96) are done. Next: the rest of
   round 2 (including net sales that subtract a refund twice, #143) are what must be done before the first real
   shop, closed by a test in which a shop owner runs a whole shift (`docs/DECISIONS.md` #93)
 - [ ] **Link previews and web-app icons that match the product** — no outdated figures in the share image, and the
