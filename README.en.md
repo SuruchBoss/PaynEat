@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1215%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1201 automated tests.
+control and 1215 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivative works are
 > welcome, provided that the [`NOTICE`](NOTICE) file is retained as required by the Apache License 2.0. Contact:
@@ -690,6 +690,10 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
   on the web · if the backup after a shift close fails, the shift still closes and the shift summary card tells the cashier to inform
   the owner
 
+- (Options A/B/D) On the login screen, enter `waiter2` with a wrong password 10 times → the next try, even with the correct
+  `waiter123`, says to wait 15 minutes, while other accounts on other devices still sign in normally — the count lives in the
+  server's memory, so restarting the server starts it over
+
 - Log in as `admin` → **Staff** → the signed-in user's own row has no ⋮ menu, only a **"You"** badge (users cannot
   demote, deactivate, or delete their own account; a direct API call returns 400). Other rows allow role changes and
   deactivation, but only after a confirmation dialog that describes the effect. Deleting `cashier` (which has already
@@ -846,7 +850,7 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
 ### 🧪 Running the tests
 
 ```bash
-cd backend && npm test      # 546 cases — including a 17-step end-to-end walkthrough
+cd backend && npm test      # 560 cases — including a 17-step end-to-end walkthrough
 cd app && flutter test      # 602 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 53 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
@@ -1218,6 +1222,11 @@ cd app && flutter test test_e2e   # 53 cases — the real app talking to the rea
   `npm run db:restore -- <file>`, which refuses while the server runs, for a damaged file or one from a newer PaynEat, always backs up
   the current database first and records a `system.restore` audit entry · metrics `payneat_backup_last_success_timestamp_seconds` /
   `payneat_backup_failures_total` (see `docs/tickets/33-automatic-backup.md`, `docs/DECISIONS.md` #94)
+- **Sign-in pauses for a while after repeated wrong passwords** — 10 wrong passwords within 15 minutes (counted per username
+  and per device) means waiting until that time is up before trying again; the login screen shows how many minutes are left in
+  the chosen language, a successful sign-in clears the count right away, and the same applies to entering the wrong current
+  password when changing it. Tune it with `AUTH_MAX_FAILED_ATTEMPTS` / `AUTH_FAILED_ATTEMPT_WINDOW_MINUTES` · when the server sits
+  behind a reverse proxy (nginx, a tunnel), set `TRUST_PROXY` so the server sees the user's real device (see `backend/.env.example`)
 
 ---
 
@@ -1538,13 +1547,13 @@ All endpoints share the same response format:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 546 cases
+cd backend && npm test      # 560 cases
 cd app && flutter test      # 602 cases
 cd app && flutter test test_e2e   # 53 cases (run npm ci in backend first)
 node --test scripts/android-version.test.mjs   # 3 cases — the Google Play build's versionCode (not in the badge)
 ```
 
-The badge counts the backend and app tests (546 + 602 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
+The badge counts the backend and app tests (560 + 602 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
 produces a higher `versionCode` and that a malformed or out-of-range tag fails with a reason; the `android-release.yml` workflow runs them
 before every build (see `docs/DECISIONS.md` #75)
 
@@ -1604,7 +1613,7 @@ images from the production Dockerfiles whenever `main` changes (and on every PR 
 and the web app returns 200. Only then are the images uploaded as the `demo` release for Option D. The job ensures that a broken
 Dockerfile cannot go unnoticed (see `docs/DECISIONS.md` #63, #65)
 
-**Backend (546 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (560 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The central test is `tests/order-flow.test.js`, which covers the entire floor-to-cash path in 17 steps:
 
 > Select a table → open an order with modifiers → verify the total → the table becomes occupied →
@@ -1924,6 +1933,13 @@ branch's `location_code`, `/metrics` by route template on its own port and absen
 creating and editing a customer / searching by phone leaving no name, phone, e-mail, tax ID, address, password,
 or token in the log, malformed JSON containing a password returning 400 (previously 500) without exposing the body, and no
 table QR token in the log (see `docs/DECISIONS.md` #68)
+
+`login-attempts.test.js` (7 cases), `trust-proxy.test.js` (2 cases) and `failed-attempts.test.js` (5 cases) cover pausing
+sign-in after repeated wrong passwords: reaching the limit returns 429 with `Retry-After` even if the next try is correct,
+counting per username across devices (ignoring case and surrounding spaces) and per IP without affecting other accounts,
+a successful sign-in clearing the count, the message following the request language, the same pause for a wrong current
+password when changing it, `TRUST_PROXY` reaching Express (by default `X-Forwarded-For` is not read), and the in-memory
+counters (including `core/rateLimit.js` used by QR self-ordering) dropping expired keys on their own, tested with a fake clock
 
 **Flutter (602 cases)** — organized into 3 levels:
 

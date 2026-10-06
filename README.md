@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1215%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1201 automated tests.
+control and 1215 automated tests.
 
 > 👤 **พัฒนาและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — การ fork หรือนำโปรเจกต์นี้ไปต่อยอดทำได้
 > โดยต้องคงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 · ติดต่อผู้พัฒนาได้ทาง
@@ -646,6 +646,9 @@ tag `vX.Y.Z` (ดู [`docs/store/README.md`](docs/store/README.md)) ขณะ�
   → เซิร์ฟเวอร์ไม่ยอมเปิด เพราะไฟล์สำรองต้องไม่อยู่ในโฟลเดอร์ที่เผยแพร่บนเว็บ · ถ้าสำรองหลังปิดกะไม่สำเร็จ กะยังปิดได้ตามปกติ
   และการ์ดสรุปกะแสดงคำเตือนให้แจ้งเจ้าของร้าน
 
+- (ทางเลือก A/B/D) หน้าเข้าสู่ระบบ ใส่ `waiter2` กับรหัสผ่านผิด 10 ครั้ง → ครั้งถัดไปแม้ใส่ `waiter123` ถูกก็ได้ข้อความให้รอ 15 นาที
+  ส่วนบัญชีอื่นบนเครื่องอื่นยังเข้าได้ตามปกติ — ตัวนับอยู่ในหน่วยความจำของเซิร์ฟเวอร์ ปิดแล้วเปิดเซิร์ฟเวอร์ใหม่ก็เริ่มนับใหม่
+
 - เข้าสู่ระบบเป็น `admin` → **จัดการพนักงาน** → แถวบัญชีของตนเองไม่มีปุ่ม ⋮ มีเพียงป้าย **"คุณ"** (ลดสิทธิ์ ปิด หรือลบบัญชีของตนเอง
   ไม่ได้ — การเรียก API โดยตรงได้รับ 400) ส่วนแถวของผู้ใช้อื่นเปลี่ยนบทบาทหรือปิดการใช้งานได้ แต่ต้องยืนยันในกล่องที่แสดงผลลัพธ์ก่อนทุกครั้ง
   — ลบบัญชี `cashier` (ซึ่งเคยเปิดกะแล้ว) → ระบบไม่ลบ และแจ้งให้ปิดการใช้งานบัญชีแทน เพื่อให้ประวัติการเงินยังระบุได้ว่าใครทำ
@@ -770,7 +773,7 @@ tag `vX.Y.Z` (ดู [`docs/store/README.md`](docs/store/README.md)) ขณะ�
 ### 🧪 การรันเทสต์
 
 ```bash
-cd backend && npm test      # 546 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd backend && npm test      # 560 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
 cd app && flutter test      # 602 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 53 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
@@ -1076,6 +1079,10 @@ cd app && flutter test test_e2e   # 53 เคส — แอปจริงคุ
   · ไฟล์สิทธิ์ `0600` โฟลเดอร์ `0700` และไม่ยอมเปิดเครื่องถ้าที่เก็บอยู่ในโฟลเดอร์ที่เผยแพร่บนเว็บ · กู้คืนด้วย `npm run db:restore -- <ไฟล์>`
   ที่ปฏิเสธเมื่อเซิร์ฟเวอร์ยังทำงาน ไฟล์เสีย หรือไฟล์จาก PaynEat รุ่นใหม่กว่า สำรองฐานข้อมูลเดิมก่อนแทนที่เสมอ และบันทึก audit `system.restore`
   · metric `payneat_backup_last_success_timestamp_seconds` / `payneat_backup_failures_total` (ดู `docs/tickets/33-automatic-backup.md`, `docs/DECISIONS.md` #94)
+- **พักการเข้าสู่ระบบชั่วคราวหลังใส่รหัสผ่านผิดซ้ำ** — ใส่รหัสผ่านผิดครบ 10 ครั้งภายใน 15 นาที (นับต่อชื่อผู้ใช้และต่อเครื่อง)
+  ระบบจะให้รอจนครบเวลาก่อนลองใหม่ หน้าเข้าสู่ระบบแสดงจำนวนนาทีที่ต้องรอตามภาษาที่เลือก เข้าสู่ระบบสำเร็จล้างตัวนับทันที
+  และใช้กับการใส่รหัสผ่านปัจจุบันผิดตอนเปลี่ยนรหัสผ่านด้วย ปรับค่าได้ที่ `AUTH_MAX_FAILED_ATTEMPTS` / `AUTH_FAILED_ATTEMPT_WINDOW_MINUTES`
+  · เมื่อเซิร์ฟเวอร์อยู่หลัง reverse proxy (nginx, tunnel) ให้ตั้ง `TRUST_PROXY` เพื่อให้เซิร์ฟเวอร์เห็นเครื่องของผู้ใช้จริง (ดู `backend/.env.example`)
 
 ---
 
@@ -1385,13 +1392,13 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 546 เคส
+cd backend && npm test      # 560 เคส
 cd app && flutter test      # 602 เคส
 cd app && flutter test test_e2e   # 53 เคส (ต้อง npm ci ใน backend ก่อน)
 node --test scripts/android-version.test.mjs   # 3 เคส — versionCode ของ build Google Play (ไม่นับใน badge)
 ```
 
-badge นับเฉพาะเทสต์ของ backend และแอป (546 + 602 + 53) ส่วนเทสต์ของสคริปต์ `android-version.mjs` ตรวจว่า tag `vX.Y.Z` ให้ค่า `versionCode` ที่เพิ่มขึ้นเสมอ
+badge นับเฉพาะเทสต์ของ backend และแอป (560 + 602 + 53) ส่วนเทสต์ของสคริปต์ `android-version.mjs` ตรวจว่า tag `vX.Y.Z` ให้ค่า `versionCode` ที่เพิ่มขึ้นเสมอ
 และหยุดพร้อมแจ้งเหตุผลเมื่อ tag ผิดรูปแบบหรือเกินช่วง — รันก่อน build ทุกครั้งใน workflow `android-release.yml` (ดู `docs/DECISIONS.md` #75)
 
 **E2E — แอปทำงานร่วมกับ backend จริง (53 เคส)** — `app/test_e2e/` เปิด backend จริง
@@ -1438,7 +1445,7 @@ backend และโหมดสาธิต: ใบกำกับภาษี�
 เพื่อยืนยันว่า API ตอบ `/health`, เข้าสู่ระบบได้, ตาชั่งจำลองทำงานอยู่ และเว็บตอบ 200 — เมื่อผ่านแล้วจึงอัปโหลดเป็น release `demo` ของทางเลือก D
 (job นี้ป้องกันไม่ให้ Dockerfile ที่ build ไม่ผ่านหลุดรอดโดยไม่มีการแจ้งเตือน ดู `docs/DECISIONS.md` #63, #65)
 
-**Backend (546 เคส)** — `node:test` + `supertest` ทดสอบผ่าน HTTP จริงบนฐานข้อมูลที่แยกต่างหาก
+**Backend (560 เคส)** — `node:test` + `supertest` ทดสอบผ่าน HTTP จริงบนฐานข้อมูลที่แยกต่างหาก
 เทสต์หลักคือ `tests/order-flow.test.js` ซึ่งครอบคลุมเส้นทางการทำงานของร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคำนวณถูกต้อง → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -1706,6 +1713,12 @@ PaynEat ERP (severity ตาม status, latency `"0.231s"`, ตัด query stri
 ของสาขา, `/metrics` ตาม route template บนพอร์ตแยกและไม่อยู่บนพอร์ต API, login/สร้าง-แก้ไขลูกค้า/ค้นหาด้วยเบอร์ไม่บันทึกชื่อ
 เบอร์ อีเมล เลขผู้เสียภาษี ที่อยู่ รหัสผ่าน หรือ token ลงใน log, JSON ที่ไม่ถูกต้องซึ่งมีรหัสผ่านได้รับ 400 (เดิม 500) โดยเนื้อหา body ไม่ถูกบันทึก
 และ QR token ของโต๊ะไม่ปรากฏใน log (ดู `docs/DECISIONS.md` #68)
+
+`login-attempts.test.js` (7 เคส), `trust-proxy.test.js` (2 เคส) และ `failed-attempts.test.js` (5 เคส) ทดสอบการพักการเข้าสู่ระบบ
+หลังใส่รหัสผ่านผิดซ้ำ: ผิดครบเพดานแล้วได้ 429 พร้อม `Retry-After` แม้รอบถัดไปใส่รหัสถูก, นับต่อ username ข้ามเครื่อง (ไม่สนตัวพิมพ์
+เล็ก/ใหญ่และช่องว่าง) และต่อ IP โดยไม่กระทบบัญชีอื่น, เข้าสู่ระบบสำเร็จล้างตัวนับ, ข้อความแปลตามภาษา, ใส่รหัสผ่านปัจจุบันผิดตอนเปลี่ยน
+รหัสผ่านถูกพักแบบเดียวกัน, `TRUST_PROXY` ถูกส่งต่อให้ Express (ค่าเริ่มต้นไม่อ่าน `X-Forwarded-For`) และตัวนับในหน่วยความจำ
+(รวม `core/rateLimit.js` ของหน้าสั่งอาหารเอง) ลบคีย์ที่หมดอายุทิ้งเอง ทดสอบด้วยนาฬิกาจำลอง
 
 **Flutter (602 เคส)** — แบ่งเป็น 3 ระดับ:
 
