@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1215%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -337,6 +337,9 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
 - 장바구니에 담은 주문을 손님이 직접 주방으로 전송합니다
 - 직원이 입력한 주문과 동일한 경로로 처리됩니다 (재고 차감, 프로모션 적용 포함)
 - 계량이 필요한 정육 상품은 손님 메뉴(QR 메뉴)에 표시되지 않으며, 대신 "무게로 파는 정육은 직원에게 주문해 주세요" 안내가 표시됩니다
+- 큰 주문은 직원을 통해 받습니다 — QR 주문은 메뉴당 최대 10개, 테이블 계산서 합계 최대 60개(직원이 입력한 항목 포함)까지이며,
+  + 버튼은 매장이 설정한 한도에서 멈추고 한도를 넘으면 직원을 부르라는 안내가 표시됩니다. 직원은 한도와 관계없이 주문할 수 있고,
+  매장은 `SELF_ORDER_MAX_QTY_PER_LINE` / `SELF_ORDER_MAX_ORDER_QTY`로 한도를 바꿀 수 있습니다 (`docs/DECISIONS.md` #96)
 
 ### 주방
 - 대기 / 조리 중 / 조리 완료의 3열 구성
@@ -506,16 +509,16 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1201건**의 자동화 테스트를 통과합니다.
+공개 전 **1215건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 546건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 602건 — domain / controller / widget
-cd app && flutter test test_e2e   # 53건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1201건에 미포함)
+cd backend && npm test      # 554건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 607건 — domain / controller / widget
+cd app && flutter test test_e2e   # 54건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1215건에 미포함)
 ```
 
-`app/test_e2e/`의 E2E 테스트 53건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
+`app/test_e2e/`의 E2E 테스트 54건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
 실제 data/domain 코드로 매장의 하루 업무를 처음부터 끝까지 수행합니다. 대상 업무는 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 손님의 QR 주문, 지점·권한입니다. 나머지
 Flutter 테스트는 모두 데모 모드에서 실행되므로, 앱이 **백엔드가 실제로 반환한 JSON을 해석하는지** 검증하는 테스트는
