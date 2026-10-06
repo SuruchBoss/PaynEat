@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1203%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1201 automated tests.
+control and 1203 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivative works are
 > welcome, provided that the [`NOTICE`](NOTICE) file is retained as required by the Apache License 2.0. Contact:
@@ -846,8 +846,8 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
 ### 🧪 Running the tests
 
 ```bash
-cd backend && npm test      # 546 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 602 cases — domain / controller / widget
+cd backend && npm test      # 547 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 603 cases — domain / controller / widget
 cd app && flutter test test_e2e   # 53 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
@@ -1538,13 +1538,13 @@ All endpoints share the same response format:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 546 cases
-cd app && flutter test      # 602 cases
+cd backend && npm test      # 547 cases
+cd app && flutter test      # 603 cases
 cd app && flutter test test_e2e   # 53 cases (run npm ci in backend first)
 node --test scripts/android-version.test.mjs   # 3 cases — the Google Play build's versionCode (not in the badge)
 ```
 
-The badge counts the backend and app tests (546 + 602 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
+The badge counts the backend and app tests (547 + 603 + 53). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
 produces a higher `versionCode` and that a malformed or out-of-range tag fails with a reason; the `android-release.yml` workflow runs them
 before every build (see `docs/DECISIONS.md` #75)
 
@@ -1604,7 +1604,7 @@ images from the production Dockerfiles whenever `main` changes (and on every PR 
 and the web app returns 200. Only then are the images uploaded as the `demo` release for Option D. The job ensures that a broken
 Dockerfile cannot go unnoticed (see `docs/DECISIONS.md` #63, #65)
 
-**Backend (546 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (547 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The central test is `tests/order-flow.test.js`, which covers the entire floor-to-cash path in 17 steps:
 
 > Select a table → open an order with modifiers → verify the total → the table becomes occupied →
@@ -1807,9 +1807,10 @@ combined); a newly created staff member is assigned automatically to the branch 
 working; and RBAC on `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id` is correct (see
 `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36).
 
-`public-order.test.js` (13 cases) tests the public, login-free QR self-order endpoints: every
+`public-order.test.js` (14 cases) tests the public, login-free QR self-order endpoints: every
 table has a unique `qrToken` from `GET /tables`, a bad token or a deactivated table returns 404,
-viewing the menu/current order for a table works correctly, adding the first item opens a new
+viewing the menu/current order for a table works correctly, the customer menu has a fixed key set at every level
+(item/option group/option/category, so new fields on the staff menu DTO do not flow into it), adding the first item opens a new
 order automatically (later additions go into the same order), ordering a sold-out item returns 409, sending more than 20
 items in one call returns 422, `PATCH /tables/:id/qr-token/regenerate` invalidates the old token
 immediately with RBAC (admin/manager only; waiters cannot call it), and `POST .../items` is rate
@@ -1925,7 +1926,7 @@ creating and editing a customer / searching by phone leaving no name, phone, e-m
 or token in the log, malformed JSON containing a password returning 400 (previously 500) without exposing the body, and no
 table QR token in the log (see `docs/DECISIONS.md` #68)
 
-**Flutter (602 cases)** — organized into 3 levels:
+**Flutter (603 cases)** — organized into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1933,7 +1934,7 @@ table QR token in the log (see `docs/DECISIONS.md` #68)
 | Domain | `promotion_engine_test.dart` | The backend's promotion-matching test suite ported to Dart (percent/amount/bogo, every condition type, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | Merging duplicate cart lines + a weighed line priced in satang before rounding, matching the backend (including prices with fractional satang), per-kg modifiers, two bags of equal weight never merging (ticket 18) |
 | Domain | `barcode_resolver_test.dart` | Reading product barcodes/EAN-13 scale labels: PLUs with leading zeros, no guessing on a bad check digit, store-defined label formats, labels matching only weighed items, and a registered exact barcode winning over label parsing (ticket 19) |
-| Domain | `entities_test.dart` | Role-based permissions, order-item status transitions, an item the kitchen started and then undid still cannot be edited or removed (T05), PaymentSummary/SplitPreview read refunds, included VAT and the adjustment line from the backend (T06, T10) |
+| Domain | `entities_test.dart` | Role-based permissions, order-item status transitions, an item the kitchen started and then undid still cannot be edited or removed (T05), PaymentSummary/SplitPreview read refunds, included VAT and the adjustment line from the backend (T06, T10), `MenuItemModel` reads the QR customer menu that carries only that page's fields, with staff-only fields falling back to defaults |
 | Domain | `loyalty_points_test.dart` | App-side loyalty points (mirrors the backend): computed in satang and rounded down, a rate of 0 / below 0.01 / NaN / Infinity gives 0 points instead of an exception, a point value below 0.01 baht can't be redeemed, and 0.01 baht is the lowest rate that can be set (T15) |
 | Domain | `split_share_test.dart` | The app-side split share (mirrors the backend): 50% off on 160 + 320 gives 94.16/188.32 whoever pays first, included VAT on 160 + 80 gives 176/88, and a property test over 2,000 random bills adds up to the bill (T10) |
 | Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23), and credit-sale points earned on full payment / taken back on a void as far as possible / withheld while interest is owed / net of credit notes (#59), and closed bills or items paid in a split cannot have an item cancelled while the kitchen can still move them on (T04), and an item the kitchen started then undid: only a manager can cancel it (403 for waiters/kitchen), the audit names the stage reached and matches the backend letter for letter, it cannot be edited or removed, and the stage reached never goes down (T05), and split by item in Demo Mode gives the backend's figures for 50% off and for included VAT, with the adjustment line after a fixed-amount payment (T10), and a points rate below 0.01 baht can't be set, a stored rate of 0 earns 0 points on a cash sale or a fully collected credit sale, and a stored point value of 0 can't be redeemed (T15), and a manager sees only waiter/cashier/kitchen accounts and cannot touch manager/admin accounts, create or promote a manager, or delete an account (403), while still managing staff (T22), and a discount/removal/reduction that would take a bill below the money received is refused with the whole store (order, stock, audit) back as it was, a total that equals the money received closes the bill and frees the table, and a bill holding more than its total takes no payment or split preview (T07) |

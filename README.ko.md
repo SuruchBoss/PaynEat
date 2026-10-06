@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1203%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -506,13 +506,13 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1201건**의 자동화 테스트를 통과합니다.
+공개 전 **1203건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 546건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 602건 — domain / controller / widget
+cd backend && npm test      # 547건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 603건 — domain / controller / widget
 cd app && flutter test test_e2e   # 53건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1201건에 미포함)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1203건에 미포함)
 ```
 
 `app/test_e2e/`의 E2E 테스트 53건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의

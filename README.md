@@ -13,7 +13,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1201%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1203%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -21,7 +21,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1201 automated tests.
+control and 1203 automated tests.
 
 > 👤 **พัฒนาและดูแลโดย [SuruchBoss](https://github.com/SuruchBoss)** — การ fork หรือนำโปรเจกต์นี้ไปต่อยอดทำได้
 > โดยต้องคงไฟล์ [`NOTICE`](NOTICE) ไว้ตามเงื่อนไขของ Apache License 2.0 · ติดต่อผู้พัฒนาได้ทาง
@@ -770,8 +770,8 @@ tag `vX.Y.Z` (ดู [`docs/store/README.md`](docs/store/README.md)) ขณะ�
 ### 🧪 การรันเทสต์
 
 ```bash
-cd backend && npm test      # 546 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
-cd app && flutter test      # 602 เคส — domain / controller / widget
+cd backend && npm test      # 547 เคส — รวมเทสต์ที่ไล่เส้นทางทั้งร้าน 17 ขั้น
+cd app && flutter test      # 603 เคส — domain / controller / widget
 cd app && flutter test test_e2e   # 53 เคส — แอปจริงคุยกับ backend จริง (ต้อง npm ci ใน backend ก่อน)
 ```
 
@@ -1385,13 +1385,13 @@ _unsubscribers.add(socket.on(SocketEvents.kitchenTicket, (_) => load()));
 ## 🧪 การทดสอบ
 
 ```bash
-cd backend && npm test      # 546 เคส
-cd app && flutter test      # 602 เคส
+cd backend && npm test      # 547 เคส
+cd app && flutter test      # 603 เคส
 cd app && flutter test test_e2e   # 53 เคส (ต้อง npm ci ใน backend ก่อน)
 node --test scripts/android-version.test.mjs   # 3 เคส — versionCode ของ build Google Play (ไม่นับใน badge)
 ```
 
-badge นับเฉพาะเทสต์ของ backend และแอป (546 + 602 + 53) ส่วนเทสต์ของสคริปต์ `android-version.mjs` ตรวจว่า tag `vX.Y.Z` ให้ค่า `versionCode` ที่เพิ่มขึ้นเสมอ
+badge นับเฉพาะเทสต์ของ backend และแอป (547 + 603 + 53) ส่วนเทสต์ของสคริปต์ `android-version.mjs` ตรวจว่า tag `vX.Y.Z` ให้ค่า `versionCode` ที่เพิ่มขึ้นเสมอ
 และหยุดพร้อมแจ้งเหตุผลเมื่อ tag ผิดรูปแบบหรือเกินช่วง — รันก่อน build ทุกครั้งใน workflow `android-release.yml` (ดู `docs/DECISIONS.md` #75)
 
 **E2E — แอปทำงานร่วมกับ backend จริง (53 เคส)** — `app/test_e2e/` เปิด backend จริง
@@ -1438,7 +1438,7 @@ backend และโหมดสาธิต: ใบกำกับภาษี�
 เพื่อยืนยันว่า API ตอบ `/health`, เข้าสู่ระบบได้, ตาชั่งจำลองทำงานอยู่ และเว็บตอบ 200 — เมื่อผ่านแล้วจึงอัปโหลดเป็น release `demo` ของทางเลือก D
 (job นี้ป้องกันไม่ให้ Dockerfile ที่ build ไม่ผ่านหลุดรอดโดยไม่มีการแจ้งเตือน ดู `docs/DECISIONS.md` #63, #65)
 
-**Backend (546 เคส)** — `node:test` + `supertest` ทดสอบผ่าน HTTP จริงบนฐานข้อมูลที่แยกต่างหาก
+**Backend (547 เคส)** — `node:test` + `supertest` ทดสอบผ่าน HTTP จริงบนฐานข้อมูลที่แยกต่างหาก
 เทสต์หลักคือ `tests/order-flow.test.js` ซึ่งครอบคลุมเส้นทางการทำงานของร้านตั้งแต่ต้นจนจบใน 17 ขั้น:
 
 > เลือกโต๊ะ → เปิดออเดอร์พร้อมตัวเลือกเสริม → ตรวจว่ายอดคำนวณถูกต้อง → โต๊ะเปลี่ยนเป็นไม่ว่าง →
@@ -1610,9 +1610,9 @@ token เก่าใช้ต่อไม่ได้ทันทีแม้�
 สาขาที่ผู้สร้างทำงานอยู่ และ RBAC ของ `GET /branches`/`GET /branches/mine`/`PATCH /branches/:id`
 ถูกต้อง (ดู `docs/tickets/11-multi-branch.md`, `docs/DECISIONS.md` #36)
 
-`public-order.test.js` (13 เคส) ทดสอบ endpoint สาธารณะสำหรับสั่งอาหารเองผ่าน QR โดยไม่ต้อง login:
+`public-order.test.js` (14 เคส) ทดสอบ endpoint สาธารณะสำหรับสั่งอาหารเองผ่าน QR โดยไม่ต้อง login:
 ทุกโต๊ะมี `qrToken` ไม่ซ้ำกันตั้งแต่ `GET /tables`, token ผิด/โต๊ะถูกปิดใช้งานได้รับ 404, ดูเมนู/ออเดอร์
-ปัจจุบันของโต๊ะได้ถูกต้อง, การเพิ่มรายการครั้งแรกเปิดออเดอร์ใหม่อัตโนมัติ ครั้งต่อไปเพิ่มเข้าออเดอร์เดิม,
+ปัจจุบันของโต๊ะได้ถูกต้อง, เมนูฝั่งลูกค้ามีชุดคีย์ตายตัวทุกระดับ (เมนู/กลุ่มตัวเลือก/ตัวเลือก/หมวดหมู่ — ฟิลด์ใหม่ใน DTO เมนูของพนักงานไม่ติดมาเอง), การเพิ่มรายการครั้งแรกเปิดออเดอร์ใหม่อัตโนมัติ ครั้งต่อไปเพิ่มเข้าออเดอร์เดิม,
 สั่งเมนูที่ปิดขายอยู่ได้รับ 409, ส่งเกิน 20 รายการต่อครั้งได้รับ 422, `PATCH /tables/:id/qr-token/regenerate`
 ปิด token เก่าทันทีและ RBAC (เฉพาะ admin/manager — พนักงานเสิร์ฟเรียกใช้ไม่ได้) และจำกัดอัตราการเรียก
 `POST .../items` ที่ 30 ครั้ง/5 นาทีต่อโต๊ะ เมื่อเกินได้รับ 429 (ดู `docs/tickets/17-qr-self-order.md`,
@@ -1707,7 +1707,7 @@ PaynEat ERP (severity ตาม status, latency `"0.231s"`, ตัด query stri
 เบอร์ อีเมล เลขผู้เสียภาษี ที่อยู่ รหัสผ่าน หรือ token ลงใน log, JSON ที่ไม่ถูกต้องซึ่งมีรหัสผ่านได้รับ 400 (เดิม 500) โดยเนื้อหา body ไม่ถูกบันทึก
 และ QR token ของโต๊ะไม่ปรากฏใน log (ดู `docs/DECISIONS.md` #68)
 
-**Flutter (602 เคส)** — แบ่งเป็น 3 ระดับ:
+**Flutter (603 เคส)** — แบ่งเป็น 3 ระดับ:
 
 | ระดับ | ไฟล์ | ทดสอบอะไร |
 |---|---|---|
@@ -1715,7 +1715,7 @@ PaynEat ERP (severity ตาม status, latency `"0.231s"`, ตัด query stri
 | Domain | `promotion_engine_test.dart` | พอร์ตเทสต์ตรรกะจับคู่โปรโมชันจาก backend มาที่ Dart (percent/amount/bogo, เงื่อนไขต่าง ๆ, `findBestAutoPromotion`, `describeIneligibility`) |
 | Domain | `cart_line_test.dart` | การรวมรายการซ้ำในตะกร้า + ราคาบรรทัดชั่งน้ำหนักคิดเป็นสตางค์ก่อนปัดตรงกับ backend (รวมราคาที่มีเศษสตางค์), ตัวเลือกเสริมคิดต่อกก., สองถุงหนักเท่ากันไม่รวมบรรทัด (ticket 18) |
 | Domain | `barcode_resolver_test.dart` | อ่านบาร์โค้ดสินค้า/ฉลากตาชั่ง EAN-13: PLU มี 0 นำหน้า, check digit ผิดไม่เดา, รูปแบบฉลากที่ร้านตั้งเอง, ฉลากจับคู่เฉพาะเมนูชั่งน้ำหนัก, บาร์โค้ดที่ลงทะเบียนไว้ตรงตัวมีลำดับความสำคัญเหนือการอ่านเป็นฉลาก (ticket 19) |
-| Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร, รายการที่ครัวเคยทำแล้วถูกเลิกทำยังแก้/ลบไม่ได้ (T05), PaymentSummary/SplitPreview อ่านยอดคืนเงิน โหมด VAT รวมในราคา และบรรทัดปรับยอดจาก backend (T06, T10) |
+| Domain | `entities_test.dart` | สิทธิ์ตามบทบาท, การเดินสถานะอาหาร, รายการที่ครัวเคยทำแล้วถูกเลิกทำยังแก้/ลบไม่ได้ (T05), PaymentSummary/SplitPreview อ่านยอดคืนเงิน โหมด VAT รวมในราคา และบรรทัดปรับยอดจาก backend (T06, T10), `MenuItemModel` อ่านเมนูฝั่งลูกค้า QR ที่มีแค่ฟิลด์ของหน้านั้นได้ ฟิลด์ฝั่งพนักงานใช้ค่าเริ่มต้น |
 | Domain | `loyalty_points_test.dart` | แต้มสะสมฝั่งแอป (mirror ของ backend): คิดเป็นสตางค์ ปัดลง, อัตรา 0 / ต่ำกว่า 0.01 / NaN / Infinity ได้ 0 แต้มไม่ใช่ exception, มูลค่าแต้มต่ำกว่า 0.01 บาทแลกไม่ได้ และขั้นต่ำที่ตั้งได้คือ 0.01 บาท (T15) |
 | Domain | `split_share_test.dart` | ส่วนแบ่งการแยกจ่ายฝั่งแอป (mirror ของ backend): โปร 50% บน 160 + 320 ได้ 94.16/188.32 ไม่ว่าใครจ่ายก่อน, VAT รวมในราคา 160 + 80 ได้ 176/88 และ property test 2,000 บิลสุ่มผลรวมทุกคนเท่ายอดบิล (T10) |
 | Domain | `demo_store_test.dart` | ตรวจว่าแยก `demo_store.dart` เป็น 20 ไฟล์แล้วเมธอดข้ามโดเมนยังทำงานถูก รวมถึง flow โปรโมชัน auto/โค้ด/ลบ/eligible list, flow ตัดสต๊อกอัตโนมัติ/ปิด-เปิดขายเมนูตามสต๊อกเต็มรูปแบบ, flow ออก/ยกเลิก/ออกใหม่ใบกำกับภาษีพร้อมเลขที่รัน, flow บันทึก audit log ครบทุก action เสี่ยง (ticket 08), flow ลูกค้า/แต้มสะสม: สร้าง/ค้นหาลูกค้า, ผูก customerId เมื่อเปิดออเดอร์, สะสมแต้มครั้งเดียวเมื่อจ่ายครบ (รวมกรณีแยกจ่ายหลายรอบ), ใช้แต้มแลกส่วนลดโดยยอด amount ไม่เปลี่ยน และปฏิเสธการใช้แต้มที่ไม่ถูกต้องทุกกรณี (ticket 09) และเลขคิวรับอาหารมีเฉพาะ `type=takeaway`, รันต่อวันเรียงถูกต้องแม้มีออเดอร์ dine-in/delivery แทรกกลาง (ticket 10), flow audit ระดับบัญชี/การเงิน: แก้ราคาเมนู log เฉพาะเมื่อราคาเปลี่ยนจริง, สร้าง/แก้ไข/ลบโปรโมชัน, ปรับสต๊อกวัตถุดิบมือ, และ `auditLogExportCsv` คืน CSV ที่กรองตาม action ถูกต้อง (ticket 14), และทุกโต๊ะมี `qrToken` ไม่ซ้ำกัน, `resolveTableByQrToken` หาโต๊ะถูกตัว/ปฏิเสธ token ผิดหรือโต๊ะปิดใช้งาน, `regenerateQrToken` ปิด token เก่าทันที (ticket 17), ขายตามน้ำหนัก/รหัสซ้ำ/ตัดสต๊อกเป็นกก.เมื่อจ่าย/QR สั่งเองไม่เห็นของชั่งน้ำหนัก (ticket 18–19), ขายเชื่อ/รับชำระตัดบิลเก่าก่อน/เงินสดเข้ากะ/ยกเลิกใบเสร็จหลังปิดกะไม่ได้/ใบวางบิล/ลดหนี้/อายุหนี้ (ticket 20) และดอกเบี้ยผิดนัดของบิลที่ seed ไว้ (คิด 8 วันที่ 12% กดซ้ำไม่ซ้ำ)/ยกเลิกใบแจ้งที่จ่ายแล้วไม่ได้/เพดาน 15%/ใบลดหนี้ + VAT ของผลต่าง/ส่งอีเมลจำลองใช้อีเมลลูกค้าเป็นค่าเริ่มต้นและเอกสารยกเลิกส่งไม่ได้ (ticket 21, 23) และแต้มของบิลขายเชื่อได้เมื่อชำระครบ/ยกเลิกใบเสร็จดึงคืนเท่าที่มี/ดอกเบี้ยค้างยังไม่ครบ/ลดหนี้คิดจากยอดสุทธิ (#59) และบิลที่ปิดแล้วหรือรายการที่แยกจ่ายแล้วยกเลิกไม่ได้ แต่ครัวยังเดินสถานะได้ (T04) และรายการที่ครัวเคยทำแล้วถูกเลิกทำ: ยกเลิกได้เฉพาะผู้จัดการ (403 สำหรับพนักงานเสิร์ฟ/ครัว) audit บอกขั้นที่เคยถึงตรงกับ backend ทุกตัวอักษร แก้/ลบไม่ได้ และขั้นที่เคยถึงไม่ถอยลง (T05) และแยกจ่ายตามรายการในโหมดสาธิตได้ยอดเดียวกับ backend ทั้งโปรลด 50% และโหมด VAT รวมในราคา พร้อมบรรทัดปรับยอดเมื่อเคยรับเงินแบบระบุยอด (T10) และตั้งอัตราแต้มต่ำกว่า 0.01 บาทไม่ได้ อัตราที่บันทึกไว้เป็น 0 ขายเงินสด/รับชำระหนี้ขายเชื่อครบได้ 0 แต้ม และมูลค่าแต้ม 0 แลกไม่ได้ (T15) และผู้จัดการเห็นเฉพาะเสิร์ฟ/แคชเชียร์/ครัว แตะบัญชีผู้จัดการ/แอดมิน สร้างหรือเลื่อนเป็นผู้จัดการ และลบบัญชีไม่ได้ (403) แต่ยังจัดการพนักงานได้ (T22) และส่วนลด/ลบ/ลดจำนวนที่ทำให้ยอดบิลต่ำกว่าเงินที่รับไว้ถูกปฏิเสธโดยข้อมูลทั้งร้าน (ออเดอร์ สต๊อก audit) กลับเป็นก่อนกด ยอดที่เท่าเงินที่รับไว้พอดีปิดบิลและโต๊ะว่าง และบิลที่ถือเงินเกินยอดรับเงิน/ดูยอดแยกบิลไม่ได้ (T07) |
