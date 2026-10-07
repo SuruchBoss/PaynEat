@@ -133,8 +133,16 @@ const Map<String, String> orderTranslationsTh = {
   'order_error_merge_same_order': 'เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้',
   'order_merged_into_reason': 'รวมเข้ากับบิล #@code',
   'order_error_already_paid_cannot_cancel': 'ออเดอร์ที่ชำระแล้วยกเลิกไม่ได้',
+  'order_error_refund_before_cancel':
+      'ออเดอร์นี้รับเงินไว้แล้ว @paid บาท ต้องคืนเงินให้ครบก่อนจึงจะยกเลิกได้',
+  'order_cancel_refund_required_title': 'ต้องคืนเงินก่อนยกเลิก',
+  'order_cancel_refund_required_hint':
+      'คืนเงินทุกรายการที่หน้าชำระเงินก่อน บิลขายเชื่อจะออกใบลดหนี้ให้อัตโนมัติ แล้วกลับมากดยกเลิกอีกครั้ง',
+  'order_cancel_go_refund': 'ไปหน้าคืนเงิน',
   'order_error_item_not_found': 'ไม่พบรายการนี้ในออเดอร์',
   'order_error_closed_cannot_edit': 'ออเดอร์นี้ปิดแล้ว ไม่สามารถแก้ไขได้',
+  'order_error_total_below_paid':
+      'ยอดบิลจะเหลือ @total บาท น้อยกว่าเงินที่รับไว้แล้ว @paid บาท ต้องคืนเงิน @refund บาทก่อน',
   'order_error_item_paid_cannot_cancel':
       'รายการนี้ชำระเงินแล้ว ต้องคืนเงินก่อนจึงจะยกเลิกได้',
   'order_error_void_needs_manager':
@@ -303,8 +311,16 @@ const Map<String, String> orderTranslationsEn = {
       'The destination order cannot be the same as the source',
   'order_merged_into_reason': 'Merged into bill #@code',
   'order_error_already_paid_cannot_cancel': 'A paid order cannot be cancelled',
+  'order_error_refund_before_cancel':
+      'This order holds @paid THB already received — refund all of it before cancelling',
+  'order_cancel_refund_required_title': 'Refund before cancelling',
+  'order_cancel_refund_required_hint':
+      'Refund every payment on the payment screen first (a credit sale gets a credit note automatically), then cancel again.',
+  'order_cancel_go_refund': 'Go to refunds',
   'order_error_item_not_found': 'Item not found in this order',
   'order_error_closed_cannot_edit': 'This order is closed and cannot be edited',
+  'order_error_total_below_paid':
+      'The bill would drop to @total THB, below the @paid THB already received — refund @refund THB first',
   'order_error_item_paid_cannot_cancel':
       'This item has already been paid for — refund it before cancelling',
   'order_error_void_needs_manager':
@@ -453,8 +469,16 @@ const Map<String, String> orderTranslationsKo = {
   'order_error_merge_same_order': '합칠 대상 주문이 원본 주문과 같을 수 없습니다',
   'order_merged_into_reason': '#@code 주문으로 합쳐짐',
   'order_error_already_paid_cannot_cancel': '결제된 주문은 취소할 수 없습니다',
+  'order_error_refund_before_cancel':
+      '이 주문은 이미 @paid THB를 받았습니다 — 취소하려면 먼저 전액 환불하세요',
+  'order_cancel_refund_required_title': '취소 전에 환불이 필요합니다',
+  'order_cancel_refund_required_hint':
+      '결제 화면에서 모든 결제를 먼저 환불하세요(외상 판매는 감액 전표가 자동 발행됩니다). 그런 다음 다시 취소하세요.',
+  'order_cancel_go_refund': '환불하러 가기',
   'order_error_item_not_found': '이 주문에서 해당 메뉴를 찾을 수 없습니다',
   'order_error_closed_cannot_edit': '마감된 주문이라 수정할 수 없습니다',
+  'order_error_total_below_paid':
+      '계산서 금액이 @total THB로 줄어 이미 받은 @paid THB보다 적어집니다 — 먼저 @refund THB를 환불하세요',
   'order_error_item_paid_cannot_cancel': '이미 결제된 항목입니다 — 취소하려면 먼저 환불하세요',
   'order_error_void_needs_manager': '조리가 시작된 항목의 취소는 매니저 권한이 필요합니다',
   'order_offline_sync_failed': '@label의 대기 항목 전송에 실패했습니다: @message',
