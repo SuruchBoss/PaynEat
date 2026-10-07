@@ -1423,8 +1423,22 @@ paths:
     post:
       tags: [Orders]
       summary: ยกเลิกออเดอร์ (admin/manager)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string }
       responses:
-        '200': { description: สำเร็จ }
+        '200': { description: สำเร็จ — คืนสต๊อกรายการที่ตัดไปแล้ว ปลดโต๊ะเป็นว่าง }
+        '409':
+          description: >-
+            ออเดอร์ชำระครบแล้วหรือถูกยกเลิกไปแล้ว หรือร้านยังถือเงินลูกค้าไว้ (T08, DECISIONS #96) — `error.code: REFUND_REQUIRED`
+            พร้อม `error.details: { refundRequired, payments: [{ id, method, refundable }] }` ต้องคืนเงินทุกรายการให้ครบก่อน
+            (บิลขายเชื่อคืนผ่าน `POST /payments/{id}/refund` ที่ออกใบลดหนี้ให้เอง) แล้วจึงยกเลิกได้
   /orders/{id}/move-table:
     parameters:
       - in: path

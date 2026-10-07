@@ -15,6 +15,7 @@ import { ingredientService } from '../ingredients/ingredient.service.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
 import { customerRepository } from '../customers/customer.repository.js';
 import { paymentRepository } from '../payments/payment.repository.js';
+import { refundRepository } from '../payments/refund.repository.js';
 import { orderRepository } from './order.repository.js';
 import { closeFullyPaidOrder } from './order.closing.js';
 import { calculateBill, lineTotalFor } from './order.calculator.js';
@@ -244,6 +245,34 @@ const settleIfCovered = (order) => {
     `ยอดบิลจะเหลือ ${toBaht(order.total)} บาท น้อยกว่าเงินที่รับไว้แล้ว ${toBaht(paid)} บาท ` +
       `ต้องคืนเงิน ${toBaht(paid - order.total)} บาทก่อน`,
     { refundRequired: toBaht(paid - order.total), total: toBaht(order.total), paid: toBaht(paid) },
+  );
+};
+
+/**
+ * ยกเลิกออเดอร์ที่ร้านยังถือเงินลูกค้าไว้ไม่ได้ (T08 #100, DECISIONS #77 D2) — ไม่งั้นเงินที่รับไว้ค้างบนออเดอร์ที่ยกเลิก
+ * ไม่มียอดขายรองรับใน Z-report และลูกค้าเครดิตยังมีหนี้บนบิลที่ไม่มีอยู่แล้ว ต้องคืนเงินให้ครบก่อน ซึ่งบิลขายเชื่อ
+ * ออกใบลดหนี้ให้เองอยู่แล้ว (DECISIONS #56) จึงไม่มีทางลดหนี้ทางที่สอง ตรวจใน transaction เดียวกับการยกเลิก
+ */
+const assertNoMoneyHeld = (order) => {
+  const paid = paymentRepository.netPaid(order.id);
+  if (paid <= 0) return;
+  throw new ApiError(
+    409,
+    `ออเดอร์นี้รับเงินไว้แล้ว ${toBaht(paid)} บาท ต้องคืนเงินให้ครบก่อนจึงจะยกเลิกได้`,
+    {
+      code: 'REFUND_REQUIRED',
+      details: {
+        refundRequired: toBaht(paid),
+        payments: paymentRepository
+          .findByOrder(order.id)
+          .map((payment) => ({
+            id: payment.id,
+            method: payment.method,
+            refundable: toBaht(payment.amount - refundRepository.totalByPayment(payment.id)),
+          }))
+          .filter((payment) => payment.refundable > 0),
+      },
+    },
   );
 };
 
@@ -835,6 +864,7 @@ export const orderService = {
     if (order.status === 'cancelled') throw ApiError.conflict('ออเดอร์นี้ถูกยกเลิกไปแล้ว');
 
     const updated = changeOrder(() => {
+      assertNoMoneyHeld(order);
       const items = orderRepository.findItems(order.id);
       for (const item of items) {
         if (item.status !== 'cancelled' && item.stock_deducted) {

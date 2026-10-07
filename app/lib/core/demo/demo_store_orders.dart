@@ -324,6 +324,18 @@ extension DemoStoreOrders on DemoStore {
         statusCode: 409,
       );
     }
+    // ยกเลิกออเดอร์ที่ยังถือเงินลูกค้าไว้ไม่ได้ ต้องคืนให้ครบก่อน — mirror ของ order.service.js#assertNoMoneyHeld
+    // (T08 #100, docs/DECISIONS.md #77 D2)
+    final held = (paidAmount(orderId) * 100).round();
+    if (held > 0) {
+      throw ApiException(
+        message: 'order_error_refund_before_cancel'.trParams({
+          'paid': (held / 100).toStringAsFixed(2),
+        }),
+        statusCode: 409,
+        code: 'REFUND_REQUIRED',
+      );
+    }
 
     // ยกเลิกทั้งบิล คืนสต๊อกให้ทุกรายการที่เคยตัดไปแล้วและยังไม่ถูกยกเลิก
     // (รวมรายการที่เสิร์ฟไปแล้วด้วย — mirror ของ order.service.js#cancel)

@@ -3495,4 +3495,123 @@ void main() {
       },
     );
   });
+
+  group('DemoStore ยกเลิกออเดอร์ที่ยังถือเงินลูกค้าไว้ไม่ได้ (T08 #100)', () {
+    const manager = 2;
+    const cashier = 6;
+    const b2b = 900;
+
+    Matcher refundRequired(String paid) => throwsA(
+      isA<ApiException>()
+          .having((e) => e.statusCode, 'statusCode', 409)
+          .having((e) => e.code, 'code', 'REFUND_REQUIRED')
+          .having((e) => e.message, 'message', contains('$paid บาท')),
+    );
+
+    test(
+      'จ่ายเงินสด 100 → ยกเลิกไม่ได้ คืนบางส่วนยังไม่ได้ คืนครบแล้วยกเลิกได้',
+      () {
+        final table = store.tableList().firstWhere(
+          (t) => t['status'] == 'available',
+        );
+        final order = store.createOrder(
+          type: 'dine_in',
+          tableId: table['id'] as int,
+          guestCount: 2,
+          items: [
+            for (final item in store.menuList().take(3))
+              {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+          ],
+        );
+        final orderId = order['id'] as int;
+        final payment =
+            store.pay(
+                  orderId: orderId,
+                  method: 'cash',
+                  amount: 100,
+                  received: 100,
+                )['payment']
+                as Map<String, dynamic>;
+
+        expect(
+          () => store.atomically(
+            () =>
+                store.cancelOrder(orderId, 'ลูกค้าเปลี่ยนใจ', actorId: manager),
+          ),
+          refundRequired('100.00'),
+        );
+        expect(
+          store.findOrder(orderId)['status'],
+          isNot(OrderStatus.cancelled),
+        );
+
+        store.refundPayment(
+          paymentId: payment['id'] as int,
+          amount: 60,
+          reason: 'ยกเลิกออเดอร์',
+          refundedById: manager,
+        );
+        expect(
+          () => store.cancelOrder(orderId, 'ลูกค้าเปลี่ยนใจ', actorId: manager),
+          refundRequired('40.00'),
+        );
+
+        store.refundPayment(
+          paymentId: payment['id'] as int,
+          amount: 40,
+          reason: 'ยกเลิกออเดอร์',
+          refundedById: manager,
+        );
+        store.cancelOrder(orderId, 'ลูกค้าเปลี่ยนใจ', actorId: manager);
+        expect(store.findOrder(orderId)['status'], OrderStatus.cancelled);
+      },
+    );
+
+    test(
+      'ขายเชื่อ 50 → ยกเลิกไม่ได้ ลดหนี้ด้วยการคืนเงิน (ใบลดหนี้) แล้วยกเลิกได้ ไม่มีหนี้ค้าง',
+      () {
+        store.payments.removeWhere(
+          (payment) => payment['method'] == PaymentMethod.credit,
+        );
+        double outstanding() =>
+            (store.receivableStatement(b2b)['outstanding'] as num).toDouble();
+        final order = store.createOrder(
+          type: 'takeaway',
+          guestCount: 1,
+          customerId: b2b,
+          items: [
+            for (final item in store.menuList().take(3))
+              {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+          ],
+        );
+        final orderId = order['id'] as int;
+        final payment =
+            store.pay(
+                  orderId: orderId,
+                  method: 'credit',
+                  amount: 50,
+                  cashierId: cashier,
+                )['payment']
+                as Map<String, dynamic>;
+        expect(outstanding(), 50);
+
+        expect(
+          () => store.cancelOrder(orderId, 'ลูกค้าเปลี่ยนใจ', actorId: manager),
+          refundRequired('50.00'),
+        );
+        expect(outstanding(), 50);
+
+        store.refundPayment(
+          paymentId: payment['id'] as int,
+          amount: 50,
+          reason: 'ยกเลิกออเดอร์',
+          refundedById: manager,
+        );
+        expect(outstanding(), 0);
+        store.cancelOrder(orderId, 'ลูกค้าเปลี่ยนใจ', actorId: manager);
+        expect(store.findOrder(orderId)['status'], OrderStatus.cancelled);
+        expect(outstanding(), 0);
+      },
+    );
+  });
 }
