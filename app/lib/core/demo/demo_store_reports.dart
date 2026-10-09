@@ -5,6 +5,80 @@ part of 'demo_store.dart';
 
 // ---------------------------------------------------------- reports -----
 extension DemoStoreReports on DemoStore {
+  /// mirror ของ `PAID_REFUNDS_CTE` ใน report.repository.js (#143, docs/DECISIONS.md #97): แยกเงินคืนแต่ละรายการของ
+  /// ออเดอร์ที่จ่ายครบเป็นส่วนที่คืนก่อนบิลปิด (`pre` เงินที่เก็บกลับมาแล้วก่อนปิด ไม่ลดยอดขาย) กับหลังบิลปิด (`post`
+  /// ลดยอดขาย) บิลปิดเมื่อยอดชำระ − ยอดคืนเท่ายอดบิลพอดี เงินที่คืนก่อนปิดจึงรวมได้ ยอดชำระทั้งหมด − ยอดบิล คืนรายการแรกๆ
+  /// ตามลำดับ id ไปจนครบก้อนนั้นคือคืนก่อนปิด ออเดอร์ที่ไม่ใช่ `paid` ไม่อยู่ในผลลัพธ์ เพราะไม่ใช่ยอดขาย
+  Map<int, ({double pre, double post})> _paidRefundSplit() {
+    int cents(Object? baht) => ((baht as num) * 100).round();
+    final byOrder = <Object?, List<Map<String, dynamic>>>{};
+    for (final refund in refunds) {
+      byOrder.putIfAbsent(refund['orderId'], () => []).add(refund);
+    }
+    final result = <int, ({double pre, double post})>{};
+    for (final entry in byOrder.entries) {
+      final order = orders.firstWhere(
+        (row) => row['id'] == entry.key,
+        orElse: () => const {},
+      );
+      if (order.isEmpty || order['status'] != OrderStatus.paid) continue;
+      final paidCents = payments
+          .where((row) => row['orderId'] == entry.key)
+          .fold<int>(0, (total, row) => total + cents(row['amount']));
+      var beforeClose = max(paidCents - cents(order['total']), 0);
+      final rows = [...entry.value]
+        ..sort((a, b) => (a['id'] as int).compareTo(b['id'] as int));
+      for (final refund in rows) {
+        final amount = cents(refund['amount']);
+        final pre = min(amount, beforeClose);
+        beforeClose -= pre;
+        result[refund['id'] as int] = (
+          pre: pre / 100,
+          post: (amount - pre) / 100,
+        );
+      }
+    }
+    return result;
+  }
+
+  /// ยอดต่อช่องทางชำระเงินของ payment ในออเดอร์ที่ `paid` หักเงินที่คืนก่อนบิลปิด (mirror ของ `netPaymentMethodsSql`)
+  /// payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ
+  List<Map<String, dynamic>> _netPaymentMethods(
+    Iterable<Map<String, dynamic>> paymentRows,
+    Map<int, ({double pre, double post})> split,
+  ) {
+    final preByPayment = <Object?, double>{};
+    for (final refund in refunds) {
+      final part = split[refund['id']];
+      if (part == null) continue;
+      preByPayment.update(
+        refund['paymentId'],
+        (value) => value + part.pre,
+        ifAbsent: () => part.pre,
+      );
+    }
+    final byMethod = <String, Map<String, dynamic>>{};
+    for (final payment in paymentRows) {
+      final order = orders.firstWhere(
+        (row) => row['id'] == payment['orderId'],
+        orElse: () => const {},
+      );
+      if (order.isEmpty || order['status'] != OrderStatus.paid) continue;
+      final pre = preByPayment[payment['id']];
+      final net = (payment['amount'] as num).toDouble() - (pre ?? 0);
+      final method = payment['method'] as String;
+      final entry = byMethod.putIfAbsent(
+        method,
+        () => {'method': method, 'count': 0, 'amount': 0.0},
+      );
+      if (pre == null || net > 0) entry['count'] = (entry['count'] as int) + 1;
+      entry['amount'] = (entry['amount'] as double) + net;
+    }
+    return byMethod.values
+        .where((entry) => (entry['count'] as int) > 0)
+        .toList(growable: false);
+  }
+
   List<Map<String, dynamic>> _paidOrdersBetween(String? from, String? to) {
     return orders
         .where((order) {
@@ -28,6 +102,7 @@ extension DemoStoreReports on DemoStore {
       (total, order) => total + (order[key] as num).toDouble(),
     );
 
+    final split = _paidRefundSplit();
     final refundTotal = refunds
         .where((refund) {
           final day = (refund['createdAt'] as String).substring(0, 10);
@@ -35,7 +110,7 @@ extension DemoStoreReports on DemoStore {
         })
         .fold<double>(
           0,
-          (total, refund) => total + (refund['amount'] as num).toDouble(),
+          (total, refund) => total + (split[refund['id']]?.post ?? 0),
         );
     final netSales = sum('total') - refundTotal;
     final guests = paidOrders.fold<int>(
@@ -43,25 +118,13 @@ extension DemoStoreReports on DemoStore {
       (total, order) => total + (order['guestCount'] as int),
     );
 
-    final byMethod = <String, Map<String, dynamic>>{};
-    for (final payment in payments) {
-      final order = orders.firstWhere(
-        (row) => row['id'] == payment['orderId'],
-        orElse: () => const {},
-      );
-      if (order.isEmpty || order['status'] != OrderStatus.paid) continue;
-      final day = (order['createdAt'] as String).substring(0, 10);
-      if (day.compareTo(start) < 0 || day.compareTo(end) > 0) continue;
-
-      final method = payment['method'] as String;
-      final entry = byMethod.putIfAbsent(
-        method,
-        () => {'method': method, 'count': 0, 'amount': 0.0},
-      );
-      entry['count'] = (entry['count'] as int) + 1;
-      entry['amount'] =
-          (entry['amount'] as double) + (payment['amount'] as num).toDouble();
-    }
+    final paymentMethods = _netPaymentMethods(
+      payments.where((payment) {
+        final day = (payment['createdAt'] as String).substring(0, 10);
+        return day.compareTo(start) >= 0 && day.compareTo(end) <= 0;
+      }),
+      split,
+    );
 
     final byCategory = <String, Map<String, dynamic>>{};
     for (final order in paidOrders) {
@@ -102,7 +165,7 @@ extension DemoStoreReports on DemoStore {
           ? 0.0
           : netSales / paidOrders.length,
       'averagePerGuest': guests == 0 ? 0.0 : netSales / guests,
-      'paymentMethods': byMethod.values.toList(growable: false),
+      'paymentMethods': paymentMethods,
       'categories': byCategory.values.toList(growable: false),
     };
   }
@@ -233,33 +296,29 @@ extension DemoStoreReports on DemoStore {
         .where((row) => row['shiftId'] == shiftId)
         .toList(growable: false);
     final paidOrderIds = shiftPayments.map((row) => row['orderId']).toSet();
+    // ออเดอร์ที่ยกเลิกไม่ใช่ยอดขายของกะ แม้จะเคยรับเงินในกะนี้แล้วคืนไป (#143)
     final shiftOrders = orders
-        .where((row) => paidOrderIds.contains(row['id']))
+        .where(
+          (row) =>
+              paidOrderIds.contains(row['id']) &&
+              row['status'] == OrderStatus.paid,
+        )
         .toList(growable: false);
+    final split = _paidRefundSplit();
+    final shiftPaymentIds = shiftPayments.map((row) => row['id']).toSet();
 
     double sum(String key) => shiftOrders.fold<double>(
       0,
       (total, order) => total + (order[key] as num).toDouble(),
     );
+    // เงินคืนหลังบิลปิดของ payment ที่รับในกะนี้ (ฐานเดียวกับ shiftRefundTotal ฝั่ง backend)
     final refundTotal = refunds
-        .where((row) => paidOrderIds.contains(row['orderId']))
-        .fold<double>(0, (total, row) => total + (row['amount'] as num));
+        .where((row) => shiftPaymentIds.contains(row['paymentId']))
+        .fold<double>(0, (total, row) => total + (split[row['id']]?.post ?? 0));
     final guests = shiftOrders.fold<int>(
       0,
       (total, order) => total + (order['guestCount'] as int),
     );
-
-    final byMethod = <String, Map<String, dynamic>>{};
-    for (final payment in shiftPayments) {
-      final method = payment['method'] as String;
-      final entry = byMethod.putIfAbsent(
-        method,
-        () => {'method': method, 'count': 0, 'amount': 0.0},
-      );
-      entry['count'] = (entry['count'] as int) + 1;
-      entry['amount'] =
-          (entry['amount'] as double) + (payment['amount'] as num).toDouble();
-    }
 
     final discount = sum('discountAmount');
     final promotionDiscount = sum('promotionDiscountAmount');
@@ -277,7 +336,7 @@ extension DemoStoreReports on DemoStore {
       'vat': sum('vat'),
       'refundTotal': refundTotal,
       'netSales': sum('total') - refundTotal,
-      'paymentMethods': byMethod.values.toList(growable: false),
+      'paymentMethods': _netPaymentMethods(shiftPayments, split),
       // รับชำระหนี้ลูกค้าเครดิตระหว่างกะ (mirror ของ report.service.js — docs/DECISIONS.md #50)
       'receivableReceipts': receivableReceiptsByShift(shiftId),
     };

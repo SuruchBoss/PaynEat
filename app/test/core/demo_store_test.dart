@@ -3614,4 +3614,149 @@ void main() {
       },
     );
   });
+
+  group('DemoStore รายงานหักเฉพาะเงินที่คืนหลังบิลปิด (#143)', () {
+    const manager = 2;
+
+    double baht(num value) => (value * 100).round() / 100;
+
+    Map<String, dynamic> openDineIn() {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 1,
+        items: [
+          for (final item in store.menuList().take(3))
+            {'menuItemId': item['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    int pay(int orderId, String method, double amount) =>
+        (store.pay(
+                  orderId: orderId,
+                  method: method,
+                  amount: amount,
+                  received: method == 'cash' ? amount : null,
+                )['payment']
+                as Map<String, dynamic>)['id']
+            as int;
+
+    void refund(int paymentId, double amount) => store.refundPayment(
+      paymentId: paymentId,
+      amount: amount,
+      reason: 'ทดสอบรายงาน',
+      refundedById: manager,
+    );
+
+    /// ยอดขายสุทธิ ยอดคืน และยอดเงินสดในรายงานรายวันกับรายกะ (ทั้งสองต้องเปลี่ยนเท่ากัน)
+    Map<String, Map<String, double>> snapshot() {
+      final shiftId = store.currentShift()!['id'] as int;
+      Map<String, double> read(Map<String, dynamic> report) {
+        final methods = (report['paymentMethods'] as List)
+            .cast<Map<String, dynamic>>();
+        double method(String key, String field) =>
+            (methods.firstWhere(
+                      (row) => row['method'] == key,
+                      orElse: () => {'count': 0, 'amount': 0.0},
+                    )[field]
+                    as num)
+                .toDouble();
+        return {
+          'orderCount': (report['orderCount'] as num).toDouble(),
+          'netSales': (report['netSales'] as num).toDouble(),
+          'refundTotal': (report['refundTotal'] as num).toDouble(),
+          'cashCount': method('cash', 'count'),
+          'cashAmount': method('cash', 'amount'),
+          'cardCount': method('card', 'count'),
+          'cardAmount': method('card', 'amount'),
+        };
+      }
+
+      return {
+        'byDate': read(store.zReportByDate(null)),
+        'byShift': read(store.zReportByShift(shiftId)),
+      };
+    }
+
+    void expectDelta(
+      Map<String, Map<String, double>> before,
+      Map<String, double> expected,
+    ) {
+      final after = snapshot();
+      for (final name in before.keys) {
+        expect(
+          {
+            for (final key in expected.keys)
+              key: baht(after[name]![key]! - before[name]![key]!),
+          },
+          expected,
+          reason: name,
+        );
+      }
+    }
+
+    test('คืนเงินตอนบิลยังเปิดแล้วเก็บใหม่จนครบ → ยอดขายสุทธิเท่ายอดบิล', () {
+      final before = snapshot();
+      final order = openDineIn();
+      final orderId = order['id'] as int;
+      final total = (order['total'] as num).toDouble();
+      final first = pay(orderId, 'cash', 50);
+      refund(first, 50);
+      pay(orderId, 'cash', total);
+      expect(store.findOrder(orderId)['status'], OrderStatus.paid);
+
+      expectDelta(before, {
+        'orderCount': 1,
+        'netSales': baht(total),
+        'refundTotal': 0,
+        'cashCount': 1,
+        'cashAmount': baht(total),
+        'cardCount': 0,
+        'cardAmount': 0,
+      });
+    });
+
+    test('รับเงินบางส่วน คืนครบ แล้วยกเลิกบิล → รายงานไม่เปลี่ยน', () {
+      final before = snapshot();
+      final orderId = openDineIn()['id'] as int;
+      refund(pay(orderId, 'card', 50), 50);
+      store.cancelOrder(orderId, 'ลูกค้าเดินออกไป', actorId: manager);
+
+      expectDelta(before, {
+        'orderCount': 0,
+        'netSales': 0,
+        'refundTotal': 0,
+        'cashCount': 0,
+        'cashAmount': 0,
+        'cardCount': 0,
+        'cardAmount': 0,
+      });
+    });
+
+    test('คืนก่อนปิดบิลบางส่วนแล้วคืนอีกหลังปิด → หักเฉพาะส่วนหลังปิด', () {
+      final before = snapshot();
+      final order = openDineIn();
+      final orderId = order['id'] as int;
+      final total = (order['total'] as num).toDouble();
+      final first = pay(orderId, 'cash', 50);
+      refund(first, 30);
+      pay(orderId, 'cash', baht(total - 20));
+      expect(store.findOrder(orderId)['status'], OrderStatus.paid);
+      refund(first, 10);
+
+      expectDelta(before, {
+        'orderCount': 1,
+        'netSales': baht(total - 10),
+        'refundTotal': 10,
+        'cashCount': 2,
+        'cashAmount': baht(total),
+        'cardCount': 0,
+        'cardAmount': 0,
+      });
+    });
+  });
 }

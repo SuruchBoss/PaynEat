@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1209%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1215%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -356,7 +356,8 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
   (한도 초과 시 결제 버튼 비활성화, 만기일 자동 계산)
 - ESC/POS 영수증 프린터 출력 (58mm·80mm)
 - 약식 세금계산서 발행 및 취소
-- 전액·부분 환불 (사유 필수, 순매출에서 자동 차감)
+- 전액·부분 환불 (사유 필수). 계산서 마감 후 환불한 금액만 리포트의 순매출에서 자동 차감합니다. 계산서가 열려 있을 때 환불한 금액은
+  마감 전에 다시 받았으므로 두 번 빼지 않고, 취소된 계산서는 매출이 아니므로 그 환불도 매출을 줄이지 않습니다 (`docs/DECISIONS.md` #97)
 - **결제가 끝나지 않은 계산서도 환불 가능, 남은 금액은 환불만큼 늘어남** — "결제된 금액"은 항상 결제액 − 환불액입니다. 결제 화면에
   결제 건마다 환불된 금액이 표시되고 매니저는 그 화면에서 바로 환불할 수 있으며, 순액을 모두 받아야만 계산서가 마감됩니다. 항목을
   골라 나눠 결제한 건을 전액 환불하면 그 항목은 다시 미결제가 되고, 마감된 계산서를 환불해도 새 미수금이 생기지 않습니다
@@ -508,13 +509,13 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1209건**의 자동화 테스트를 통과합니다.
+공개 전 **1215건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 549건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 607건 — domain / controller / widget
+cd backend && npm test      # 552건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 610건 — domain / controller / widget
 cd app && flutter test test_e2e   # 53건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1209건에 미포함)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1215건에 미포함)
 ```
 
 `app/test_e2e/`의 E2E 테스트 53건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
