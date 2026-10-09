@@ -46,21 +46,35 @@ extension DemoStoreShifts on DemoStore {
     return shift;
   }
 
+  /// เงินสดที่รับจริง — ส่วนที่ลูกค้าใช้แต้มจ่ายไม่ใช่เงินในลิ้นชัก (mirror ของ shift.repository.js#cashInDuring, T11 #101)
   double _cashInDuring(int shiftId) => payments
       .where(
         (row) =>
             row['shiftId'] == shiftId && row['method'] == PaymentMethod.cash,
       )
-      .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
+      .fold<double>(
+        0,
+        (sum, row) =>
+            sum +
+            (row['amount'] as num).toDouble() -
+            ((row['pointsRedeemedValue'] as num?) ?? 0).toDouble(),
+      );
 
   /// mirror ของ shift.repository.js#cashRefundedDuring — ผูกด้วยกะที่เปิดอยู่ตอนคืน ไม่ใช่กะของ payment
+  /// นับเฉพาะส่วนที่คืนเป็นเงิน ส่วนที่คืนเป็นแต้มไม่ออกจากลิ้นชัก (T11 #101)
   double _cashRefundedDuring(int shiftId) => refunds
       .where((row) {
         if (row['shiftId'] != shiftId) return false;
         final payment = payments.firstWhere((p) => p['id'] == row['paymentId']);
         return payment['method'] == PaymentMethod.cash;
       })
-      .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
+      .fold<double>(
+        0,
+        (sum, row) =>
+            sum +
+            (row['amount'] as num).toDouble() -
+            ((row['pointsValue'] as num?) ?? 0).toDouble(),
+      );
 
   Map<String, dynamic> closeShift(
     int id, {

@@ -15,7 +15,7 @@
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1228%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1256%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -23,7 +23,7 @@
 a Flutter client (mobile / tablet / web from one codebase, structured with Clean Architecture + GetX) communicating
 with a Node.js REST + WebSocket backend. It covers the complete floor-to-cash workflow — table map, order taking with
 modifiers, live kitchen display, split payments, receipts, and management dashboards — with role-based access
-control and 1228 automated tests.
+control and 1256 automated tests.
 
 > 👤 **Created and maintained by [SuruchBoss](https://github.com/SuruchBoss)** — forks and derivative works are
 > welcome, provided that the [`NOTICE`](NOTICE) file is retained as required by the Apache License 2.0. Contact:
@@ -739,6 +739,11 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
   each bill's total, amount paid and discounts; after merging the total is 182.44, 50 paid, **132.44 remaining** → merge → this bill's
   checkout shows the 50 THB received, and the old bill closes holding no money. If the two bills carry different discount codes, the
   confirmation says how much the discounts drop, because a bill takes one promotion only (see `docs/DECISIONS.md` #98)
+- Open a takeaway bill for a customer who has points (**Crispy Pork with Rice**, 100.05) → at checkout use **40 points** and take
+  **60.05** in cash → the shift's Z-report shows 60.05 cash and a separate **Points redeemed 40** line → as `manager`, refund 50 THB from the
+  receipt → the refund dialog first says it **refunds 31 in cash and returns 19 points**, and you confirm again to refund. The receipt shows
+  the cash and points of each refund, the points go back to the customer, and closing the shift takes only the cash refunded out of the
+  drawer (see `docs/DECISIONS.md` #100)
 - Log in as `admin` → **Promotions**, create a 50% off code → open a bill with **green curry chicken (160)** + **steamed tilapia
   with lime (320)** and apply the code (282.48) → **Split per person**, pick the green curry → the split screen shows the
   **discount shared out −80.00**, SC 8.00, VAT 6.16, **94.16** due, and the second person pays exactly **188.32**. A store set to
@@ -860,9 +865,9 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
 ### 🧪 Running the tests
 
 ```bash
-cd backend && npm test      # 557 cases — including a 17-step end-to-end walkthrough
-cd app && flutter test      # 616 cases — domain / controller / widget
-cd app && flutter test test_e2e   # 55 cases — the real app talking to the real backend (run npm ci in backend first)
+cd backend && npm test      # 569 cases — including a 17-step end-to-end walkthrough
+cd app && flutter test      # 629 cases — domain / controller / widget
+cd app && flutter test test_e2e   # 58 cases — the real app talking to the real backend (run npm ci in backend first)
 ```
 
 ---
@@ -1057,6 +1062,11 @@ cd app && flutter test test_e2e   # 55 cases — the real app talking to the rea
   balance is shown on the checkout page; redemption is limited to the customer's balance and to the amount due
   in the current round (exceeding either limit is rejected outright, never silently capped — see
   `docs/DECISIONS.md` #22)
+- **Points are not money in the drawer** — the drawer at shift close and the cash line of the reports count only money actually received;
+  the value of points used is its own "Points redeemed" line. Refunding a bill paid partly with points splits the refund the way the
+  customer paid (points round down, the remainder is cash, cash refunded never exceeds cash received, a full refund returns every point).
+  The refund dialog shows the cash and points before you confirm, and the points go straight back to the customer (see
+  `docs/DECISIONS.md` #100)
 - **Closed bills lock their items** — once a bill is fully paid or cancelled, nobody (managers included) can cancel an
   item on it, and an item already paid in a split must be refunded before it can be cancelled, so the sales, VAT, tax
   invoice and stock of a closed bill never change unnoticed. The kitchen can still cook a takeaway order that was paid
@@ -1561,17 +1571,17 @@ All endpoints share the same response format:
 ## 🧪 Testing
 
 ```bash
-cd backend && npm test      # 557 cases
-cd app && flutter test      # 616 cases
-cd app && flutter test test_e2e   # 55 cases (run npm ci in backend first)
+cd backend && npm test      # 569 cases
+cd app && flutter test      # 629 cases
+cd app && flutter test test_e2e   # 58 cases (run npm ci in backend first)
 node --test scripts/android-version.test.mjs   # 3 cases — the Google Play build's versionCode (not in the badge)
 ```
 
-The badge counts the backend and app tests (557 + 616 + 55). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
+The badge counts the backend and app tests (569 + 629 + 58). The `android-version.mjs` script tests verify that a `vX.Y.Z` tag always
 produces a higher `versionCode` and that a malformed or out-of-range tag fails with a reason; the `android-release.yml` workflow runs them
 before every build (see `docs/DECISIONS.md` #75)
 
-**E2E — the real app against the real backend (55 cases)** — `app/test_e2e/` starts the real backend
+**E2E — the real app against the real backend (58 cases)** — `app/test_e2e/` starts the real backend
 (`node src/server.js`) on a random port with a new temporary database per file, then exercises the
 app's production data/domain code (`ApiClient` → data source → repository, the same stack the app assembles at
 startup) against it following a restaurant's workflow, with each role using its own "device". It is the only
@@ -1589,6 +1599,10 @@ and the backend tests are pure JavaScript), and it runs as a separate CI job:
 > `merge_bills_e2e_test.dart` (2 steps) — for a bill with a 10 THB discount and 50 THB cash received, the app reads the merge preview of
 > both sides from the real backend; after merging, the target bill carries the discount and the amount paid, and the source bill is at
 > 0 with no money left on it
+>
+> `points_refund_e2e_test.dart` (3 steps) — a 100.05 bill paid with 40 points + 60.05 cash: the shift's Z-report counts real cash and a
+> separate points line, the preview of a 50 THB refund (31 cash + 19 points) matches the refund made, refunding the rest returns every
+> point, the receipt shows cash and points per refund, and the shift closes with a variance of 0
 >
 > `self_order_and_access_e2e_test.dart` (16 cases) — a customer scans the QR and orders all the way to the
 > kitchen screen, every type of invalid link, regenerating the QR invalidates the old link immediately, no personal
@@ -1631,7 +1645,7 @@ images from the production Dockerfiles whenever `main` changes (and on every PR 
 and the web app returns 200. Only then are the images uploaded as the `demo` release for Option D. The job ensures that a broken
 Dockerfile cannot go unnoticed (see `docs/DECISIONS.md` #63, #65)
 
-**Backend (557 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
+**Backend (569 cases)** — `node:test` + `supertest`, run over real HTTP against an isolated test database.
 The central test is `tests/order-flow.test.js`, which covers the entire floor-to-cash path in 17 steps:
 
 > Select a table → open an order with modifiers → verify the total → the table becomes occupied →
@@ -1654,6 +1668,14 @@ reports count only B; A's 10 THB discount moves with it (182.44); A's refunds mo
 re-evaluated (the target's code wins, the discount lost is shown in the preview, and the source's code moves when the target has
 none); and a customer's credit bill cannot be merged into another customer's bill (409 `MERGE_CUSTOMER_MISMATCH`), neither in the
 preview nor in the merge (see `docs/DECISIONS.md` #98)
+
+`points-cash.test.js` (5 cases) separates real cash from the value of points (T11): a shift opened at 2000 takes a 100.05 cash bill and a
+bill paid with 40 points + 60.05 cash → the Z-report shows 160.10 cash and a 40 points line (in the CSV too); the preview of a 50 THB
+refund gives 31 cash and 19 points without writing anything; a full refund gives 60.05 cash and 40 points back, and the shift closes at
+2100.05 with a variance of 0; refunds of 50/30/20.05 give (31, 19), (18, 12), (11.05, 9); and a bill without points refunds all in cash.
+`refund-split.test.js` (7 cases) covers the splitter: a full refund, the PO's example (60/40, refund 50 = 30 + 20), points rounding down,
+cash refunded never exceeding cash received, several refunds adding up to one, and refusing an amount that must go back as points but is
+not a whole point (see `docs/DECISIONS.md` #100)
 
 `order-move-merge-split.test.js` (7 cases) covers move-table/merge-bill/split-by-item: a successful move
 and rejection when the destination table is occupied, a successful merge (correct combined total, the source
@@ -1970,7 +1992,7 @@ creating and editing a customer / searching by phone leaving no name, phone, e-m
 or token in the log, malformed JSON containing a password returning 400 (previously 500) without exposing the body, and no
 table QR token in the log (see `docs/DECISIONS.md` #68)
 
-**Flutter (616 cases)** — organized into 3 levels:
+**Flutter (629 cases)** — organized into 3 levels:
 
 | Level | File | What it tests |
 |---|---|---|
@@ -1981,7 +2003,8 @@ table QR token in the log (see `docs/DECISIONS.md` #68)
 | Domain | `entities_test.dart` | Role-based permissions, order-item status transitions, an item the kitchen started and then undid still cannot be edited or removed (T05), PaymentSummary/SplitPreview read refunds, included VAT and the adjustment line from the backend (T06, T10) |
 | Domain | `loyalty_points_test.dart` | App-side loyalty points (mirrors the backend): computed in satang and rounded down, a rate of 0 / below 0.01 / NaN / Infinity gives 0 points instead of an exception, a point value below 0.01 baht can't be redeemed, and 0.01 baht is the lowest rate that can be set (T15) |
 | Domain | `split_share_test.dart` | The app-side split share (mirrors the backend): 50% off on 160 + 320 gives 94.16/188.32 whoever pays first, included VAT on 160 + 80 gives 176/88, and a property test over 2,000 random bills adds up to the bill (T10) |
-| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23), and credit-sale points earned on full payment / taken back on a void as far as possible / withheld while interest is owed / net of credit notes (#59), and closed bills or items paid in a split cannot have an item cancelled while the kitchen can still move them on (T04), and an item the kitchen started then undid: only a manager can cancel it (403 for waiters/kitchen), the audit names the stage reached and matches the backend letter for letter, it cannot be edited or removed, and the stage reached never goes down (T05), and split by item in Demo Mode gives the backend's figures for 50% off and for included VAT, with the adjustment line after a fixed-amount payment (T10), and a points rate below 0.01 baht can't be set, a stored rate of 0 earns 0 points on a cash sale or a fully collected credit sale, and a stored point value of 0 can't be redeemed (T15), and a manager sees only waiter/cashier/kitchen accounts and cannot touch manager/admin accounts, create or promote a manager, or delete an account (403), while still managing staff (T22), and a discount/removal/reduction that would take a bill below the money received is refused with the whole store (order, stock, audit) back as it was, a total that equals the money received closes the bill and frees the table, and a bill holding more than its total takes no payment or split preview (T07), and the daily and shift reports subtract only money refunded after a bill closed, a bill refunded and cancelled leaves the reports unchanged, and payment methods count the money kept when the bill closed (#143), and a merge moves the money received and the discount to the target, leaves the source at 0 holding no money, and refuses to merge a customer's credit bill into another customer's bill (T09) |
+| Domain | `refund_split_test.dart` | The app-side refund splitter (mirrors the backend, same cases): a full refund, the PO's example, points rounding down, cash refunded never exceeding cash received, several refunds adding up to one, and an amount that is not a whole point refused (T11) |
+| Domain | `demo_store_test.dart` | Verifies `demo_store.dart`, split into 20 files, still works correctly across domains, including the full auto/code/remove/eligible-list promotion flow, the full stock-deduction / auto sold-out flow, the tax-invoice issue/void/reissue flow with running numbers, the audit-log flow covering every risky action (ticket 08), the customer/loyalty flow: creating/searching customers, linking `customerId` at order creation, earning points exactly once when fully paid (including split-payment rounds), redeeming points for a discount without changing the order's `amount`, and rejecting every invalid redemption (ticket 09), and the takeaway queue number: only assigned for `type=takeaway`, running correctly per day even with dine-in/delivery orders interleaved (ticket 10), and the financial/accounting audit flow: menu price changes only log when the price actually changes, promotion create/edit/delete, manual ingredient stock adjustments, and `auditLogExportCsv` returning CSV correctly filtered by action (ticket 14), and every table having a unique `qrToken`, `resolveTableByQrToken` finding the right table / rejecting a bad token or a deactivated table, and `regenerateQrToken` invalidating the old token immediately (ticket 17), selling by weight/duplicate codes/kg stock deduction on payment/QR self-order hiding weighed items (tickets 18–19), credit sales/payments applied oldest first/cash into the shift/no voiding a receipt after its shift closed/billing notes/credit reduction/debt aging (ticket 20), and late interest on the seeded bill (8 days at 12%, no double charge)/no voiding paid interest/the 15% cap/credit notes + VAT on the difference/simulated e-mail defaulting to the customer's address and refusing voided documents (tickets 21, 23), and credit-sale points earned on full payment / taken back on a void as far as possible / withheld while interest is owed / net of credit notes (#59), and closed bills or items paid in a split cannot have an item cancelled while the kitchen can still move them on (T04), and an item the kitchen started then undid: only a manager can cancel it (403 for waiters/kitchen), the audit names the stage reached and matches the backend letter for letter, it cannot be edited or removed, and the stage reached never goes down (T05), and split by item in Demo Mode gives the backend's figures for 50% off and for included VAT, with the adjustment line after a fixed-amount payment (T10), and a points rate below 0.01 baht can't be set, a stored rate of 0 earns 0 points on a cash sale or a fully collected credit sale, and a stored point value of 0 can't be redeemed (T15), and a manager sees only waiter/cashier/kitchen accounts and cannot touch manager/admin accounts, create or promote a manager, or delete an account (403), while still managing staff (T22), and a discount/removal/reduction that would take a bill below the money received is refused with the whole store (order, stock, audit) back as it was, a total that equals the money received closes the bill and frees the table, and a bill holding more than its total takes no payment or split preview (T07), and the daily and shift reports subtract only money refunded after a bill closed, a bill refunded and cancelled leaves the reports unchanged, and payment methods count the money kept when the bill closed (#143), and a merge moves the money received and the discount to the target, leaves the source at 0 holding no money, and refuses to merge a customer's credit bill into another customer's bill (T09), and for a bill paid with points the Z-report separates real cash from the points line, the refund preview writes nothing, several refunds give the backend's cash and points, every point comes back and the shift closes with a variance of 0 (T11) |
 | Controller | `cart_controller_test.dart` | Cart logic, using a fake repository, including the case of no `Get.arguments` at all (coming straight from the "New takeaway/delivery" button) still defaulting to takeaway rather than dine-in (ticket 10), weighed items sending `weightGrams` to the backend/no quantity edits but re-weighing allowed, scanning labels/barcodes into the cart, and a bad scan leaving the cart unchanged (tickets 18–19) |
 | Controller | `request_id_error_test.dart` | The request ID on error messages, through the real ApiClient → repository → controller chain: 500/409 give the backend's translated message + "Request ID: …" matching what was sent, 422 gets no ID, every request gets a fresh `x-request-id` in the format the backend accepts, `ServerFailure.requestId` (ticket 24) |
 | Controller | `receivable_controllers_test.dart` | Totals of what's owed/overdue, splitting open bills/unbilled bills/open billing notes, document voiding limited to managers and up, a successful payment sending the chosen billing note then reloading / a failed one not reloading (ticket 20), late interest/credit notes limited to managers and up and reloading on success, e-mail with no recipient using the customer's address (tickets 21, 23) |
@@ -2002,6 +2025,7 @@ table QR token in the log (see `docs/DECISIONS.md` #68)
 | Controller | `erp_connection_controller_test.dart` | The PaynEat ERP connection section (ticket 25): address/credential/branch codes checked before calling the backend, a successful connect clears the credential field at once, a branch-code refusal from the backend reloads the list, 422 field messages, pull now reports the count and version / a failure reloads the status, leaving connected mode, branch codes sent in capitals, the last pull's problem in the app's language, saying when scheduled pulls have stopped, the create-branch button (success names the branch actually created / a 409 shows the reason and reloads / not in demo mode), demo mode always standalone, parsing the backend's status (including how the credential travels — an older backend that doesn't send it counts as https), and ERP unit names (unknown codes shown as they are) |
 | Controller | `backup_controllers_test.dart` | The Backups section and warning (ticket 33): parsing the backend's answers (two locations with separate status, a Back up now result whose second copy failed, the `backup` field of a shift close), loading the status, a successful backup clearing the warning at once, a failed backup keeping its reason in the card, a timed-out request reloading the real status, which roles see the warning (admin/manager only) and reloading every 15 minutes |
 | Widget | `backup_widgets_test.dart` | The Backups card: time, size, file count, the advice to set a second location, a failing second location shown apart from the first, the warning with its reason and low disk space, no download button; the warning bar: roles without it see nothing, the admin gets a button to Settings, a manager is told to inform the owner |
+| Widget | `refund_split_dialog_test.dart` | The refund dialog for a bill paid with points (T11): the first press shows the cash and points to refund and the second refunds without asking again; changing the amount clears the preview so it must be checked again; and an amount the system refuses shows the reason in the dialog without closing it |
 | Widget | `merge_preview_dialog_test.dart` | The merge confirmation (T09): shows both bills' amounts paid and discounts and the merged figures, and confirming returns true; a drop in discounts shows a warning with the amount lost; and a merged total below the money received shows the refund owed and disables merging |
 | Widget | `cancel_refund_required_test.dart` | Cancelling an order that still holds money (T08): a `REFUND_REQUIRED` answer opens "Refund before cancelling" with the amount and what to do, "Go to refunds" opens checkout and reloads the order on return, closing it goes nowhere, and an order holding nothing cancels as before |
 | Controller | `ingredients_controller_test.dart` | The ingredients page is read-only when connected to the ERP, an unreadable mode keeps the last value, the "low stock" filter is cleared in connected mode, item codes are sent in capitals and an edit sends null to clear one (ticket 25) |
@@ -2099,7 +2123,7 @@ Completed work, planned work, and known limitations, with the reasoning for each
   Added to support Korean restaurants in Thailand (see `docs/DECISIONS.md` #39). **Korean menu names are
   intentionally not stored in the database**, because menu names are each restaurant's own data, not system text
 - [x] **Flutter integration tests against a real backend** — implemented as the E2E suite `app/test_e2e/`
-  (55 cases): it starts the real backend on a new temporary database per file and exercises the app's
+  (58 cases): it starts the real backend on a new temporary database per file and exercises the app's
   data/domain code through a full restaurant business day, a customer scanning the QR, and
   branches/permissions. It operates at the data/domain layer rather than through `integration_test`, which
   requires a physical device, and runs as a separate CI job. The suite uncovered 5 defects not detected by the
@@ -2255,7 +2279,7 @@ Completed work, planned work, and known limitations, with the reasoning for each
   and T22 managers manage only lower-role staff in their own branches (`docs/DECISIONS.md` #92) — **round 1 is complete**.
   Ticket 33 is done. Round 2: T07 a bill never dropping below what was paid (`docs/DECISIONS.md` #95) and T08 an order holding money
   cannot be cancelled until it is refunded (`docs/DECISIONS.md` #96), and reports that subtract only money refunded after a
-  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98) are done. Next: T11 and T03, then a pause. After the pause, T20, T21, T23
+  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98), and T11 real cash kept apart from points with refunds split the same way (#101, `docs/DECISIONS.md` #100) are done. Next: T03, then a pause. After the pause, T20, T21, T23
   and the Windows installer (ticket 34) must be done before the first real shop, closed by a test in which a shop owner runs a whole
   shift on a machine set up with that installer (`docs/DECISIONS.md` #93, #99)
 - [ ] **A Windows installer for real shops (ticket 34)** — one file the owner installs without IT help, with no Docker or Node to

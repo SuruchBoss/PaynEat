@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import '../../../../app/routes/app_routes.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../../core/usecases/result.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../customer/domain/entities/customer.dart';
@@ -32,6 +33,7 @@ class CheckoutController extends GetxController {
     required GetSettingsUseCase getSettings,
     required GetPromptPayQrUseCase getPromptPayQr,
     RefundPaymentUseCase? refundPayment,
+    PreviewRefundUseCase? previewRefund,
     SessionService? session,
   }) : _getOrder = getOrder,
        _getSummary = getSummary,
@@ -41,6 +43,7 @@ class CheckoutController extends GetxController {
        _getSettings = getSettings,
        _getPromptPayQr = getPromptPayQr,
        _refundPayment = refundPayment,
+       _previewRefund = previewRefund,
        _session = session;
 
   final GetOrderUseCase _getOrder;
@@ -51,6 +54,7 @@ class CheckoutController extends GetxController {
   final GetSettingsUseCase _getSettings;
   final GetPromptPayQrUseCase _getPromptPayQr;
   final RefundPaymentUseCase? _refundPayment;
+  final PreviewRefundUseCase? _previewRefund;
   final SessionService? _session;
 
   final Rxn<Order> order = Rxn<Order>();
@@ -105,6 +109,16 @@ class CheckoutController extends GetxController {
   /// คืนเงินบนบิลที่ยังเปิดได้ (DECISIONS #77 D1) สิทธิ์เดียวกับหน้าใบเสร็จ — ผู้จัดการขึ้นไป
   bool get canRefund =>
       _refundPayment != null && (_session?.currentUser?.isManagement ?? false);
+
+  /// ยอดเงินกับแต้มที่จะคืนก่อนกดยืนยัน — เฉพาะ payment ที่ใช้แต้มจ่าย (T11 #101, docs/DECISIONS.md #77 D7)
+  /// payment อื่นคืนเป็นเงินทั้งหมด ไม่ต้องถามก่อน จึงคืน null
+  Future<Result<RefundPreview>> Function(double amount)? refundPreviewFor(
+    Payment payment,
+  ) {
+    final preview = _previewRefund;
+    if (preview == null || payment.pointsRedeemed <= 0) return null;
+    return (amount) => preview((paymentId: payment.id, amount: amount));
+  }
 
   /// ยอดที่ยังคืนได้ของ payment นี้ (หักที่คืนไปแล้วก่อนหน้า)
   double refundableAmount(Payment payment) {

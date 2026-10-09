@@ -9,6 +9,7 @@ import {
   createPaymentSchema,
   splitPreviewSchema,
   createRefundSchema,
+  refundPreviewQuerySchema,
   idParamSchema,
   promptPayQrQuerySchema,
 } from './payment.schema.js';
@@ -20,6 +21,13 @@ const cashier = authorize('admin', 'manager', 'cashier', 'waiter');
 const manager = authorize('admin', 'manager');
 
 router.post('/', cashier, validate({ body: createPaymentSchema }), paymentController.pay);
+
+router.get(
+  '/:id/refund-preview',
+  manager,
+  validate({ params: idParamSchema, query: refundPreviewQuerySchema }),
+  paymentController.refundPreview,
+);
 
 router.post(
   '/:id/refund',

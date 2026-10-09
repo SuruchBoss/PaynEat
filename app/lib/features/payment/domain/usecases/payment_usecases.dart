@@ -118,6 +118,18 @@ class RefundParams {
   final String reason;
 }
 
+/// ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน — payment ที่ใช้แต้มคืนเป็นเงินกับแต้มตามสัดส่วน (T11 #101, DECISIONS #77 D7)
+class PreviewRefundUseCase
+    implements UseCase<RefundPreview, ({int paymentId, double amount})> {
+  const PreviewRefundUseCase(this._repository);
+
+  final PaymentRepository _repository;
+
+  @override
+  Future<Result<RefundPreview>> call(({int paymentId, double amount}) params) =>
+      _repository.previewRefund(params.paymentId, params.amount);
+}
+
 /// คืนเงินหลังชำระเงินแล้ว (เต็มจำนวน/บางส่วน) — จำกัดเฉพาะผู้จัดการขึ้นไปที่ชั้น UI
 /// ส่วนฝั่งเซิร์ฟเวอร์ก็ตรวจสิทธิ์ซ้ำอีกชั้นเสมอ
 class RefundPaymentUseCase implements UseCase<Refund, RefundParams> {

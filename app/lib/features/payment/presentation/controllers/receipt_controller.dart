@@ -7,6 +7,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/printing/receipt_printer_service.dart';
 import '../../../../core/services/printer_settings_service.dart';
 import '../../../../core/services/session_service.dart';
+import '../../../../core/usecases/result.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../order/domain/entities/order.dart';
 import '../../../tax_invoice/domain/entities/tax_invoice.dart';
@@ -19,6 +20,7 @@ class ReceiptController extends GetxController {
   ReceiptController({
     required GetReceiptUseCase getReceipt,
     required RefundPaymentUseCase refundPayment,
+    PreviewRefundUseCase? previewRefund,
     required SessionService session,
     required PrinterSettingsService printerSettings,
     required ReceiptPrinterService printerService,
@@ -27,6 +29,7 @@ class ReceiptController extends GetxController {
     required VoidTaxInvoiceUseCase voidTaxInvoice,
   }) : _getReceipt = getReceipt,
        _refundPayment = refundPayment,
+       _previewRefund = previewRefund,
        _session = session,
        _printerSettings = printerSettings,
        _printerService = printerService,
@@ -36,6 +39,7 @@ class ReceiptController extends GetxController {
 
   final GetReceiptUseCase _getReceipt;
   final RefundPaymentUseCase _refundPayment;
+  final PreviewRefundUseCase? _previewRefund;
   final SessionService _session;
   final PrinterSettingsService _printerSettings;
   final ReceiptPrinterService _printerService;
@@ -141,6 +145,16 @@ class ReceiptController extends GetxController {
       },
       onFailure: (failure) => AppDialogs.error(failure.message),
     );
+  }
+
+  /// ยอดเงินกับแต้มที่จะคืนก่อนกดยืนยัน — เฉพาะ payment ที่ใช้แต้มจ่าย (T11 #101, docs/DECISIONS.md #77 D7)
+  /// payment อื่นคืนเป็นเงินทั้งหมด ไม่ต้องถามก่อน จึงคืน null
+  Future<Result<RefundPreview>> Function(double amount)? refundPreviewFor(
+    Payment payment,
+  ) {
+    final preview = _previewRefund;
+    if (preview == null || payment.pointsRedeemed <= 0) return null;
+    return (amount) => preview((paymentId: payment.id, amount: amount));
   }
 
   /// ยอดที่ยังคืนได้ของ payment นี้ (หักรายการที่คืนไปแล้วก่อนหน้า)

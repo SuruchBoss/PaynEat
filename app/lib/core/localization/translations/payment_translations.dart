@@ -105,6 +105,8 @@ const Map<String, String> paymentTranslationsTh = {
   'payment_error_payment_not_found': 'ไม่พบรายการชำระเงินนี้',
   'payment_error_refund_exceeds_refundable':
       'คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด @amount บาท)',
+  'payment_error_refund_points_whole':
+      'เงินที่รับจริงของรายการนี้คืนครบแล้ว ยอดที่เหลือ @amount บาทคืนเป็นแต้ม ต้องคืนเป็นมูลค่าแต้มเต็มแต้ม หรือคืนทั้งหมดที่เหลือ',
   'payment_error_points_requires_customer':
       'ต้องผูกลูกค้ากับออเดอร์นี้ก่อนจึงใช้แต้มสะสมได้',
   'payment_error_points_insufficient': 'แต้มสะสมของลูกค้าไม่พอ',
@@ -123,6 +125,13 @@ const Map<String, String> paymentTranslationsTh = {
 
   // ขายตามน้ำหนัก/บาร์โค้ด/ขายเชื่อ (tickets 18–20)
   'payment_method_credit': 'ขายเชื่อ',
+  'payment_method_points': 'แลกแต้ม',
+  'payment_refund_split_check_button': 'ดูยอดเงินกับแต้มที่จะคืน',
+  'payment_refund_split_preview':
+      'จะคืนเงิน @cash และคืน @points แต้ม (มูลค่า @value)',
+  'payment_refund_split_confirm_hint':
+      'บิลนี้ลูกค้าใช้แต้มจ่ายบางส่วน จึงคืนเป็นเงินกับแต้มตามสัดส่วน กดยืนยันอีกครั้งเพื่อคืน',
+  'payment_refund_split_line': 'เงิน @cash · คืน @points แต้ม',
   'payment_credit_available': 'วงเงินคงเหลือ @amount',
   'payment_credit_due_in': 'ลงบัญชีลูกหนี้ ครบกำหนดชำระใน @days วัน',
   'payment_credit_no_points':
@@ -258,6 +267,8 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_error_payment_not_found': 'This payment record was not found',
   'payment_error_refund_exceeds_refundable':
       'Refund amount exceeds what is refundable (maximum @amount THB)',
+  'payment_error_refund_points_whole':
+      'The money actually received on this payment is fully refunded — the remaining @amount THB goes back as points, so refund whole points or everything that is left',
   'payment_error_points_requires_customer':
       'This order must be linked to a customer before redeeming points',
   'payment_error_points_insufficient':
@@ -276,6 +287,13 @@ const Map<String, String> paymentTranslationsEn = {
   'payment_loyalty_no_points_available': 'Points cannot be redeemed right now',
 
   'payment_method_credit': 'On credit',
+  'payment_method_points': 'Points redeemed',
+  'payment_refund_split_check_button': 'Show cash and points to refund',
+  'payment_refund_split_preview':
+      'Refunds @cash in cash and returns @points points (worth @value)',
+  'payment_refund_split_confirm_hint':
+      'The customer paid part of this bill with points, so the refund is split the same way. Confirm again to refund.',
+  'payment_refund_split_line': 'Cash @cash · @points points returned',
   'payment_credit_available': 'Credit available @amount',
   'payment_credit_due_in': 'Charged to account — due in @days days',
   'payment_credit_no_points':
@@ -388,6 +406,8 @@ const Map<String, String> paymentTranslationsKo = {
   'payment_error_payment_not_found': '해당 결제 내역을 찾을 수 없습니다',
   'payment_error_refund_exceeds_refundable':
       '환불 금액이 환불 가능 금액을 초과합니다 (최대 @amount THB)',
+  'payment_error_refund_points_whole':
+      '이 결제로 실제 받은 돈은 모두 환불했습니다 — 남은 @amount THB는 포인트로 돌려주므로 포인트 단위로 환불하거나 남은 전액을 환불하세요',
   'payment_error_points_requires_customer': '적립금을 사용하려면 주문에 고객을 먼저 연결해야 합니다',
   'payment_error_points_insufficient': '고객의 적립금이 부족합니다',
   'payment_error_points_value_exceeds_amount': '사용하려는 적립금이 이번에 받을 금액을 초과합니다',
@@ -400,6 +420,12 @@ const Map<String, String> paymentTranslationsKo = {
   'payment_loyalty_no_points_available': '지금은 적립금을 사용할 수 없습니다',
 
   'payment_method_credit': '외상',
+  'payment_method_points': '포인트 사용',
+  'payment_refund_split_check_button': '환불할 현금과 포인트 보기',
+  'payment_refund_split_preview': '현금 @cash 환불, 포인트 @points점 반환 (가치 @value)',
+  'payment_refund_split_confirm_hint':
+      '이 계산서는 일부를 포인트로 결제해서 같은 비율로 환불합니다. 환불하려면 다시 확인하세요',
+  'payment_refund_split_line': '현금 @cash · 포인트 @points점 반환',
   'payment_credit_available': '사용 가능 한도 @amount',
   'payment_credit_due_in': '외상 장부에 기록 — @days일 후 결제 기한',
   'payment_credit_no_points':

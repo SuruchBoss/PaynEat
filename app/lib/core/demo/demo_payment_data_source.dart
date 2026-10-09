@@ -94,6 +94,14 @@ class DemoPaymentDataSource implements PaymentRemoteDataSource {
   });
 
   @override
+  Future<RefundPreviewModel> previewRefund(int paymentId, double amount) =>
+      _delayed(
+        () => RefundPreviewModel.fromJson(
+          _store.refundPreview(paymentId: paymentId, amount: amount),
+        ),
+      );
+
+  @override
   Future<RefundModel> refund({
     required int paymentId,
     required double amount,

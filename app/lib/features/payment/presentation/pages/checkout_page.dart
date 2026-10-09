@@ -153,6 +153,7 @@ class _PaidHistory extends GetView<CheckoutController> {
   Future<void> _refund(Payment payment) async {
     final result = await RefundDialog.show(
       maxAmount: controller.refundableAmount(payment),
+      preview: controller.refundPreviewFor(payment),
     );
     if (result == null) return;
     await controller.refundPayment(

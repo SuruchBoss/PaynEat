@@ -3856,4 +3856,118 @@ void main() {
       expect(store.findOrder(bId)['items'], hasLength(1));
     });
   });
+
+  group(
+    'DemoStore คืนเงินบิลที่ใช้แต้มจ่าย แบ่งเป็นเงินกับแต้มตามสัดส่วน (T11 #101)',
+    () {
+      // mirror ของ backend/tests/points-cash.test.js — บิล 100.05 ใช้ 40 แต้ม (1 แต้ม = 1 บาท) + เงินสด 60.05
+      late Map<String, dynamic> shift;
+      late Map<String, dynamic> customer;
+      late int paymentId;
+      late int afterPaying;
+
+      setUp(() {
+        final current = store.currentShift();
+        if (current != null) {
+          store.closeShift(
+            current['id'] as int,
+            countedCash: (current['openingCash'] as num).toDouble(),
+            closedById: 2,
+          );
+        }
+        shift = store.openShift(openingCash: 2000, openedById: 6);
+        customer = store.createCustomer(
+          name: 'คุณแต้มเยอะ',
+          phone: '0811112222',
+        );
+        store.adjustCustomerPoints(customer['id'] as int, 100);
+        final crispyPork = store.menuList().firstWhere(
+          (item) => item['name'] == 'ข้าวหมูกรอบ',
+        );
+        final order = store.createOrder(
+          type: 'takeaway',
+          customerId: customer['id'] as int,
+          guestCount: 1,
+          items: [
+            {'menuItemId': crispyPork['id'], 'quantity': 1, 'optionIds': []},
+          ],
+        );
+        expect(order['total'], 100.05);
+        final result = store.pay(
+          orderId: order['id'] as int,
+          method: PaymentMethod.cash,
+          amount: 100.05,
+          received: 60.05,
+          cashierId: 6,
+          pointsToRedeem: 40,
+        );
+        paymentId = (result['payment'] as Map)['id'] as int;
+        afterPaying =
+            store.findCustomer(customer['id'] as int)['pointsBalance'] as int;
+      });
+
+      test('ลิ้นชักนับเฉพาะเงินสดจริง Z-report แยกบรรทัดแลกแต้ม', () {
+        final z = store.zReportByShift(shift['id'] as int);
+        final methods = {
+          for (final row in (z['paymentMethods'] as List).cast<Map>())
+            row['method']: row,
+        };
+        expect(methods[PaymentMethod.cash]!['amount'], closeTo(60.05, 0.001));
+        expect(methods[PaymentMethod.points]!['amount'], closeTo(40, 0.001));
+        expect(methods[PaymentMethod.points]!['count'], 1);
+      });
+
+      test('ดูตัวอย่างก่อนคืน 50 บาท = เงิน 31 กับ 19 แต้ม ไม่เขียนอะไร', () {
+        final preview = store.refundPreview(paymentId: paymentId, amount: 50);
+        expect(preview['cashAmount'], 31);
+        expect(preview['pointsReturned'], 19);
+        expect(preview['pointsValue'], 19);
+        expect(preview['cashRefundable'], closeTo(60.05, 0.001));
+        expect(preview['pointsRefundable'], 40);
+        expect(
+          store.refunds.where((r) => r['paymentId'] == paymentId),
+          isEmpty,
+        );
+        expect(
+          () => store.refundPreview(paymentId: paymentId, amount: 100.06),
+          throwsA(isA<ApiException>()),
+        );
+      });
+
+      test(
+        'คืนหลายรอบตามสัดส่วน แต้มกลับครบ ลิ้นชักลดเฉพาะเงินสด ปิดกะส่วนต่าง 0',
+        () {
+          for (final (amount, cash, points) in [
+            (50.0, 31.0, 19),
+            (30.0, 18.0, 12),
+            (20.05, 11.05, 9),
+          ]) {
+            final refund = store.refundPayment(
+              paymentId: paymentId,
+              amount: amount,
+              reason: 'ทดสอบ',
+              refundedById: 2,
+            );
+            expect(
+              refund['cashAmount'],
+              closeTo(cash, 0.001),
+              reason: '$amount',
+            );
+            expect(refund['pointsReturned'], points, reason: '$amount');
+          }
+          expect(
+            store.findCustomer(customer['id'] as int)['pointsBalance'],
+            afterPaying + 40,
+          );
+          final closed = store.closeShift(
+            shift['id'] as int,
+            countedCash: 2000,
+            closedById: 6,
+          );
+          expect(closed['expectedCash'], closeTo(2000, 0.005));
+          expect(closed['variance'], closeTo(0, 0.005));
+        },
+      );
+    },
+  );
 }

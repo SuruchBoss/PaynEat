@@ -245,6 +245,10 @@ void bindUseCases() {
     () => RefundPaymentUseCase(Get.find<PaymentRepository>()),
     fenix: true,
   );
+  Get.lazyPut(
+    () => PreviewRefundUseCase(Get.find<PaymentRepository>()),
+    fenix: true,
+  );
 
   // tax invoice
   Get.lazyPut(

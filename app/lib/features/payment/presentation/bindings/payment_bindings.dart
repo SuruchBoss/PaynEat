@@ -29,6 +29,7 @@ class CheckoutBinding extends Bindings {
         getSettings: Get.find<GetSettingsUseCase>(),
         getPromptPayQr: Get.find<GetPromptPayQrUseCase>(),
         refundPayment: Get.find<RefundPaymentUseCase>(),
+        previewRefund: Get.find<PreviewRefundUseCase>(),
         session: Get.find<SessionService>(),
       ),
     );
@@ -42,6 +43,7 @@ class ReceiptBinding extends Bindings {
       ReceiptController(
         getReceipt: Get.find<GetReceiptUseCase>(),
         refundPayment: Get.find<RefundPaymentUseCase>(),
+        previewRefund: Get.find<PreviewRefundUseCase>(),
         session: Get.find<SessionService>(),
         printerSettings: Get.find<PrinterSettingsService>(),
         printerService: Get.find<ReceiptPrinterService>(),

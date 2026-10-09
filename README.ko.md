@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1228%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1256%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -284,6 +284,9 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
 
 - **조건부 프로모션** — 요일과 시간대, 카테고리나 메뉴, 최소 금액, 할인 코드, 1+1 — 조건에 맞는 계산서에 자동 적용.
 - **자동 포인트 적립** — 주문 받을 때 이름이나 전화번호로 손님을 찾고, 구매 금액만큼 적립, 결제 때 할인으로 사용.
+- **포인트는 돈통의 현금이 아님** — 근무 마감 시 돈통과 리포트의 현금 줄은 실제로 받은 돈만 세고, 사용한 포인트는 "포인트 사용" 줄로
+  따로 보여요. 포인트로 일부 결제한 계산서를 환불하면 손님이 낸 비율대로 현금과 포인트로 나눠 돌려주고(포인트는 내림, 나머지는 현금,
+  전액 환불이면 포인트 전부 반환), 확인 전에 환불할 현금과 포인트를 먼저 보여 줍니다 (`docs/DECISIONS.md` #100)
 - **손님별 구매 이력** — 단골이 무엇을 얼마나 자주 주문하는지.
 - **프로모션 변경도 모두 기록** — 생성, 수정, 중지가 변경 이력에 남아요.
 
@@ -511,16 +514,16 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1228건**의 자동화 테스트를 통과합니다.
+공개 전 **1256건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 557건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 616건 — domain / controller / widget
-cd app && flutter test test_e2e   # 55건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1228건에 미포함)
+cd backend && npm test      # 569건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 629건 — domain / controller / widget
+cd app && flutter test test_e2e   # 58건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1256건에 미포함)
 ```
 
-`app/test_e2e/`의 E2E 테스트 55건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
+`app/test_e2e/`의 E2E 테스트 58건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
 실제 data/domain 코드로 매장의 하루 업무를 처음부터 끝까지 수행합니다. 대상 업무는 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 손님의 QR 주문, 지점·권한입니다. 나머지
 Flutter 테스트는 모두 데모 모드에서 실행되므로, 앱이 **백엔드가 실제로 반환한 JSON을 해석하는지** 검증하는 테스트는

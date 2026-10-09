@@ -29,11 +29,12 @@ const branchClause = (column, branchId) => {
  *
  * - `post_amount` ลดยอดขาย (คืนสินค้า/คืนเงินหลังขายแล้ว)
  * - `pre_amount` เป็นเงินที่ร้านเก็บกลับมาแล้วก่อนปิดบิล ไม่ลดยอดขาย แต่หักออกจากยอดของ payment นั้นในช่องทางชำระเงิน
+ *   `pre_points` คือส่วนของ `pre_amount` ที่คืนเป็นแต้ม (T11 #101, DECISIONS #100)
  * ออเดอร์ที่ไม่ใช่ `paid` (ยกเลิก หรือยังเปิดอยู่) ไม่อยู่ในชุดนี้ เพราะไม่ใช่ยอดขาย
  */
 const PAID_REFUNDS_CTE = `
   paid_refund_split AS (
-    SELECT r.id, r.payment_id, r.order_id, r.amount, r.created_at,
+    SELECT r.id, r.payment_id, r.order_id, r.amount, r.points_value, r.created_at,
            SUM(r.amount) OVER (PARTITION BY r.order_id ORDER BY r.id) AS running,
            MAX((SELECT IFNULL(SUM(p.amount), 0) FROM payments p WHERE p.order_id = o.id) - o.total, 0)
              AS refunded_before_close
@@ -44,11 +45,13 @@ const PAID_REFUNDS_CTE = `
   paid_refunds AS (
     SELECT id, payment_id, order_id, created_at,
            MIN(amount, MAX(running - refunded_before_close, 0)) AS post_amount,
-           amount - MIN(amount, MAX(running - refunded_before_close, 0)) AS pre_amount
+           amount - MIN(amount, MAX(running - refunded_before_close, 0)) AS pre_amount,
+           points_value * (amount - MIN(amount, MAX(running - refunded_before_close, 0))) / amount
+             AS pre_points
       FROM paid_refund_split
   ),
   pre_close_by_payment AS (
-    SELECT payment_id, SUM(pre_amount) AS pre_amount
+    SELECT payment_id, SUM(pre_amount) AS pre_amount, SUM(pre_points) AS pre_points
       FROM paid_refunds
      GROUP BY payment_id
   )`;
@@ -56,20 +59,36 @@ const PAID_REFUNDS_CTE = `
 /**
  * ยอดต่อช่องทางชำระเงินของ payment ในออเดอร์ที่ `paid` หักเงินที่คืนก่อนบิลปิดแล้ว — คือเงินที่ร้านเก็บไว้ตอนบิลปิด
  * รวมกันได้ยอดบิล ฐานเดียวกับยอดขายสุทธิ payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ
+ *
+ * ยอดของแต่ละช่องทางเป็นเงินที่รับจริง (ยอดชำระ − มูลค่าแต้มที่ใช้แลก) ส่วนแต้มแยกเป็นบรรทัด `points` ของตัวเอง
+ * (T11 #101, DECISIONS #100) เงินสดในรายงานจึงตรงกับเงินในลิ้นชัก
  */
 const netPaymentMethodsSql = (where) => `
-  WITH ${PAID_REFUNDS_CTE}
-  SELECT p.method,
-         SUM(CASE WHEN p.amount - IFNULL(pc.pre_amount, 0) > 0 OR pc.pre_amount IS NULL THEN 1 ELSE 0 END)
-           AS count,
-         IFNULL(SUM(p.amount - IFNULL(pc.pre_amount, 0)), 0) AS amount
-    FROM payments p
-    JOIN orders o ON o.id = p.order_id
-    LEFT JOIN pre_close_by_payment pc ON pc.payment_id = p.id
-   WHERE o.status = 'paid'
-     ${where}
-   GROUP BY p.method
-  HAVING count > 0
+  WITH ${PAID_REFUNDS_CTE},
+  net_payments AS (
+    SELECT p.method,
+           (p.amount - p.points_redeemed_value)
+             - IFNULL(pc.pre_amount - pc.pre_points, 0) AS money,
+           p.points_redeemed_value - IFNULL(pc.pre_points, 0) AS points_value
+      FROM payments p
+      JOIN orders o ON o.id = p.order_id
+      LEFT JOIN pre_close_by_payment pc ON pc.payment_id = p.id
+     WHERE o.status = 'paid'
+       ${where}
+  )
+  SELECT method, count, amount FROM (
+    SELECT method,
+           SUM(CASE WHEN money > 0 THEN 1 ELSE 0 END) AS count,
+           IFNULL(SUM(money), 0) AS amount
+      FROM net_payments
+     GROUP BY method
+    UNION ALL
+    SELECT 'points',
+           SUM(CASE WHEN points_value > 0 THEN 1 ELSE 0 END),
+           IFNULL(SUM(points_value), 0)
+      FROM net_payments
+  )
+   WHERE count > 0
    ORDER BY amount DESC
 `;
 
