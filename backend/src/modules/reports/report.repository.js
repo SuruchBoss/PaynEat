@@ -19,6 +19,60 @@ const branchClause = (column, branchId) => {
   return `AND ${column} = ${branchId}`;
 };
 
+/**
+ * แยกเงินคืนแต่ละรายการของออเดอร์ที่จ่ายครบ (`paid`) เป็นส่วนที่คืน "ก่อนบิลปิด" กับ "หลังบิลปิด" (#143, docs/DECISIONS.md #97)
+ *
+ * บิลปิดได้เมื่อยอดชำระ − ยอดคืนเท่ากับยอดบิลพอดี (T06, DECISIONS #87 — รับเงินเกินยอดคงเหลือไม่ได้ และหลังบิลปิดรับเงินเพิ่มไม่ได้)
+ * เงินที่คืนก่อนปิดจึงรวมได้ ยอดชำระทั้งหมด − ยอดบิล เสมอ คืนรายการแรกๆ ตามลำดับ id ไปจนครบก้อนนั้นคือคืนก่อนปิด
+ * ที่เหลือคือคืนหลังปิด ไม่เทียบ `refunds.created_at` กับ `orders.closed_at` เพราะทั้งสองละเอียดแค่วินาที
+ * การคืนแล้วเก็บเงินจนบิลปิดในวินาทีเดียวกันจะแยกไม่ออก
+ *
+ * - `post_amount` ลดยอดขาย (คืนสินค้า/คืนเงินหลังขายแล้ว)
+ * - `pre_amount` เป็นเงินที่ร้านเก็บกลับมาแล้วก่อนปิดบิล ไม่ลดยอดขาย แต่หักออกจากยอดของ payment นั้นในช่องทางชำระเงิน
+ * ออเดอร์ที่ไม่ใช่ `paid` (ยกเลิก หรือยังเปิดอยู่) ไม่อยู่ในชุดนี้ เพราะไม่ใช่ยอดขาย
+ */
+const PAID_REFUNDS_CTE = `
+  paid_refund_split AS (
+    SELECT r.id, r.payment_id, r.order_id, r.amount, r.created_at,
+           SUM(r.amount) OVER (PARTITION BY r.order_id ORDER BY r.id) AS running,
+           MAX((SELECT IFNULL(SUM(p.amount), 0) FROM payments p WHERE p.order_id = o.id) - o.total, 0)
+             AS refunded_before_close
+      FROM refunds r
+      JOIN orders o ON o.id = r.order_id
+     WHERE o.status = 'paid'
+  ),
+  paid_refunds AS (
+    SELECT id, payment_id, order_id, created_at,
+           MIN(amount, MAX(running - refunded_before_close, 0)) AS post_amount,
+           amount - MIN(amount, MAX(running - refunded_before_close, 0)) AS pre_amount
+      FROM paid_refund_split
+  ),
+  pre_close_by_payment AS (
+    SELECT payment_id, SUM(pre_amount) AS pre_amount
+      FROM paid_refunds
+     GROUP BY payment_id
+  )`;
+
+/**
+ * ยอดต่อช่องทางชำระเงินของ payment ในออเดอร์ที่ `paid` หักเงินที่คืนก่อนบิลปิดแล้ว — คือเงินที่ร้านเก็บไว้ตอนบิลปิด
+ * รวมกันได้ยอดบิล ฐานเดียวกับยอดขายสุทธิ payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ
+ */
+const netPaymentMethodsSql = (where) => `
+  WITH ${PAID_REFUNDS_CTE}
+  SELECT p.method,
+         SUM(CASE WHEN p.amount - IFNULL(pc.pre_amount, 0) > 0 OR pc.pre_amount IS NULL THEN 1 ELSE 0 END)
+           AS count,
+         IFNULL(SUM(p.amount - IFNULL(pc.pre_amount, 0)), 0) AS amount
+    FROM payments p
+    JOIN orders o ON o.id = p.order_id
+    LEFT JOIN pre_close_by_payment pc ON pc.payment_id = p.id
+   WHERE o.status = 'paid'
+     ${where}
+   GROUP BY p.method
+  HAVING count > 0
+   ORDER BY amount DESC
+`;
+
 export const reportRepository = {
   salesSummary(from, to, branchId) {
     const [start, end] = dateRange(from, to);
@@ -58,7 +112,8 @@ export const reportRepository = {
                IFNULL(SUM(total), 0)         AS total,
                IFNULL(SUM(guest_count), 0)   AS guests
           FROM orders
-         WHERE id IN (SELECT DISTINCT order_id FROM payments WHERE shift_id = ?)
+         WHERE status = 'paid'
+           AND id IN (SELECT DISTINCT order_id FROM payments WHERE shift_id = ?)
       `,
       )
       .get(shiftId);
@@ -68,8 +123,9 @@ export const reportRepository = {
     return getDb()
       .prepare(
         `
-        SELECT IFNULL(SUM(r.amount), 0) AS total
-          FROM refunds r
+        WITH ${PAID_REFUNDS_CTE}
+        SELECT IFNULL(SUM(r.post_amount), 0) AS total
+          FROM paid_refunds r
           JOIN payments p ON p.id = r.payment_id
          WHERE p.shift_id = ?
       `,
@@ -78,17 +134,7 @@ export const reportRepository = {
   },
 
   byShiftPaymentMethod(shiftId) {
-    return getDb()
-      .prepare(
-        `
-        SELECT method, COUNT(*) AS count, IFNULL(SUM(amount), 0) AS amount
-          FROM payments
-         WHERE shift_id = ?
-         GROUP BY method
-         ORDER BY amount DESC
-      `,
-      )
-      .all(shiftId);
+    return getDb().prepare(netPaymentMethodsSql('AND p.shift_id = ?')).all(shiftId);
   },
 
   refundTotal(from, to, branchId) {
@@ -96,8 +142,9 @@ export const reportRepository = {
     return getDb()
       .prepare(
         `
-        SELECT IFNULL(SUM(r.amount), 0) AS total
-          FROM refunds r
+        WITH ${PAID_REFUNDS_CTE}
+        SELECT IFNULL(SUM(r.post_amount), 0) AS total
+          FROM paid_refunds r
           JOIN orders o ON o.id = r.order_id
          WHERE date(r.created_at) BETWEEN date(?) AND date(?)
            ${branchClause('o.branch_id', branchId)}
@@ -110,16 +157,9 @@ export const reportRepository = {
     const [start, end] = dateRange(from, to);
     return getDb()
       .prepare(
-        `
-        SELECT p.method, COUNT(*) AS count, IFNULL(SUM(p.amount), 0) AS amount
-          FROM payments p
-          JOIN orders o ON o.id = p.order_id
-         WHERE o.status = 'paid'
-           AND date(p.created_at) BETWEEN date(?) AND date(?)
-           ${branchClause('o.branch_id', branchId)}
-         GROUP BY p.method
-         ORDER BY amount DESC
-      `,
+        netPaymentMethodsSql(
+          `AND date(p.created_at) BETWEEN date(?) AND date(?) ${branchClause('o.branch_id', branchId)}`,
+        ),
       )
       .all(start, end);
   },

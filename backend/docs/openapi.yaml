@@ -1762,6 +1762,10 @@ paths:
     get:
       tags: [Reports]
       summary: สรุปยอดขายตามช่วงวันที่
+      description: >-
+        นับเฉพาะออเดอร์ที่ paid — refundTotal คือเงินที่คืนหลังบิลปิด (ตามวันที่คืน) netSales = ยอดบิล − refundTotal
+        เงินที่คืนตอนบิลยังเปิดไม่ลดยอดขาย และ paymentMethods นับเงินที่ร้านเก็บไว้ตอนบิลปิด (payment หักเงินที่คืนก่อนปิด)
+        กติกาเดียวกันใช้กับ Z-report รายวันและรายกะ (docs/DECISIONS.md #97)
       parameters:
         - { in: query, name: from, schema: { type: string, format: date } }
         - { in: query, name: to, schema: { type: string, format: date } }
@@ -1828,7 +1832,8 @@ paths:
       summary: >-
         Z-report ต่อกะ (ดู docs/tickets/12-report-export.md, docs/tickets/01-shift-cash-reconciliation.md)
         — สรุปยอดขาย/ภาษี/ส่วนลด/ช่องทางชำระเงินเฉพาะออเดอร์ที่จ่ายจริงในกะนี้ (ผูกผ่าน
-        payments.shift_id ไม่ใช่วันที่เปิดออเดอร์) พร้อมกระทบยอดเงินสด (opening/expected/counted/variance)
+        payments.shift_id ไม่ใช่วันที่เปิดออเดอร์ เฉพาะออเดอร์ที่ paid) พร้อมกระทบยอดเงินสด (opening/expected/counted/variance)
+        — refundTotal/netSales/paymentMethods ใช้กติกาเดียวกับ GET /reports/summary (docs/DECISIONS.md #97)
         — receivableReceipts แยกยอดรับชำระหนี้ตามช่องทาง (เงินสดนับรวมใน expected แล้ว ดู ticket 20)
       parameters:
         - { in: path, name: shiftId, required: true, schema: { type: integer } }
