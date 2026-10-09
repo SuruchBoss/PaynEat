@@ -208,13 +208,13 @@ class Refund {
   final String? refundedByName;
   final String? createdAt;
 
-  /// เงินที่คืนออกจากช่องทางจริง กับแต้มที่คืนให้ลูกค้า (T11 #101, docs/DECISIONS.md #99)
+  /// เงินที่คืนออกจากช่องทางจริง กับแต้มที่คืนให้ลูกค้า (T11 #101, docs/DECISIONS.md #100)
   final double cashAmount;
   final int pointsReturned;
   final double pointsValue;
 }
 
-/// ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน — แบ่งตามสัดส่วนที่ลูกค้าจ่ายมา (T11 #101, docs/DECISIONS.md #77 D7, #99)
+/// ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน — แบ่งตามสัดส่วนที่ลูกค้าจ่ายมา (T11 #101, docs/DECISIONS.md #77 D7, #100)
 class RefundPreview {
   const RefundPreview({
     required this.amount,

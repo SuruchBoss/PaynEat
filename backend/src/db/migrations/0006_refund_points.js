@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/** Migration 0006 — `refunds.points_returned` / `refunds.points_value` (T11 #101, docs/DECISIONS.md #99) ทั้งหมดอยู่ใน .sql */
+/** Migration 0006 — `refunds.points_returned` / `refunds.points_value` (T11 #101, docs/DECISIONS.md #100) ทั้งหมดอยู่ใน .sql */
 
 const sql = path.join(path.dirname(fileURLToPath(import.meta.url)), '0006_refund_points.sql');
 

@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { api, login, authHeader, cleanup } from './helpers/testApp.js';
 import { customerRepository } from '../src/modules/customers/customer.repository.js';
 
-// แยกเงินสดจริงออกจากมูลค่าแต้ม (T11 #101, docs/DECISIONS.md #77 D7, #99): ลิ้นชักตอนปิดกะนับเฉพาะเงินสดที่รับจริง
+// แยกเงินสดจริงออกจากมูลค่าแต้ม (T11 #101, docs/DECISIONS.md #77 D7, #100): ลิ้นชักตอนปิดกะนับเฉพาะเงินสดที่รับจริง
 // รายงานช่องทางชำระแสดงเงินจริงกับบรรทัดแลกแต้มแยกกัน และคืนเงินแบ่งเป็นเงินกับแต้มตามสัดส่วนที่ลูกค้าจ่ายมา
 // ค่าเริ่มต้นของร้าน: 1 แต้ม = 1 บาท
 

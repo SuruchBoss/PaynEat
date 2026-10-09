@@ -743,7 +743,7 @@ In demo mode, the login page provides a demo-account chip for every role; **a si
   **60.05** in cash → the shift's Z-report shows 60.05 cash and a separate **Points redeemed 40** line → as `manager`, refund 50 THB from the
   receipt → the refund dialog first says it **refunds 31 in cash and returns 19 points**, and you confirm again to refund. The receipt shows
   the cash and points of each refund, the points go back to the customer, and closing the shift takes only the cash refunded out of the
-  drawer (see `docs/DECISIONS.md` #99)
+  drawer (see `docs/DECISIONS.md` #100)
 - Log in as `admin` → **Promotions**, create a 50% off code → open a bill with **green curry chicken (160)** + **steamed tilapia
   with lime (320)** and apply the code (282.48) → **Split per person**, pick the green curry → the split screen shows the
   **discount shared out −80.00**, SC 8.00, VAT 6.16, **94.16** due, and the second person pays exactly **188.32**. A store set to
@@ -1066,7 +1066,7 @@ cd app && flutter test test_e2e   # 58 cases — the real app talking to the rea
   the value of points used is its own "Points redeemed" line. Refunding a bill paid partly with points splits the refund the way the
   customer paid (points round down, the remainder is cash, cash refunded never exceeds cash received, a full refund returns every point).
   The refund dialog shows the cash and points before you confirm, and the points go straight back to the customer (see
-  `docs/DECISIONS.md` #99)
+  `docs/DECISIONS.md` #100)
 - **Closed bills lock their items** — once a bill is fully paid or cancelled, nobody (managers included) can cancel an
   item on it, and an item already paid in a split must be refunded before it can be cancelled, so the sales, VAT, tax
   invoice and stock of a closed bill never change unnoticed. The kitchen can still cook a takeaway order that was paid
@@ -1675,7 +1675,7 @@ refund gives 31 cash and 19 points without writing anything; a full refund gives
 2100.05 with a variance of 0; refunds of 50/30/20.05 give (31, 19), (18, 12), (11.05, 9); and a bill without points refunds all in cash.
 `refund-split.test.js` (7 cases) covers the splitter: a full refund, the PO's example (60/40, refund 50 = 30 + 20), points rounding down,
 cash refunded never exceeding cash received, several refunds adding up to one, and refusing an amount that must go back as points but is
-not a whole point (see `docs/DECISIONS.md` #99)
+not a whole point (see `docs/DECISIONS.md` #100)
 
 `order-move-merge-split.test.js` (7 cases) covers move-table/merge-bill/split-by-item: a successful move
 and rejection when the destination table is occupied, a successful merge (correct combined total, the source
@@ -2279,8 +2279,12 @@ Completed work, planned work, and known limitations, with the reasoning for each
   and T22 managers manage only lower-role staff in their own branches (`docs/DECISIONS.md` #92) — **round 1 is complete**.
   Ticket 33 is done. Round 2: T07 a bill never dropping below what was paid (`docs/DECISIONS.md` #95) and T08 an order holding money
   cannot be cancelled until it is refunded (`docs/DECISIONS.md` #96), and reports that subtract only money refunded after a
-  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98), and T11 real cash kept apart from points with refunds split the same way (#101, `docs/DECISIONS.md` #99) are done. Next: the rest of round 2 is what must be done before the first real
-  shop, closed by a test in which a shop owner runs a whole shift (`docs/DECISIONS.md` #93)
+  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98), and T11 real cash kept apart from points with refunds split the same way (#101, `docs/DECISIONS.md` #100) are done. Next: T03, then a pause. After the pause, T20, T21, T23
+  and the Windows installer (ticket 34) must be done before the first real shop, closed by a test in which a shop owner runs a whole
+  shift on a machine set up with that installer (`docs/DECISIONS.md` #93, #99)
+- [ ] **A Windows installer for real shops (ticket 34)** — one file the owner installs without IT help, with no Docker or Node to
+  install and no demo password or secret; the system starts with the computer and every tablet in the shop opens the same address
+  straight away (see `docs/DECISIONS.md` #99)
 - [ ] **Link previews and web-app icons that match the product** — no outdated figures in the share image, and the
   PaynEat logo when the web app is installed from the browser (see ticket 31)
 - [x] **Automatic backups the owner can restore without a developer (ticket 33, #145)** — a backup at every shift close, every six

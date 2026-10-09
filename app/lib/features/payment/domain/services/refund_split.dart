@@ -5,7 +5,7 @@
 typedef RefundSplit = ({int cashAmount, int points, int pointsValue});
 
 /// แบ่งยอดคืนของ payment ที่ลูกค้าจ่ายด้วยเงินกับแต้ม เป็นเงินที่คืนจริงกับแต้มที่คืนให้ลูกค้า
-/// (T11 #101, docs/DECISIONS.md #77 D7, #99) — mirror ของ `backend/src/modules/payments/refund.split.js`
+/// (T11 #101, docs/DECISIONS.md #77 D7, #100) — mirror ของ `backend/src/modules/payments/refund.split.js`
 ///
 /// ยอดคืน ([amount]) เป็นมูลค่าตามบิล (เงิน + มูลค่าแต้ม) แบ่งตามสัดส่วนที่ลูกค้าจ่ายมา แต้มปัดลงเป็นจำนวนเต็ม เศษคืนเป็นเงิน
 /// แต่เงินที่คืนสะสมต้องไม่เกินเงินที่รับจริง คืนจนครบยอดของ payment = คืนแต้มที่ใช้ไปทั้งหมด

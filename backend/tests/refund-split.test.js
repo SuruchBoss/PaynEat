@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { splitRefund } from '../src/modules/payments/refund.split.js';
 
-// แบ่งยอดคืนเป็นเงินกับแต้มตามสัดส่วนที่ลูกค้าจ่าย (T11 #101, docs/DECISIONS.md #77 D7, #99) — ทุกค่าเป็นสตางค์ ยกเว้นจำนวนแต้ม
+// แบ่งยอดคืนเป็นเงินกับแต้มตามสัดส่วนที่ลูกค้าจ่าย (T11 #101, docs/DECISIONS.md #77 D7, #100) — ทุกค่าเป็นสตางค์ ยกเว้นจำนวนแต้ม
 // บิล 100.05 ใช้ 40 แต้ม (มูลค่า 40 บาท) + เงินสด 60.05
 const pointsBill = { paymentAmount: 10005, pointsRedeemed: 40, pointsRedeemedValue: 4000 };
 

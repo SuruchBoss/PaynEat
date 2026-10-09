@@ -21,7 +21,7 @@ class RefundResult {
 /// (เก็บ audit trail ว่าใครคืนให้ใครเพราะอะไร)
 ///
 /// payment ที่ลูกค้าใช้แต้มจ่ายส่ง [preview] มาด้วย: กดยืนยันครั้งแรกจะถามระบบก่อนว่ายอดนี้แบ่งเป็นเงินกี่บาทกับแต้มกี่แต้ม
-/// แล้วแสดงให้ดู ต้องกดยืนยันอีกครั้งจึงคืนจริง (T11 #101, docs/DECISIONS.md #77 D7, #99) แก้ยอดเมื่อไหร่ต้องดูตัวอย่างใหม่
+/// แล้วแสดงให้ดู ต้องกดยืนยันอีกครั้งจึงคืนจริง (T11 #101, docs/DECISIONS.md #77 D7, #100) แก้ยอดเมื่อไหร่ต้องดูตัวอย่างใหม่
 class RefundDialog extends StatefulWidget {
   const RefundDialog({super.key, required this.maxAmount, this.preview});
 

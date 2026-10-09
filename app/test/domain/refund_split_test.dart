@@ -4,7 +4,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:payneat_pos/features/payment/domain/services/refund_split.dart';
 
-// แบ่งยอดคืนเป็นเงินกับแต้มตามสัดส่วนที่ลูกค้าจ่าย (T11 #101, docs/DECISIONS.md #77 D7, #99) — เคสเดียวกับ
+// แบ่งยอดคืนเป็นเงินกับแต้มตามสัดส่วนที่ลูกค้าจ่าย (T11 #101, docs/DECISIONS.md #77 D7, #100) — เคสเดียวกับ
 // backend/tests/refund-split.test.js ทุกค่าเป็นสตางค์ ยกเว้นจำนวนแต้ม
 // บิล 100.05 ใช้ 40 แต้ม (มูลค่า 40 บาท) + เงินสด 60.05
 RefundSplit? pointsBill(

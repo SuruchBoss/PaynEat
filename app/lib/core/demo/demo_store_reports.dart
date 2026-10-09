@@ -43,7 +43,7 @@ extension DemoStoreReports on DemoStore {
 
   /// ยอดต่อช่องทางชำระเงินของ payment ในออเดอร์ที่ `paid` หักเงินที่คืนก่อนบิลปิด (mirror ของ `netPaymentMethodsSql`)
   /// payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ ยอดของแต่ละช่องทางเป็นเงินที่รับจริง ส่วนแต้มที่ลูกค้าใช้แลกแยกเป็นบรรทัด
-  /// `points` ของตัวเอง (T11 #101, docs/DECISIONS.md #99) เงินสดในรายงานจึงตรงกับเงินในลิ้นชัก
+  /// `points` ของตัวเอง (T11 #101, docs/DECISIONS.md #100) เงินสดในรายงานจึงตรงกับเงินในลิ้นชัก
   List<Map<String, dynamic>> _netPaymentMethods(
     Iterable<Map<String, dynamic>> paymentRows,
     Map<int, ({double pre, double post})> split,

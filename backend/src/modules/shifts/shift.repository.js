@@ -34,7 +34,7 @@ export const shiftRepository = {
   cashInDuring(shiftId) {
     return getDb()
       .prepare(
-        // เงินสดที่รับจริง = ยอดชำระ − มูลค่าแต้มที่ใช้แลก (แต้มไม่ใช่เงินในลิ้นชัก T11 #101, DECISIONS #99)
+        // เงินสดที่รับจริง = ยอดชำระ − มูลค่าแต้มที่ใช้แลก (แต้มไม่ใช่เงินในลิ้นชัก T11 #101, DECISIONS #100)
         `SELECT IFNULL(SUM(amount - points_redeemed_value), 0) AS total
            FROM payments WHERE shift_id = ? AND method = 'cash'`,
       )

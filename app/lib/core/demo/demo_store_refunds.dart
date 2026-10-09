@@ -12,7 +12,7 @@ extension DemoStoreRefunds on DemoStore {
       .where((row) => row['paymentId'] == paymentId)
       .fold<double>(0, (sum, row) => sum + (row['amount'] as num).toDouble());
 
-  /// mirror ของ `planRefund` ใน payment.service.js (T11 #101, docs/DECISIONS.md #77 D7, #99): แบ่งยอดคืนเป็นเงินที่คืนจริง
+  /// mirror ของ `planRefund` ใน payment.service.js (T11 #101, docs/DECISIONS.md #77 D7, #100): แบ่งยอดคืนเป็นเงินที่คืนจริง
   /// กับแต้มที่คืนให้ลูกค้าตามสัดส่วนที่ลูกค้าจ่ายมา ใช้ทั้งหน้าดูตัวอย่างและตอนคืนจริง ตัวเลขสองที่จึงตรงกันเสมอ
   ({
     int refunded,
