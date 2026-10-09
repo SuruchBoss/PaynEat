@@ -16,6 +16,7 @@ import {
   cancelOrderSchema,
   moveTableSchema,
   mergeOrderSchema,
+  mergePreviewQuerySchema,
   listOrderQuerySchema,
   idParamSchema,
   itemParamSchema,
@@ -111,6 +112,12 @@ router.patch(
   service,
   validate({ params: idParamSchema, body: moveTableSchema }),
   orderController.moveTable,
+);
+router.get(
+  '/:id/merge-preview',
+  service,
+  validate({ params: idParamSchema, query: mergePreviewQuerySchema }),
+  orderController.mergePreview,
 );
 router.post(
   '/:id/merge',

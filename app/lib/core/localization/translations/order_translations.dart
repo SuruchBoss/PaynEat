@@ -176,9 +176,24 @@ const Map<String, String> orderTranslationsTh = {
   'order_weigh_title': 'ชั่ง @name',
   'order_menu_tooltip': 'ตัวเลือกเพิ่มเติม',
   'order_merge_confirm_title': 'รวมบิล',
-  'order_merge_confirm_message':
-      'ย้ายรายการทั้งหมดของ @source (@code · @amount) มารวมในบิล @target แล้วปิดออเดอร์เดิม ย้อนกลับไม่ได้ ต้องการรวมใช่หรือไม่?',
   'order_merge_confirm_button': 'รวมบิล',
+  'order_merge_preview_intro':
+      'ย้ายรายการ ยอดที่จ่ายแล้ว และส่วนลดของ @source มารวมในบิล @target',
+  'order_merge_preview_source': 'บิลที่ย้ายมา',
+  'order_merge_preview_target': 'บิลนี้',
+  'order_merge_preview_after': 'หลังรวม',
+  'order_merge_preview_total': 'ยอดบิล',
+  'order_merge_preview_paid': 'จ่ายแล้ว',
+  'order_merge_preview_remaining': 'คงเหลือ',
+  'order_merge_preview_discount': 'ส่วนลด',
+  'order_merge_preview_promotion': 'โปรโมชัน',
+  'order_merge_preview_discount_lost':
+      'ส่วนลดรวมจะลดลง @amount เพราะบิลหนึ่งใช้โปรโมชันได้ตัวเดียว (หรือส่วนลดเกินยอดอาหาร)',
+  'order_merge_preview_refund_required':
+      'ยอดหลังรวมต่ำกว่าเงินที่รับไว้ ต้องคืนเงิน @amount ก่อนจึงจะรวมได้',
+  'order_merge_preview_irreversible': 'บิลเดิมจะถูกปิดและรวมกลับคืนไม่ได้',
+  'order_error_merge_customer_mismatch':
+      'บิล #@code มีการชำระแบบขายเชื่อหรือใช้แต้มของลูกค้า รวมได้เฉพาะกับบิลของลูกค้าคนเดียวกัน',
   'order_cancel_order_reason_required': 'ต้องระบุเหตุผลก่อนยกเลิก',
   'order_discard_cart_title': 'ทิ้งรายการในตะกร้า?',
   'order_clear_cart_title': 'ล้างตะกร้า?',
@@ -352,9 +367,25 @@ const Map<String, String> orderTranslationsEn = {
   'order_weigh_title': 'Weigh @name',
   'order_menu_tooltip': 'More options',
   'order_merge_confirm_title': 'Merge bills',
-  'order_merge_confirm_message':
-      "Move every item from @source (@code · @amount) into the @target bill and close the old order? This can't be undone.",
   'order_merge_confirm_button': 'Merge bills',
+  'order_merge_preview_intro':
+      'Moves the items, the amount paid and the discounts of @source into the bill for @target',
+  'order_merge_preview_source': 'Bill being moved',
+  'order_merge_preview_target': 'This bill',
+  'order_merge_preview_after': 'After merging',
+  'order_merge_preview_total': 'Bill total',
+  'order_merge_preview_paid': 'Paid',
+  'order_merge_preview_remaining': 'Remaining',
+  'order_merge_preview_discount': 'Discount',
+  'order_merge_preview_promotion': 'Promotion',
+  'order_merge_preview_discount_lost':
+      'The discounts drop by @amount, because a bill takes one promotion only (or a discount exceeds the food total)',
+  'order_merge_preview_refund_required':
+      'The merged total is below the money received — refund @amount before merging',
+  'order_merge_preview_irreversible':
+      'The other bill is closed and the merge cannot be undone',
+  'order_error_merge_customer_mismatch':
+      'Bill #@code has a credit sale or redeemed points of its customer — it can only be merged into a bill of the same customer',
   'order_cancel_order_reason_required': 'A reason is required to cancel',
   'order_discard_cart_title': 'Discard the cart?',
   'order_clear_cart_title': 'Clear the cart?',
@@ -503,9 +534,23 @@ const Map<String, String> orderTranslationsKo = {
   'order_weigh_title': '@name 계량',
   'order_menu_tooltip': '더보기',
   'order_merge_confirm_title': '주문 합치기',
-  'order_merge_confirm_message':
-      '@source (@code · @amount)의 모든 항목을 @target 계산서로 옮기고 기존 주문을 닫을까요? 되돌릴 수 없습니다.',
   'order_merge_confirm_button': '합치기',
+  'order_merge_preview_intro': '@source의 항목, 결제된 금액, 할인을 @target 계산서로 옮깁니다',
+  'order_merge_preview_source': '옮겨 오는 계산서',
+  'order_merge_preview_target': '이 계산서',
+  'order_merge_preview_after': '합친 후',
+  'order_merge_preview_total': '계산서 금액',
+  'order_merge_preview_paid': '결제됨',
+  'order_merge_preview_remaining': '남은 금액',
+  'order_merge_preview_discount': '할인',
+  'order_merge_preview_promotion': '프로모션',
+  'order_merge_preview_discount_lost':
+      '계산서 하나에는 프로모션을 하나만 쓸 수 있어 (또는 할인이 음식 금액을 넘어) 할인이 @amount 줄어듭니다',
+  'order_merge_preview_refund_required':
+      '합친 금액이 받은 돈보다 적습니다 — 합치기 전에 @amount 를 환불하세요',
+  'order_merge_preview_irreversible': '원래 계산서는 닫히며 되돌릴 수 없습니다',
+  'order_error_merge_customer_mismatch':
+      '계산서 #@code에는 고객의 외상 결제나 포인트 사용이 있어 같은 고객의 계산서에만 합칠 수 있습니다',
   'order_cancel_order_reason_required': '취소하려면 사유를 입력해야 합니다',
   'order_discard_cart_title': '장바구니를 비울까요?',
   'order_clear_cart_title': '장바구니를 비울까요?',

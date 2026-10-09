@@ -67,6 +67,9 @@ export const orderController = {
     ok(res, orderService.moveTable(req.validated.params.id, req.body.tableId, req.user)),
   ),
 
+  mergePreview: asyncHandler(async (req, res) =>
+    ok(res, orderService.previewMerge(req.validated.params.id, req.validated.query.sourceOrderId)),
+  ),
   merge: asyncHandler(async (req, res) =>
     ok(res, orderService.mergeOrders(req.validated.params.id, req.body.sourceOrderId, req.user)),
   ),

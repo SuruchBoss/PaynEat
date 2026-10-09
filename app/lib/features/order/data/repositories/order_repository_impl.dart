@@ -5,6 +5,7 @@ import '../../../../core/errors/failure_mapper.dart';
 import '../../../../core/usecases/result.dart';
 import '../../../promotion/domain/entities/promotion.dart';
 import '../../domain/entities/order.dart';
+import '../../domain/entities/merge_preview.dart';
 import '../../domain/entities/order_item.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/entities/order_item_payload.dart';
@@ -117,6 +118,14 @@ class OrderRepositoryImpl implements OrderRepository {
       guard(
         () async => await _remote.mergeOrders(targetOrderId, sourceOrderId),
       );
+
+  @override
+  Future<Result<MergePreview>> previewMerge(
+    int targetOrderId,
+    int sourceOrderId,
+  ) => guard(
+    () async => await _remote.previewMerge(targetOrderId, sourceOrderId),
+  );
 
   @override
   Future<Result<List<OrderItem>>> getKitchenQueue({List<String>? statuses}) =>

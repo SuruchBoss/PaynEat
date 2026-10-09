@@ -342,6 +342,11 @@ export const ERROR_MESSAGES = [
     ko: '같은 주문끼리는 합칠 수 없습니다',
   },
   {
+    th: 'บิล #{code} มีการชำระแบบขายเชื่อหรือใช้แต้มของลูกค้า รวมได้เฉพาะกับบิลของลูกค้าคนเดียวกัน',
+    en: 'Bill #{code} has a credit sale or redeemed points of its customer — it can only be merged into a bill of the same customer',
+    ko: '계산서 #{code}에는 고객의 외상 결제나 포인트 사용이 있어 같은 고객의 계산서에만 합칠 수 있습니다',
+  },
+  {
     th: 'ออเดอร์ที่ชำระเงินแล้วยกเลิกไม่ได้',
     en: "A paid order can't be cancelled",
     ko: '결제된 주문은 취소할 수 없습니다',

@@ -194,6 +194,87 @@ const recalculate = (orderId) => {
   return orderRepository.findById(orderId);
 };
 
+/**
+ * แผนรวมบิลต้นทางเข้าบิลปลายทาง (T09 #96, DECISIONS #77 D3, #98) — ใช้ทั้งหน้าดูตัวอย่างและตอนรวมจริง ตัวเลขจึงตรงกันเสมอ
+ *
+ * - ยอดที่จ่ายแล้ว (การชำระและการคืนเงิน) ย้ายตามไปทั้งหมด กะของแต่ละการชำระไม่เปลี่ยน
+ * - ส่วนลดที่กรอกเองย้ายตามไปเป็นบาท: ปลายทางได้ส่วนลดของตัวเอง + ของต้นทาง (ส่วนลดแบบ % กลายเป็นยอดบาทที่ได้อยู่ตอนรวม)
+ *   ถ้าต้นทางไม่มีส่วนลด ส่วนลดของปลายทางคงเดิม ส่วนลดรวมไม่เกิน subtotal ตามเพดานใน `calculateBill` (#14)
+ * - โปรโมชันประเมินใหม่บนบิลที่รวมแล้ว ใช้ได้ตัวเดียว (#14): โค้ดของปลายทาง > โค้ดของต้นทาง > โปรอัตโนมัติที่ลดมากสุด
+ * - การชำระที่ผูกกับลูกค้า (ขายเชื่อ หรือใช้แต้ม) ย้ายไปบิลของลูกค้าคนอื่นไม่ได้ หนี้และแต้มจะไปอยู่ผิดบัญชี
+ */
+const planMerge = (target, source) => {
+  if (target.id === source.id) {
+    throw ApiError.badRequest('เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้');
+  }
+  assertOrderMutable(target);
+  assertOrderMutable(source);
+  if (
+    paymentRepository.countCustomerBound(source.id) > 0 &&
+    (source.customer_id ?? null) !== (target.customer_id ?? null)
+  ) {
+    throw new ApiError(
+      409,
+      `บิล #${source.code} มีการชำระแบบขายเชื่อหรือใช้แต้มของลูกค้า รวมได้เฉพาะกับบิลของลูกค้าคนเดียวกัน`,
+      { code: 'MERGE_CUSTOMER_MISMATCH' },
+    );
+  }
+
+  const discount =
+    source.discount_amount > 0
+      ? { type: 'amount', value: target.discount_amount + source.discount_amount }
+      : { type: target.discount_type, value: target.discount_value };
+  const promotionOwner =
+    !target.promotion_code_snapshot && source.promotion_code_snapshot ? source : target;
+  const promotion = {
+    promotionId: promotionOwner.promotion_id,
+    promotionName: promotionOwner.promotion_name_snapshot,
+    promotionCode: promotionOwner.promotion_code_snapshot,
+  };
+
+  const items = [...orderRepository.findItems(target.id), ...orderRepository.findItems(source.id)];
+  const promo = resolvePromotionForOrder(
+    {
+      ...target,
+      promotion_id: promotion.promotionId,
+      promotion_code_snapshot: promotion.promotionCode,
+    },
+    items,
+  );
+  const settings = settingsService.get();
+  const totals = calculateBill({
+    items,
+    discountType: discount.type,
+    discountValue: discount.value,
+    promotionDiscountAmount: promo.discountAmount,
+    vatRate: settings.vatRate,
+    serviceChargeRate: settings.serviceChargeRate,
+    vatIncluded: settings.vatIncluded,
+  });
+  return {
+    discount,
+    promotion,
+    promo,
+    totals,
+    paid: {
+      target: paymentRepository.netPaid(target.id),
+      source: paymentRepository.netPaid(source.id),
+    },
+  };
+};
+
+const mergeSideDto = (order, paid) => ({
+  id: order.id,
+  code: order.code,
+  tableId: order.table_id,
+  subtotal: toBaht(order.subtotal),
+  discount: toBaht(order.discount_amount),
+  promotionDiscount: toBaht(order.promotion_discount_amount),
+  promotionName: order.promotion_name_snapshot,
+  total: toBaht(order.total),
+  paid: toBaht(paid),
+});
+
 const loadOrder = (id) => {
   const order = orderRepository.findById(id);
   if (!order) throw ApiError.notFound('ไม่พบออเดอร์นี้');
@@ -821,19 +902,66 @@ export const orderService = {
     return dto;
   },
 
-  /** รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล */
-  mergeOrders(targetOrderId, sourceOrderId, user) {
-    if (targetOrderId === sourceOrderId) {
-      throw ApiError.badRequest('เลือกออเดอร์ปลายทางเดียวกับต้นทางไม่ได้');
-    }
+  /**
+   * ดูผลของการรวมบิลก่อนกดยืนยัน (T09 #96, DECISIONS #77 D3, #98) — ยอดจ่ายแล้วและส่วนลดของทั้งสองฝั่ง ยอดของบิลที่รวมแล้ว
+   * และส่วนลดที่จะหายไป (โปรโมชันใช้ได้ตัวเดียวต่อบิล หรือติดเพดาน subtotal) คำนวณด้วยแผนเดียวกับตอนรวมจริง ไม่เขียนอะไรลงฐานข้อมูล
+   */
+  previewMerge(targetOrderId, sourceOrderId) {
     const target = loadOrder(targetOrderId);
     const source = loadOrder(sourceOrderId);
-    assertOrderMutable(target);
-    assertOrderMutable(source);
+    const plan = planMerge(target, source);
+    const { totals } = plan;
+    const paid = plan.paid.target + plan.paid.source;
+    const discountsBefore =
+      target.discount_amount +
+      target.promotion_discount_amount +
+      source.discount_amount +
+      source.promotion_discount_amount;
+    const discountsAfter = totals.discountAmount + totals.promotionDiscountAmount;
+    return {
+      target: mergeSideDto(target, plan.paid.target),
+      source: mergeSideDto(source, plan.paid.source),
+      merged: {
+        subtotal: toBaht(totals.subtotal),
+        discount: toBaht(totals.discountAmount),
+        promotionDiscount: toBaht(totals.promotionDiscountAmount),
+        promotionName: plan.promo.name,
+        serviceCharge: toBaht(totals.serviceCharge),
+        vat: toBaht(totals.vat),
+        total: toBaht(totals.total),
+        paid: toBaht(paid),
+        remaining: toBaht(Math.max(totals.total - paid, 0)),
+        refundRequired: toBaht(Math.max(paid - totals.total, 0)),
+      },
+      discountLost: toBaht(Math.max(discountsBefore - discountsAfter, 0)),
+    };
+  },
+
+  /**
+   * รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล ย้ายรายการ การชำระ การคืนเงิน และส่วนลดตามไปที่ปลายทาง
+   * แล้วปิดต้นทางโดยไม่มียอดเงินค้าง (T09 #96, DECISIONS #77 D3, #98) ทั้งหมดใน transaction เดียว ยอดใหม่ที่ต่ำกว่าเงินที่รับไว้
+   * ถูกปฏิเสธ และยอดที่เท่าเงินที่รับไว้พอดีปิดบิลปลายทางทันที (กติกา T07 ใน `settleIfCovered`)
+   */
+  mergeOrders(targetOrderId, sourceOrderId, user) {
+    const target = loadOrder(targetOrderId);
+    const source = loadOrder(sourceOrderId);
 
     const sourceTableId = source.table_id;
     const updated = changeOrder(() => {
+      const plan = planMerge(target, source);
       orderRepository.reassignItems(source.id, target.id);
+      paymentRepository.reassignToOrder(source.id, target.id);
+      refundRepository.reassignToOrder(source.id, target.id);
+      orderRepository.setDiscount(target.id, {
+        discountType: plan.discount.type,
+        discountValue: plan.discount.value,
+      });
+      orderRepository.setPromotion(target.id, plan.promotion);
+
+      // ต้นทางไม่เหลือรายการ เงิน หรือส่วนลด ยอดเป็น 0 ไม่ถูกนับในรายงานหรือ Z-report
+      orderRepository.setDiscount(source.id, { discountType: 'none', discountValue: 0 });
+      orderRepository.setPromotion(source.id, {});
+      recalculate(source.id);
       orderRepository.updateStatus(source.id, 'cancelled', {
         closedAt: new Date().toISOString(),
         cancelledReason: `รวมเข้ากับบิล #${target.code}`,
@@ -846,7 +974,14 @@ export const orderService = {
         entityType: 'order',
         entityId: target.id,
         summary: `รวมบิล #${source.code} เข้ากับ #${target.code}`,
-        metadata: { targetOrderCode: target.code, sourceOrderCode: source.code },
+        metadata: {
+          targetOrderCode: target.code,
+          sourceOrderCode: source.code,
+          movedPaid: plan.paid.source,
+          movedDiscount: source.discount_amount,
+          sourcePromotion: source.promotion_name_snapshot,
+          mergedPromotion: plan.promo.name,
+        },
       });
       return target.id;
     });

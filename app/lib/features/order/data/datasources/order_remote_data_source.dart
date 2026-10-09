@@ -5,6 +5,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_endpoints.dart';
 import '../../../promotion/data/models/promotion_model.dart';
 import '../../domain/entities/order_item_payload.dart';
+import '../models/merge_preview_model.dart';
 import '../models/order_model.dart';
 
 abstract class OrderRemoteDataSource {
@@ -41,6 +42,7 @@ abstract class OrderRemoteDataSource {
   Future<OrderModel> cancelOrder(int orderId, String reason);
   Future<OrderModel> moveTable(int orderId, int tableId);
   Future<OrderModel> mergeOrders(int targetOrderId, int sourceOrderId);
+  Future<MergePreviewModel> previewMerge(int targetOrderId, int sourceOrderId);
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses});
   Future<OrderModel> redeemPromotionCode(int orderId, String code);
   Future<OrderModel> removePromotion(int orderId);
@@ -206,6 +208,18 @@ class OrderRemoteDataSourceImpl implements OrderRemoteDataSource {
       body: {'sourceOrderId': sourceOrderId},
     );
     return OrderModel.fromJson(result.asMap);
+  }
+
+  @override
+  Future<MergePreviewModel> previewMerge(
+    int targetOrderId,
+    int sourceOrderId,
+  ) async {
+    final result = await _client.get(
+      ApiEndpoints.mergeOrderPreview(targetOrderId),
+      query: {'sourceOrderId': '$sourceOrderId'},
+    );
+    return MergePreviewModel.fromJson(result.asMap);
   }
 
   @override

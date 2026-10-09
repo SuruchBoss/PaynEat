@@ -6,6 +6,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../../promotion/domain/entities/promotion.dart';
 import '../entities/order_item_payload.dart';
 import '../entities/cart_line.dart';
+import '../entities/merge_preview.dart';
 import '../entities/order.dart';
 import '../entities/order_item.dart';
 import '../repositories/order_repository.dart';
@@ -291,6 +292,17 @@ class MergeOrdersUseCase implements UseCase<Order, MergeOrdersParams> {
   @override
   Future<Result<Order>> call(MergeOrdersParams params) =>
       _repository.mergeOrders(params.targetOrderId, params.sourceOrderId);
+}
+
+/// ดูผลของการรวมบิลก่อนยืนยัน — ยอดจ่ายแล้วและส่วนลดของทั้งสองฝั่ง (T09 #96)
+class PreviewMergeUseCase implements UseCase<MergePreview, MergeOrdersParams> {
+  const PreviewMergeUseCase(this._repository);
+
+  final OrderRepository _repository;
+
+  @override
+  Future<Result<MergePreview>> call(MergeOrdersParams params) =>
+      _repository.previewMerge(params.targetOrderId, params.sourceOrderId);
 }
 
 /// คิวครัว

@@ -4,6 +4,13 @@
 import { getDb } from '../../db/index.js';
 
 export const refundRepository = {
+  /** ย้ายการคืนเงินทั้งหมดของออเดอร์หนึ่งไปอีกออเดอร์ คู่กับ `paymentRepository.reassignToOrder` (T09 #96) */
+  reassignToOrder(fromOrderId, toOrderId) {
+    return getDb()
+      .prepare('UPDATE refunds SET order_id = ? WHERE order_id = ?')
+      .run(toOrderId, fromOrderId).changes;
+  },
+
   findByOrder(orderId) {
     return getDb()
       .prepare(

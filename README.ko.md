@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1215%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1228%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -184,7 +184,9 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
 
 - **EMV 표준 프롬프트페이 QR** — 계산서 금액이 QR에 담겨요. 손님은 은행 앱으로 스캔만 하면 되고, 아무도 금액을 입력하지 않아요.
 - **결제 수단별·품목별 분할** — 한 계산서에 현금, QR, 카드. 할인·봉사료·VAT는 비율대로 자동 배분.
-- **테이블 이동과 합치기** — 손님이 자리를 옮기거나 테이블을 합쳐도 주문이 그대로 따라가요.
+- **테이블 이동과 합치기** — 손님이 자리를 옮기거나 테이블을 합쳐도 주문이 그대로 따라가요. 이미 받은 돈(환불 차감)과 직접 입력한 할인도
+  함께 옮겨지고, 프로모션은 합친 계산서에서 다시 계산하며(계산서당 하나), 확인 화면에서 두 계산서의 결제액과 할인을 먼저 보여 주고 할인이
+  줄어들면 알려 줍니다 (`docs/DECISIONS.md` #98)
 - **감열 프린터로 태국어 영수증** — 같은 LAN/Wi-Fi의 ESC/POS 프린터, 58mm·80mm 용지.
 - **간이 세금계산서** — 태국 불기 연도 기준 일련번호. 잘못 발행한 건 이력을 남긴 채 취소.
 
@@ -509,16 +511,16 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1215건**의 자동화 테스트를 통과합니다.
+공개 전 **1228건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 552건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 610건 — domain / controller / widget
-cd app && flutter test test_e2e   # 53건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1215건에 미포함)
+cd backend && npm test      # 557건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 616건 — domain / controller / widget
+cd app && flutter test test_e2e   # 55건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1228건에 미포함)
 ```
 
-`app/test_e2e/`의 E2E 테스트 53건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
+`app/test_e2e/`의 E2E 테스트 55건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
 실제 data/domain 코드로 매장의 하루 업무를 처음부터 끝까지 수행합니다. 대상 업무는 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 손님의 QR 주문, 지점·권한입니다. 나머지
 Flutter 테스트는 모두 데모 모드에서 실행되므로, 앱이 **백엔드가 실제로 반환한 JSON을 해석하는지** 검증하는 테스트는
