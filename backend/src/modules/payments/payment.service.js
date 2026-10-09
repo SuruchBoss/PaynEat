@@ -20,6 +20,7 @@ import { pointValueSatang } from '../customers/loyalty.js';
 import { receivableService } from '../receivables/receivable.service.js';
 import { paymentRepository } from './payment.repository.js';
 import { refundRepository } from './refund.repository.js';
+import { splitRefund } from './refund.split.js';
 import { toPaymentDto } from './payment.mapper.js';
 import { toRefundDto } from './refund.mapper.js';
 
@@ -70,6 +71,34 @@ const assertNotOverpaid = (order, alreadyPaid) => {
     `บิลนี้รับเงินไว้เกินยอดบิล ${toBaht(alreadyPaid - order.total)} บาท ต้องคืนเงินส่วนเกินก่อน`,
     { refundRequired: toBaht(alreadyPaid - order.total) },
   );
+};
+
+/**
+ * แบ่งยอดคืนของ payment เป็นเงินที่คืนจริงกับแต้มที่คืนให้ลูกค้าตามสัดส่วนที่ลูกค้าจ่ายมา (T11 #101, DECISIONS #77 D7, #99)
+ * ใช้ทั้งหน้าดูตัวอย่างก่อนคืนและตอนคืนจริง ตัวเลขสองที่จึงตรงกันเสมอ
+ */
+const planRefund = (payment, amountSatang) => {
+  const returned = refundRepository.returnedByPayment(payment.id);
+  const refundable = payment.amount - returned.amount;
+  if (amountSatang > refundable) {
+    throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
+  }
+  const split = splitRefund({
+    paymentAmount: payment.amount,
+    pointsRedeemed: payment.points_redeemed ?? 0,
+    pointsRedeemedValue: payment.points_redeemed_value ?? 0,
+    refunded: returned.amount,
+    pointsReturned: returned.points,
+    pointsValueReturned: returned.points_value,
+    amount: amountSatang,
+  });
+  if (!split) {
+    throw ApiError.badRequest(
+      `เงินที่รับจริงของรายการนี้คืนครบแล้ว ยอดที่เหลือ ${toBaht(refundable)} บาทคืนเป็นแต้ม ` +
+        'ต้องคืนเป็นมูลค่าแต้มเต็มแต้ม หรือคืนทั้งหมดที่เหลือ',
+    );
+  }
+  return { returned, refundable, split };
 };
 
 export const paymentService = {
@@ -325,16 +354,35 @@ export const paymentService = {
    * คืนบนบิลที่ยังเปิดได้ (DECISIONS #77 D1): ยอดคงเหลือของบิลเพิ่มขึ้นตามยอดที่คืน (`netPaid`) และถ้าคืน payment
    * ที่แยกจ่ายตามรายการครบทั้งจำนวน รายการของ payment นั้นกลับเป็นยังไม่จ่าย (T06 #82, DECISIONS #87)
    */
+  /**
+   * ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน (T11 #101, DECISIONS #77 D7) — ไม่เขียนข้อมูล ยอดเกินหรือแบ่งไม่ได้ตอบ 400 เหมือนตอนคืนจริง
+   */
+  refundPreview(paymentId, amount) {
+    const payment = paymentRepository.findById(paymentId);
+    if (!payment) throw ApiError.notFound('ไม่พบรายการชำระเงินนี้');
+    const { returned, refundable, split } = planRefund(payment, toSatang(amount));
+    const pointsValue = payment.points_redeemed_value ?? 0;
+    return {
+      paymentId: payment.id,
+      amount: toBaht(toSatang(amount)),
+      cashAmount: toBaht(split.cashAmount),
+      pointsReturned: split.points,
+      pointsValue: toBaht(split.pointsValue),
+      refundable: toBaht(refundable),
+      cashRefundable: toBaht(
+        payment.amount - pointsValue - (returned.amount - returned.points_value),
+      ),
+      pointsRefundable: (payment.points_redeemed ?? 0) - returned.points,
+    };
+  },
+
   refund(paymentId, { amount, reason }, user) {
     const payment = paymentRepository.findById(paymentId);
     if (!payment) throw ApiError.notFound('ไม่พบรายการชำระเงินนี้');
 
     const amountSatang = toSatang(amount);
-    const alreadyRefunded = refundRepository.totalByPayment(paymentId);
-    const refundable = payment.amount - alreadyRefunded;
-    if (amountSatang > refundable) {
-      throw ApiError.badRequest(`คืนเงินเกินยอดที่คืนได้ (คืนได้สูงสุด ${toBaht(refundable)} บาท)`);
-    }
+    const { returned, split } = planRefund(payment, amountSatang);
+    const alreadyRefunded = returned.amount;
     // บิลขายเชื่อไม่มีเงินให้คืน การคืนคือ "ลดหนี้" จึงลดได้ไม่เกินยอดที่ยังค้าง — ส่วนที่ลูกค้าชำระหนี้
     // มาแล้วต้องยกเลิกใบเสร็จรับชำระก่อน ไม่งั้นยอดค้างติดลบกลายเป็นร้านเป็นหนี้ลูกค้าโดยไม่มีใครเห็น
     if (payment.method === 'credit') {
@@ -366,7 +414,13 @@ export const paymentService = {
         reason,
         refundedBy: user.id,
         shiftId: shift?.id,
+        pointsReturned: split.points,
+        pointsValue: split.pointsValue,
       });
+      // แต้มส่วนที่คืนกลับเข้าบัญชีลูกค้าของบิล ในทรานแซกชันเดียวกับการคืน (T11 #101)
+      if (split.points > 0 && order?.customer_id) {
+        customerRepository.adjustPoints(order.customer_id, split.points);
+      }
       auditLogService.log({
         actorUser: user,
         action: 'payment.refund',
@@ -375,7 +429,13 @@ export const paymentService = {
         entityId: created.id,
         summary: `คืนเงิน ${toBaht(amountSatang)} บาท ให้ออเดอร์ #${order?.code ?? payment.order_id}`,
         reason,
-        metadata: { paymentId, orderId: payment.order_id, amount: toBaht(amountSatang) },
+        metadata: {
+          paymentId,
+          orderId: payment.order_id,
+          amount: toBaht(amountSatang),
+          cashAmount: toBaht(split.cashAmount),
+          pointsReturned: split.points,
+        },
       });
       // ลดหนี้บิลขายเชื่อต้องมีเอกสารให้ลูกค้าเสมอ (ใบลดหนี้ DECISIONS #56) — ออกในทรานแซกชันเดียวกัน
       // ถ้าออกเอกสารไม่สำเร็จ การลดหนี้ก็ต้องไม่เกิด

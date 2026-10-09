@@ -1563,6 +1563,49 @@ paths:
           description: >-
             บิลถูกยกเลิก/ชำระครบแล้ว, ยังไม่เปิดกะ หรือบิลที่ยังเปิดถือเงินเกินยอดบิลอยู่แล้ว (T07) ต้องคืนส่วนเกินก่อน
             (`error.details.refundRequired`) ใช้กับดูยอดแยกบิลก่อนจ่าย (split-preview) ด้วย
+  /payments/{id}/refund-preview:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer }
+        description: id ของ payment ที่จะคืนเงิน
+    get:
+      tags: [Payments]
+      summary: ดูยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน (manager ขึ้นไป — T11)
+      description: >-
+        ใช้แผนเดียวกับ POST /payments/{id}/refund โดยไม่เขียนอะไร payment ที่ลูกค้าใช้แต้มจ่ายแบ่งยอดคืนเป็นเงินกับแต้มตามสัดส่วนจากยอดสะสม
+        (แต้มปัดลง เงินที่คืนไม่เกินเงินที่รับจริง คืนครบได้แต้มครบ — docs/DECISIONS.md #77 D7, #99) payment ที่ไม่ได้ใช้แต้มคืนเป็นเงินทั้งหมด
+      parameters:
+        - in: query
+          name: amount
+          required: true
+          schema: { type: number, example: 50 }
+          description: ยอดคืนตามบิล (เงิน + มูลค่าแต้ม)
+      responses:
+        '200':
+          description: ยอดที่จะคืน
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      paymentId: { type: integer }
+                      amount: { type: number, example: 50 }
+                      cashAmount: { type: number, example: 31, description: เงินที่จะคืนจริง }
+                      pointsReturned: { type: integer, example: 19, description: แต้มที่จะคืนให้ลูกค้า }
+                      pointsValue: { type: number, example: 19, description: มูลค่าของแต้มที่คืน }
+                      refundable: { type: number, description: ยอดที่ยังคืนได้ตามบิล }
+                      cashRefundable: { type: number, description: เงินที่รับจริงที่ยังคืนได้ }
+                      pointsRefundable: { type: integer, description: แต้มที่ยังคืนได้ }
+        '400':
+          description: >-
+            คืนเกินยอดที่ยังคืนได้ หรือเงินที่รับจริงคืนครบแล้วแต่ยอดนี้ไม่ใช่มูลค่าแต้มเต็มแต้ม (ต้องคืนเป็นแต้มเต็มแต้มหรือคืนที่เหลือทั้งหมด)
+        '404': { description: ไม่พบรายการชำระเงินนี้ }
   /payments/{id}/refund:
     parameters:
       - in: path
@@ -1576,6 +1619,8 @@ paths:
       description: >-
         คืนบนบิลที่ยังเปิดได้ (T06) ยอดคงเหลือของบิลเพิ่มขึ้นเท่ายอดที่คืน และถ้าคืน payment ที่แยกจ่ายตามรายการครบทั้งจำนวน
         รายการของ payment นั้นกลับเป็นยังไม่จ่าย (`isPaid: false`) ให้เลือกจ่ายใหม่หรือยกเลิกได้ บิลที่ปิดแล้วไม่เปลี่ยนสถานะ
+        payment ที่ลูกค้าใช้แต้มจ่าย ยอดคืนแบ่งเป็นเงิน (`cashAmount`) กับแต้ม (`pointsReturned`, มูลค่า `pointsValue`) ตามสัดส่วน แต้มกลับเข้าบัญชีลูกค้า
+        และลิ้นชักลดเฉพาะส่วนที่เป็นเงิน (T11, docs/DECISIONS.md #99) — ดูยอดก่อนด้วย GET /payments/{id}/refund-preview
       requestBody:
         required: true
         content:
@@ -1600,7 +1645,9 @@ paths:
                     properties:
                       refund: { type: object }
                       order: { $ref: '#/components/schemas/Order' }
-        '400': { description: คืนเงินเกินยอดที่ยังคืนได้ของ payment นี้ }
+        '400':
+          description: >-
+            คืนเงินเกินยอดที่ยังคืนได้ของ payment นี้ หรือเงินที่รับจริงคืนครบแล้วแต่ยอดนี้ไม่ใช่มูลค่าแต้มเต็มแต้ม
         '404': { description: ไม่พบรายการชำระเงินนี้ }
         '409':
           description: >-

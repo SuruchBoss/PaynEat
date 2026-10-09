@@ -57,6 +57,10 @@ class PaymentRepositoryImpl implements PaymentRepository {
       guard(() async => await _remote.getPromptPayQr(amount));
 
   @override
+  Future<Result<RefundPreview>> previewRefund(int paymentId, double amount) =>
+      guard(() async => await _remote.previewRefund(paymentId, amount));
+
+  @override
   Future<Result<Refund>> refund({
     required int paymentId,
     required double amount,

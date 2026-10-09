@@ -19,6 +19,9 @@ export const paymentController = {
   promptPayQr: asyncHandler(async (req, res) =>
     ok(res, paymentService.promptPayQr(req.validated.query.amount)),
   ),
+  refundPreview: asyncHandler(async (req, res) =>
+    ok(res, paymentService.refundPreview(req.validated.params.id, req.validated.query.amount)),
+  ),
   refund: asyncHandler(async (req, res) =>
     created(res, paymentService.refund(req.validated.params.id, req.body, req.user)),
   ),

@@ -76,6 +76,8 @@ class ApiEndpoints {
   static String splitPreview(int orderId) =>
       '/payments/order/$orderId/split-preview';
   static String refundPayment(int paymentId) => '/payments/$paymentId/refund';
+  static String refundPreview(int paymentId) =>
+      '/payments/$paymentId/refund-preview';
   static const String promptPayQr = '/payments/promptpay-qr';
 
   // Reports

@@ -175,6 +175,10 @@ class PaymentMethod {
   /// เพราะใช้ได้เฉพาะบิลที่ผูกลูกค้าเครดิต หน้าเก็บเงินจึงเพิ่มปุ่มนี้เองตามเงื่อนไข
   static const String credit = 'credit';
 
+  /// บรรทัดแลกแต้มในรายงานช่องทางชำระ (T11 #101, docs/DECISIONS.md #99) — ไม่ใช่ช่องทางที่เลือกจ่ายได้ จึงไม่อยู่ใน [all]
+  /// รายงานแยกมูลค่าแต้มออกจากเงินที่รับจริง ลิ้นชักจะได้นับตรงกับเงินในมือ
+  static const String points = 'points';
+
   /// ช่องทางที่ได้เงินทันที — ใช้ทั้งหน้าเก็บเงินและรับชำระหนี้ลูกค้าเครดิต
   static const List<String> all = [cash, qr, card, transfer];
 
@@ -184,6 +188,7 @@ class PaymentMethod {
     card: 'payment_method_card',
     transfer: 'payment_method_transfer',
     credit: 'payment_method_credit',
+    points: 'payment_method_points',
   };
 
   static String label(String method) => (_keys[method] ?? method).tr;

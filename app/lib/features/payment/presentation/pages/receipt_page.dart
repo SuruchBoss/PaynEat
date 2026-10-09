@@ -323,12 +323,30 @@ class ReceiptPage extends GetView<ReceiptController> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Text(
-                                  refund.reason,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.textSecondary,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      refund.reason,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                    if (refund.pointsReturned > 0)
+                                      Text(
+                                        'payment_refund_split_line'.trParams({
+                                          'cash': Formatters.money(
+                                            refund.cashAmount,
+                                          ),
+                                          'points': '${refund.pointsReturned}',
+                                        }),
+                                        style: TextStyle(
+                                          fontSize: 11.5,
+                                          color: AppColors.textSecondary,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               ),
                               Text(
@@ -390,7 +408,10 @@ class ReceiptPage extends GetView<ReceiptController> {
     Payment payment,
   ) async {
     final maxAmount = controller.refundableAmount(payment);
-    final result = await RefundDialog.show(maxAmount: maxAmount);
+    final result = await RefundDialog.show(
+      maxAmount: maxAmount,
+      preview: controller.refundPreviewFor(payment),
+    );
     if (result == null) return;
     await controller.submitRefund(
       paymentId: payment.id,

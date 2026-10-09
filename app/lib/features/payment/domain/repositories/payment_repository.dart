@@ -24,6 +24,9 @@ abstract class PaymentRepository {
 
   Future<Result<PromptPayQr>> getPromptPayQr(double? amount);
 
+  /// ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน (T11 #101)
+  Future<Result<RefundPreview>> previewRefund(int paymentId, double amount);
+
   Future<Result<Refund>> refund({
     required int paymentId,
     required double amount,

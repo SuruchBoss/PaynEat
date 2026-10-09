@@ -42,41 +42,67 @@ extension DemoStoreReports on DemoStore {
   }
 
   /// ยอดต่อช่องทางชำระเงินของ payment ในออเดอร์ที่ `paid` หักเงินที่คืนก่อนบิลปิด (mirror ของ `netPaymentMethodsSql`)
-  /// payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ
+  /// payment ที่ถูกคืนครบก่อนปิดบิลไม่นับเป็นรายการ ยอดของแต่ละช่องทางเป็นเงินที่รับจริง ส่วนแต้มที่ลูกค้าใช้แลกแยกเป็นบรรทัด
+  /// `points` ของตัวเอง (T11 #101, docs/DECISIONS.md #99) เงินสดในรายงานจึงตรงกับเงินในลิ้นชัก
   List<Map<String, dynamic>> _netPaymentMethods(
     Iterable<Map<String, dynamic>> paymentRows,
     Map<int, ({double pre, double post})> split,
   ) {
-    final preByPayment = <Object?, double>{};
+    int cents(Object? baht) => (((baht as num?) ?? 0) * 100).round();
+    final preByPayment = <Object?, ({int amount, int points})>{};
     for (final refund in refunds) {
       final part = split[refund['id']];
       if (part == null) continue;
+      final pre = cents(part.pre);
+      // ส่วนของเงินที่คืนก่อนปิดที่คืนเป็นแต้ม ตามสัดส่วนของรายการคืนนั้น (ปัดลงแบบ SQL)
+      final prePoints =
+          cents(refund['pointsValue']) * pre ~/ cents(refund['amount']);
       preByPayment.update(
         refund['paymentId'],
-        (value) => value + part.pre,
-        ifAbsent: () => part.pre,
+        (value) =>
+            (amount: value.amount + pre, points: value.points + prePoints),
+        ifAbsent: () => (amount: pre, points: prePoints),
       );
     }
     final byMethod = <String, Map<String, dynamic>>{};
+    var pointsCount = 0;
+    var pointsTotal = 0;
     for (final payment in paymentRows) {
       final order = orders.firstWhere(
         (row) => row['id'] == payment['orderId'],
         orElse: () => const {},
       );
       if (order.isEmpty || order['status'] != OrderStatus.paid) continue;
-      final pre = preByPayment[payment['id']];
-      final net = (payment['amount'] as num).toDouble() - (pre ?? 0);
+      final pre = preByPayment[payment['id']] ?? (amount: 0, points: 0);
+      final pointsValue = cents(payment['pointsRedeemedValue']);
+      final money =
+          (cents(payment['amount']) - pointsValue) - (pre.amount - pre.points);
+      final netPoints = pointsValue - pre.points;
       final method = payment['method'] as String;
       final entry = byMethod.putIfAbsent(
         method,
-        () => {'method': method, 'count': 0, 'amount': 0.0},
+        () => {'method': method, 'count': 0, 'amount': 0},
       );
-      if (pre == null || net > 0) entry['count'] = (entry['count'] as int) + 1;
-      entry['amount'] = (entry['amount'] as double) + net;
+      if (money > 0) entry['count'] = (entry['count'] as int) + 1;
+      entry['amount'] = (entry['amount'] as int) + money;
+      if (netPoints > 0) pointsCount += 1;
+      pointsTotal += netPoints;
     }
-    return byMethod.values
+    final rows = [
+      ...byMethod.values,
+      {
+        'method': PaymentMethod.points,
+        'count': pointsCount,
+        'amount': pointsTotal,
+      },
+    ];
+    return rows
         .where((entry) => (entry['count'] as int) > 0)
-        .toList(growable: false);
+        .map((entry) => {...entry, 'amount': (entry['amount'] as int) / 100})
+        .toList(growable: false)
+      ..sort(
+        (a, b) => (b['amount'] as double).compareTo(a['amount'] as double),
+      );
   }
 
   List<Map<String, dynamic>> _paidOrdersBetween(String? from, String? to) {

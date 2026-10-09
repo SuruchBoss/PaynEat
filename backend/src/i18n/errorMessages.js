@@ -492,6 +492,11 @@ export const ERROR_MESSAGES = [
     ko: '환불 가능한 금액을 넘었습니다 (최대 {amount} THB)',
   },
   {
+    th: 'เงินที่รับจริงของรายการนี้คืนครบแล้ว ยอดที่เหลือ {amount} บาทคืนเป็นแต้ม ต้องคืนเป็นมูลค่าแต้มเต็มแต้ม หรือคืนทั้งหมดที่เหลือ',
+    en: 'The money actually received on this payment is fully refunded — the remaining {amount} THB goes back as points, so refund whole points or everything that is left',
+    ko: '이 결제로 실제 받은 돈은 모두 환불했습니다 — 남은 {amount} THB는 포인트로 돌려주므로 포인트 단위로 환불하거나 남은 전액을 환불하세요',
+  },
+  {
     th: 'บิลขายเชื่อนี้ค้างชำระอยู่ {amount} บาท ลดหนี้ได้ไม่เกินยอดนี้ (ส่วนที่ชำระแล้วต้องยกเลิกใบเสร็จรับชำระก่อน)',
     en: 'This credit bill has {amount} THB outstanding — you can reduce it by up to that (void the collection receipt first for paid amounts)',
     ko: '이 외상 계산서의 미수금은 {amount} THB입니다 — 그 이내로만 감액할 수 있습니다 (수금된 금액은 먼저 수금 영수증을 취소)',

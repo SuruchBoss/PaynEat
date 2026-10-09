@@ -90,6 +90,9 @@ class RefundModel extends Refund {
     required super.reason,
     super.refundedByName,
     super.createdAt,
+    super.cashAmount,
+    super.pointsReturned,
+    super.pointsValue,
   });
 
   factory RefundModel.fromJson(Map<String, dynamic> json) => RefundModel(
@@ -100,7 +103,27 @@ class RefundModel extends Refund {
     reason: json['reason'] as String? ?? '',
     refundedByName: json['refundedByName'] as String?,
     createdAt: json['createdAt'] as String?,
+    cashAmount: (json['cashAmount'] as num?)?.toDouble(),
+    pointsReturned: (json['pointsReturned'] as num?)?.toInt() ?? 0,
+    pointsValue: (json['pointsValue'] as num?)?.toDouble() ?? 0,
   );
+}
+
+class RefundPreviewModel extends RefundPreview {
+  const RefundPreviewModel({
+    required super.amount,
+    required super.cashAmount,
+    required super.pointsReturned,
+    required super.pointsValue,
+  });
+
+  factory RefundPreviewModel.fromJson(Map<String, dynamic> json) =>
+      RefundPreviewModel(
+        amount: (json['amount'] as num?)?.toDouble() ?? 0,
+        cashAmount: (json['cashAmount'] as num?)?.toDouble() ?? 0,
+        pointsReturned: (json['pointsReturned'] as num?)?.toInt() ?? 0,
+        pointsValue: (json['pointsValue'] as num?)?.toDouble() ?? 0,
+      );
 }
 
 class SplitPreviewModel extends SplitPreview {

@@ -193,13 +193,38 @@ class Refund {
     required this.reason,
     this.refundedByName,
     this.createdAt,
-  });
+    double? cashAmount,
+    this.pointsReturned = 0,
+    this.pointsValue = 0,
+  }) : cashAmount = cashAmount ?? amount;
 
   final int id;
   final int paymentId;
   final int orderId;
+
+  /// ยอดที่คืนตามมูลค่าบิล (เงิน + มูลค่าแต้ม)
   final double amount;
   final String reason;
   final String? refundedByName;
   final String? createdAt;
+
+  /// เงินที่คืนออกจากช่องทางจริง กับแต้มที่คืนให้ลูกค้า (T11 #101, docs/DECISIONS.md #99)
+  final double cashAmount;
+  final int pointsReturned;
+  final double pointsValue;
+}
+
+/// ยอดเงินและแต้มที่จะคืนก่อนกดยืนยัน — แบ่งตามสัดส่วนที่ลูกค้าจ่ายมา (T11 #101, docs/DECISIONS.md #77 D7, #99)
+class RefundPreview {
+  const RefundPreview({
+    required this.amount,
+    required this.cashAmount,
+    required this.pointsReturned,
+    required this.pointsValue,
+  });
+
+  final double amount;
+  final double cashAmount;
+  final int pointsReturned;
+  final double pointsValue;
 }

@@ -34,7 +34,9 @@ export const shiftRepository = {
   cashInDuring(shiftId) {
     return getDb()
       .prepare(
-        `SELECT IFNULL(SUM(amount), 0) AS total FROM payments WHERE shift_id = ? AND method = 'cash'`,
+        // เงินสดที่รับจริง = ยอดชำระ − มูลค่าแต้มที่ใช้แลก (แต้มไม่ใช่เงินในลิ้นชัก T11 #101, DECISIONS #99)
+        `SELECT IFNULL(SUM(amount - points_redeemed_value), 0) AS total
+           FROM payments WHERE shift_id = ? AND method = 'cash'`,
       )
       .get(shiftId).total;
   },
@@ -44,7 +46,8 @@ export const shiftRepository = {
   cashRefundedDuring(shiftId) {
     return getDb()
       .prepare(
-        `SELECT IFNULL(SUM(r.amount), 0) AS total
+        // ส่วนที่คืนเป็นแต้มไม่ได้ออกจากลิ้นชัก (T11 #101)
+        `SELECT IFNULL(SUM(r.amount - r.points_value), 0) AS total
            FROM refunds r
            JOIN payments p ON p.id = r.payment_id
           WHERE r.shift_id = ? AND p.method = 'cash'`,
