@@ -2255,8 +2255,12 @@ Completed work, planned work, and known limitations, with the reasoning for each
   and T22 managers manage only lower-role staff in their own branches (`docs/DECISIONS.md` #92) — **round 1 is complete**.
   Ticket 33 is done. Round 2: T07 a bill never dropping below what was paid (`docs/DECISIONS.md` #95) and T08 an order holding money
   cannot be cancelled until it is refunded (`docs/DECISIONS.md` #96), and reports that subtract only money refunded after a
-  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98) are done. Next: the rest of round 2 is what must be done before the first real
-  shop, closed by a test in which a shop owner runs a whole shift (`docs/DECISIONS.md` #93)
+  bill closed (#143, `docs/DECISIONS.md` #97), and T09 a merge carrying the amount paid and discounts (#96, `docs/DECISIONS.md` #98) are done. Next: T11 and T03, then a pause. After the pause, T20, T21, T23
+  and the Windows installer (ticket 34) must be done before the first real shop, closed by a test in which a shop owner runs a whole
+  shift on a machine set up with that installer (`docs/DECISIONS.md` #93, #99)
+- [ ] **A Windows installer for real shops (ticket 34)** — one file the owner installs without IT help, with no Docker or Node to
+  install and no demo password or secret; the system starts with the computer and every tablet in the shop opens the same address
+  straight away (see `docs/DECISIONS.md` #99)
 - [ ] **Link previews and web-app icons that match the product** — no outdated figures in the share image, and the
   PaynEat logo when the web app is installed from the browser (see ticket 31)
 - [x] **Automatic backups the owner can restore without a developer (ticket 33, #145)** — a backup at every shift close, every six
