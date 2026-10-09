@@ -37,6 +37,7 @@ class _RecordingSettingsRepository implements SettingsRepository {
     int? scaleLabelPluDigits,
     double? lateFeeAnnualRatePercent,
     int? lateFeeGraceDays,
+    String? timeZone,
   }) async {
     updates.add(pointsEarnRateBaht);
     return Result.success(stored);

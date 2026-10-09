@@ -16,6 +16,7 @@ import '../../../backup/presentation/widgets/backup_card.dart';
 import '../../../erp_connection/presentation/widgets/erp_connection_card.dart';
 import '../controllers/printer_settings_controller.dart';
 import '../controllers/settings_controller.dart';
+import '../widgets/time_zone_field.dart';
 
 /// ตั้งค่าร้าน (admin/manager)
 class SettingsPage extends GetView<SettingsController> {
@@ -51,6 +52,9 @@ class SettingsPage extends GetView<SettingsController> {
                       labelText: 'settings_store_name_label'.tr,
                     ),
                   ),
+                  const SizedBox(height: 14),
+                  // เขตเวลาของร้าน (T03 #94) — เลือกจากรายการที่ใช้บ่อยหรือพิมพ์ชื่อ IANA เองได้
+                  TimeZoneField(controller: controller.timeZoneController),
                   const SizedBox(height: 24),
                   SectionHeader(
                     title: 'settings_bill_calc_title'.tr,

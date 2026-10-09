@@ -31,6 +31,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     int? scaleLabelPluDigits,
     double? lateFeeAnnualRatePercent,
     int? lateFeeGraceDays,
+    String? timeZone,
   }) => guard(
     () => _remote.update({
       'storeName': ?storeName,
@@ -47,6 +48,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       'scaleLabelPluDigits': ?scaleLabelPluDigits,
       'lateFeeAnnualRatePercent': ?lateFeeAnnualRatePercent,
       'lateFeeGraceDays': ?lateFeeGraceDays,
+      'timeZone': ?timeZone,
     }),
   );
 }

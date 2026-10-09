@@ -6,6 +6,7 @@ import { ApiError } from '../../core/ApiError.js';
 import { mailer } from '../../core/mailer.js';
 import { getDb } from '../../db/index.js';
 import { auditLogService } from '../audit-logs/audit-log.service.js';
+import { DEFAULT_TIME_ZONE, normalizeTimeZone } from '../../core/storeTime.js';
 import { MIN_POINT_RATE_BAHT } from '../customers/loyalty.js';
 import { settingsRepository } from './settings.repository.js';
 
@@ -52,6 +53,9 @@ export const settingsService = {
       // 0 = ไม่คิด ร้านต้องตกลงกับลูกค้าไว้ก่อน (เช่น ระบุในใบวางบิล/สัญญา) จึงค่อยเปิด
       lateFeeAnnualRatePercent: Number(raw.late_fee_annual_rate ?? 0),
       lateFeeGraceDays: Number(raw.late_fee_grace_days ?? 0),
+      // เขตเวลาของร้าน (T03 #94, DECISIONS #101) — ตอบว่า "วันนี้ของร้าน" คือวันไหน ไม่ขึ้นกับ TZ ของเครื่อง
+      // ค่าที่บันทึกไว้เสียหาย (ไม่ใช่ชื่อ IANA) ถือเป็นค่าเริ่มต้นแทนการ throw ทุกที่ที่อ่าน
+      timeZone: normalizeTimeZone(raw.time_zone) ?? DEFAULT_TIME_ZONE,
       // อ่านอย่างเดียว — มาจาก env (SMTP_HOST) ไม่ใช่ตาราง settings แอปใช้ซ่อน/เปิดปุ่ม "ส่งอีเมล"
       emailEnabled: mailer.isConfigured(),
     };
@@ -74,6 +78,7 @@ export const settingsService = {
       scaleLabelPluDigits: 'scale_label_plu_digits',
       lateFeeAnnualRatePercent: 'late_fee_annual_rate',
       lateFeeGraceDays: 'late_fee_grace_days',
+      timeZone: 'time_zone',
     };
     // เฉพาะ VAT/ค่าบริการ (ตัวเลขที่กระทบยอดขายทุกบิลทันที) และอัตราดอกเบี้ยผิดนัด (กระทบหนี้ลูกค้า)
     // ที่ต้อง log — ดู docs/tickets/08-audit-log.md
@@ -101,6 +106,17 @@ export const settingsService = {
       !(payload.pointsRedeemValueBaht >= MIN_POINT_RATE_BAHT)
     ) {
       throw ApiError.badRequest('มูลค่า 1 แต้มต้องอย่างน้อย 0.01 บาท');
+    }
+
+    // เขตเวลาต้องเป็นชื่อ IANA ที่เครื่องรู้จัก เก็บเป็นตัวพิมพ์มาตรฐาน (asia/bangkok → Asia/Bangkok)
+    if (payload.timeZone !== undefined) {
+      const timeZone = normalizeTimeZone(payload.timeZone);
+      if (!timeZone) {
+        throw ApiError.badRequest(
+          `เขตเวลา "${payload.timeZone}" ไม่ใช่ชื่อเขตเวลา IANA (เช่น Asia/Bangkok)`,
+        );
+      }
+      payload = { ...payload, timeZone };
     }
 
     getDb().transaction(() => {

@@ -12,7 +12,7 @@
   <img alt="Flutter" src="https://img.shields.io/badge/Flutter-3.35-02569B?logo=flutter&logoColor=white">
   <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22-339933?logo=node.js&logoColor=white">
   <img alt="SQLite" src="https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white">
-  <img alt="Tests" src="https://img.shields.io/badge/tests-1256%20passing-2F9E44">
+  <img alt="Tests" src="https://img.shields.io/badge/tests-1267%20passing-2F9E44">
   <a href="LICENSE"><img alt="License: Apache 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
 </p>
 
@@ -435,6 +435,7 @@ Docker 절차는 [설치 안내의 "백업과 복원"](https://suruchboss.github
 | **불기(佛紀) 연도** | 태국 공문서는 서기 연도에 543을 더한 불기 연도를 사용합니다. 2026년은 태국 문서에서 2569년으로 표기됩니다. 세금계산서 번호도 이 연도를 기준으로 채번합니다 |
 | **감액 전표 (ใบลดหนี้)** | 태국에서는 세금계산서를 발행한 매출을 감액할 때 원래 금액, 올바른 금액, 차액, 차액의 부가가치세, 원래 세금계산서 번호, 사유를 기재한 감액 전표를 별도로 발행해야 합니다. 외상 전표를 감액하면 이 형식에 따라 자동 발행됩니다 |
 | **세금계산서 주소는 태국어** | 화면 언어를 한국어로 설정하더라도 세금계산서에 인쇄되는 매장 주소와 지점명은 태국어로 유지됩니다. 태국 국세청이 등록된 주소를 그대로 기재하도록 요구하기 때문입니다 |
+| **매장 시간대** | 태국은 한국보다 2시간 늦은 UTC+7입니다. 매장 설정의 **매장 시간대**(기본 `Asia/Bangkok`, IANA 이름)가 "매장의 오늘"을 정하며, 서버 컴퓨터의 시간대와 관계없이 같은 날짜를 계산합니다. 리포트와 문서 번호는 T16/T17에서 이 기준으로 옮겨집니다 (`docs/DECISIONS.md` #101) |
 
 ---
 
@@ -514,16 +515,16 @@ Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니�
 
 ## 테스트
 
-공개 전 **1256건**의 자동화 테스트를 통과합니다.
+공개 전 **1267건**의 자동화 테스트를 통과합니다.
 
 ```bash
-cd backend && npm test      # 569건 — 매장 전체 흐름 17단계 테스트 포함
-cd app && flutter test      # 629건 — domain / controller / widget
-cd app && flutter test test_e2e   # 58건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
-node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1256건에 미포함)
+cd backend && npm test      # 574건 — 매장 전체 흐름 17단계 테스트 포함
+cd app && flutter test      # 633건 — domain / controller / widget
+cd app && flutter test test_e2e   # 60건 — 실제 앱 ↔ 실제 백엔드 (먼저 backend에서 npm ci)
+node --test scripts/android-version.test.mjs   # 3건 — Google Play 빌드의 versionCode (1267건에 미포함)
 ```
 
-`app/test_e2e/`의 E2E 테스트 58건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
+`app/test_e2e/`의 E2E 테스트 60건은 실행할 때마다 새 임시 DB로 실제 백엔드(`node src/server.js`)를 기동하고, 앱의
 실제 data/domain 코드로 매장의 하루 업무를 처음부터 끝까지 수행합니다. 대상 업무는 로그인, 주문, 주방, 근무 시작,
 결제, 세금계산서, 환불, 근무 마감(차액 0), Z-report와 CSV, 감사 로그, 손님의 QR 주문, 지점·권한입니다. 나머지
 Flutter 테스트는 모두 데모 모드에서 실행되므로, 앱이 **백엔드가 실제로 반환한 JSON을 해석하는지** 검증하는 테스트는

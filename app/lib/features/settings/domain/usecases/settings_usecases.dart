@@ -31,6 +31,7 @@ class UpdateSettingsParams {
     this.scaleLabelPluDigits,
     this.lateFeeAnnualRatePercent,
     this.lateFeeGraceDays,
+    this.timeZone,
   });
 
   final String? storeName;
@@ -47,6 +48,7 @@ class UpdateSettingsParams {
   final int? scaleLabelPluDigits;
   final double? lateFeeAnnualRatePercent;
   final int? lateFeeGraceDays;
+  final String? timeZone;
 }
 
 class UpdateSettingsUseCase
@@ -72,5 +74,6 @@ class UpdateSettingsUseCase
         scaleLabelPluDigits: params.scaleLabelPluDigits,
         lateFeeAnnualRatePercent: params.lateFeeAnnualRatePercent,
         lateFeeGraceDays: params.lateFeeGraceDays,
+        timeZone: params.timeZone,
       );
 }

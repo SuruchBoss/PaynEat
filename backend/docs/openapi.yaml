@@ -1952,7 +1952,7 @@ paths:
       tags: [Settings]
       summary: >-
         ค่าตั้งค่าร้าน (VAT, Service Charge, ชื่อร้าน, เลขผู้เสียภาษี/ที่อยู่/สาขาสำหรับใบกำกับภาษี,
-        อัตราแต้มสะสม, เลขพร้อมเพย์)
+        อัตราแต้มสะสม, เลขพร้อมเพย์, เขตเวลาของร้าน timeZone)
       responses:
         '200': { description: สำเร็จ }
     patch:
@@ -2007,12 +2007,20 @@ paths:
                   minimum: 0
                   maximum: 365
                   description: วันผ่อนผันหลังครบกำหนดก่อนเริ่มคิดดอกเบี้ย
+                timeZone:
+                  type: string
+                  maxLength: 64
+                  example: Asia/Bangkok
+                  description: >-
+                    เขตเวลาของร้านเป็นชื่อ IANA (ค่าเริ่มต้น Asia/Bangkok) ใช้ตอบว่าเวลา UTC ตรงกับวันไหนของร้าน
+                    ไม่ขึ้นกับ TZ ของเครื่องเซิร์ฟเวอร์ (T03 #94, DECISIONS #101) รับตัวพิมพ์เล็กใหญ่ได้ เก็บเป็นชื่อมาตรฐาน
+                    (asia/seoul → Asia/Seoul) ค่าแบบ offset (+07:00) ตัวย่อ (EST) หรือชื่อที่ไม่มีอยู่ได้ 400
       responses:
         '200': { description: สำเร็จ }
         '400':
           description: >-
             ค่าที่ต้องเทียบกับกฎของร้าน ไม่ผ่าน เช่น pointsEarnRateBaht/pointsRedeemValueBaht ต่ำกว่า 0.01 บาท หรือ
-            prefix + PLU ของฉลากตาชั่งเหลือหลักน้ำหนักไม่ใช่ 4–6 หลัก ข้อความบอกเหตุผลเป็นภาษาของผู้ใช้ ไม่บันทึกค่าใดเลย
+            prefix + PLU ของฉลากตาชั่งเหลือหลักน้ำหนักไม่ใช่ 4–6 หลัก หรือ timeZone ไม่ใช่ชื่อเขตเวลา IANA ข้อความบอกเหตุผลเป็นภาษาของผู้ใช้ ไม่บันทึกค่าใดเลย
 
   /tax-invoices/order/{id}:
     parameters:

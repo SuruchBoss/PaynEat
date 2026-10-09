@@ -720,6 +720,8 @@ class DemoSeed {
     // ดอกเบี้ยผิดนัด (ticket 21) — backend ค่าเริ่มต้นเป็น 0 (ไม่คิด) แต่เดโมเปิดไว้ให้ลองได้ทันที
     'lateFeeAnnualRatePercent': 12.0,
     'lateFeeGraceDays': 7,
+    // เขตเวลาของร้าน (T03 #94) — ค่าเริ่มต้นเดียวกับ backend
+    'timeZone': 'Asia/Bangkok',
     // โหมดสาธิตจำลองการส่งอีเมล (ticket 23) — กดส่งได้ บันทึกประวัติ แต่ไม่มีอีเมลออกไปจริง
     'emailEnabled': true,
   };

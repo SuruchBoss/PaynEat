@@ -6,6 +6,11 @@ const Map<String, String> settingsTranslationsTh = {
   'settings_store_info_title': 'ข้อมูลร้าน',
   'settings_store_info_subtitle': 'ชื่อร้านจะแสดงบนใบเสร็จ',
   'settings_store_name_label': 'ชื่อร้าน',
+  'settings_time_zone_label': 'เขตเวลาของร้าน',
+  'settings_time_zone_helper':
+      'ใช้ตัดวันของรายงานและเลขเอกสาร เลือกจากรายการหรือพิมพ์ชื่อแบบ Asia/Bangkok',
+  'settings_time_zone_invalid':
+      'เขตเวลาต้องเป็นชื่อแบบ IANA เช่น Asia/Bangkok หรือ UTC',
   'settings_bill_calc_title': 'การคำนวณบิล',
   'settings_bill_calc_subtitle': 'มีผลกับทุกออเดอร์ที่เปิดใหม่หลังจากนี้',
   'settings_vat_label': 'VAT',
@@ -112,6 +117,11 @@ const Map<String, String> settingsTranslationsEn = {
   'settings_store_info_title': 'Store Info',
   'settings_store_info_subtitle': 'The store name appears on receipts',
   'settings_store_name_label': 'Store name',
+  'settings_time_zone_label': 'Store time zone',
+  'settings_time_zone_helper':
+      'Decides where the store\'s day starts for reports and document numbers. Pick one or type a name like Asia/Bangkok',
+  'settings_time_zone_invalid':
+      'The time zone must be an IANA name such as Asia/Bangkok or UTC',
   'settings_bill_calc_title': 'Bill Calculation',
   'settings_bill_calc_subtitle': 'Applies to every order opened after this',
   'settings_vat_label': 'VAT',
@@ -222,6 +232,10 @@ const Map<String, String> settingsTranslationsKo = {
   'settings_store_info_title': '매장 정보',
   'settings_store_info_subtitle': '매장명은 영수증에 표시됩니다',
   'settings_store_name_label': '매장명',
+  'settings_time_zone_label': '매장 시간대',
+  'settings_time_zone_helper':
+      '보고서와 문서 번호의 하루 기준입니다. 목록에서 고르거나 Asia/Bangkok 같은 이름을 입력하세요',
+  'settings_time_zone_invalid': '시간대는 Asia/Bangkok 또는 UTC 같은 IANA 이름이어야 합니다',
   'settings_bill_calc_title': '금액 계산',
   'settings_bill_calc_subtitle': '이후 새로 여는 주문부터 적용됩니다',
   'settings_vat_label': '부가가치세',
