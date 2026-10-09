@@ -172,6 +172,16 @@ class DemoOrderDataSource implements OrderRemoteDataSource {
       );
 
   @override
+  Future<MergePreviewModel> previewMerge(
+    int targetOrderId,
+    int sourceOrderId,
+  ) => _delayed(
+    () => MergePreviewModel.fromJson(
+      _store.previewMerge(targetOrderId, sourceOrderId),
+    ),
+  );
+
+  @override
   Future<List<OrderItemModel>> getKitchenQueue({List<String>? statuses}) =>
       _delayed(
         () => _store

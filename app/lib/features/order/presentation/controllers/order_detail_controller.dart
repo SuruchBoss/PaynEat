@@ -12,6 +12,7 @@ import '../../../../core/services/session_service.dart';
 import '../../../../core/usecases/result.dart';
 import '../../../../core/widgets/app_dialogs.dart';
 import '../../../promotion/domain/entities/promotion.dart';
+import '../../domain/entities/merge_preview.dart';
 import '../../domain/entities/order.dart';
 import '../../domain/entities/order_item.dart';
 import '../../domain/usecases/order_usecases.dart';
@@ -28,6 +29,7 @@ class OrderDetailController extends GetxController {
     required CancelOrderUseCase cancelOrder,
     required MoveOrderTableUseCase moveOrderTable,
     required MergeOrdersUseCase mergeOrders,
+    required PreviewMergeUseCase previewMerge,
     required RedeemPromotionCodeUseCase redeemPromotionCode,
     required RemovePromotionUseCase removePromotion,
     required GetEligiblePromotionsUseCase getEligiblePromotions,
@@ -41,6 +43,7 @@ class OrderDetailController extends GetxController {
        _cancelOrder = cancelOrder,
        _moveOrderTable = moveOrderTable,
        _mergeOrders = mergeOrders,
+       _previewMerge = previewMerge,
        _redeemPromotionCode = redeemPromotionCode,
        _removePromotion = removePromotion,
        _getEligiblePromotions = getEligiblePromotions,
@@ -55,6 +58,7 @@ class OrderDetailController extends GetxController {
   final CancelOrderUseCase _cancelOrder;
   final MoveOrderTableUseCase _moveOrderTable;
   final MergeOrdersUseCase _mergeOrders;
+  final PreviewMergeUseCase _previewMerge;
   final RedeemPromotionCodeUseCase _redeemPromotionCode;
   final RemovePromotionUseCase _removePromotion;
   final GetEligiblePromotionsUseCase _getEligiblePromotions;
@@ -249,6 +253,22 @@ class OrderDetailController extends GetxController {
   Future<List<EligiblePromotion>> loadEligiblePromotions() async {
     final result = await _getEligiblePromotions(orderId);
     return result.dataOrNull ?? const [];
+  }
+
+  /// ยอดจ่ายแล้วและส่วนลดของทั้งสองบิลก่อนรวม (T09 #96) — null เมื่อดูไม่ได้ (เช่น บิลขายเชื่อของลูกค้าคนอื่น) และแจ้งเหตุผลแล้ว
+  Future<MergePreview?> previewMergeFrom(int sourceOrderId) async {
+    isBusy.value = true;
+    final result = await _previewMerge(
+      MergeOrdersParams(targetOrderId: orderId, sourceOrderId: sourceOrderId),
+    );
+    isBusy.value = false;
+    return result.fold(
+      onSuccess: (preview) => preview,
+      onFailure: (failure) {
+        AppDialogs.error(failure.message);
+        return null;
+      },
+    );
   }
 
   Future<void> mergeInto(int sourceOrderId) async {

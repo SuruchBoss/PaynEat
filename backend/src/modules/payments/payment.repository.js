@@ -4,6 +4,22 @@
 import { getDb } from '../../db/index.js';
 
 export const paymentRepository = {
+  /** ย้ายการชำระทั้งหมดของออเดอร์หนึ่งไปอีกออเดอร์ — ใช้ตอนรวมบิล (T09 #96, docs/DECISIONS.md #98) กะของแต่ละ payment ไม่เปลี่ยน */
+  reassignToOrder(fromOrderId, toOrderId) {
+    return getDb()
+      .prepare('UPDATE payments SET order_id = ? WHERE order_id = ?')
+      .run(toOrderId, fromOrderId).changes;
+  },
+
+  /** การชำระที่ผูกกับลูกค้าของบิล (ขายเชื่อลงบัญชีลูกค้า หรือใช้แต้มสะสม) ย้ายไปบิลของลูกค้าอื่นไม่ได้ */
+  countCustomerBound(orderId) {
+    return getDb()
+      .prepare(
+        "SELECT COUNT(*) AS c FROM payments WHERE order_id = ? AND (method = 'credit' OR points_redeemed > 0)",
+      )
+      .get(orderId).c;
+  },
+
   findByOrder(orderId) {
     return getDb()
       .prepare(

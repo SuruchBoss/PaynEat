@@ -1480,8 +1480,32 @@ paths:
                 sourceOrderId: { type: integer }
       responses:
         '200':
-          description: สำเร็จ — รายการอาหารทั้งหมดย้ายไปออเดอร์ปลายทาง ต้นทางถูกยกเลิกและปลดโต๊ะ
+          description: >-
+            สำเร็จ — รายการอาหาร การชำระ การคืนเงิน และส่วนลดที่กรอกเองของต้นทางย้ายไปที่ปลายทาง โปรโมชันประเมินใหม่
+            ต้นทางยอดเป็น 0 ถูกยกเลิกและปลดโต๊ะ (T09, docs/DECISIONS.md #98)
         '400': { description: เลือกออเดอร์ปลายทางเดียวกับต้นทาง }
+        '409':
+          description: >-
+            ออเดอร์ปิดแล้ว, ยอดหลังรวมต่ำกว่าเงินที่รับไว้ (ต้องคืนก่อน) หรือ `MERGE_CUSTOMER_MISMATCH` —
+            ต้นทางมีการขายเชื่อหรือใช้แต้มของลูกค้า รวมได้เฉพาะกับบิลของลูกค้าคนเดียวกัน
+  /orders/{id}/merge-preview:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: integer, description: id ของออเดอร์ปลายทาง }
+    get:
+      tags: [Orders]
+      summary: ดูผลของการรวมบิลก่อนยืนยัน (T09, docs/DECISIONS.md #98) — ใช้แผนเดียวกับ POST /orders/{id}/merge ไม่เขียนข้อมูล
+      parameters:
+        - { in: query, name: sourceOrderId, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: >-
+            `target` / `source` (code, total, paid, discount, promotionDiscount, promotionName) ของแต่ละฝั่ง,
+            `merged` (subtotal, discount, promotionDiscount, promotionName, serviceCharge, vat, total, paid, remaining,
+            refundRequired) และ `discountLost` ส่วนลดรวมที่จะหายไปหลังรวม
+        '409': { description: 'เหตุผลเดียวกับ POST /orders/{id}/merge' }
 
   /payments:
     post:

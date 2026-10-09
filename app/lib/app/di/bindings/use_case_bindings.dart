@@ -200,6 +200,10 @@ void bindUseCases() {
     fenix: true,
   );
   Get.lazyPut(
+    () => PreviewMergeUseCase(Get.find<OrderRepository>()),
+    fenix: true,
+  );
+  Get.lazyPut(
     () => GetKitchenQueueUseCase(Get.find<OrderRepository>()),
     fenix: true,
   );

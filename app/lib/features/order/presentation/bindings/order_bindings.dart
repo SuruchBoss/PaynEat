@@ -49,6 +49,7 @@ class OrderDetailBinding extends Bindings {
         cancelOrder: Get.find<CancelOrderUseCase>(),
         moveOrderTable: Get.find<MoveOrderTableUseCase>(),
         mergeOrders: Get.find<MergeOrdersUseCase>(),
+        previewMerge: Get.find<PreviewMergeUseCase>(),
         redeemPromotionCode: Get.find<RedeemPromotionCodeUseCase>(),
         removePromotion: Get.find<RemovePromotionUseCase>(),
         getEligiblePromotions: Get.find<GetEligiblePromotionsUseCase>(),

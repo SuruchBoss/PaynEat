@@ -4,6 +4,7 @@
 import '../../../../core/usecases/result.dart';
 import '../../../promotion/domain/entities/promotion.dart';
 import '../entities/order_item_payload.dart';
+import '../entities/merge_preview.dart';
 import '../entities/order.dart';
 import '../entities/order_item.dart';
 
@@ -48,6 +49,12 @@ abstract class OrderRepository {
   Future<Result<Order>> cancelOrder(int orderId, String reason);
   Future<Result<Order>> moveTable(int orderId, int tableId);
   Future<Result<Order>> mergeOrders(int targetOrderId, int sourceOrderId);
+
+  /// ผลของการรวมบิลก่อนกดยืนยัน (T09 #96)
+  Future<Result<MergePreview>> previewMerge(
+    int targetOrderId,
+    int sourceOrderId,
+  );
   Future<Result<List<OrderItem>>> getKitchenQueue({List<String>? statuses});
   Future<Result<Order>> redeemPromotionCode(int orderId, String code);
   Future<Result<Order>> removePromotion(int orderId);

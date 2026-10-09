@@ -3759,4 +3759,101 @@ void main() {
       });
     });
   });
+
+  group('DemoStore รวมบิลแล้วยอดที่จ่ายและส่วนลดตามไป (T09 #96)', () {
+    const manager = 2;
+    const cashier = 6;
+    const b2b = 900;
+
+    double baht(num value) => (value * 100).round() / 100;
+
+    Map<String, dynamic> openDineIn(Map<String, dynamic> menuItem) {
+      final table = store.tableList().firstWhere(
+        (t) => t['status'] == 'available',
+      );
+      return store.createOrder(
+        type: 'dine_in',
+        tableId: table['id'] as int,
+        guestCount: 2,
+        items: [
+          {'menuItemId': menuItem['id'], 'quantity': 1, 'optionIds': []},
+        ],
+      );
+    }
+
+    late Map<String, dynamic> first;
+    late Map<String, dynamic> second;
+    setUp(() {
+      final menu = store.menuList();
+      first = menu.first;
+      second = menu[1];
+    });
+
+    test(
+      'รับเงินบนบิลต้นทางแล้วรวม → ตัวอย่างบอกยอดทั้งสองฝั่ง เงินตามไป ต้นทางปิดโดยไม่มีเงินค้าง',
+      () {
+        final a = openDineIn(first);
+        final b = openDineIn(second);
+        final aId = a['id'] as int;
+        final bId = b['id'] as int;
+        store.pay(orderId: aId, method: 'cash', amount: 50, received: 50);
+
+        final shown = store.previewMerge(bId, aId);
+        final merged = shown['merged'] as Map<String, dynamic>;
+        expect((shown['source'] as Map)['paid'], 50);
+        expect((shown['target'] as Map)['paid'], 0);
+        expect(merged['paid'], 50);
+        expect(merged['remaining'], baht((merged['total'] as num) - 50));
+        expect(merged['refundRequired'], 0);
+        expect(shown['discountLost'], 0);
+
+        final result = store.mergeOrders(bId, aId, actorId: manager);
+        expect(result['total'], merged['total']);
+        expect(store.paidAmount(bId), 50);
+        expect(store.paidAmount(aId), 0);
+        final source = store.findOrder(aId);
+        expect(source['status'], OrderStatus.cancelled);
+        expect(source['total'], 0);
+        expect(source['items'], isEmpty);
+      },
+    );
+
+    test('ส่วนลดที่กรอกเองของบิลต้นทางตามไปที่ปลายทาง', () {
+      final a = openDineIn(first);
+      final b = openDineIn(second);
+      final aId = a['id'] as int;
+      final bId = b['id'] as int;
+      store.applyDiscount(aId, 'amount', 10, actorId: cashier);
+
+      final shown = store.previewMerge(bId, aId);
+      expect((shown['source'] as Map)['discount'], 10);
+      expect((shown['merged'] as Map)['discount'], 10);
+      final result = store.mergeOrders(bId, aId, actorId: manager);
+      expect(result['discountAmount'], 10);
+    });
+
+    test('บิลขายเชื่อของลูกค้ารวมเข้าบิลที่ไม่ใช่ลูกค้าคนเดียวกันไม่ได้', () {
+      final opened = store.createOrder(
+        type: 'takeaway',
+        guestCount: 1,
+        customerId: b2b,
+        items: [
+          {'menuItemId': first['id'], 'quantity': 3, 'optionIds': []},
+        ],
+      );
+      final aId = opened['id'] as int;
+      store.pay(orderId: aId, method: 'credit', amount: 50, cashierId: cashier);
+      final bId = openDineIn(second)['id'] as int;
+
+      final mismatch = throwsA(
+        isA<ApiException>()
+            .having((e) => e.statusCode, 'statusCode', 409)
+            .having((e) => e.code, 'code', 'MERGE_CUSTOMER_MISMATCH'),
+      );
+      expect(() => store.previewMerge(bId, aId), mismatch);
+      expect(() => store.mergeOrders(bId, aId, actorId: manager), mismatch);
+      expect(store.paidAmount(aId), 50);
+      expect(store.findOrder(bId)['items'], hasLength(1));
+    });
+  });
 }

@@ -265,21 +265,129 @@ extension DemoStoreOrders on DemoStore {
   }
 
   /// รวมออเดอร์ต้นทางเข้ากับออเดอร์ปลายทาง — ใช้ตอนลูกค้าขอรวมโต๊ะ/รวมบิล
-  Map<String, dynamic> mergeOrders(
-    int targetOrderId,
-    int sourceOrderId, {
-    int? actorId,
-  }) {
-    if (targetOrderId == sourceOrderId) {
+  /// แผนรวมบิล — mirror ของ `planMerge` ใน order.service.js (T09 #96, docs/DECISIONS.md #77 D3, #98) ใช้ทั้งตอนดูตัวอย่าง
+  /// และตอนรวมจริง: ยอดที่จ่ายแล้วกับส่วนลดที่กรอกเองย้ายตามไปที่ปลายทาง (ส่วนลดต้นทางกลายเป็นยอดบาท) โปรโมชันประเมินใหม่
+  /// (โค้ดของปลายทาง > โค้ดของต้นทาง > โปรอัตโนมัติ) และการชำระที่ผูกกับลูกค้าย้ายไปบิลของลูกค้าคนอื่นไม่ได้
+  ({
+    String discountType,
+    double discountValue,
+    Map<String, dynamic> owner,
+    Map<String, dynamic> merged,
+  })
+  _planMerge(Map<String, dynamic> target, Map<String, dynamic> source) {
+    if (target['id'] == source['id']) {
       throw ApiException(
         message: 'order_error_merge_same_order'.tr,
         statusCode: 400,
       );
     }
-    final target = findOrder(targetOrderId);
-    final source = findOrder(sourceOrderId);
     _assertMutable(target);
     _assertMutable(source);
+    final customerBound = payments.any(
+      (row) =>
+          row['orderId'] == source['id'] &&
+          (row['method'] == PaymentMethod.credit ||
+              ((row['pointsRedeemed'] as num?) ?? 0) > 0),
+    );
+    if (customerBound && source['customerId'] != target['customerId']) {
+      throw ApiException(
+        message: 'order_error_merge_customer_mismatch'.trParams({
+          'code': source['code'] as String,
+        }),
+        statusCode: 409,
+        code: 'MERGE_CUSTOMER_MISMATCH',
+      );
+    }
+
+    final sourceDiscount = (source['discountAmount'] as num).toDouble();
+    final discountType = sourceDiscount > 0
+        ? DiscountType.amount
+        : target['discountType'] as String;
+    final discountValue = sourceDiscount > 0
+        ? (target['discountAmount'] as num).toDouble() + sourceDiscount
+        : (target['discountValue'] as num).toDouble();
+    final owner =
+        target['promotionCode'] == null && source['promotionCode'] != null
+        ? source
+        : target;
+    final merged = _recalculate({
+      ...target,
+      'items': [...(target['items'] as List), ...(source['items'] as List)],
+      'discountType': discountType,
+      'discountValue': discountValue,
+      'promotionId': owner['promotionId'],
+      'promotionName': owner['promotionName'],
+      'promotionCode': owner['promotionCode'],
+    }, settle: false);
+    return (
+      discountType: discountType,
+      discountValue: discountValue,
+      owner: owner,
+      merged: merged,
+    );
+  }
+
+  /// ดูผลของการรวมบิลก่อนยืนยัน — mirror ของ order.service.js#previewMerge
+  Map<String, dynamic> previewMerge(int targetOrderId, int sourceOrderId) {
+    final target = findOrder(targetOrderId);
+    final source = findOrder(sourceOrderId);
+    final plan = _planMerge(target, source);
+    int cents(Object? baht) => ((baht as num) * 100).round();
+    Map<String, dynamic> side(Map<String, dynamic> order) => {
+      'id': order['id'],
+      'code': order['code'],
+      'tableId': order['tableId'],
+      'subtotal': order['subtotal'],
+      'discount': order['discountAmount'],
+      'promotionDiscount': order['promotionDiscountAmount'],
+      'promotionName': order['promotionName'],
+      'total': order['total'],
+      'paid': paidAmount(order['id'] as int),
+    };
+    final merged = plan.merged;
+    final paid =
+        cents(paidAmount(targetOrderId)) + cents(paidAmount(sourceOrderId));
+    final total = cents(merged['total']);
+    final before =
+        cents(target['discountAmount']) +
+        cents(target['promotionDiscountAmount']) +
+        cents(source['discountAmount']) +
+        cents(source['promotionDiscountAmount']);
+    final after =
+        cents(merged['discountAmount']) +
+        cents(merged['promotionDiscountAmount']);
+    return {
+      'target': side(target),
+      'source': side(source),
+      'merged': {
+        'subtotal': merged['subtotal'],
+        'discount': merged['discountAmount'],
+        'promotionDiscount': merged['promotionDiscountAmount'],
+        'promotionName': merged['promotionName'],
+        'serviceCharge': merged['serviceCharge'],
+        'vat': merged['vat'],
+        'total': merged['total'],
+        'paid': paid / 100,
+        'remaining': max(total - paid, 0) / 100,
+        'refundRequired': max(paid - total, 0) / 100,
+      },
+      'discountLost': max(before - after, 0) / 100,
+    };
+  }
+
+  /// รวมบิล — mirror ของ order.service.js#mergeOrders: ย้ายรายการ การชำระ การคืนเงิน และส่วนลดไปที่ปลายทาง
+  /// แล้วปิดต้นทางโดยไม่มียอดเงินค้าง (T09 #96) ยอดใหม่ต่ำกว่าเงินที่รับไว้ถูกปฏิเสธตามกติกา T07
+  Map<String, dynamic> mergeOrders(
+    int targetOrderId,
+    int sourceOrderId, {
+    int? actorId,
+  }) {
+    final target = findOrder(targetOrderId);
+    final source = findOrder(sourceOrderId);
+    final plan = _planMerge(target, source);
+    final movedPaid = paidAmount(sourceOrderId);
+    final movedDiscount = source['discountAmount'];
+    final sourcePromotion = source['promotionName'];
 
     final sourceItems = (source['items'] as List).cast<Map<String, dynamic>>();
     final targetItems = target['items'] as List;
@@ -291,7 +399,22 @@ extension DemoStoreOrders on DemoStore {
       targetItems.add(item);
     }
     sourceItems.clear();
+    for (final row in [...payments, ...refunds]) {
+      if (row['orderId'] == source['id']) row['orderId'] = target['id'];
+    }
+    target['discountType'] = plan.discountType;
+    target['discountValue'] = plan.discountValue;
+    target['promotionId'] = plan.owner['promotionId'];
+    target['promotionName'] = plan.owner['promotionName'];
+    target['promotionCode'] = plan.owner['promotionCode'];
 
+    // ต้นทางไม่เหลือรายการ เงิน หรือส่วนลด ยอดเป็น 0 ไม่ถูกนับในรายงาน
+    source['discountType'] = DiscountType.none;
+    source['discountValue'] = 0.0;
+    source['promotionId'] = null;
+    source['promotionName'] = null;
+    source['promotionCode'] = null;
+    _recalculate(source, settle: false);
     source['status'] = OrderStatus.cancelled;
     source['cancelledReason'] = 'order_merged_into_reason'.trParams({
       'code': target['code'] as String,
@@ -310,6 +433,10 @@ extension DemoStoreOrders on DemoStore {
       metadata: {
         'targetOrderCode': target['code'],
         'sourceOrderCode': source['code'],
+        'movedPaid': movedPaid,
+        'movedDiscount': movedDiscount,
+        'sourcePromotion': sourcePromotion,
+        'mergedPromotion': plan.merged['promotionName'],
       },
     );
 

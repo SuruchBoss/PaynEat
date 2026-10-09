@@ -78,6 +78,10 @@ export const mergeOrderSchema = z.object({
   sourceOrderId: z.number().int().positive(),
 });
 
+export const mergePreviewQuerySchema = z.object({
+  sourceOrderId: z.coerce.number().int().positive(),
+});
+
 export const listOrderQuerySchema = z.object({
   status: z.enum(ORDER_STATUSES).optional(),
   tableId: z.coerce.number().int().positive().optional(),

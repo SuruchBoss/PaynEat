@@ -35,6 +35,7 @@ import '../../features/receivable/domain/repositories/receivable_repository.dart
 import '../../features/table/data/datasources/table_remote_data_source.dart';
 import '../../features/table/data/models/dining_table_model.dart';
 import '../../features/order/data/models/order_model.dart';
+import '../../features/order/data/models/merge_preview_model.dart';
 import '../../features/payment/data/datasources/payment_remote_data_source.dart';
 import '../../features/payment/data/models/payment_model.dart';
 import '../../features/payment/domain/entities/payment.dart';

@@ -10,7 +10,6 @@ import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../../core/utils/responsive.dart';
 import '../../../../core/widgets/app_card.dart';
-import '../../../../core/widgets/app_dialogs.dart';
 import '../../../../core/widgets/state_views.dart';
 import '../../../../core/widgets/status_chip.dart';
 import '../../../table/domain/usecases/table_usecases.dart';
@@ -20,6 +19,7 @@ import '../controllers/order_detail_controller.dart';
 import '../widgets/bill_summary.dart';
 import '../widgets/discount_dialog.dart';
 import '../widgets/order_item_tile.dart';
+import '../widgets/merge_preview_dialog.dart';
 import '../widgets/order_picker_dialog.dart';
 import '../widgets/promotion_code_dialog.dart';
 import '../widgets/table_picker_dialog.dart';
@@ -217,16 +217,13 @@ class OrderDetailPage extends GetView<OrderDetailController> {
     final sourceOrderId = await OrderPickerDialog.show(orders);
     if (sourceOrderId == null) return;
     final source = orders.firstWhereOrNull((row) => row.id == sourceOrderId);
-    // รวมบิลย้อนกลับไม่ได้ (ออเดอร์ต้นทางถูกปิด) — กดแถวผิดในรายการต้องมีจังหวะให้ถอย
-    final confirmed = await AppDialogs.confirm(
-      title: 'order_merge_confirm_title'.tr,
-      message: 'order_merge_confirm_message'.trParams({
-        'source': source?.displayTarget ?? '#$sourceOrderId',
-        'code': source?.code ?? '',
-        'amount': Formatters.baht(source?.total ?? 0),
-        'target': order.displayTarget,
-      }),
-      confirmLabel: 'order_merge_confirm_button'.tr,
+    // ยอดจ่ายแล้วและส่วนลดของทั้งสองฝั่งต้องเห็นก่อนกดยืนยัน (T09 #96) และรวมบิลย้อนกลับไม่ได้ กดแถวผิดต้องมีจังหวะให้ถอย
+    final preview = await controller.previewMergeFrom(sourceOrderId);
+    if (preview == null) return;
+    final confirmed = await MergePreviewDialog.show(
+      preview,
+      sourceLabel: source?.displayTarget ?? '#$sourceOrderId',
+      targetLabel: order.displayTarget,
     );
     if (confirmed) {
       await controller.mergeInto(sourceOrderId);
