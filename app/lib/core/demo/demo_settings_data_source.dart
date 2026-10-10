@@ -27,6 +27,7 @@ class DemoSettingsDataSource implements SettingsRemoteDataSource {
     lateFeeAnnualRatePercent:
         (json['lateFeeAnnualRatePercent'] as num?)?.toDouble() ?? 0,
     lateFeeGraceDays: (json['lateFeeGraceDays'] as num?)?.toInt() ?? 0,
+    timeZone: json['timeZone'] as String? ?? StoreSettings.defaultTimeZone,
     emailEnabled: json['emailEnabled'] as bool? ?? false,
   );
 

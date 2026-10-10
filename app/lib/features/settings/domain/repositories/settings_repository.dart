@@ -21,5 +21,6 @@ abstract class SettingsRepository {
     int? scaleLabelPluDigits,
     double? lateFeeAnnualRatePercent,
     int? lateFeeGraceDays,
+    String? timeZone,
   });
 }

@@ -666,6 +666,11 @@ export const ERROR_MESSAGES = [
     ko: '1포인트 적립에 필요한 결제 금액은 최소 0.01바트여야 합니다',
   },
   {
+    th: 'เขตเวลา "{timeZone}" ไม่ใช่ชื่อเขตเวลา IANA (เช่น Asia/Bangkok)',
+    en: '"{timeZone}" is not an IANA time zone name (for example Asia/Bangkok)',
+    ko: '"{timeZone}"은(는) IANA 시간대 이름이 아닙니다 (예: Asia/Bangkok)',
+  },
+  {
     th: 'มูลค่า 1 แต้มต้องอย่างน้อย 0.01 บาท',
     en: 'The value of 1 point must be at least 0.01 baht',
     ko: '1포인트 사용 시 금액은 최소 0.01바트여야 합니다',

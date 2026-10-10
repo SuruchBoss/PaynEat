@@ -19,8 +19,17 @@ class StoreSettings {
     this.scaleLabelPluDigits = 5,
     this.lateFeeAnnualRatePercent = 0,
     this.lateFeeGraceDays = 0,
+    this.timeZone = defaultTimeZone,
     this.emailEnabled = false,
   });
+
+  /// เขตเวลาเริ่มต้นของร้าน — ตรงกับ backend (`core/storeTime.js`)
+  static const String defaultTimeZone = 'Asia/Bangkok';
+
+  /// ชื่อที่หน้าตาเหมือนเขตเวลา IANA (`Area/Location` หรือ `UTC`) — กฎเดียวกับ backend ส่วนการตรวจว่ามีเขตเวลานี้จริงเป็นของ backend
+  static final RegExp ianaTimeZoneShape = RegExp(
+    r'^(?:UTC|[A-Za-z][A-Za-z0-9_+-]*(?:/[A-Za-z0-9_+-]+)+)$',
+  );
 
   final String storeName;
   final String currency;
@@ -53,6 +62,10 @@ class StoreSettings {
   /// 0 = ไม่คิด (เพดาน 15%) และจำนวนวันผ่อนผันหลังครบกำหนดก่อนเริ่มคิด
   final double lateFeeAnnualRatePercent;
   final int lateFeeGraceDays;
+
+  /// เขตเวลา IANA ของร้าน (T03 #94, docs/DECISIONS.md #101) — ใช้ตอบว่า "วันนี้ของร้าน" คือวันไหน
+  /// ไม่ขึ้นกับเขตเวลาของเครื่องเซิร์ฟเวอร์หรือแท็บเล็ต
+  final String timeZone;
 
   /// เซิร์ฟเวอร์ตั้งค่า SMTP ไว้แล้ว ส่งเอกสารทางอีเมลได้ (อ่านอย่างเดียว — ตั้งที่ .env ของเซิร์ฟเวอร์)
   /// ดู docs/tickets/23-document-pdf-email.md

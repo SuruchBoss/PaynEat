@@ -10,6 +10,7 @@ import '../../features/order/domain/services/bill_calculator.dart';
 import '../../features/order/domain/services/promotion_engine.dart';
 import '../../features/order/domain/services/split_share.dart';
 import '../../features/payment/domain/services/refund_split.dart';
+import '../../features/settings/domain/entities/store_settings.dart';
 import '../constants/app_constants.dart';
 import '../errors/exceptions.dart';
 import 'demo_names.dart';

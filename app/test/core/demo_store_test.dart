@@ -3970,4 +3970,23 @@ void main() {
       );
     },
   );
+
+  group('DemoStore เขตเวลาของร้าน (T03 #94)', () {
+    test(
+      'ค่าเริ่มต้น Asia/Bangkok แก้ได้ และชื่อที่ไม่ใช่รูปแบบ IANA ถูกปฏิเสธโดยค่าเดิมไม่เปลี่ยน',
+      () {
+        expect(store.settings['timeZone'], 'Asia/Bangkok');
+        store.updateSettings({'timeZone': ' Asia/Seoul '});
+        expect(store.settings['timeZone'], 'Asia/Seoul');
+        for (final bad in ['Bangkok', '+07:00', '']) {
+          expect(
+            () => store.updateSettings({'timeZone': bad}),
+            throwsA(isA<ApiException>()),
+            reason: bad,
+          );
+        }
+        expect(store.settings['timeZone'], 'Asia/Seoul');
+      },
+    );
+  });
 }

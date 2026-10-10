@@ -33,6 +33,8 @@ const updateSettingsSchema = z
     // ดอกเบี้ยทั่วไปใน ป.พ.พ. ม.654 ร้านใส่เกินนี้ไม่ได้แม้จะตกลงกับลูกค้าไว้ 0 = ไม่คิด
     lateFeeAnnualRatePercent: z.number().min(0).max(15).optional(),
     lateFeeGraceDays: z.number().int().min(0).max(365).optional(),
+    // ชื่อเขตเวลา IANA (T03 #94) — ตรวจว่าเครื่องรู้จักใน settings.service.js ให้ได้ 400 พร้อมชื่อที่ส่งมา
+    timeZone: z.string().trim().min(1).max(64).optional(),
   })
   .refine(
     (data) => {

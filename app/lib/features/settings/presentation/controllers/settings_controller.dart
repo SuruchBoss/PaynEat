@@ -27,6 +27,9 @@ class SettingsController extends GetxController {
   final RxBool vatIncluded = false.obs;
 
   final TextEditingController storeNameController = TextEditingController();
+
+  /// เขตเวลา IANA ของร้าน (T03 #94)
+  final TextEditingController timeZoneController = TextEditingController();
   final TextEditingController vatController = TextEditingController();
   final TextEditingController serviceChargeController = TextEditingController();
   final TextEditingController storeTaxIdController = TextEditingController();
@@ -56,6 +59,7 @@ class SettingsController extends GetxController {
   @override
   void onClose() {
     storeNameController.dispose();
+    timeZoneController.dispose();
     vatController.dispose();
     serviceChargeController.dispose();
     storeTaxIdController.dispose();
@@ -81,6 +85,7 @@ class SettingsController extends GetxController {
       onSuccess: (data) {
         settings.value = data;
         storeNameController.text = data.storeName;
+        timeZoneController.text = data.timeZone;
         vatController.text = data.vatPercent.toStringAsFixed(0);
         serviceChargeController.text = data.serviceChargePercent
             .toStringAsFixed(0);
@@ -161,6 +166,13 @@ class SettingsController extends GetxController {
       return;
     }
 
+    // รูปร่างชื่อเขตเวลาเดียวกับ backend — ชื่อที่ไม่มีอยู่จริง backend ตอบ 400 พร้อมชื่อที่ส่งไป
+    final timeZone = timeZoneController.text.trim();
+    if (!StoreSettings.ianaTimeZoneShape.hasMatch(timeZone)) {
+      AppDialogs.error('settings_time_zone_invalid'.tr);
+      return;
+    }
+
     isSaving.value = true;
     final result = await _updateSettings(
       UpdateSettingsParams(
@@ -178,6 +190,7 @@ class SettingsController extends GetxController {
         scaleLabelPluDigits: scaleLabelPluDigits.value,
         lateFeeAnnualRatePercent: lateFeeRate,
         lateFeeGraceDays: lateFeeGrace,
+        timeZone: timeZone,
       ),
     );
     isSaving.value = false;

@@ -63,6 +63,19 @@ extension DemoStoreSettings on DemoStore {
       );
     }
 
+    // เขตเวลาของร้าน (T03 #94) — backend ตรวจกับฐานข้อมูลเขตเวลาของ Intl แอปไม่มีฐานนั้น
+    // โหมดสาธิตจึงตรวจแค่รูปร่างชื่อ IANA (docs/DECISIONS.md #101)
+    final timeZone = changes['timeZone'];
+    if (timeZone != null &&
+        (timeZone is! String ||
+            !StoreSettings.ianaTimeZoneShape.hasMatch(timeZone.trim()))) {
+      throw ApiException(
+        message: 'settings_time_zone_invalid'.tr,
+        statusCode: 400,
+      );
+    }
+    if (timeZone is String) changes['timeZone'] = timeZone.trim();
+
     changes.forEach((key, value) => settings[key] = value);
 
     final newVatRate = changes['vatRate'] as double?;
