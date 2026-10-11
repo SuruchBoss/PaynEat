@@ -2393,10 +2393,16 @@ Copyright © 2026 Suruch Chakrapeesirisuk. Every source file starts with its cop
 (`SPDX-License-Identifier: Apache-2.0`), which CI checks on every push. External contributions are signed off,
 commit by commit, under the Developer Certificate of Origin (DCO) — see [`CONTRIBUTING.md`](CONTRIBUTING.md#developer-certificate-of-origin-dco).
 
-**The POS is entirely free and will have no paid edition** — no locked features and no limits on devices, branches,
-or users. Paid installation, hardware setup, support, and training are available as optional services; every feature
-is available without them. The ecosystem's paid edition is [PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions),
-intended for larger chains — see `docs/DECISIONS.md` #67.
+**The POS has a free Community edition, and a Pro edition will follow** — this changes the earlier statement that the
+POS would have no paid edition. The project owner made the change on 2026-10-11, before any restaurant was using the POS.
+Everything in the POS as of the `community-baseline-2026-10` tag is Apache 2.0 and free for good: it will not be moved
+behind a paywall, locked, or limited by devices, branches, or users. That includes multiple branches, customers and
+loyalty points, takeaway/delivery, the AI data assistant, exports and the Z-report, and tax invoices. Core shop work
+(selling, payments, shift close, receipts, refunds, basic stock, offline mode, printing, data export, and security)
+stays free even when new work is added there. Pro will only add new features, in an `ee/` folder under the Elastic
+License 2.0 (none exist yet), and an expired licence key will never block sales or a shop's data. Shops install the POS
+themselves with the installer; paid remote installation and online support are optional (there is no on-site service), and larger chains can use
+[PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions) — see `docs/DECISIONS.md` #102 (replaces #67).
 
 ## 👤 Author
 
