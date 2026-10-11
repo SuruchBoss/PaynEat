@@ -502,7 +502,7 @@ Pro는 새 기능만 `ee/` 폴더(Elastic License 2.0, 현재는 없음)에 추�
 Developer Certificate of Origin(DCO)에 따른 서명(sign-off)이 필요합니다. 방법은
 [`CONTRIBUTING.md`](CONTRIBUTING.md#developer-certificate-of-origin-dco)를 참고하십시오.
 
-설치, 기기 연결, 기술 지원, 교육은 선택 사항인 유료 서비스로 이용할 수 있습니다. 유료 서비스를 이용하지 않아도 모든 기능을 동일하게 사용할 수 있습니다.
+가게에서 설치 프로그램으로 직접 설치할 수 있으며, 원격 설치와 온라인 기술 지원은 선택 사항인 유료 서비스로 이용할 수 있습니다(현장 방문 서비스는 없습니다). 유료 서비스를 이용하지 않아도 모든 기능을 동일하게 사용할 수 있습니다.
 
 ---
 

@@ -2400,8 +2400,8 @@ behind a paywall, locked, or limited by devices, branches, or users. That includ
 loyalty points, takeaway/delivery, the AI data assistant, exports and the Z-report, and tax invoices. Core shop work
 (selling, payments, shift close, receipts, refunds, basic stock, offline mode, printing, data export, and security)
 stays free even when new work is added there. Pro will only add new features, in an `ee/` folder under the Elastic
-License 2.0 (none exist yet), and an expired licence key will never block sales or a shop's data. Paid installation,
-hardware setup, support, and training remain optional services, and larger chains can use
+License 2.0 (none exist yet), and an expired licence key will never block sales or a shop's data. Shops install the POS
+themselves with the installer; paid remote installation and online support are optional (there is no on-site service), and larger chains can use
 [PaynEat ERP Enterprise](https://github.com/SuruchBoss/PaynEat-ERP#editions) — see `docs/DECISIONS.md` #102 (replaces #67).
 
 ## 👤 Author
