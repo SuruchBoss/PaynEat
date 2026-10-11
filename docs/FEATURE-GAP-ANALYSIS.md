@@ -93,7 +93,7 @@ Flutter ทั้งหมดวิ่งบนโหมดสาธิตซึ
 |---|---|---|---|
 | 1 | เปิด/ปิดกะ + กระทบยอดเงินสด (Shift & Cash Drawer Reconciliation) | ไม่มี table `shift`/`cash_session` เลย ร้านจริงต้องนับเงินตั้งต้น/ปิดกะเทียบยอดระบบ ไม่งั้นตรวจสอบเงินหายไม่ได้ | ✅ เสร็จแล้ว |
 | 2 | คืนเงินหลังชำระเงินแล้ว (Refund) | มีแค่ "cancel" ก่อนเสิร์ฟ/ก่อนจ่าย ไม่มี flow คืนเงินหลังจ่ายสำเร็จ ไม่มี table `refunds` เลย | ✅ เสร็จแล้ว |
-| 3 | พิมพ์ใบเสร็จจริง (Thermal/ESC-POS printer) | ปัจจุบันมีแค่ใบเสร็จบนจอ (ตั้งใจไม่ทำตาม `docs/DECISIONS.md` เพราะเป็น demo) แต่ร้านจริงต้องมี | ✅ เสร็จแล้ว (LAN/WiFi — Bluetooth/USB ยังไม่ทำ ดู #11) |
+| 3 | พิมพ์ใบเสร็จจริง (Thermal/ESC-POS printer) | ปัจจุบันมีแค่ใบเสร็จบนจอ (ตั้งใจไม่ทำตาม `docs/DECISIONS.md` เพราะเป็น demo) แต่ร้านจริงต้องมี | ✅ เสร็จแล้ว (LAN/WiFi — Bluetooth/USB ยังไม่ทำ ดู #11, USB เปิดใบแล้วที่ issue #165) |
 | 4 | Offline mode | เน็ตร้านอาหารหลุดบ่อย ตอนนี้ order พึ่ง backend ตลอด ไม่มี local queue + sync กลับ | ✅ เสร็จแล้ว (เฉพาะสั่งเพิ่มเข้าออเดอร์เดิม ดู #13) |
 | 16 | **PromptPay QR / payment gateway จริง** | `qr` ใน `PAYMENT_METHODS` เคยเป็นแค่ label ให้ cashier กดยืนยันเอง เหมือน `card`/`transfer` ทุกอย่าง — ไม่มี generate QR ตามมาตรฐาน PromptPay คู่แข่งในตลาดไทยทุกเจ้ามีเป็นมาตรฐานขั้นต่ำ | ✅ เสร็จแล้ว (generate QR จริงตามมาตรฐาน EMV QR — ยังไม่มี payment gateway/callback ตรวจสอบอัตโนมัติตามที่ตั้งใจแยกขอบเขตไว้ ดู `docs/tickets/16-promptpay-qr.md`) |
 
