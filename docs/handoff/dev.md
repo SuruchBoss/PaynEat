@@ -21,4 +21,5 @@ None.
 
 - Owner: lift the pause (#99) and say start on ERP #23.
 - Owner: tag `community-baseline-2026-10` at `84e1169` (DECISIONS #102); cloud sessions cannot push tags.
-- Owner: approve opening a pull request for branch `claude/ecstatic-albattani-zdo92u` (CLAUDE.md working rules).
+- Owner: merge #171 (CLAUDE.md waiting and handoff rules; docs only).
+- Owner: decide whether PaynEat-ERP also gets the context economy and waiting sections, and who opens the ERP issue for its handoff file.
