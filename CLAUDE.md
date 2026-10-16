@@ -52,3 +52,15 @@ Claude Code resends the whole conversation on every turn, so context that isn't 
 * Delegate broad searches. When answering needs a sweep across many files, use a subagent (Explore) and keep only its conclusion in the main context.
 * Make focused edits. Change only what the task needs. Verifying results is not optional and does not count as re-reading: still run the tests, open generated output, and confirm remote state (e.g. `git ls-tree origin/<branch>`) before reporting done.
 * One unit of work at a time. When a unit of work is finished, first record its state where the next session will look (handoff, backlog, or the issue), then suggest the user run `/clear` before unrelated work, or `/compact` at a phase break in a long task. Leave the decision to the user; never clear or compact unprompted.
+
+## Waiting
+
+* Before ending a turn to wait on something that will not wake this session by itself (CI on GitHub, a reply from another room, a review), arm a wake-up first: subscribe to the PR's activity, or schedule a check-in with send_later. Background tasks started in this session already wake it when they finish, so they need nothing extra.
+* When the wait is on the user, say exactly what you need from them in the closing message instead of stopping silently.
+
+## Session handoff
+
+* Each room keeps its current state in one short file: `docs/handoff/<role>.md` (`po.md`, `dev.md`, `qa.md`). Keep it under about 60 lines. `docs/tickets/README.md` stays the backlog and ticket index; the handoff file points to it and is never a replacement for it.
+* Overwrite the handoff file with the current state instead of appending history: what is in progress, the next step, open questions, and who is waiting on whom. Git history keeps the past. This repository is public: the security rule above applies, and no secrets or personal data go in.
+* Update it at the end of each unit of work and before suggesting /clear or /compact.
+* A new or cleared session reads its handoff file first, then only the files it points to, instead of re-reading broadly to rebuild context.
