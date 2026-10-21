@@ -2,8 +2,17 @@
 
 **Language:** [ไทย](README.md) · English · [한국어](README.ko.md)
 
-> A complete POS workflow: a waiter takes an order on a tablet → the order appears on the kitchen display immediately →
-> the cashier closes the bill → the manager monitors sales on the web dashboard
+> **Make the full-house lunch rush just another hour of the day.**
+>
+> Guests sit down, scan the QR code on the table and order for themselves. The order reaches the kitchen screen at once,
+> notes like "no vegetables" included, and any table waiting more than 15 minutes turns red on its own, so no order slip
+> gets lost on the way. At the till, the amount on the PromptPay QR matches the bill to the satang. If the Wi-Fi drops
+> mid-service, staff can still add items to an open table and the system syncs when the connection is back. At closing,
+> even a 40-baht shortfall shows up the moment the shift is closed, not after a recount the next day. And the owner can
+> watch today's sales live on the web throughout the day.
+>
+> PaynEat has no shop using it in production yet. It is being prepared for its first shop: a Windows installer and a
+> full-shift test run by a shop owner ([DECISIONS #99](docs/DECISIONS.md)).
 
 > **Flutter (GetX + Clean Architecture)** + **Node.js / Express + SQLite + Socket.IO** — a single codebase runs on
 > Android, iOS, and Web
