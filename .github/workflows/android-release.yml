@@ -113,7 +113,7 @@ jobs:
           fi
           cp "$aab" "$RUNNER_TEMP/payneat-pos-${{ steps.version.outputs.name }}-demo.aab"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: payneat-pos-${{ steps.version.outputs.name }}-demo-aab
           path: ${{ runner.temp }}/payneat-pos-${{ steps.version.outputs.name }}-demo.aab
